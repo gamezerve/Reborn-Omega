@@ -378,24 +378,41 @@ void SinglePlayerLoadScreen::moveWindows( Int frame )
 void SinglePlayerLoadScreen::init( GameInfo *game )
 {
 	//No music in SinglePlayerLoadScreen
+	AsciiString wndFile;
+	AsciiString wndPrefix;
 
+	if (IsRebornCampaign())
+	{
+		wndFile = "Menus/SinglePlayerLoadScreenGen.wnd";
+		wndPrefix = "SinglePlayerLoadScreenGen.wnd";
+	}
+	else
+	{
+		wndFile = "Menus/SinglePlayerLoadScreen.wnd";
+		wndPrefix = "SinglePlayerLoadScreen.wnd";
+	}
+
+	AsciiString winName;
 	// create the layout of the load screen
-	m_loadScreen = TheWindowManager->winCreateFromScript( "Menus/SinglePlayerLoadScreen.wnd" );
+	m_loadScreen = TheWindowManager->winCreateFromScript(wndFile);
 	DEBUG_ASSERTCRASH(m_loadScreen, ("Can't initialize the single player loadscreen"));
 	m_loadScreen->winHide(FALSE);
 	m_loadScreen->winBringToTop();
 //	Mission *mission = TheCampaignManager->getCurrentMission();
 	// Store the pointer to the progress bar on the loadscreen
-	m_progressBar = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "SinglePlayerLoadScreen.wnd:ProgressLoad" ));
+	winName.format("%s:ProgressLoad", wndPrefix.str());
+	m_progressBar = TheWindowManager->winGetWindowFromId(m_loadScreen, TheNameKeyGenerator->nameToKey(winName));
 	DEBUG_ASSERTCRASH(m_progressBar, ("Can't initialize the progressbar for the single player loadscreen"));
 	GadgetProgressBarSetProgress(m_progressBar, 0 );
 
-	m_percent = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "SinglePlayerLoadScreen.wnd:Percent" ));
+	winName.format("%s:Percent", wndPrefix.str());
+	m_percent = TheWindowManager->winGetWindowFromId(m_loadScreen, TheNameKeyGenerator->nameToKey(winName));
 	DEBUG_ASSERTCRASH(m_percent, ("Can't initialize the m_percent for the single player loadscreen"));
 	GadgetStaticTextSetText(m_percent,L"0%");
 	m_percent->winHide(TRUE);
 
-	m_objectiveWin = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "SinglePlayerLoadScreen.wnd:ObjectivesWin" ));
+	winName.format("%s:ObjectivesWin", wndPrefix.str());
+	m_objectiveWin = TheWindowManager->winGetWindowFromId(m_loadScreen, TheNameKeyGenerator->nameToKey(winName));
 	DEBUG_ASSERTCRASH(m_objectiveWin, ("Can't initialize the m_objectiveWin for the single player loadscreen"));
 	m_objectiveWin->winHide(TRUE);
 
@@ -405,7 +422,7 @@ void SinglePlayerLoadScreen::init( GameInfo *game )
 	Int i = 0;
 	for(; i < MAX_OBJECTIVE_LINES; ++i)
 	{
-		lineName.format("SinglePlayerLoadScreen.wnd:StaticTextLine%d",i);
+		lineName.format("%s:StaticTextLine%d", wndPrefix.str(), i);
 		m_objectiveLines[i] = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( lineName ));
 		DEBUG_ASSERTCRASH(m_objectiveLines[i], ("Can't initialize the m_objectiveLines[%d] for the single player loadscreen", i));
 		GadgetStaticTextSetText(m_objectiveLines[i],UnicodeString::TheEmptyString);
@@ -417,13 +434,14 @@ void SinglePlayerLoadScreen::init( GameInfo *game )
 
 	for(i = 0; i < MAX_DISPLAYED_UNITS; ++i)
 	{
-		lineName.format("SinglePlayerLoadScreen.wnd:StaticTextCameoText%d",i);
+		lineName.format("%s:StaticTextCameoText%d", wndPrefix.str(), i);
 		m_unitDesc[i] = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( lineName ));
 		DEBUG_ASSERTCRASH(m_unitDesc[i], ("Can't initialize the m_objectiveLines[%d] for the single player loadscreen", i));
 		GadgetStaticTextSetText(m_unitDesc[i],TheGameText->fetch(mission->m_unitNames[i]));
 		m_unitDesc[i]->winHide(TRUE);
 	}
-	m_location = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "SinglePlayerLoadScreen.wnd:StaticTextCameoText3" ));
+	winName.format("%s:StaticTextCameoText3", wndPrefix.str());
+	m_location = TheWindowManager->winGetWindowFromId(m_loadScreen, TheNameKeyGenerator->nameToKey(winName));
 	DEBUG_ASSERTCRASH(m_location, ("Can't initialize the m_objectiveWin for the single player loadscreen"));
 	m_location->winHide(TRUE);
 	GadgetStaticTextSetText(m_location, TheGameText->fetch(mission->m_locationNameLabel));
@@ -497,7 +515,8 @@ void SinglePlayerLoadScreen::init( GameInfo *game )
 	// format the progress bar: USA to blue, GLA to green, China to red
 	// and set the background image
 	AsciiString campaignName = TheCampaignManager->getCurrentCampaign()->m_name;
-	GameWindow *backgroundWin = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "SinglePlayerLoadScreen.wnd:ParentSinglePlayerLoadScreen" ));
+	winName.format("%s:ParentSinglePlayerLoadScreen", wndPrefix.str());
+	GameWindow* backgroundWin = TheWindowManager->winGetWindowFromId(m_loadScreen, TheNameKeyGenerator->nameToKey(winName));
 	if (campaignName.compareNoCase("USA") == 0)
 	{
 		if (const Image *image = TheMappedImageCollection->findImageByName("MissionLoad_USA"))
@@ -537,7 +556,7 @@ void SinglePlayerLoadScreen::init( GameInfo *game )
 		{
 			backgroundWin->winSetEnabledImage( 0, image );
 		}
-		if (const Image *image = TheMappedImageCollection->findImageByName("LoadingBar_ProgressCenter4"))
+		if (const Image *image = TheMappedImageCollection->findImageByName("LoadingBar_ProgressCenter"))
 		{
 			m_progressBar->winSetEnabledImage( 6, image );
 		}
