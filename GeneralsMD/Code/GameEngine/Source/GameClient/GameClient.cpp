@@ -84,6 +84,8 @@
 #include "GameLogic/GhostObject.h"
 #include "GameLogic/Object.h"
 #include "GameLogic/ScriptEngine.h"		// For TheScriptEngine - jkmcd
+#include <cstdlib>
+#include <ctime>
 
 #define DRAWABLE_HASH_SIZE	8192
 
@@ -527,16 +529,27 @@ void GameClient::update()
 		playSizzle = TRUE;
 	}
 
+	srand((unsigned int)time(NULL));
+	static Bool randomSeeded = FALSE;
+
+	if (!randomSeeded)
+	{
+		srand((unsigned int)time(NULL));
+		randomSeeded = TRUE;
+	}
+
 	//Initial Game Condition.  We must show the movie first and then we can display the shell
 	if(TheGlobalData->m_afterIntro && !TheDisplay->isMoviePlaying())
 	{
-		if( playSizzle && TheGlobalData->m_playSizzle )
+		if (playSizzle && TheGlobalData->m_playSizzle)
 		{
 			TheWritableGlobalData->m_allowExitOutOfMovies = TRUE;
-			if(TheGameLODManager && TheGameLODManager->didMemPass())
-				TheDisplay->playMovie("Sizzle");
+
+			if (TheGameLODManager && TheGameLODManager->didMemPass())
+				TheDisplay->playMovie((rand() % 2) ? "SizzleGen" : "Sizzle");
 			else
-				TheDisplay->playMovie("Sizzle640");
+				TheDisplay->playMovie((rand() % 2) ? "Sizzle640Gen" : "Sizzle640");
+
 			playSizzle = FALSE;
 		}
 		else
