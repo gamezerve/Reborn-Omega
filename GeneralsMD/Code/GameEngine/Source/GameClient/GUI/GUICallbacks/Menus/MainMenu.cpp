@@ -181,6 +181,7 @@ enum
 {
 	SHOW_NONE = 0,
 	SHOW_TRAINING,
+	SHOW_TRAININGGEN,
 	SHOW_USA,
 	SHOW_GLA,
 	SHOW_CHINA,
@@ -360,6 +361,15 @@ GameWindow *win = nullptr;
 	if(win)
 		win->winHide(TRUE);
 	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionTrainingMedium"));
+	if(win)
+		win->winHide(TRUE);
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionTrainingGen")); //Reborn
+	if(win)
+		win->winHide(TRUE);
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionTrainingGenSmall")); //Reborn
+	if(win)
+		win->winHide(TRUE);
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionTrainingGenMedium")); //Reborn
 	if(win)
 		win->winHide(TRUE);
 
@@ -828,6 +838,9 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 //		{
 //			TheTransitionHandler->remove("MainMenuSinglePlayerMenu");
 			switch (showSide) {
+			case SHOW_TRAININGGEN:
+				TheTransitionHandler->setGroup("MainMenuFactionTrainingGen");
+				break;
 			case SHOW_TRAINING:
 				TheTransitionHandler->setGroup("MainMenuFactionTraining");
 				break;
@@ -1066,14 +1079,14 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				if(dontAllowTransitions && !campaignSelected)
 				{
 					showLogo = TRUE;
-					showSide = SHOW_TRAINING;
+					showSide = SHOW_TRAININGGEN;
 				}
 
 				if(campaignSelected || dontAllowTransitions)
 					break;
 				//TheTransitionHandler->remove("MainMenuSinglePlayerMenu");
 
-				TheTransitionHandler->setGroup("MainMenuFactionTraining");
+				TheTransitionHandler->setGroup("MainMenuFactionTrainingGen");
 
 				//showSelectiveButtons(SHOW_NONE);
 			}
@@ -1191,7 +1204,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 
 				if(campaignSelected || dontAllowTransitions)
 					break;
-				TheTransitionHandler->reverse("MainMenuFactionTraining");
+				TheTransitionHandler->reverse("MainMenuFactionTrainingGen");
 
 				//showSelectiveButtons(SHOW_NONE);
 			}
@@ -1508,16 +1521,16 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				if(campaignSelected || dontAllowTransitions)
 					break;
 				TheCampaignManager->setCampaign( "TRAINING" );
-				TheTransitionHandler->setGroup("MainMenuFactionTraining");
-				TheTransitionHandler->remove("MainMenuFactionTraining", TRUE);
-				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionTraining"));
+				TheTransitionHandler->setGroup("MainMenuFactionTrainingGen");
+				TheTransitionHandler->remove("MainMenuFactionTrainingGen", TRUE);
+				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionTrainingGen"));
 				if(win)
 					win->winHide(TRUE);
-				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackTraining");
-				TheTransitionHandler->setGroup("MainMenuDifficultyMenuTraining");
+				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackTrainingGen");
+				TheTransitionHandler->setGroup("MainMenuDifficultyMenuTrainingGen");
 				campaignSelected = TRUE;
 				showLogo = FALSE;
-				showSide = SHOW_TRAINING;
+				showSide = SHOW_TRAININGGEN;
 
 				//setupGameStart(TheCampaignManager->getCurrentMap());
 			}
@@ -1657,6 +1670,10 @@ void diffReverseSide()
 	case SHOW_TRAINING:
 		TheTransitionHandler->reverse("MainMenuDifficultyMenuTrainingBack");
 		TheTransitionHandler->setGroup("MainMenuSinglePlayerTrainingMenuFromDiff");
+		break;
+	case SHOW_TRAININGGEN:
+		TheTransitionHandler->reverse("MainMenuDifficultyMenuTrainingGenBack");
+		TheTransitionHandler->setGroup("MainMenuSinglePlayerTrainingGenMenuFromDiff");
 		break;
 	case SHOW_USA:
 		TheTransitionHandler->reverse("MainMenuDifficultyMenuUSBack");
