@@ -74,6 +74,7 @@
 #include "GameClient/SelectionXlat.h"
 #include "GameClient/Shadow.h"
 #include "GameClient/GlobalLanguage.h"
+#include "GameClient/CampaignManager.h" //Reborn
 
 #include "GameLogic/AIGuard.h"
 #include "GameLogic/Weapon.h"
@@ -5503,6 +5504,11 @@ void InGameUI::popupMessage( const AsciiString& message, Int x, Int y, Int width
 	popupMessage( message, x, y, width, m_popupMessageColor, pause, pauseMusic);
 }
 
+static Bool IsRebornCampaign() // Reborn
+{
+	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+	return camp && camp->m_name.compare("training") == 0;
+}
 //-------------------------------------------------------------------------------------------------
 /** initialize, and popup a message box to the user */
 //-------------------------------------------------------------------------------------------------
@@ -5541,7 +5547,10 @@ void InGameUI::popupMessage( const AsciiString& identifier, Int x, Int y, Int wi
 	if( pause )
 		TheGameLogic->setGamePaused(TRUE, pauseMusic);
 
-	m_popupMessageData->layout = TheWindowManager->winCreateLayout("InGamePopupMessage.wnd");
+	if (IsRebornCampaign()) // Reborn: use the Generals version in Reborn Campaigns.
+		m_popupMessageData->layout = TheWindowManager->winCreateLayout("InGamePopupMessageGen.wnd");
+	else
+		m_popupMessageData->layout = TheWindowManager->winCreateLayout("InGamePopupMessage.wnd");
 	m_popupMessageData->layout->runInit();
 }
 

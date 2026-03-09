@@ -58,6 +58,7 @@
 #include "Common/MessageStream.h"
 #include "GameClient/WindowLayout.h"
 #include "GameClient/Gadget.h"
+#include "GameClient/CampaignManager.h" // Reborn
 #include "GameClient/GadgetStaticText.h"
 #include "GameClient/KeyDefs.h"
 #include "GameClient/GameWindowManager.h"
@@ -86,15 +87,31 @@ static Bool pause = FALSE;
 //-------------------------------------------------------------------------------------------------
 /** Initialize the InGamePopupMessageInit menu */
 //-------------------------------------------------------------------------------------------------
+
+static Bool IsRebornCampaign() // Reborn
+{
+	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+	return camp && camp->m_name.compare("training") == 0;
+}
+
 void InGamePopupMessageInit( WindowLayout *layout, void *userData )
 {
+	const char* wndName = IsRebornCampaign() ? "InGamePopupMessageGen.wnd" : "InGamePopupMessage.wnd"; // Reborn
 
-	parentID = TheNameKeyGenerator->nameToKey("InGamePopupMessage.wnd:InGamePopupMessageParent");
+	AsciiString parentName; parentName.format("%s:InGamePopupMessageParent", wndName); // Reborn
+	parentID = TheNameKeyGenerator->nameToKey(parentName.str()); // Reborn
+
 	parent = TheWindowManager->winGetWindowFromId(nullptr, parentID);
 
-	staticTextMessageID = TheNameKeyGenerator->nameToKey("InGamePopupMessage.wnd:StaticTextMessage");
+	AsciiString staticTextName; staticTextName.format("%s:StaticTextMessage", wndName); // Reborn
+	staticTextMessageID = TheNameKeyGenerator->nameToKey(staticTextName.str()); // Reborn
+
 	staticTextMessage = TheWindowManager->winGetWindowFromId(parent, staticTextMessageID);
-	buttonOkID = TheNameKeyGenerator->nameToKey("InGamePopupMessage.wnd:ButtonOk");
+
+	AsciiString buttonOkName; buttonOkName.format("%s:ButtonOk", wndName); // Reborn
+	buttonOkID = TheNameKeyGenerator->nameToKey(buttonOkName.str()); // Reborn
+
+
 	buttonOk = TheWindowManager->winGetWindowFromId(parent, buttonOkID);
 
 	PopupMessageData *pMData = TheInGameUI->getPopupMessageData();
