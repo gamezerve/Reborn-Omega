@@ -541,7 +541,16 @@ void Shell::showShellMap(Bool useShellMap )
 		if(TheGameLogic->isInGame())
 			TheGameLogic->exitGame();
 
-		TheWritableGlobalData->m_pendingFile = TheGlobalData->m_shellMapName;
+
+
+		// Reborn: Shell map switches Betwen Generals and Zero Hour versions randomly if both are present, otherwise just uses the one specified in GameData.ini.
+
+		if (!TheGlobalData->m_alternativeShellMapName.isEmpty() && rand() % 2 == 0)
+			TheWritableGlobalData->m_pendingFile = TheGlobalData->m_alternativeShellMapName;
+		else
+			TheWritableGlobalData->m_pendingFile = TheGlobalData->m_shellMapName;
+
+
 		InitRandom(0);
 		GameMessage *msg = TheMessageStream->appendMessage( GameMessage::MSG_NEW_GAME );
 		msg->appendIntegerArgument(GAME_SHELL);

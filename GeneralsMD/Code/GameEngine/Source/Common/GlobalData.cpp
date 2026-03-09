@@ -425,6 +425,7 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	{ "FixedSeed",									INI::parseInt,				nullptr,			offsetof( GlobalData, m_fixedSeed ) },
 
 	{ "ShellMapName",								INI::parseAsciiString,nullptr,			offsetof( GlobalData, m_shellMapName ) },
+	{ "AlternativeShellMapName",		INI::parseAsciiString, nullptr,			offsetof(GlobalData, m_alternativeShellMapName) }, // Reborn
 	{ "ShellMapOn",									INI::parseBool,				nullptr,			offsetof( GlobalData, m_shellMapOn ) },
 	{	"PlayIntro",									INI::parseBool,				nullptr,			offsetof( GlobalData, m_playIntro ) },
 
@@ -1000,6 +1001,7 @@ GlobalData::GlobalData()
 	m_weaponBonusSet = newInstance(WeaponBonusSet);
 
 	m_shellMapName.set("Maps\\ShellMap1\\ShellMap1.map");
+	m_alternativeShellMapName.set(""); // Reborn: Assigned from GameData.ini with AlternativeShellMap attribute, if present.
 	m_shellMapOn =TRUE;
 	m_playIntro = TRUE;
 	m_playSizzle = TRUE;
