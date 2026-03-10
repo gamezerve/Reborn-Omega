@@ -93,22 +93,25 @@ WindowMsgHandledType BuddyControlSystem( GameWindow *window, UnsignedInt msg,
 														 WindowMsgData mData1, WindowMsgData mData2);
 void InitBuddyControls(Int type);
 void updateBuddyInfo();
+
+static AsciiString s_diplomacyWndPrefix = "Diplomacy.wnd"; // Reborn
+
 static void grabWindowPointers()
 {
 	for (Int i=0; i<MAX_SLOTS; ++i)
 	{
 		AsciiString temp;
-		temp.format("Diplomacy.wnd:StaticTextPlayer%d", i);
+		temp.format("%s:StaticTextPlayer%d", s_diplomacyWndPrefix.str(), i);
 		staticTextPlayerID[i] = NAMEKEY(temp);
-		temp.format("Diplomacy.wnd:StaticTextSide%d", i);
+		temp.format("%s:StaticTextSide%d", s_diplomacyWndPrefix.str(), i);
 		staticTextSideID[i] = NAMEKEY(temp);
-		temp.format("Diplomacy.wnd:StaticTextTeam%d", i);
+		temp.format("%s:StaticTextTeam%d", s_diplomacyWndPrefix.str(), i);
 		staticTextTeamID[i] = NAMEKEY(temp);
-		temp.format("Diplomacy.wnd:StaticTextStatus%d", i);
+		temp.format("%s:StaticTextStatus%d", s_diplomacyWndPrefix.str(), i);
 		staticTextStatusID[i] = NAMEKEY(temp);
-		temp.format("Diplomacy.wnd:ButtonMute%d", i);
+		temp.format("%s:ButtonMute%d", s_diplomacyWndPrefix.str(), i);
 		buttonMuteID[i] = NAMEKEY(temp);
-		temp.format("Diplomacy.wnd:ButtonUnMute%d", i);
+		temp.format("%s:ButtonUnMute%d", s_diplomacyWndPrefix.str(), i);
 		buttonUnMuteID[i] = NAMEKEY(temp);
 
 		staticTextPlayer[i] = TheWindowManager->winGetWindowFromId(theWindow, staticTextPlayerID[i]);
@@ -164,7 +167,10 @@ BriefingList* GetBriefingTextList()
 //-------------------------------------------------------------------------------------------------
 void UpdateDiplomacyBriefingText(AsciiString newText, Bool clear)
 {
-	GameWindow *listboxSolo = TheWindowManager->winGetWindowFromId(theWindow, NAMEKEY("Diplomacy.wnd:ListboxSolo"));
+	//GameWindow *listboxSolo = TheWindowManager->winGetWindowFromId(theWindow, NAMEKEY("Diplomacy.wnd:ListboxSolo"));
+	AsciiString listboxSoloName;
+	listboxSoloName.format("%s:ListboxSolo", s_diplomacyWndPrefix.str());
+	GameWindow* listboxSolo = TheWindowManager->winGetWindowFromId(theWindow, NAMEKEY(listboxSoloName));
 
 	if (clear)
 	{
@@ -211,24 +217,52 @@ void ShowDiplomacy( Bool immediate )
 	}
 	else
 	{
-		theLayout = TheWindowManager->winCreateLayout( "Diplomacy.wnd" );
+		//theLayout = TheWindowManager->winCreateLayout( "Diplomacy.wnd" );
+		const char* layoutName = "Diplomacy.wnd";
+		s_diplomacyWndPrefix = "Diplomacy.wnd";
+
+		if (!TheRecorder->isMultiplayer() && IsRebornCampaign())
+		{
+			layoutName = "DiplomacyGen.wnd";
+			s_diplomacyWndPrefix = "DiplomacyGen.wnd";
+		}
+
+		theLayout = TheWindowManager->winCreateLayout(layoutName);
+
+		AsciiString temp;
 		theWindow = theLayout->getFirstWindow();
 		theLayout->setUpdate(updateFunc);
 		theAnimateWindowManager = NEW AnimateWindowManager;
-		radioButtonInGameID = TheNameKeyGenerator->nameToKey("Diplomacy.wnd:RadioButtonInGame");
-		radioButtonBuddiesID = TheNameKeyGenerator->nameToKey("Diplomacy.wnd:RadioButtonBuddies");
+
+		temp.format("%s:RadioButtonInGame", s_diplomacyWndPrefix.str());
+		radioButtonInGameID = TheNameKeyGenerator->nameToKey(temp);
+
+		temp.format("%s:RadioButtonBuddies", s_diplomacyWndPrefix.str());
+		radioButtonBuddiesID = TheNameKeyGenerator->nameToKey(temp);
+
 		radioButtonInGame = TheWindowManager->winGetWindowFromId(nullptr, radioButtonInGameID);
 		radioButtonBuddies = TheWindowManager->winGetWindowFromId(nullptr, radioButtonBuddiesID);
-		winInGameID = TheNameKeyGenerator->nameToKey("Diplomacy.wnd:InGameParent");
-		winBuddiesID = TheNameKeyGenerator->nameToKey("Diplomacy.wnd:BuddiesParent");
-		winSoloID = TheNameKeyGenerator->nameToKey("Diplomacy.wnd:SoloParent");
+
+		temp.format("%s:InGameParent", s_diplomacyWndPrefix.str());
+		winInGameID = TheNameKeyGenerator->nameToKey(temp);
+
+		temp.format("%s:BuddiesParent", s_diplomacyWndPrefix.str());
+		winBuddiesID = TheNameKeyGenerator->nameToKey(temp);
+
+		temp.format("%s:SoloParent", s_diplomacyWndPrefix.str());
+		winSoloID = TheNameKeyGenerator->nameToKey(temp);
+
 		winInGame = TheWindowManager->winGetWindowFromId(nullptr, winInGameID);
 		winBuddies = TheWindowManager->winGetWindowFromId(nullptr, winBuddiesID);
 		winSolo = TheWindowManager->winGetWindowFromId(nullptr, winSoloID);
 
 		if (!TheRecorder->isMultiplayer())
 		{
-			GameWindow *listboxSolo = TheWindowManager->winGetWindowFromId(theWindow, NAMEKEY("Diplomacy.wnd:ListboxSolo"));
+			//GameWindow *listboxSolo = TheWindowManager->winGetWindowFromId(theWindow, NAMEKEY("Diplomacy.wnd:ListboxSolo"));
+			AsciiString listboxSoloName;
+			listboxSoloName.format("%s:ListboxSolo", s_diplomacyWndPrefix.str());
+			GameWindow* listboxSolo = TheWindowManager->winGetWindowFromId(theWindow, NAMEKEY(listboxSoloName));
+
 			if (listboxSolo)
 			{
 				for (BriefingList::iterator it = theBriefingList.begin(); it != theBriefingList.end(); ++it)
@@ -409,7 +443,12 @@ WindowMsgHandledType DiplomacySystem( GameWindow *window, UnsignedInt msg,
 		{
 			GameWindow *control = (GameWindow *)mData1;
 			NameKeyType controlID = (NameKeyType)control->winGetWindowId();
-			static NameKeyType buttonHideID = NAMEKEY( "Diplomacy.wnd:ButtonHide" );
+
+			//static NameKeyType buttonHideID = NAMEKEY( "Diplomacy.wnd:ButtonHide" );
+			AsciiString buttonHideName;
+			buttonHideName.format("%s:ButtonHide", s_diplomacyWndPrefix.str());
+			NameKeyType buttonHideID = NAMEKEY(buttonHideName);
+
 			if (controlID == buttonHideID)
 			{
 				HideDiplomacy( FALSE );
