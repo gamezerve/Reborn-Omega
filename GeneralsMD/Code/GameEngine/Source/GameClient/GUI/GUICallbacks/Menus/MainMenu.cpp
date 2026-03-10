@@ -1194,7 +1194,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				// we'll just use the training logo anim for now
 				TheTransitionHandler->reverse("MainMenuFactionTraining");
 			}
-/*			else if(controlID == buttonTRAININGID)
+			else if(controlID == buttonTRAININGID)
 			{
 				if(dontAllowTransitions && !campaignSelected && showLogo)
 				{
@@ -1208,7 +1208,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 
 				//showSelectiveButtons(SHOW_NONE);
 			}
-*/			else if(controlID == skirmishID)
+			else if(controlID == skirmishID)
 			{
 				if(dontAllowTransitions && !campaignSelected && showLogo)
 				{

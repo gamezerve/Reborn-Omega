@@ -5504,10 +5504,16 @@ void InGameUI::popupMessage( const AsciiString& message, Int x, Int y, Int width
 	popupMessage( message, x, y, width, m_popupMessageColor, pause, pauseMusic);
 }
 
-static Bool IsRebornCampaign() // Reborn
+static Bool IsRebornCampaign()
 {
 	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
-	return camp && camp->m_name.compare("training") == 0;
+	if (!camp)
+		return FALSE;
+
+	return camp->m_name.compare("training") == 0
+		|| camp->m_name.compare("usa_gen") == 0
+		|| camp->m_name.compare("gla_gen") == 0
+		|| camp->m_name.compare("china_gen") == 0;
 }
 //-------------------------------------------------------------------------------------------------
 /** initialize, and popup a message box to the user */
