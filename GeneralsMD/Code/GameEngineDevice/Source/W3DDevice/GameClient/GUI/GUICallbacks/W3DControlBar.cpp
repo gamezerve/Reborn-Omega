@@ -37,6 +37,7 @@
 #include "GameClient/InGameUI.h"
 #include "GameClient/Display.h"
 #include "GameClient/ControlBar.h"
+#include "GameClient/CampaignManager.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/ControlBarScheme.h"
 #include "GameClient/MapUtil.h"
@@ -898,14 +899,44 @@ void drawSkinnyBorder( Int x, Int y, Int width, Int height)
 
 
 }
+static Bool IsRebornCampaign()
+{
+	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+	if (!camp)
+		return FALSE;
 
+	return camp->m_name.compare("training") == 0
+		|| camp->m_name.compare("usa_gen") == 0
+		|| camp->m_name.compare("gla_gen") == 0
+		|| camp->m_name.compare("china_gen") == 0;
+}
 
 void W3DCommandBarHelpPopupDraw( GameWindow *window, WinInstanceData *instData )
 {
 
-	static const Image *endBar = TheMappedImageCollection->findImageByName("Helpbox-top");
-	static const Image *beginBar = TheMappedImageCollection->findImageByName("Helpbox-bottom");
-	static const Image *centerBar = TheMappedImageCollection->findImageByName("Helpbox-middle");
+	//static const Image *endBar = TheMappedImageCollection->findImageByName("Helpbox-top");
+	//static const Image *beginBar = TheMappedImageCollection->findImageByName("Helpbox-bottom");
+	//static const Image *centerBar = TheMappedImageCollection->findImageByName("Helpbox-middle");
+
+	static const Image* endBar = nullptr;
+	static const Image* beginBar = nullptr;
+	static const Image* centerBar = nullptr;
+
+	if (IsRebornCampaign())
+	{
+		endBar = TheMappedImageCollection->findImageByName("Helpbox-topGen");
+		beginBar = TheMappedImageCollection->findImageByName("Helpbox-bottomGen");
+		centerBar = TheMappedImageCollection->findImageByName("Helpbox-middleGen");
+	}
+	else
+	{
+		endBar = TheMappedImageCollection->findImageByName("Helpbox-top");
+		beginBar = TheMappedImageCollection->findImageByName("Helpbox-bottom");
+		centerBar = TheMappedImageCollection->findImageByName("Helpbox-middle");
+	}
+
+
+
 
 	ICoord2D pos, size;
 	window->winGetScreenPosition( &pos.x, &pos.y );
