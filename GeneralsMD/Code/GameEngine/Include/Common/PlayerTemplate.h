@@ -66,11 +66,21 @@ class Image;
 // ----------------------------------------------------------------------------------------------
 
 #define MAX_MP_STARTING_UNITS 10
-static Bool IsRebornCampaign() // Reborn
+
+
+static Bool IsRebornCampaign()
 {
 	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
-	return camp && camp->m_name.compare("training") == 0;
+	if (!camp)
+		return FALSE;
+
+	return camp->m_name.compare("training") == 0
+		|| camp->m_name.compare("usa_gen") == 0
+		|| camp->m_name.compare("gla_gen") == 0
+		|| camp->m_name.compare("china_gen") == 0;
 }
+
+
 // ----------------------------------------------------------------------------------------------
 class PlayerTemplate
 {
