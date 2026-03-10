@@ -457,12 +457,18 @@ void W3DCommandBarGridDraw( GameWindow *window, WinInstanceData *instData )
 	window->winSetEnabledBorderColor(0, color);
 	W3DGameWinDefaultDraw( window, instData );
 
-	TheDisplay->drawLine(pos.x, pos.y + size.y * .33, pos.x + size.x, pos.y+ size.y*.33, 1,color);
-	TheDisplay->drawLine(pos.x, pos.y + size.y * .66, pos.x + size.x, pos.y+ size.y*.66, 1,color);
-	TheDisplay->drawLine(pos.x + size.x * .33, pos.y, pos.x + size.x *.33, pos.y +size.y, 1,color);
-	TheDisplay->drawLine(pos.x + size.x  * .66, pos.y, pos.x + size.x *.66, pos.y + size.y, 1,color);
+	//TheDisplay->drawLine(pos.x, pos.y + size.y * .33, pos.x + size.x, pos.y+ size.y*.33, 1,color);
+	//TheDisplay->drawLine(pos.x, pos.y + size.y * .66, pos.x + size.x, pos.y+ size.y*.66, 1,color);
+	//TheDisplay->drawLine(pos.x + size.x * .33, pos.y, pos.x + size.x *.33, pos.y +size.y, 1,color);
+	//TheDisplay->drawLine(pos.x + size.x  * .66, pos.y, pos.x + size.x *.66, pos.y + size.y, 1,color); // Reborn: Adjusted below to fit 7 Upgrade Icons
 
+	TheDisplay->drawLine(pos.x, pos.y + size.y / 4, pos.x + size.x, pos.y + size.y / 4, 1, color);
+	TheDisplay->drawLine(pos.x, pos.y + size.y / 2, pos.x + size.x, pos.y + size.y / 2, 1, color);
+	TheDisplay->drawLine(pos.x, pos.y + (size.y * 3) / 4, pos.x + size.x, pos.y + (size.y * 3) / 4, 1, color);
 
+	TheDisplay->drawLine(pos.x + size.x / 4, pos.y, pos.x + size.x / 4, pos.y + size.y, 1, color);
+	TheDisplay->drawLine(pos.x + size.x / 2, pos.y, pos.x + size.x / 2, pos.y + size.y, 1, color);
+	TheDisplay->drawLine(pos.x + (size.x * 3) / 4, pos.y, pos.x + (size.x * 3) / 4, pos.y + size.y, 1, color);
 
 
 }
