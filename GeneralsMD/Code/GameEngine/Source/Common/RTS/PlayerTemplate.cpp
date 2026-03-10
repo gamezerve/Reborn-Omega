@@ -98,6 +98,7 @@
     { "OldFaction",               INI::parseBool,                                 nullptr, offsetof( PlayerTemplate, m_oldFaction ) },
 		{ "IntrinsicSciencePurchasePoints",				INI::parseInt,												nullptr, offsetof( PlayerTemplate, m_intrinsicSPP ) },
 		{ "ScoreScreenImage",					INI::parseAsciiString,													nullptr, offsetof( PlayerTemplate, m_scoreScreenImage ) },
+		{ "AlternativeScoreScreenImage",					INI::parseAsciiString,										nullptr, offsetof( PlayerTemplate, m_alternativeScoreScreenImage) },
 		{ "LoadScreenImage",					INI::parseAsciiString,													nullptr, offsetof( PlayerTemplate, m_loadScreenImage ) },
 		{ "LoadScreenMusic",					INI::parseAsciiString,													nullptr, offsetof( PlayerTemplate, m_loadScreenMusic ) },
 		{ "ScoreScreenMusic",					INI::parseAsciiString,													nullptr, offsetof( PlayerTemplate, m_scoreScreenMusic ) },
