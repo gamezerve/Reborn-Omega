@@ -137,11 +137,7 @@ FRAME_RIGHT_VOICE = 140,
 
 static const Int TELETYPE_UPDATE_FREQ = 2; // how many frames between teletype updates
 
-static Bool IsRebornCampaign() // Reborn
-{
-	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
-	return camp && camp->m_name.compare("training") == 0;
-}
+
 
 //-----------------------------------------------------------------------------
 // LoadScreen Class

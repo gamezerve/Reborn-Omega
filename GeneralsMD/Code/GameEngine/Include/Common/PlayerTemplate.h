@@ -54,6 +54,7 @@
 #include "Common/UnicodeString.h"
 #include "Common/NameKeyGenerator.h"
 #include "Common/STLTypedefs.h"
+#include "GameClient/CampaignManager.h"
 
 
 // ----------------------------------------------------------------------------------------------
@@ -65,7 +66,11 @@ class Image;
 // ----------------------------------------------------------------------------------------------
 
 #define MAX_MP_STARTING_UNITS 10
-
+static Bool IsRebornCampaign() // Reborn
+{
+	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+	return camp && camp->m_name.compare("training") == 0;
+}
 // ----------------------------------------------------------------------------------------------
 class PlayerTemplate
 {
@@ -101,7 +106,14 @@ public:
 	Bool isObserver() const { return m_observer; }
 	Bool isPlayableSide() const { return m_playableSide; }
 
-	AsciiString getScoreScreen () const { return m_scoreScreenImage;	}
+	AsciiString getScoreScreen() const
+	{
+		if (IsRebornCampaign() && m_alternativeScoreScreenImage.isNotEmpty())
+			return m_alternativeScoreScreenImage;
+
+		return m_scoreScreenImage;
+	}
+	AsciiString getAlternativeScoreScreenImage() const { return m_alternativeScoreScreenImage; }
 	AsciiString getLoadScreen () const { return m_loadScreenImage;	}
 	AsciiString getBeaconTemplate() const { return m_beaconTemplate; }
 
@@ -177,6 +189,7 @@ private:
 	Int								m_intrinsicSPP;
 
 	AsciiString			m_scoreScreenImage;			///< Image that will be shown on the score screen
+	AsciiString			m_alternativeScoreScreenImage;
 	AsciiString			m_loadScreenImage;
 
 	AsciiString			m_headWaterMark;				///< Image that will be the background on the observer control bar

@@ -107,19 +107,23 @@
 //-----------------------------------------------------------------------------
 static NameKeyType parentID = NAMEKEY_INVALID;
 static NameKeyType buttonOkID = NAMEKEY_INVALID;
+static NameKeyType buttonOkIDGen = NAMEKEY_INVALID;
 ///static NameKeyType buttonRehostID = NAMEKEY_INVALID;
 static NameKeyType textEntryChatID = NAMEKEY_INVALID;
 static NameKeyType buttonEmoteID = NAMEKEY_INVALID;
 static NameKeyType chatBoxBorderID = NAMEKEY_INVALID;
 static NameKeyType buttonContinueID = NAMEKEY_INVALID;
+static NameKeyType buttonContinueIDGen = NAMEKEY_INVALID;
 static NameKeyType buttonBuddiesID = NAMEKEY_INVALID;
 static NameKeyType buttonSaveReplayID = NAMEKEY_INVALID;
 static NameKeyType backdropID = NAMEKEY_INVALID;
 
 static GameWindow *parent = nullptr;
 static GameWindow *buttonOk = nullptr;
+static GameWindow *buttonOkGen = nullptr;
 //static GameWindow *buttonRehost = nullptr;
 static GameWindow *buttonContinue = nullptr;
+static GameWindow *buttonContinueGen = nullptr;
 static GameWindow *textEntryChat = nullptr;
 static GameWindow *buttonEmote = nullptr;
 static GameWindow *chatBoxBorder = nullptr;
@@ -130,6 +134,26 @@ static GameWindow *challengePortrait = nullptr;
 static GameWindow *challengeRemarks = nullptr;
 static GameWindow *challengeWinLossText = nullptr;
 static GameWindow *gadgetParent = nullptr;
+static GameWindow* userWindow = nullptr;
+static GameWindow* userWindowGen = nullptr;
+static GameWindow* lineWindow = nullptr;
+static GameWindow* lineWindowGen = nullptr;
+static GameWindow* staticTextPlayerName = nullptr;
+static GameWindow* staticTextPlayerNameGen = nullptr;
+static GameWindow* staticTextSuppliesCollected = nullptr;
+static GameWindow* staticTextSuppliesCollectedGen = nullptr;
+static GameWindow* staticTextBuildingsDestroyed = nullptr;
+static GameWindow* staticTextBuildingsDestroyedGen = nullptr;
+static GameWindow* staticTextBuildingsConstructed = nullptr;
+static GameWindow* staticTextBuildingsConstructedGen = nullptr;
+static GameWindow* staticTextUnitsBuilt = nullptr;
+static GameWindow* staticTextUnitsBuiltGen = nullptr;
+static GameWindow* staticTextUnitsLost = nullptr;
+static GameWindow* staticTextUnitsLostGen = nullptr;
+static GameWindow* staticTextBuildingsLost = nullptr;
+static GameWindow* staticTextBuildingsLostGen = nullptr;
+static GameWindow* staticTextUnitsDestroyed = nullptr;
+static GameWindow* staticTextUnitsDestroyedGen = nullptr;
 
 static Bool overidePlayerDisplayName = FALSE;
 
@@ -248,6 +272,79 @@ void ScoreScreenEnableControls(Bool enable)
 	}
 }
 
+static const char* GetScoreScreenTransitionGroup()
+{
+	if (screenType == SCORESCREEN_SINGLEPLAYER && IsRebornCampaign())
+		return "ScoreScreenShowGen";
+
+	return "ScoreScreenShow";
+}
+static void UpdateRebornScoreScreenWindows()
+{
+	if (screenType == SCORESCREEN_SINGLEPLAYER && IsRebornCampaign())
+	{
+		if (userWindow) userWindow->winHide(TRUE);
+		if (lineWindow) lineWindow->winHide(TRUE);
+		if (userWindowGen) userWindowGen->winHide(FALSE);
+		if (lineWindowGen) lineWindowGen->winHide(FALSE);
+
+		if (staticTextPlayerName) staticTextPlayerName->winHide(TRUE);
+		if (staticTextPlayerNameGen) staticTextPlayerNameGen->winHide(FALSE);
+
+		if (staticTextSuppliesCollected) staticTextSuppliesCollected->winHide(TRUE);
+		if (staticTextSuppliesCollectedGen) staticTextSuppliesCollectedGen->winHide(FALSE);
+
+		if (staticTextBuildingsDestroyed) staticTextBuildingsDestroyed->winHide(TRUE);
+		if (staticTextBuildingsDestroyedGen) staticTextBuildingsDestroyedGen->winHide(FALSE);
+
+		if (staticTextBuildingsConstructed) staticTextBuildingsConstructed->winHide(TRUE);
+		if (staticTextBuildingsConstructedGen) staticTextBuildingsConstructedGen->winHide(FALSE);
+
+		if (staticTextUnitsBuilt) staticTextUnitsBuilt->winHide(TRUE);
+		if (staticTextUnitsBuiltGen) staticTextUnitsBuiltGen->winHide(FALSE);
+
+		if (staticTextUnitsLost) staticTextUnitsLost->winHide(TRUE);
+		if (staticTextUnitsLostGen) staticTextUnitsLostGen->winHide(FALSE);
+
+		if (staticTextBuildingsLost) staticTextBuildingsLost->winHide(TRUE);
+		if (staticTextBuildingsLostGen) staticTextBuildingsLostGen->winHide(FALSE);
+
+		if (staticTextUnitsDestroyed) staticTextUnitsDestroyed->winHide(TRUE);
+		if (staticTextUnitsDestroyedGen) staticTextUnitsDestroyedGen->winHide(FALSE);
+	}
+	else
+	{
+		if (userWindow) userWindow->winHide(FALSE);
+		if (lineWindow) lineWindow->winHide(FALSE);
+		if (userWindowGen) userWindowGen->winHide(TRUE);
+		if (lineWindowGen) lineWindowGen->winHide(TRUE);
+
+		if (staticTextPlayerName) staticTextPlayerName->winHide(FALSE);
+		if (staticTextPlayerNameGen) staticTextPlayerNameGen->winHide(TRUE);
+
+		if (staticTextSuppliesCollected) staticTextSuppliesCollected->winHide(FALSE);
+		if (staticTextSuppliesCollectedGen) staticTextSuppliesCollectedGen->winHide(TRUE);
+
+		if (staticTextBuildingsDestroyed) staticTextBuildingsDestroyed->winHide(FALSE);
+		if (staticTextBuildingsDestroyedGen) staticTextBuildingsDestroyedGen->winHide(TRUE);
+
+		if (staticTextBuildingsConstructed) staticTextBuildingsConstructed->winHide(FALSE);
+		if (staticTextBuildingsConstructedGen) staticTextBuildingsConstructedGen->winHide(TRUE);
+
+		if (staticTextUnitsBuilt) staticTextUnitsBuilt->winHide(FALSE);
+		if (staticTextUnitsBuiltGen) staticTextUnitsBuiltGen->winHide(TRUE);
+
+		if (staticTextUnitsLost) staticTextUnitsLost->winHide(FALSE);
+		if (staticTextUnitsLostGen) staticTextUnitsLostGen->winHide(TRUE);
+
+		if (staticTextBuildingsLost) staticTextBuildingsLost->winHide(FALSE);
+		if (staticTextBuildingsLostGen) staticTextBuildingsLostGen->winHide(TRUE);
+
+		if (staticTextUnitsDestroyed) staticTextUnitsDestroyed->winHide(FALSE);
+		if (staticTextUnitsDestroyedGen) staticTextUnitsDestroyedGen->winHide(TRUE);
+	}
+}
+
 extern Bool DontShowMainMenu; //KRIS
 Bool g_playMusic = FALSE;
 Bool ReplayWasPressed = FALSE;
@@ -268,7 +365,11 @@ void ScoreScreenInit( WindowLayout *layout, void *userData )
 
 	//Store the keys so we have them later
 	parentID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ParentScoreScreen" );
+
 	buttonOkID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ButtonOk" );
+	buttonOkIDGen = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ButtonOkGen" );
+
+
 	textEntryChatID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:TextEntryChat" );
 	buttonEmoteID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ButtonEmote" );
 	listboxChatWindowScoreScreenID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ListboxChatWindowScoreScreen" );
@@ -278,11 +379,28 @@ void ScoreScreenInit( WindowLayout *layout, void *userData )
 	chatBoxBorderID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ChatBoxBorder" );
 	buttonBuddiesID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ButtonBuddy" );
 	buttonContinueID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ButtonContinue" );
+	buttonContinueIDGen = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ButtonContinueGen" );
 	buttonSaveReplayID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:ButtonSaveReplay" );
 	backdropID = TheNameKeyGenerator->nameToKey( "ScoreScreen.wnd:MainBackdrop" );
 
 	parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
+
+	if (parent && IsRebornCampaign())
+	{
+		const Image* img = TheMappedImageCollection->findImageByName("MainMenuRulerGen");
+		if (img)
+			parent->winSetEnabledImage(0, img);
+	}
+
+	userWindow = TheWindowManager->winGetWindowFromId(parent, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:UserWindow"));
+	userWindowGen = TheWindowManager->winGetWindowFromId(parent, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:UserWindowGen"));
+	lineWindow = TheWindowManager->winGetWindowFromId(parent, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:Line"));
+	lineWindowGen = TheWindowManager->winGetWindowFromId(parent, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:LineGen"));
+
+
+
 	buttonOk = TheWindowManager->winGetWindowFromId( parent, buttonOkID );
+	buttonOkGen = TheWindowManager->winGetWindowFromId( parent, buttonOkIDGen );
 	textEntryChat = TheWindowManager->winGetWindowFromId( parent, textEntryChatID );
 	buttonEmote = TheWindowManager->winGetWindowFromId( parent,buttonEmoteID  );
 	listboxChatWindowScoreScreen = TheWindowManager->winGetWindowFromId( parent, listboxChatWindowScoreScreenID );
@@ -292,6 +410,7 @@ void ScoreScreenInit( WindowLayout *layout, void *userData )
 //	buttonRehost = TheWindowManager->winGetWindowFromId( parent, buttonRehostID );
 	chatBoxBorder = TheWindowManager->winGetWindowFromId( parent, chatBoxBorderID );
 	buttonContinue = TheWindowManager->winGetWindowFromId( parent, buttonContinueID );
+	buttonContinueGen = TheWindowManager->winGetWindowFromId( parent, buttonContinueIDGen );
 	buttonBuddies = TheWindowManager->winGetWindowFromId( parent, buttonBuddiesID );
 	staticTextGameSaved= TheWindowManager->winGetWindowFromId( parent, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextGameSaveComplete") );
 	backdrop = TheWindowManager->winGetWindowFromId( parent, backdropID );
@@ -299,6 +418,32 @@ void ScoreScreenInit( WindowLayout *layout, void *userData )
 	challengeWinLossText = TheWindowManager->winGetWindowFromId( parent, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:ChallengeWinLossText") );
 	challengeRemarks = TheWindowManager->winGetWindowFromId( parent, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:GeneralRemarks") );
 	gadgetParent = TheWindowManager->winGetWindowFromId( parent, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:GadgetParent") );
+
+
+	staticTextPlayerName = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextPlayerName"));
+	staticTextPlayerNameGen = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextPlayerNameGen"));
+
+	staticTextSuppliesCollected = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextSuppliesCollected"));
+	staticTextSuppliesCollectedGen = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextSuppliesCollectedGen"));
+
+	staticTextBuildingsDestroyed = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextBuildingsDestroyed"));
+	staticTextBuildingsDestroyedGen = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextBuildingsDestroyedGen"));
+
+	staticTextBuildingsConstructed = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextBuildingsConstructed"));
+	staticTextBuildingsConstructedGen = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextBuildingsConstructedGen"));
+
+	staticTextUnitsBuilt = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextUnitsBuilt"));
+	staticTextUnitsBuiltGen = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextUnitsBuiltGen"));
+
+	staticTextUnitsLost = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextUnitsLost"));
+	staticTextUnitsLostGen = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextUnitsLostGen"));
+
+	staticTextBuildingsLost = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextBuildingsLost"));
+	staticTextBuildingsLostGen = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextBuildingsLostGen"));
+
+	staticTextUnitsDestroyed = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextUnitsDestroyed"));
+	staticTextUnitsDestroyedGen = TheWindowManager->winGetWindowFromId(backdrop, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextUnitsDestroyedGen"));
+
 	// get the replay filename for later (not full path)
 	LastReplayFileName = TheRecorder->getLastReplayFileName().str();
 	staticTextGameSaved->winHide(TRUE);
@@ -323,13 +468,13 @@ void ScoreScreenInit( WindowLayout *layout, void *userData )
 		if (TheRecorder->isMultiplayer())
 		{
 			initReplayMultiPlayer();
-			TheTransitionHandler->setGroup("ScoreScreenShow");
+			TheTransitionHandler->setGroup(GetScoreScreenTransitionGroup());
 		}
 		else
 		{
 			overidePlayerDisplayName = TRUE;
 			initReplaySinglePlayer();
-			TheTransitionHandler->setGroup("ScoreScreenShow");
+			TheTransitionHandler->setGroup(GetScoreScreenTransitionGroup());
 		}
 	}
 	else
@@ -337,17 +482,17 @@ void ScoreScreenInit( WindowLayout *layout, void *userData )
 		if(TheGameLogic->isInInternetGame())
 		{
 			initInternetMultiPlayer();
-			TheTransitionHandler->setGroup("ScoreScreenShow");
+			TheTransitionHandler->setGroup(GetScoreScreenTransitionGroup());
 		}
 		else if( TheGameLogic->isInLanGame())
 		{
 			initLANMultiPlayer();
-			TheTransitionHandler->setGroup("ScoreScreenShow");
+			TheTransitionHandler->setGroup(GetScoreScreenTransitionGroup());
 		}
 		else if( TheGameLogic->isInSkirmishGame())
 		{
 			initSkirmish();
-			TheTransitionHandler->setGroup("ScoreScreenShow");
+			TheTransitionHandler->setGroup(GetScoreScreenTransitionGroup());
 		}
 		else
 		{
@@ -365,7 +510,7 @@ void ScoreScreenInit( WindowLayout *layout, void *userData )
 		buttonSaveReplay->winHide(TRUE);
 	}
 
-
+	UpdateRebornScoreScreenWindows();
 	// Make Sure the layout is visible
 	layout->hide( FALSE );
 
@@ -536,7 +681,7 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 		// --------------------------------------------------------------------------------------------
 		case GBM_SELECTED:
 		{
-			TheTransitionHandler->remove("ScoreScreenShow", TRUE);
+			TheTransitionHandler->remove(GetScoreScreenTransitionGroup(), TRUE);
 			ReplayWasPressed = FALSE;
 
 			GameWindow *control = (GameWindow *)mData1;
@@ -552,7 +697,44 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 					TheGameEngine->setQuitting(TRUE);
 				}
 			}
+			if( controlID == buttonOkIDGen )
+			{
+				TheShell->pop();
+				TheCampaignManager->setCampaign(AsciiString::TheEmptyString);
+
+				if ( ReplaySimulation::getReplayCount() > 0 )
+				{
+					ReplaySimulation::stop();
+					TheGameEngine->setQuitting(TRUE);
+				}
+			}
 			else if ( controlID == buttonContinueID )
+			{
+				if( ReplaySimulation::getReplayCount() > 0 )
+				{
+					TheGameEngine->setQuitting(TRUE);
+				}
+				else
+				{
+					if(!buttonIsFinishCampaign)
+						ReplayWasPressed = TRUE;
+					if( screenType == SCORESCREEN_SINGLEPLAYER)
+					{
+						AsciiString mapName = TheCampaignManager->getCurrentMap();
+
+						if( mapName.isEmpty() )
+						{
+							ReplayWasPressed = FALSE;
+							TheShell->pop();
+						}
+						else
+						{
+							startNextCampaignGame();
+						}
+					}
+				}
+			}
+			else if ( controlID == buttonContinueIDGen )
 			{
 				if( ReplaySimulation::getReplayCount() > 0 )
 				{
@@ -792,6 +974,7 @@ void initSinglePlayer()
 	s_blankLayout->hide(FALSE);
 	s_blankLayout->bringForward();
 	s_blankLayout->getFirstWindow()->winClearStatus(WIN_STATUS_IMAGE);
+	UpdateRebornScoreScreenWindows();
 }
 
 void displayChallengeWinLoss( const Image *imageGeneral, const UnicodeString strHeader, const UnicodeString strRemarks )
@@ -836,6 +1019,7 @@ void finishSinglePlayerInit()
 		if(TheCampaignManager->getCurrentMap().isEmpty())
 		{
 			GadgetButtonSetText(buttonContinue, TheGameText->fetch("GUI:EndCampaign"));
+			GadgetButtonSetText(buttonContinueGen, TheGameText->fetch("GUI:EndCampaign"));
 			buttonIsFinishCampaign = TRUE;
 			// mark us as having completed the campaign
 			Campaign* campaign = TheCampaignManager->getCurrentCampaign();
@@ -882,8 +1066,12 @@ void finishSinglePlayerInit()
 
 				if (buttonOk)
 					buttonOk->winHide(TRUE);
+				if (buttonOkGen)
+					buttonOkGen->winHide(TRUE);
 				if (buttonContinue)
 					buttonContinue->winHide(TRUE);
+				if (buttonContinueGen)
+					buttonContinueGen->winHide(TRUE);
 				if (textEntryChat)
 					textEntryChat->winHide(TRUE);
 				if (buttonEmote)
@@ -922,6 +1110,7 @@ void finishSinglePlayerInit()
 		else
 		{
 			GadgetButtonSetText(buttonContinue, TheGameText->fetch("GUI:SaveAndContinue"));
+			GadgetButtonSetText(buttonContinueGen, TheGameText->fetch("GUI:SaveAndContinue"));
 
 			// auto save game
 			TheGameState->missionSave();
@@ -949,6 +1138,7 @@ void finishSinglePlayerInit()
 		}
 
 		GadgetButtonSetText(buttonContinue, TheGameText->fetch("GUI:Retry"));
+		GadgetButtonSetText(buttonContinueGen, TheGameText->fetch("GUI:Retry"));
 
 	}
 
@@ -964,10 +1154,54 @@ void finishSinglePlayerInit()
 	// set keyboard focus to main parent
 	TheWindowManager->winSetFocus( parent );
 
-	if (buttonOk)
-		buttonOk->winHide(FALSE);
-	if (buttonContinue)
-		buttonContinue->winHide(FALSE);
+	if (screenType == SCORESCREEN_SINGLEPLAYER)
+	{
+		if (IsRebornCampaign())
+		{
+			if (buttonOk)
+				buttonOk->winHide(TRUE);
+
+			if (buttonOkGen)
+				buttonOkGen->winHide(FALSE);
+		}
+		else
+		{
+			if (buttonOk)
+				buttonOk->winHide(FALSE);
+
+			if (buttonOkGen)
+				buttonOkGen->winHide(TRUE);
+		}
+	}
+	else
+	{
+		if (buttonOk)
+			buttonOk->winHide(FALSE);
+	}
+	if (screenType == SCORESCREEN_SINGLEPLAYER)
+	{
+		if (IsRebornCampaign())
+		{
+			if (buttonContinue)
+				buttonContinue->winHide(TRUE);
+
+			if (buttonContinueGen)
+				buttonContinueGen->winHide(FALSE);
+		}
+		else
+		{
+			if (buttonContinue)
+				buttonContinue->winHide(FALSE);
+
+			if (buttonContinueGen)
+				buttonContinueGen->winHide(TRUE);
+		}
+	}
+	else
+	{
+		if (buttonContinue)
+			buttonContinue->winHide(FALSE);
+	}
 	if (textEntryChat)
 		textEntryChat->winHide(TRUE);
 	if (buttonEmote)
@@ -986,11 +1220,11 @@ void finishSinglePlayerInit()
 		buttonBuddies->winHide(TRUE);
 //	if (buttonRehost)
 //		buttonRehost->winHide(TRUE);
-
+	UpdateRebornScoreScreenWindows();
 	// need to do this here
 	if ( TheCampaignManager->getCurrentCampaign()
 	 && !TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
-		TheTransitionHandler->setGroup("ScoreScreenShow");
+		TheTransitionHandler->setGroup(GetScoreScreenTransitionGroup());
 }
 
 /** Special Init path for making this a single player replay Score Screen */
