@@ -41,6 +41,7 @@
 #include "GameLogic/GameLogic.h"
 #include "GameNetwork/GameSpyOverlay.h"
 #include "GameNetwork/GameSpy/PeerDefsImplementation.h"
+#include "GameClient/CampaignManager.h"
 
 #include <rts/profile.h>
 
@@ -63,6 +64,18 @@ Shell::~Shell()
 {
 	deconstruct();
 
+}
+
+static Bool IsRebornCampaign()
+{
+	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+	if (!camp)
+		return FALSE;
+
+	return camp->m_name.compare("training") == 0
+		|| camp->m_name.compare("usa_gen") == 0
+		|| camp->m_name.compare("gla_gen") == 0
+		|| camp->m_name.compare("china_gen") == 0;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -889,7 +902,10 @@ WindowLayout *Shell::getOptionsLayout( Bool create )
 	// if layout has not been created, create it now
 	if ((m_optionsLayout == nullptr) && (create == TRUE))
 	{
-		m_optionsLayout = TheWindowManager->winCreateLayout( "Menus/OptionsMenu.wnd" );
+		//m_optionsLayout = TheWindowManager->winCreateLayout( "Menus/OptionsMenu.wnd" );
+		m_optionsLayout = TheWindowManager->winCreateLayout(
+			IsRebornCampaign() ? "Menus/OptionsMenuGen.wnd" : "Menus/OptionsMenu.wnd"
+		);
 
 		// sanity
 		DEBUG_ASSERTCRASH( m_optionsLayout, ("Unable to create options menu layout") );

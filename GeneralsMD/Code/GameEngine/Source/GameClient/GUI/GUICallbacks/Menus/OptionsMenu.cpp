@@ -73,6 +73,7 @@
 #include "GameLogic/ScriptEngine.h"
 #include "WWDownload/Registry.h"
 #include "GameClient/MessageBox.h"
+#include "GameClient/CampaignManager.h"
 
 #include "ww3d.h"
 
@@ -216,6 +217,36 @@ static Bool ignoreSelected = FALSE;
 WindowLayout *OptionsLayout = nullptr;
 
 static OptionPreferences *pref = nullptr;
+
+static Bool IsRebornCampaign()
+{
+	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+	if (!camp)
+		return FALSE;
+
+	return camp->m_name.compare("training") == 0
+		|| camp->m_name.compare("usa_gen") == 0
+		|| camp->m_name.compare("gla_gen") == 0
+		|| camp->m_name.compare("china_gen") == 0;
+}
+
+static const char* GetOptionsMenuLayoutPath()
+{
+	return IsRebornCampaign() ? "Menus/OptionsMenuGen.wnd" : "Menus/OptionsMenu.wnd";
+}
+
+static const char* GetOptionsMenuWindowName()
+{
+	return IsRebornCampaign() ? "OptionsMenuGen.wnd" : "OptionsMenu.wnd";
+}
+
+static NameKeyType GetOptionsMenuChildKey(const char* childName)
+{
+	AsciiString fullName;
+	fullName.format("%s:%s", GetOptionsMenuWindowName(), childName);
+	return TheNameKeyGenerator->nameToKey(fullName);
+}
+
 
 static void setDefaults()
 {
@@ -884,7 +915,8 @@ static void cancelAdvancedOptions()
 // TheSuperHackers @tweak Now prints additional version information in the version label.
 static void initLabelVersion()
 {
-	NameKeyType versionID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:LabelVersion" );
+	//NameKeyType versionID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:LabelVersion" );
+	NameKeyType versionID = GetOptionsMenuChildKey("LabelVersion");
 	GameWindow *labelVersion = TheWindowManager->winGetWindowFromId( nullptr, versionID );
 
 	if (labelVersion)
@@ -917,40 +949,84 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 
 	SignalUIInteraction(SHELL_SCRIPT_HOOK_OPTIONS_OPENED);
 
-	comboBoxLANIPID				 = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ComboBoxIP" );
+	comboBoxLANIPID = GetOptionsMenuChildKey("ComboBoxIP");
+	comboBoxOnlineIPID = GetOptionsMenuChildKey("ComboBoxOnlineIP");
+	checkAlternateMouseID = GetOptionsMenuChildKey("CheckAlternateMouse");
+	checkRetaliationID = GetOptionsMenuChildKey("Retaliation");
+	checkDoubleClickAttackMoveID = GetOptionsMenuChildKey("CheckDoubleClickAttackMove");
+	sliderScrollSpeedID = GetOptionsMenuChildKey("SliderScrollSpeed");
+	comboBoxAntiAliasingID = GetOptionsMenuChildKey("ComboBoxAntiAliasing");
+	comboBoxResolutionID = GetOptionsMenuChildKey("ComboBoxResolution");
+	comboBoxDetailID = GetOptionsMenuChildKey("ComboBoxDetail");
+
+	checkLanguageFilterID = GetOptionsMenuChildKey("CheckLanguageFilter");
+	checkSendDelayID = GetOptionsMenuChildKey("CheckSendDelay");
+	buttonFirewallRefreshID = GetOptionsMenuChildKey("ButtonFirewallRefresh");
+	checkDrawAnchorID = GetOptionsMenuChildKey("CheckBoxDrawAnchor");
+	checkMoveAnchorID = GetOptionsMenuChildKey("CheckBoxMoveAnchor");
+
+	checkSaveCameraID = GetOptionsMenuChildKey("CheckBoxSaveCamera");
+	checkUseCameraID = GetOptionsMenuChildKey("CheckBoxUseCamera");
+
+	sliderMusicVolumeID = GetOptionsMenuChildKey("SliderMusicVolume");
+	sliderSFXVolumeID = GetOptionsMenuChildKey("SliderSFXVolume");
+	sliderVoiceVolumeID = GetOptionsMenuChildKey("SliderVoiceVolume");
+	sliderGammaID = GetOptionsMenuChildKey("SliderGamma");
+
+	WinAdvancedDisplayID = GetOptionsMenuChildKey("WinAdvancedDisplayOptions");
+	ButtonAdvancedAcceptID = GetOptionsMenuChildKey("ButtonAdvanceAccept");
+	ButtonAdvancedCancelID = GetOptionsMenuChildKey("ButtonAdvanceBack");
+
+	sliderTextureResolutionID = GetOptionsMenuChildKey("LowResSlider");
+
+	check3DShadowsID = GetOptionsMenuChildKey("Check3DShadows");
+	check2DShadowsID = GetOptionsMenuChildKey("Check2DShadows");
+	checkCloudShadowsID = GetOptionsMenuChildKey("CheckCloudShadows");
+	checkGroundLightingID = GetOptionsMenuChildKey("CheckGroundLighting");
+	checkSmoothWaterID = GetOptionsMenuChildKey("CheckSmoothWater");
+	checkExtraAnimationsID = GetOptionsMenuChildKey("CheckExtraAnimations");
+	checkNoDynamicLodID = GetOptionsMenuChildKey("CheckNoDynamicLOD");
+	checkHeatEffectsID = GetOptionsMenuChildKey("CheckHeatEffects");
+	checkUnlockFpsID = GetOptionsMenuChildKey("CheckUnlockFPS");
+	checkBuildingOcclusionID = GetOptionsMenuChildKey("CheckBehindBuilding");
+	checkPropsID = GetOptionsMenuChildKey("CheckShowProps");
+
+	sliderParticleCapID = GetOptionsMenuChildKey("ParticleCapSlider");
+
+	//comboBoxLANIPID				 = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ComboBoxIP" );
 	comboBoxLANIP					 = TheWindowManager->winGetWindowFromId( nullptr,  comboBoxLANIPID);
-	comboBoxOnlineIPID		 = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ComboBoxOnlineIP" );
+	//comboBoxOnlineIPID		 = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ComboBoxOnlineIP" );
 	comboBoxOnlineIP			 = TheWindowManager->winGetWindowFromId( nullptr,  comboBoxOnlineIPID);
-	checkAlternateMouseID  = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckAlternateMouse" );
+	//checkAlternateMouseID  = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckAlternateMouse" );
 	checkAlternateMouse	   = TheWindowManager->winGetWindowFromId( nullptr, checkAlternateMouseID);
-	checkRetaliationID		 = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:Retaliation" );
+	//checkRetaliationID		 = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:Retaliation" );
 	checkRetaliation	     = TheWindowManager->winGetWindowFromId( nullptr, checkRetaliationID);
-	checkDoubleClickAttackMoveID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckDoubleClickAttackMove" );
+	//checkDoubleClickAttackMoveID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckDoubleClickAttackMove" );
 	checkDoubleClickAttackMove   = TheWindowManager->winGetWindowFromId( nullptr, checkDoubleClickAttackMoveID );
-	sliderScrollSpeedID	   = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:SliderScrollSpeed" );
+	//sliderScrollSpeedID	   = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:SliderScrollSpeed" );
 	sliderScrollSpeed		   = TheWindowManager->winGetWindowFromId( nullptr,  sliderScrollSpeedID);
-	comboBoxAntiAliasingID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ComboBoxAntiAliasing" );
+	//comboBoxAntiAliasingID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ComboBoxAntiAliasing" );
 	comboBoxAntiAliasing   = TheWindowManager->winGetWindowFromId( nullptr, comboBoxAntiAliasingID );
-	comboBoxResolutionID   = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ComboBoxResolution" );
+	//comboBoxResolutionID   = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ComboBoxResolution" );
 	comboBoxResolution     = TheWindowManager->winGetWindowFromId( nullptr, comboBoxResolutionID );
-	comboBoxDetailID			 = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ComboBoxDetail" );
+	//comboBoxDetailID			 = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ComboBoxDetail" );
 	comboBoxDetail		   = TheWindowManager->winGetWindowFromId( nullptr, comboBoxDetailID );
 
-	checkLanguageFilterID  = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckLanguageFilter" );
+	//checkLanguageFilterID  = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckLanguageFilter" );
 	checkLanguageFilter    = TheWindowManager->winGetWindowFromId( nullptr, checkLanguageFilterID );
-	checkSendDelayID       = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckSendDelay" );
+	//checkSendDelayID       = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckSendDelay" );
 	checkSendDelay				 = TheWindowManager->winGetWindowFromId( nullptr, checkSendDelayID);
-	buttonFirewallRefreshID	= TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonFirewallRefresh" );
+	//buttonFirewallRefreshID	= TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonFirewallRefresh" );
 	buttonFirewallRefresh		= TheWindowManager->winGetWindowFromId( nullptr, buttonFirewallRefreshID);
-	checkDrawAnchorID       = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckBoxDrawAnchor" );
+	//checkDrawAnchorID       = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckBoxDrawAnchor" );
 	checkDrawAnchor				 = TheWindowManager->winGetWindowFromId( nullptr, checkDrawAnchorID);
-	checkMoveAnchorID       = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckBoxMoveAnchor" );
+	//checkMoveAnchorID       = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckBoxMoveAnchor" );
 	checkMoveAnchor				 = TheWindowManager->winGetWindowFromId( nullptr, checkMoveAnchorID);
 
 	// Replay camera
-	checkSaveCameraID      = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckBoxSaveCamera" );
+	//checkSaveCameraID      = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckBoxSaveCamera" );
 	checkSaveCamera        = TheWindowManager->winGetWindowFromId( nullptr, checkSaveCameraID );
-	checkUseCameraID       = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckBoxUseCamera" );
+	//checkUseCameraID       = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckBoxUseCamera" );
 	checkUseCamera         = TheWindowManager->winGetWindowFromId( nullptr, checkUseCameraID );
 
 //	// Speakers and 3-D Audio
@@ -960,64 +1036,64 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 //	checkAudioHardware     = TheWindowManager->winGetWindowFromId( nullptr, checkAudioHardwareID );
 //
 	// Volume Controls
-	sliderMusicVolumeID    = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:SliderMusicVolume" );
+	//sliderMusicVolumeID    = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:SliderMusicVolume" );
 	sliderMusicVolume      = TheWindowManager->winGetWindowFromId( nullptr, sliderMusicVolumeID );
-	sliderSFXVolumeID      = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:SliderSFXVolume" );
+	//sliderSFXVolumeID      = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:SliderSFXVolume" );
 	sliderSFXVolume        = TheWindowManager->winGetWindowFromId( nullptr, sliderSFXVolumeID );
-	sliderVoiceVolumeID    = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:SliderVoiceVolume" );
+	//sliderVoiceVolumeID    = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:SliderVoiceVolume" );
 	sliderVoiceVolume      = TheWindowManager->winGetWindowFromId( nullptr, sliderVoiceVolumeID );
- 	sliderGammaID    = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:SliderGamma" );
+ 	//sliderGammaID    = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:SliderGamma" );
  	sliderGamma      = TheWindowManager->winGetWindowFromId( nullptr, sliderGammaID );
 
 //	checkBoxLowTextureDetailID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckLowTextureDetail" );
 //	checkBoxLowTextureDetail      = TheWindowManager->winGetWindowFromId( nullptr, checkBoxLowTextureDetailID );
 
-	WinAdvancedDisplayID		= TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:WinAdvancedDisplayOptions" );
+	//WinAdvancedDisplayID		= TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:WinAdvancedDisplayOptions" );
 	WinAdvancedDisplay      = TheWindowManager->winGetWindowFromId( nullptr, WinAdvancedDisplayID );
 
-	ButtonAdvancedAcceptID		= TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonAdvanceAccept" );
+	//ButtonAdvancedAcceptID		= TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonAdvanceAccept" );
 	ButtonAdvancedAccept      = TheWindowManager->winGetWindowFromId( nullptr, ButtonAdvancedAcceptID );
 
-	ButtonAdvancedCancelID		= TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonAdvanceBack" );
+	//ButtonAdvancedCancelID		= TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonAdvanceBack" );
 	ButtonAdvancedCancel      = TheWindowManager->winGetWindowFromId( nullptr, ButtonAdvancedCancelID );
 
-	sliderTextureResolutionID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:LowResSlider" );
+	//sliderTextureResolutionID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:LowResSlider" );
 	sliderTextureResolution = TheWindowManager->winGetWindowFromId( nullptr, sliderTextureResolutionID );
 
-	check3DShadowsID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:Check3DShadows" );
+	//check3DShadowsID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:Check3DShadows" );
 	check3DShadows   = TheWindowManager->winGetWindowFromId( nullptr, check3DShadowsID);
 
-	check2DShadowsID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:Check2DShadows" );
+	//check2DShadowsID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:Check2DShadows" );
 	check2DShadows   = TheWindowManager->winGetWindowFromId( nullptr, check2DShadowsID);
 
-	checkCloudShadowsID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckCloudShadows" );
+	//checkCloudShadowsID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckCloudShadows" );
 	checkCloudShadows   = TheWindowManager->winGetWindowFromId( nullptr, checkCloudShadowsID);
 
-	checkGroundLightingID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckGroundLighting" );
+	//checkGroundLightingID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckGroundLighting" );
 	checkGroundLighting   = TheWindowManager->winGetWindowFromId( nullptr, checkGroundLightingID);
 
-	checkSmoothWaterID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckSmoothWater" );
+	//checkSmoothWaterID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckSmoothWater" );
 	checkSmoothWater   = TheWindowManager->winGetWindowFromId( nullptr, checkSmoothWaterID);
 
-	checkExtraAnimationsID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckExtraAnimations" );
+	//checkExtraAnimationsID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckExtraAnimations" );
 	checkExtraAnimations   = TheWindowManager->winGetWindowFromId( nullptr, checkExtraAnimationsID);
 
-	checkNoDynamicLodID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckNoDynamicLOD" );
+	//checkNoDynamicLodID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckNoDynamicLOD" );
 	checkNoDynamicLod   = TheWindowManager->winGetWindowFromId( nullptr, checkNoDynamicLodID);
 
-	checkHeatEffectsID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckHeatEffects" );
+	//checkHeatEffectsID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckHeatEffects" );
 	checkHeatEffects   = TheWindowManager->winGetWindowFromId( nullptr, checkHeatEffectsID);
 
-	checkUnlockFpsID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckUnlockFPS" );
+	//checkUnlockFpsID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckUnlockFPS" );
 	checkUnlockFps   = TheWindowManager->winGetWindowFromId( nullptr, checkUnlockFpsID);
 
-	checkBuildingOcclusionID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckBehindBuilding" );
+	//checkBuildingOcclusionID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckBehindBuilding" );
 	checkBuildingOcclusion   = TheWindowManager->winGetWindowFromId( nullptr, checkBuildingOcclusionID);
 
-	checkPropsID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckShowProps" );
+	//checkPropsID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckShowProps" );
 	checkProps   = TheWindowManager->winGetWindowFromId( nullptr, checkPropsID);
 
-	sliderParticleCapID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ParticleCapSlider" );
+	//sliderParticleCapID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ParticleCapSlider" );
   sliderParticleCap = TheWindowManager->winGetWindowFromId( nullptr, sliderParticleCapID );
 
 	WinAdvancedDisplay->winHide(TRUE);
@@ -1107,7 +1183,8 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	}
 
 	// HTTP Proxy
-	GameWindow *textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("OptionsMenu.wnd:TextEntryHTTPProxy"));
+	//GameWindow *textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("OptionsMenu.wnd:TextEntryHTTPProxy"));
+	GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("TextEntryHTTPProxy"));
 	if (textEntryHTTPProxy)
 	{
 		UnicodeString uStr;
@@ -1118,7 +1195,8 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	}
 
 	// Firewall Port Override
-	GameWindow *textEntryFirewallPortOverride = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("OptionsMenu.wnd:TextEntryFirewallPortOverride"));
+	//GameWindow *textEntryFirewallPortOverride = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("OptionsMenu.wnd:TextEntryFirewallPortOverride"));
+	GameWindow* textEntryFirewallPortOverride = TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("TextEntryFirewallPortOverride"));
 	if (textEntryFirewallPortOverride)
 	{
 			UnicodeString uStr;
@@ -1348,7 +1426,8 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	layout->hide( FALSE );
 
 	// set keyboard focus to main parent
-	NameKeyType parentID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:OptionsMenuParent" );
+	//NameKeyType parentID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:OptionsMenuParent" );
+	NameKeyType parentID = GetOptionsMenuChildKey("OptionsMenuParent");
 	GameWindow *parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
 	TheWindowManager->winSetFocus( parent );
 
@@ -1449,7 +1528,8 @@ WindowMsgHandledType OptionsMenuInput( GameWindow *window, UnsignedInt msg,
 					//
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
-						NameKeyType buttonID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonBack" );
+						//NameKeyType buttonID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonBack" );
+						NameKeyType buttonID = GetOptionsMenuChildKey("ButtonBack");
 						GameWindow *button = TheWindowManager->winGetWindowFromId( window, buttonID );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
@@ -1492,10 +1572,14 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 		{
 
 			// get ids for our children controls
-			buttonBack = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonBack" );
-			buttonDefaults = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonDefaults" );
-			buttonAccept = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonAccept" );
-			buttonKeyboardOptionsMenu = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonKeyboardOptions" );
+			//buttonBack = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonBack" );
+			//buttonDefaults = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonDefaults" );
+			//buttonAccept = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonAccept" );
+			//buttonKeyboardOptionsMenu = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonKeyboardOptions" );
+			buttonBack = GetOptionsMenuChildKey("ButtonBack");
+			buttonDefaults = GetOptionsMenuChildKey("ButtonDefaults");
+			buttonAccept = GetOptionsMenuChildKey("ButtonAccept");
+			buttonKeyboardOptionsMenu = GetOptionsMenuChildKey("ButtonKeyboardOptions");
 
 			break;
 
@@ -1613,7 +1697,8 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 			}
 			else if ( controlID == buttonKeyboardOptionsMenu )
 			{
-				TheShell->push( "Menus/KeyboardOptionsMenu.wnd" );
+				//TheShell->push( "Menus/KeyboardOptionsMenu.wnd" );
+				TheShell->push(GetOptionsMenuLayoutPath());
 			}
 			else if(controlID == checkDrawAnchorID )
       {

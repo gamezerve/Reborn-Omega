@@ -338,7 +338,11 @@ void ToggleQuitMenu()
 		WindowLayout *optLayout = TheShell->getOptionsLayout(FALSE);
 		GameWindow *optionsParent = optLayout->getFirstWindow();
 		DEBUG_ASSERTCRASH(optionsParent != nullptr, ("Not able to get the options layout parent window"));
-		GameWindow *optionsBack = TheWindowManager->winGetWindowFromId(optionsParent, TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonBack" ));
+		//GameWindow *optionsBack = TheWindowManager->winGetWindowFromId(optionsParent, TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonBack" ));
+		NameKeyType optionsBackID = TheNameKeyGenerator->nameToKey(
+			IsRebornCampaign() ? "OptionsMenuGen.wnd:ButtonBack" : "OptionsMenu.wnd:ButtonBack"
+		);
+		GameWindow* optionsBack = TheWindowManager->winGetWindowFromId(optionsParent, optionsBackID);
 		DEBUG_ASSERTCRASH(optionsBack != nullptr, ("Not able to get the back button window from the options menu"));
 		TheWindowManager->winSendSystemMsg(optLayout->getFirstWindow(), GBM_SELECTED, (WindowMsgData)optionsBack, 0);
 		return;
