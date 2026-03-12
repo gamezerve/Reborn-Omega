@@ -115,8 +115,11 @@ static NameKeyType getUpdateID = NAMEKEY_INVALID;
 static NameKeyType buttonTRAININGID = NAMEKEY_INVALID; // Re-enabled Reborn
 static NameKeyType buttonChallengeID = NAMEKEY_INVALID;
 static NameKeyType buttonUSAID = NAMEKEY_INVALID;
+static NameKeyType buttonUSAIDGen = NAMEKEY_INVALID;
 static NameKeyType buttonGLAID = NAMEKEY_INVALID;
+static NameKeyType buttonGLAIDGen = NAMEKEY_INVALID;
 static NameKeyType buttonChinaID = NAMEKEY_INVALID;
+static NameKeyType buttonChinaIDGen = NAMEKEY_INVALID;
 static NameKeyType buttonUSARecentSaveID = NAMEKEY_INVALID;
 static NameKeyType buttonUSALoadGameID = NAMEKEY_INVALID;
 static NameKeyType buttonGLARecentSaveID = NAMEKEY_INVALID;
@@ -154,8 +157,11 @@ static GameWindow *getUpdate = nullptr;
 static GameWindow *buttonTRAINING = nullptr;
 static GameWindow *buttonChallenge = nullptr;
 static GameWindow *buttonUSA = nullptr;
+static GameWindow *buttonUSAGen = nullptr;
 static GameWindow *buttonGLA = nullptr;
+static GameWindow *buttonGLAGen = nullptr;
 static GameWindow *buttonChina = nullptr;
+static GameWindow *buttonChinaGen = nullptr;
 static GameWindow *buttonUSARecentSave = nullptr;
 static GameWindow *buttonUSALoadGame = nullptr;
 static GameWindow *buttonGLARecentSave = nullptr;
@@ -469,8 +475,11 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	buttonTRAININGID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonTRAINING" ); // Re-enabled Reborn
 	buttonChallengeID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonChallenge" );
 	buttonUSAID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonUSA" );
+	buttonUSAIDGen = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonUSAGen" );
 	buttonGLAID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonGLA" );
+	buttonGLAIDGen = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonGLAGen" );
 	buttonChinaID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonChina" );
+	buttonChinaIDGen = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonChinaGen" );
 	buttonUSARecentSaveID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonUSARecentSave" );
 	buttonUSALoadGameID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonUSALoadGame" );
 	buttonGLARecentSaveID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonGLARecentSave" );
@@ -518,8 +527,11 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	buttonTRAINING = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonTRAININGID ); // Re-enabled Reborn
 	buttonChallenge = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonChallengeID );
 	buttonUSA = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonUSAID );
+	buttonUSAGen = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonUSAIDGen );
 	buttonGLA = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonGLAID );
+	buttonGLAGen = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonGLAIDGen );
 	buttonChina = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonChinaID );
+	buttonChinaGen = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonChinaIDGen);
 	buttonUSARecentSave = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonUSARecentSaveID );
 	buttonUSALoadGame = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonUSALoadGameID );
 	buttonGLARecentSave = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonGLARecentSaveID );
@@ -1124,6 +1136,24 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 //				showSide = SHOW_USA;
 
 			}
+			else if(controlID == buttonUSAIDGen)
+			{
+				if(dontAllowTransitions && !campaignSelected)
+				{
+					showLogo = TRUE;
+					showSide = SHOW_USA;
+				}
+
+				if(campaignSelected || dontAllowTransitions)
+					break;
+				//TheTransitionHandler->remove("MainMenuSinglePlayerMenu");
+
+				TheTransitionHandler->setGroup("MainMenuFactionUS");
+//				showLogo = TRUE;
+//				showFrames = 0;
+//				showSide = SHOW_USA;
+
+			}
 			else if(controlID == buttonGLAID)
 			{
 				if(dontAllowTransitions && !campaignSelected)
@@ -1140,7 +1170,38 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 //				showFrames = 0;
 //				showSide = SHOW_GLA;
 			}
+			else if(controlID == buttonGLAIDGen)
+			{
+				if(dontAllowTransitions && !campaignSelected)
+				{
+					showLogo = TRUE;
+					showSide = SHOW_GLA;
+				}
+
+				if(campaignSelected || dontAllowTransitions)
+					break;
+				//TheTransitionHandler->remove("MainMenuSinglePlayerMenu");
+				TheTransitionHandler->setGroup("MainMenuFactionGLA");
+//				showLogo = TRUE;
+//				showFrames = 0;
+//				showSide = SHOW_GLA;
+			}
 			else if(controlID == buttonChinaID)
+			{
+				if(dontAllowTransitions && !campaignSelected)
+				{
+					showLogo = TRUE;
+					showSide = SHOW_CHINA;
+				}
+				if(campaignSelected || dontAllowTransitions)
+					break;
+				//TheTransitionHandler->remove("MainMenuSinglePlayerMenu");
+				TheTransitionHandler->setGroup("MainMenuFactionChina");
+//				showLogo = TRUE;
+//				showFrames = 0;
+//				showSide = SHOW_CHINA;
+			}
+			else if(controlID == buttonChinaIDGen)
 			{
 				if(dontAllowTransitions && !campaignSelected)
 				{
@@ -1233,6 +1294,19 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 
 				//showSelectiveButtons(SHOW_NONE);
 			}
+			else if(controlID == buttonUSAIDGen)
+			{
+				if(dontAllowTransitions && !campaignSelected && showLogo)
+				{
+					showLogo = FALSE;
+					showSide = SHOW_NONE;
+				}
+				if(campaignSelected || dontAllowTransitions)
+					break;
+				TheTransitionHandler->reverse("MainMenuFactionUS");
+
+				//showSelectiveButtons(SHOW_NONE);
+			}
 			else if(controlID == buttonGLAID)
 			{
 				if(dontAllowTransitions && !campaignSelected && showLogo)
@@ -1245,7 +1319,31 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				TheTransitionHandler->reverse("MainMenuFactionGLA");
 				//showSelectiveButtons(SHOW_NONE);
 			}
+			else if(controlID == buttonGLAIDGen)
+			{
+				if(dontAllowTransitions && !campaignSelected && showLogo)
+				{
+					showLogo = FALSE;
+					showSide = SHOW_NONE;
+				}
+				if(campaignSelected || dontAllowTransitions)
+					break;
+				TheTransitionHandler->reverse("MainMenuFactionGLA");
+				//showSelectiveButtons(SHOW_NONE);
+			}
 			else if(controlID == buttonChinaID)
+			{
+				if(dontAllowTransitions && !campaignSelected && showLogo)
+				{
+					showLogo = FALSE;
+					showSide = SHOW_NONE;
+				}
+				if(campaignSelected || dontAllowTransitions)
+					break;
+				TheTransitionHandler->reverse("MainMenuFactionChina");
+				//showSelectiveButtons(SHOW_NONE);
+			}
+			else if(controlID == buttonChinaIDGen)
 			{
 				if(dontAllowTransitions && !campaignSelected && showLogo)
 				{
@@ -1562,6 +1660,34 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 
 //				setupGameStart(TheCampaignManager->getCurrentMap());
 			}
+			else if(controlID == buttonUSAIDGen)
+			{
+				if(campaignSelected || dontAllowTransitions)
+					break;
+				TheCampaignManager->setCampaign( "USA_Gen" );
+#ifdef _CAMPEA_DEMO
+				TheCampaignManager->setCampaign( "MD_USA_1_DEMO" );
+#endif
+				TheTransitionHandler->setGroup("MainMenuFactionUS");
+				TheTransitionHandler->remove("MainMenuFactionUS", TRUE);
+				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionUS"));
+				if(win)
+					win->winHide(TRUE);
+				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackUS");
+				TheTransitionHandler->setGroup("MainMenuDifficultyMenuUS");
+				campaignSelected = TRUE;
+				logoIsShown = FALSE;
+				showLogo = FALSE;
+				showSide = SHOW_USA;
+//				launchChallengeMenu = FALSE;
+//				WindowLayout *layout = nullptr;
+//				layout = TheWindowManager->winCreateLayout( "Menus/DifficultySelect.wnd" );
+//				layout->runInit();
+//				layout->hide( FALSE );
+//				layout->bringForward();
+
+//				setupGameStart(TheCampaignManager->getCurrentMap());
+			}
 			else if(controlID == buttonGLAID)
 			{
 				if(campaignSelected || dontAllowTransitions)
@@ -1590,11 +1716,67 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 
 //				setupGameStart(TheCampaignManager->getCurrentMap());
 			}
+			else if(controlID == buttonGLAIDGen)
+			{
+				if(campaignSelected || dontAllowTransitions)
+					break;
+				TheCampaignManager->setCampaign( "GLA_Gen" );
+#ifdef _CAMPEA_DEMO
+				TheCampaignManager->setCampaign( "MD_USA_2_DEMO" );
+#endif
+				TheTransitionHandler->setGroup("MainMenuFactionGLA");
+				TheTransitionHandler->remove("MainMenuFactionGLA", TRUE);
+				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionGLA"));
+				if(win)
+					win->winHide(TRUE);
+				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackGLA");
+				TheTransitionHandler->setGroup("MainMenuDifficultyMenuGLA");
+				campaignSelected = TRUE;
+				logoIsShown = FALSE;
+				showLogo = FALSE;
+				showSide = SHOW_GLA;
+//				launchChallengeMenu = FALSE;
+//				WindowLayout *layout = nullptr;
+//				layout = TheWindowManager->winCreateLayout( "Menus/DifficultySelect.wnd" );
+//				layout->runInit();
+//				layout->hide( FALSE );
+//				layout->bringForward();
+
+//				setupGameStart(TheCampaignManager->getCurrentMap());
+			}
 			else if(controlID == buttonChinaID)
 			{
 				if(campaignSelected || dontAllowTransitions)
 					break;
 				TheCampaignManager->setCampaign( "China" );
+#ifdef _CAMPEA_DEMO
+				TheCampaignManager->setCampaign( "MD_GLA_3_DEMO" );
+#endif
+				TheTransitionHandler->setGroup("MainMenuFactionChina");
+				TheTransitionHandler->remove("MainMenuFactionChina", TRUE);
+				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionChina"));
+				if(win)
+					win->winHide(TRUE);
+				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackChina");
+				TheTransitionHandler->setGroup("MainMenuDifficultyMenuChina");
+				campaignSelected = TRUE;
+				logoIsShown = FALSE;
+				showLogo = FALSE;
+				showSide = SHOW_CHINA;
+//				launchChallengeMenu = FALSE;
+//				WindowLayout *layout = nullptr;
+//				layout = TheWindowManager->winCreateLayout( "Menus/DifficultySelect.wnd" );
+//				layout->runInit();
+//				layout->hide( FALSE );
+//				layout->bringForward();
+
+//				setupGameStart(TheCampaignManager->getCurrentMap());
+			}
+			else if(controlID == buttonChinaIDGen)
+			{
+				if(campaignSelected || dontAllowTransitions)
+					break;
+				TheCampaignManager->setCampaign( "China_Gen" );
 #ifdef _CAMPEA_DEMO
 				TheCampaignManager->setCampaign( "MD_GLA_3_DEMO" );
 #endif
