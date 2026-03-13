@@ -60,6 +60,45 @@
 #include "GameLogic/GameLogic.h"
 #include "GameClient/GameWindowTransitions.h"
 
+static Bool IsRebornCampaign()
+{
+	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+	if (!camp)
+		return FALSE;
+
+	return camp->m_name.compare("training") == 0
+		|| camp->m_name.compare("usa_gen") == 0
+		|| camp->m_name.compare("gla_gen") == 0
+		|| camp->m_name.compare("china_gen") == 0;
+}
+
+static const char* GetPopupSaveLoadWndName()
+{
+	return IsRebornCampaign() ? "PopupSaveLoadGen.wnd" : "PopupSaveLoad.wnd";
+}
+
+static const char* GetSaveLoadWndName()
+{
+	return IsRebornCampaign() ? "SaveLoadGen.wnd" : "SaveLoad.wnd";
+}
+
+static NameKeyType MakeWndKey(const char* wndName, const char* controlName)
+{
+	AsciiString s;
+	s.format("%s:%s", wndName, controlName);
+	return TheNameKeyGenerator->nameToKey(s.str());
+}
+
+static NameKeyType GetPopupSaveLoadKey(const char* controlName)
+{
+	return MakeWndKey(GetPopupSaveLoadWndName(), controlName);
+}
+
+static NameKeyType GetSaveLoadKey(const char* controlName)
+{
+	return MakeWndKey(GetSaveLoadWndName(), controlName);
+}
+
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 static NameKeyType buttonBackKey					= NAMEKEY_INVALID;
 static NameKeyType buttonSaveKey					= NAMEKEY_INVALID;
@@ -137,39 +176,79 @@ void SaveLoadMenuInit( WindowLayout *layout, void *userData )
 		currentLayoutType = *((SaveLoadLayoutType *)userData);
 
   // get ids for our children controls
-	buttonBackKey					 = NAMEKEY( "PopupSaveLoad.wnd:ButtonBack" );
-	buttonSaveKey					 = NAMEKEY( "PopupSaveLoad.wnd:ButtonSave" );
-	buttonLoadKey					 = NAMEKEY( "PopupSaveLoad.wnd:ButtonLoad" );
-	buttonDeleteKey        = NAMEKEY( "PopupSaveLoad.wnd:ButtonDelete" );
-	listboxGamesKey				 = NAMEKEY( "PopupSaveLoad.wnd:ListboxGames" );
-	buttonOverwriteCancel	 = NAMEKEY( "PopupSaveLoad.wnd:ButtonOverwriteCancel" );
-	buttonOverwriteConfirm = NAMEKEY( "PopupSaveLoad.wnd:ButtonOverwriteConfirm" );
-	buttonLoadCancel			 = NAMEKEY( "PopupSaveLoad.wnd:ButtonLoadCancel" );
-	buttonLoadConfirm      = NAMEKEY( "PopupSaveLoad.wnd:ButtonLoadConfirm" );
-	buttonSaveDescCancel   = NAMEKEY( "PopupSaveLoad.wnd:ButtonSaveDescCancel" );
-	buttonSaveDescConfirm  = NAMEKEY( "PopupSaveLoad.wnd:ButtonSaveDescConfirm" );
-	buttonDeleteConfirm		 = NAMEKEY( "PopupSaveLoad.wnd:ButtonDeleteConfirm" );
-	buttonDeleteCancel		 = NAMEKEY( "PopupSaveLoad.wnd:ButtonDeleteCancel" );
+	//buttonBackKey					 = NAMEKEY( "PopupSaveLoad.wnd:ButtonBack" );
+	//buttonSaveKey					 = NAMEKEY( "PopupSaveLoad.wnd:ButtonSave" );
+	//buttonLoadKey					 = NAMEKEY( "PopupSaveLoad.wnd:ButtonLoad" );
+	//buttonDeleteKey        = NAMEKEY( "PopupSaveLoad.wnd:ButtonDelete" );
+	//listboxGamesKey				 = NAMEKEY( "PopupSaveLoad.wnd:ListboxGames" );
+	//buttonOverwriteCancel	 = NAMEKEY( "PopupSaveLoad.wnd:ButtonOverwriteCancel" );
+	//buttonOverwriteConfirm = NAMEKEY( "PopupSaveLoad.wnd:ButtonOverwriteConfirm" );
+	//buttonLoadCancel			 = NAMEKEY( "PopupSaveLoad.wnd:ButtonLoadCancel" );
+	//buttonLoadConfirm      = NAMEKEY( "PopupSaveLoad.wnd:ButtonLoadConfirm" );
+	//buttonSaveDescCancel   = NAMEKEY( "PopupSaveLoad.wnd:ButtonSaveDescCancel" );
+	//buttonSaveDescConfirm  = NAMEKEY( "PopupSaveLoad.wnd:ButtonSaveDescConfirm" );
+	//buttonDeleteConfirm		 = NAMEKEY( "PopupSaveLoad.wnd:ButtonDeleteConfirm" );
+	//buttonDeleteCancel		 = NAMEKEY( "PopupSaveLoad.wnd:ButtonDeleteCancel" );
+	buttonBackKey = GetPopupSaveLoadKey("ButtonBack");
+	buttonSaveKey = GetPopupSaveLoadKey("ButtonSave");
+	buttonLoadKey = GetPopupSaveLoadKey("ButtonLoad");
+	buttonDeleteKey = GetPopupSaveLoadKey("ButtonDelete");
+	listboxGamesKey = GetPopupSaveLoadKey("ListboxGames");
+	buttonOverwriteCancel = GetPopupSaveLoadKey("ButtonOverwriteCancel");
+	buttonOverwriteConfirm = GetPopupSaveLoadKey("ButtonOverwriteConfirm");
+	buttonLoadCancel = GetPopupSaveLoadKey("ButtonLoadCancel");
+	buttonLoadConfirm = GetPopupSaveLoadKey("ButtonLoadConfirm");
+	buttonSaveDescCancel = GetPopupSaveLoadKey("ButtonSaveDescCancel");
+	buttonSaveDescConfirm = GetPopupSaveLoadKey("ButtonSaveDescConfirm");
+	buttonDeleteConfirm = GetPopupSaveLoadKey("ButtonDeleteConfirm");
+	buttonDeleteCancel = GetPopupSaveLoadKey("ButtonDeleteCancel");
 
 	//set keyboard focus to main parent and set modal
-	NameKeyType parentID = TheNameKeyGenerator->nameToKey("PopupSaveLoad.wnd:SaveLoadMenu");
+	//NameKeyType parentID = TheNameKeyGenerator->nameToKey("PopupSaveLoad.wnd:SaveLoadMenu");
+	NameKeyType parentID = GetPopupSaveLoadKey("SaveLoadMenu");
+
 	parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
 	TheWindowManager->winSetFocus( parent );
 	TheWindowManager->winSetModal( parent );
 
 	// enable the menu action buttons
-	buttonFrame = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "PopupSaveLoad.wnd:MenuButtonFrame" ) );
-	buttonFrame->winEnable( TRUE );
+	//buttonFrame = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "PopupSaveLoad.wnd:MenuButtonFrame" ) );
+	//buttonFrame->winEnable( TRUE );
+	buttonFrame = TheWindowManager->winGetWindowFromId(parent, GetPopupSaveLoadKey("MenuButtonFrame"));
+	DEBUG_ASSERTCRASH(buttonFrame != nullptr, ("SaveLoadMenuInit: MenuButtonFrame not found"));
+	buttonFrame->winEnable(TRUE);
 
 	// get confirmation windows and hide
-	overwriteConfirm = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "PopupSaveLoad.wnd:OverwriteConfirmParent" ) );
-	overwriteConfirm->winHide( TRUE );
-	loadConfirm = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "PopupSaveLoad.wnd:LoadConfirmParent" ) );
-	loadConfirm->winHide( TRUE );
-	saveDesc = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "PopupSaveLoad.wnd:SaveDescParent" ) );
-	saveDesc->winHide( TRUE );
-	deleteConfirm = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "PopupSaveLoad.wnd:DeleteConfirmParent" ) );
-	editDesc = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "PopupSaveLoad.wnd:EntryDesc" ) );
+	//overwriteConfirm = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "PopupSaveLoad.wnd:OverwriteConfirmParent" ) );
+	//overwriteConfirm->winHide( TRUE );
+	//loadConfirm = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "PopupSaveLoad.wnd:LoadConfirmParent" ) );
+	//loadConfirm->winHide( TRUE );
+	//saveDesc = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "PopupSaveLoad.wnd:SaveDescParent" ) );
+	//saveDesc->winHide( TRUE );
+	//deleteConfirm = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "PopupSaveLoad.wnd:DeleteConfirmParent" ) );
+	//editDesc = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "PopupSaveLoad.wnd:EntryDesc" ) );
+	overwriteConfirm = TheWindowManager->winGetWindowFromId(parent, GetPopupSaveLoadKey("OverwriteConfirmParent"));
+	DEBUG_ASSERTCRASH(overwriteConfirm != nullptr, ("SaveLoadMenuInit: OverwriteConfirmParent not found"));
+	overwriteConfirm->winHide(TRUE);
+
+	loadConfirm = TheWindowManager->winGetWindowFromId(parent, GetPopupSaveLoadKey("LoadConfirmParent"));
+	DEBUG_ASSERTCRASH(loadConfirm != nullptr, ("SaveLoadMenuInit: LoadConfirmParent not found"));
+	loadConfirm->winHide(TRUE);
+
+	saveDesc = TheWindowManager->winGetWindowFromId(parent, GetPopupSaveLoadKey("SaveDescParent"));
+	DEBUG_ASSERTCRASH(saveDesc != nullptr, ("SaveLoadMenuInit: SaveDescParent not found"));
+	saveDesc->winHide(TRUE);
+
+	deleteConfirm = TheWindowManager->winGetWindowFromId(parent, GetPopupSaveLoadKey("DeleteConfirmParent"));
+	DEBUG_ASSERTCRASH(deleteConfirm != nullptr, ("SaveLoadMenuInit: DeleteConfirmParent not found"));
+
+	editDesc = TheWindowManager->winGetWindowFromId(parent, GetPopupSaveLoadKey("EntryDesc"));
+	DEBUG_ASSERTCRASH(editDesc != nullptr, ("SaveLoadMenuInit: EntryDesc not found"));
+
+
+
+
+
 	// get the listbox that will have the save games in it
 	listboxGames = TheWindowManager->winGetWindowFromId( nullptr, listboxGamesKey );
 	DEBUG_ASSERTCRASH( listboxGames != nullptr, ("SaveLoadMenuInit - Unable to find games listbox") );
@@ -199,40 +278,81 @@ void SaveLoadMenuFullScreenInit( WindowLayout *layout, void *userData )
 		currentLayoutType = *((SaveLoadLayoutType *)userData);
 
   // get ids for our children controls
-	buttonBackKey					 = NAMEKEY( "SaveLoad.wnd:ButtonBack" );
-	buttonSaveKey					 = NAMEKEY( "SaveLoad.wnd:ButtonSave" );
-	buttonLoadKey					 = NAMEKEY( "SaveLoad.wnd:ButtonLoad" );
-	buttonDeleteKey        = NAMEKEY( "SaveLoad.wnd:ButtonDelete" );
-	listboxGamesKey				 = NAMEKEY( "SaveLoad.wnd:ListboxGames" );
-	buttonOverwriteCancel	 = NAMEKEY( "SaveLoad.wnd:ButtonOverwriteCancel" );
-	buttonOverwriteConfirm = NAMEKEY( "SaveLoad.wnd:ButtonOverwriteConfirm" );
-	buttonLoadCancel			 = NAMEKEY( "SaveLoad.wnd:ButtonLoadCancel" );
-	buttonLoadConfirm      = NAMEKEY( "SaveLoad.wnd:ButtonLoadConfirm" );
-	buttonSaveDescCancel   = NAMEKEY( "SaveLoad.wnd:ButtonSaveDescCancel" );
-	buttonSaveDescConfirm  = NAMEKEY( "SaveLoad.wnd:ButtonSaveDescConfirm" );
-	buttonDeleteConfirm		 = NAMEKEY( "SaveLoad.wnd:ButtonDeleteConfirm" );
-	buttonDeleteCancel		 = NAMEKEY( "SaveLoad.wnd:ButtonDeleteCancel" );
+	//buttonBackKey					 = NAMEKEY( "SaveLoad.wnd:ButtonBack" );
+	//buttonSaveKey					 = NAMEKEY( "SaveLoad.wnd:ButtonSave" );
+	//buttonLoadKey					 = NAMEKEY( "SaveLoad.wnd:ButtonLoad" );
+	//buttonDeleteKey        = NAMEKEY( "SaveLoad.wnd:ButtonDelete" );
+	//listboxGamesKey				 = NAMEKEY( "SaveLoad.wnd:ListboxGames" );
+	//buttonOverwriteCancel	 = NAMEKEY( "SaveLoad.wnd:ButtonOverwriteCancel" );
+	//buttonOverwriteConfirm = NAMEKEY( "SaveLoad.wnd:ButtonOverwriteConfirm" );
+	//buttonLoadCancel			 = NAMEKEY( "SaveLoad.wnd:ButtonLoadCancel" );
+	//buttonLoadConfirm      = NAMEKEY( "SaveLoad.wnd:ButtonLoadConfirm" );
+	//buttonSaveDescCancel   = NAMEKEY( "SaveLoad.wnd:ButtonSaveDescCancel" );
+	//buttonSaveDescConfirm  = NAMEKEY( "SaveLoad.wnd:ButtonSaveDescConfirm" );
+	//buttonDeleteConfirm		 = NAMEKEY( "SaveLoad.wnd:ButtonDeleteConfirm" );
+	//buttonDeleteCancel		 = NAMEKEY( "SaveLoad.wnd:ButtonDeleteCancel" );
+	buttonBackKey = GetSaveLoadKey("ButtonBack");
+	buttonSaveKey = GetSaveLoadKey("ButtonSave");
+	buttonLoadKey = GetSaveLoadKey("ButtonLoad");
+	buttonDeleteKey = GetSaveLoadKey("ButtonDelete");
+	listboxGamesKey = GetSaveLoadKey("ListboxGames");
+	buttonOverwriteCancel = GetSaveLoadKey("ButtonOverwriteCancel");
+	buttonOverwriteConfirm = GetSaveLoadKey("ButtonOverwriteConfirm");
+	buttonLoadCancel = GetSaveLoadKey("ButtonLoadCancel");
+	buttonLoadConfirm = GetSaveLoadKey("ButtonLoadConfirm");
+	buttonSaveDescCancel = GetSaveLoadKey("ButtonSaveDescCancel");
+	buttonSaveDescConfirm = GetSaveLoadKey("ButtonSaveDescConfirm");
+	buttonDeleteConfirm = GetSaveLoadKey("ButtonDeleteConfirm");
+	buttonDeleteCancel = GetSaveLoadKey("ButtonDeleteCancel");
+
+
 
 	//set keyboard focus to main parent and set modal
-	NameKeyType parentID = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:SaveLoadMenu");
+	//NameKeyType parentID = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:SaveLoadMenu");
+	NameKeyType parentID = GetSaveLoadKey("SaveLoadMenu");
+
 	parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
 	TheWindowManager->winSetFocus( parent );
 //	TheWindowManager->winSetModal( parent );
 
 	// enable the menu action buttons
-	buttonFrame = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:MenuButtonFrame" ) );
-	buttonFrame->winEnable( TRUE );
+	//buttonFrame = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:MenuButtonFrame" ) );
+	//buttonFrame->winEnable( TRUE );
+	buttonFrame = TheWindowManager->winGetWindowFromId(parent, GetSaveLoadKey("MenuButtonFrame"));
+	DEBUG_ASSERTCRASH(buttonFrame != nullptr, ("SaveLoadMenuFullScreenInit: MenuButtonFrame not found"));
+	buttonFrame->winEnable(TRUE);
 
 	// get confirmation windows and hide
-	overwriteConfirm = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:OverwriteConfirmParent" ) );
-	overwriteConfirm->winHide( TRUE );
-	loadConfirm = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:LoadConfirmParent" ) );
-	loadConfirm->winHide( TRUE );
-	saveDesc = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:SaveDescParent" ) );
-	saveDesc->winHide( TRUE );
+	//overwriteConfirm = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:OverwriteConfirmParent" ) );
+	//overwriteConfirm->winHide( TRUE );
+	//loadConfirm = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:LoadConfirmParent" ) );
+	//loadConfirm->winHide( TRUE );
+	//saveDesc = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:SaveDescParent" ) );
+	//saveDesc->winHide( TRUE );
 
-	editDesc = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:EntryDesc" ) );
-	deleteConfirm = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:DeleteConfirmParent" ) );
+	//editDesc = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:EntryDesc" ) );
+	//deleteConfirm = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:DeleteConfirmParent" ) );
+
+	overwriteConfirm = TheWindowManager->winGetWindowFromId(parent, GetSaveLoadKey("OverwriteConfirmParent"));
+	DEBUG_ASSERTCRASH(overwriteConfirm != nullptr, ("SaveLoadMenuFullScreenInit: OverwriteConfirmParent not found"));
+	overwriteConfirm->winHide(TRUE);
+
+	loadConfirm = TheWindowManager->winGetWindowFromId(parent, GetSaveLoadKey("LoadConfirmParent"));
+	DEBUG_ASSERTCRASH(loadConfirm != nullptr, ("SaveLoadMenuFullScreenInit: LoadConfirmParent not found"));
+	loadConfirm->winHide(TRUE);
+
+	saveDesc = TheWindowManager->winGetWindowFromId(parent, GetSaveLoadKey("SaveDescParent"));
+	DEBUG_ASSERTCRASH(saveDesc != nullptr, ("SaveLoadMenuFullScreenInit: SaveDescParent not found"));
+	saveDesc->winHide(TRUE);
+
+	editDesc = TheWindowManager->winGetWindowFromId(parent, GetSaveLoadKey("EntryDesc"));
+	DEBUG_ASSERTCRASH(editDesc != nullptr, ("SaveLoadMenuFullScreenInit: EntryDesc not found"));
+
+	deleteConfirm = TheWindowManager->winGetWindowFromId(parent, GetSaveLoadKey("DeleteConfirmParent"));
+	DEBUG_ASSERTCRASH(deleteConfirm != nullptr, ("SaveLoadMenuFullScreenInit: DeleteConfirmParent not found"));
+
+
+
 	// get the listbox that will have the save games in it
 	listboxGames = TheWindowManager->winGetWindowFromId( nullptr, listboxGamesKey );
 	DEBUG_ASSERTCRASH( listboxGames != nullptr, ("SaveLoadMenuInit - Unable to find games listbox") );

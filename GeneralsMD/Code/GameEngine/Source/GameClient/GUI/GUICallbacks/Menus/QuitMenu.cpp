@@ -83,6 +83,26 @@ static NameKeyType buttonReturn = NAMEKEY_INVALID;
 static NameKeyType buttonOptions = NAMEKEY_INVALID;
 static NameKeyType buttonSaveLoad = NAMEKEY_INVALID;
 
+
+static Bool IsRebornCampaign()
+{
+	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+	if (!camp)
+		return FALSE;
+
+	return camp->m_name.compare("training") == 0
+		|| camp->m_name.compare("usa_gen") == 0
+		|| camp->m_name.compare("gla_gen") == 0
+		|| camp->m_name.compare("china_gen") == 0;
+}
+
+static NameKeyType GetPopupSaveLoadBackKey()
+{
+	return TheNameKeyGenerator->nameToKey(
+		IsRebornCampaign() ? "PopupSaveLoadGen.wnd:ButtonBack" : "PopupSaveLoad.wnd:ButtonBack"
+	);
+}
+
 static void initGadgetsFullQuit(Bool useGen)
 {
 	if (useGen)
@@ -156,18 +176,6 @@ void destroyQuitMenu()
 	isVisible = FALSE;
 
 	TheInGameUI->setQuitMenuVisible(FALSE);
-}
-
-static Bool IsRebornCampaign()
-{
-	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
-	if (!camp)
-		return FALSE;
-
-	return camp->m_name.compare("training") == 0
-		|| camp->m_name.compare("usa_gen") == 0
-		|| camp->m_name.compare("gla_gen") == 0
-		|| camp->m_name.compare("china_gen") == 0;
 }
 
 /**
@@ -351,7 +359,8 @@ void ToggleQuitMenu()
 	{
 		GameWindow *saveLoadParent = saveLoadMenuLayout->getFirstWindow();
 		DEBUG_ASSERTCRASH(saveLoadParent != nullptr, ("Not able to get the save/load layout parent window"));
-		GameWindow *saveLoadBack = TheWindowManager->winGetWindowFromId(saveLoadParent, TheNameKeyGenerator->nameToKey( "PopupSaveLoad.wnd:ButtonBack" ));
+		//GameWindow *saveLoadBack = TheWindowManager->winGetWindowFromId(saveLoadParent, TheNameKeyGenerator->nameToKey( "PopupSaveLoad.wnd:ButtonBack" ));
+		GameWindow* saveLoadBack = TheWindowManager->winGetWindowFromId(saveLoadParent, GetPopupSaveLoadBackKey());
 		DEBUG_ASSERTCRASH(saveLoadBack != nullptr, ("Not able to get the back button window from the save/load menu"));
 		TheWindowManager->winSendSystemMsg(saveLoadMenuLayout->getFirstWindow(), GBM_SELECTED, (WindowMsgData)saveLoadBack, 0);
 		saveLoadMenuLayout = nullptr;
