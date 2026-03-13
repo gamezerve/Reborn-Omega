@@ -77,7 +77,10 @@ static Bool IsRebornCampaign()
 		|| camp->m_name.compare("gla_gen") == 0
 		|| camp->m_name.compare("china_gen") == 0;
 }
-
+static const char* GetPopupSaveLoadLayoutName()
+{
+	return IsRebornCampaign() ? "Menus/PopupSaveLoadGen.wnd" : "Menus/PopupSaveLoad.wnd";
+}
 //-------------------------------------------------------------------------------------------------
 void Shell::construct()
 {
@@ -863,19 +866,40 @@ void Shell::loadScheme( AsciiString name )
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-WindowLayout *Shell::getSaveLoadMenuLayout()
+//WindowLayout *Shell::getSaveLoadMenuLayout()
+//{
+//
+//	// if layout has not been created, create it now
+//	if( m_saveLoadMenuLayout == nullptr )
+//   m_saveLoadMenuLayout = TheWindowManager->winCreateLayout( "Menus/PopupSaveLoad.wnd" );
+//
+//	// sanity
+//	DEBUG_ASSERTCRASH( m_saveLoadMenuLayout, ("Unable to create save/load menu layout") );
+//
+//	// return the layout
+//	return m_saveLoadMenuLayout;
+//
+//}
+WindowLayout* Shell::getSaveLoadMenuLayout()
 {
+	const char* layoutName = GetPopupSaveLoadLayoutName();
 
-	// if layout has not been created, create it now
-	if( m_saveLoadMenuLayout == nullptr )
-   m_saveLoadMenuLayout = TheWindowManager->winCreateLayout( "Menus/PopupSaveLoad.wnd" );
+	if (m_saveLoadMenuLayout != nullptr)
+	{
+		if (m_saveLoadMenuLayout->getFilename().compareNoCase(layoutName) != 0)
+		{
+			m_saveLoadMenuLayout->destroyWindows();
+			deleteInstance(m_saveLoadMenuLayout);
+			m_saveLoadMenuLayout = nullptr;
+		}
+	}
 
-	// sanity
-	DEBUG_ASSERTCRASH( m_saveLoadMenuLayout, ("Unable to create save/load menu layout") );
+	if (m_saveLoadMenuLayout == nullptr)
+		m_saveLoadMenuLayout = TheWindowManager->winCreateLayout(layoutName);
 
-	// return the layout
+	DEBUG_ASSERTCRASH(m_saveLoadMenuLayout, ("Unable to create save/load menu layout"));
+
 	return m_saveLoadMenuLayout;
-
 }
 
 // ------------------------------------------------------------------------------------------------
