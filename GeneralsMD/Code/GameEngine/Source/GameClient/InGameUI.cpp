@@ -46,6 +46,7 @@
 #include "Common/ThingFactory.h"
 #include "Common/ThingTemplate.h"
 #include "Common/BuildAssistant.h"
+#include "Common/PlayerTemplate.h" // Reborn
 #include "Common/Recorder.h"
 #include "Common/SpecialPower.h"
 
@@ -5504,17 +5505,17 @@ void InGameUI::popupMessage( const AsciiString& message, Int x, Int y, Int width
 	popupMessage( message, x, y, width, m_popupMessageColor, pause, pauseMusic);
 }
 
-static Bool IsRebornCampaign()
-{
-	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
-	if (!camp)
-		return FALSE;
-
-	return camp->m_name.compare("training") == 0
-		|| camp->m_name.compare("usa_gen") == 0
-		|| camp->m_name.compare("gla_gen") == 0
-		|| camp->m_name.compare("china_gen") == 0;
-}
+//static Bool IsRebornCampaign()
+//{
+//	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+//	if (!camp)
+//		return FALSE;
+//
+//	return camp->m_name.compare("training") == 0
+//		|| camp->m_name.compare("usa_gen") == 0
+//		|| camp->m_name.compare("gla_gen") == 0
+//		|| camp->m_name.compare("china_gen") == 0;
+//}
 //-------------------------------------------------------------------------------------------------
 /** initialize, and popup a message box to the user */
 //-------------------------------------------------------------------------------------------------

@@ -37,6 +37,7 @@
 #include "Common/LatchRestore.h"
 #include "Common/MapObject.h"
 #include "Common/PlayerList.h"
+#include "Common/PlayerTemplate.h" // Reborn
 #include "Common/RandomValue.h"
 #include "Common/Radar.h"
 #include "Common/Team.h"
@@ -73,17 +74,17 @@ static const Int MAX_SAVE_FILE_NUMBER  =  99999999;
 #define GAME_STATE_BLOCK_STRING "CHUNK_GameState"  // block of save game data with game info data
 #define CAMPAIGN_BLOCK_STRING "CHUNK_Campaign"		 // block of game data that has campaign info
 
-static Bool IsRebornCampaign()
-{
-	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
-	if (!camp)
-		return FALSE;
-
-	return camp->m_name.compare("training") == 0
-		|| camp->m_name.compare("usa_gen") == 0
-		|| camp->m_name.compare("gla_gen") == 0
-		|| camp->m_name.compare("china_gen") == 0;
-}
+//static Bool IsRebornCampaign()
+//{
+//	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+//	if (!camp)
+//		return FALSE;
+//
+//	return camp->m_name.compare("training") == 0
+//		|| camp->m_name.compare("usa_gen") == 0
+//		|| camp->m_name.compare("gla_gen") == 0
+//		|| camp->m_name.compare("china_gen") == 0;
+//}
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------

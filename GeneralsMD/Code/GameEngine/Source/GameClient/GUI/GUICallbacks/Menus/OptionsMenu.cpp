@@ -38,6 +38,7 @@
 #include "Common/GameEngine.h"
 #include "Common/OptionPreferences.h"
 #include "Common/GameLOD.h"
+#include "Common/PlayerTemplate.h" // Reborn
 #include "Common/Recorder.h"
 #include "Common/Registry.h"
 #include "Common/version.h"
@@ -218,17 +219,17 @@ WindowLayout *OptionsLayout = nullptr;
 
 static OptionPreferences *pref = nullptr;
 
-static Bool IsRebornCampaign()
-{
-	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
-	if (!camp)
-		return FALSE;
-
-	return camp->m_name.compare("training") == 0
-		|| camp->m_name.compare("usa_gen") == 0
-		|| camp->m_name.compare("gla_gen") == 0
-		|| camp->m_name.compare("china_gen") == 0;
-}
+//static Bool IsRebornCampaign()
+//{
+//	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+//	if (!camp)
+//		return FALSE;
+//
+//	return camp->m_name.compare("training") == 0
+//		|| camp->m_name.compare("usa_gen") == 0
+//		|| camp->m_name.compare("gla_gen") == 0
+//		|| camp->m_name.compare("china_gen") == 0;
+//}
 
 static const char* GetOptionsMenuLayoutPath()
 {

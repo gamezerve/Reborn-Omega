@@ -50,6 +50,7 @@
 
 #include "Common/GameEngine.h"
 #include "Common/NameKeyGenerator.h"
+#include "Common/PlayerTemplate.h" // Reborn
 #include "GameClient/WindowLayout.h"
 #include "GameClient/CampaignManager.h"
 #include "GameClient/Gadget.h"
@@ -94,17 +95,17 @@ GameWindow *MessageBoxCancel(UnicodeString titleString,UnicodeString bodyString,
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 
-static Bool IsRebornCampaign()
-{
-	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
-	if (!camp)
-		return FALSE;
-
-	return camp->m_name.compare("training") == 0
-		|| camp->m_name.compare("usa_gen") == 0
-		|| camp->m_name.compare("gla_gen") == 0
-		|| camp->m_name.compare("china_gen") == 0;
-}
+//static Bool IsRebornCampaign()
+//{
+//	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+//	if (!camp)
+//		return FALSE;
+//
+//	return camp->m_name.compare("training") == 0
+//		|| camp->m_name.compare("usa_gen") == 0
+//		|| camp->m_name.compare("gla_gen") == 0
+//		|| camp->m_name.compare("china_gen") == 0;
+//}
 
 //-------------------------------------------------------------------------------------------------
 /** Message Box window system callback */
