@@ -314,9 +314,11 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 			// if middle button is "clicked", reset to "home" orientation
 			if (!didMove && elapsedMsec < CLICK_DURATION_MSEC)
 			{
+				
 				TheTacticalView->userSetAngleToDefault();
 				TheTacticalView->userSetPitchToDefault();
-				TheTacticalView->userSetZoomToDefault();
+				//TheTacticalView->userSetZoomToDefault();
+				TheTacticalView->userSetZoom(1.45f);
 			}
 
 			break;
