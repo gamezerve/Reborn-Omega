@@ -36,6 +36,7 @@
 #include "Common/MessageStream.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
+#include "Common/PlayerTemplate.h" // Reborn
 #include "Common/RandomValue.h"
 #include "Common/Recorder.h"
 #include "GameClient/CampaignManager.h"
@@ -84,17 +85,17 @@ static NameKeyType buttonOptions = NAMEKEY_INVALID;
 static NameKeyType buttonSaveLoad = NAMEKEY_INVALID;
 
 
-static Bool IsRebornCampaign()
-{
-	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
-	if (!camp)
-		return FALSE;
-
-	return camp->m_name.compare("training") == 0
-		|| camp->m_name.compare("usa_gen") == 0
-		|| camp->m_name.compare("gla_gen") == 0
-		|| camp->m_name.compare("china_gen") == 0;
-}
+//static Bool IsRebornCampaign()
+//{
+//	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+//	if (!camp)
+//		return FALSE;
+//
+//	return camp->m_name.compare("training") == 0
+//		|| camp->m_name.compare("usa_gen") == 0
+//		|| camp->m_name.compare("gla_gen") == 0
+//		|| camp->m_name.compare("china_gen") == 0;
+//}
 
 static NameKeyType GetPopupSaveLoadBackKey()
 {

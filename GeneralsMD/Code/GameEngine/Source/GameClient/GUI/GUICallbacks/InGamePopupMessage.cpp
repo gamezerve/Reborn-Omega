@@ -56,6 +56,7 @@
 #include "Common/NameKeyGenerator.h"
 #include "Common/version.h"
 #include "Common/MessageStream.h"
+#include "Common/PlayerTemplate.h" // Reborn
 #include "GameClient/WindowLayout.h"
 #include "GameClient/Gadget.h"
 #include "GameClient/CampaignManager.h" // Reborn
@@ -88,17 +89,17 @@ static Bool pause = FALSE;
 /** Initialize the InGamePopupMessageInit menu */
 //-------------------------------------------------------------------------------------------------
 
-static Bool IsRebornCampaign()
-{
-	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
-	if (!camp)
-		return FALSE;
-
-	return camp->m_name.compare("training") == 0
-		|| camp->m_name.compare("usa_gen") == 0
-		|| camp->m_name.compare("gla_gen") == 0
-		|| camp->m_name.compare("china_gen") == 0;
-}
+//static Bool IsRebornCampaign()
+//{
+//	const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+//	if (!camp)
+//		return FALSE;
+//
+//	return camp->m_name.compare("training") == 0
+//		|| camp->m_name.compare("usa_gen") == 0
+//		|| camp->m_name.compare("gla_gen") == 0
+//		|| camp->m_name.compare("china_gen") == 0;
+//}
 
 void InGamePopupMessageInit( WindowLayout *layout, void *userData )
 {
