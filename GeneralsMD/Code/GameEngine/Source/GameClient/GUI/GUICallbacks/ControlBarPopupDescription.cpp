@@ -247,8 +247,10 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 		return;
 
 	Player* player = ThePlayerList->getLocalPlayer();
-	UnicodeString name, cost, buildtime, descrip;
+	UnicodeString name, cost, buildtime, powertext, limittext, descrip;
 	buildtime = UnicodeString::TheEmptyString;
+	powertext = UnicodeString::TheEmptyString;
+	limittext = UnicodeString::TheEmptyString;
 
 	UnicodeString requiresFormat = UnicodeString::TheEmptyString, requiresList;
 	Bool firstRequirement = true;
@@ -256,6 +258,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	Bool fireScienceButton = false;
 	UnsignedInt costToBuild = 0;
 	Real buildTimeValue = 0.0f;
+	Int costDiffSize = 0;
 
 	if(commandButton)
 	{
@@ -422,6 +425,64 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				{
 					buildtime.format(L"Build Time: %.1f sec", buildTimeValue);
 				}
+				if (player->getEnergy() && player->getEnergy()->getEnergySupplyRatio() < 1.0f)
+				{
+					buildtime.concat(L" (Low Power)");
+				}
+				else
+				{
+					buildtime.concat(L" (Powered)");
+				}
+			}
+
+			Real energyValue = thingTemplate->getEnergyProduction();
+			Real energyBonusValue = thingTemplate->getEnergyBonus();
+
+			if (energyValue != 0.0f)
+			{
+				if (energyValue < 0.0f)
+				{
+					if (energyValue == (Int)energyValue)
+					{
+						powertext.format(L"Power Consumption: %d", (Int)(-energyValue));
+					}
+					else
+					{
+						powertext.format(L"Power Consumption: %.1f", -energyValue);
+					}
+				}
+				else
+				{
+					if (energyValue == (Int)energyValue)
+					{
+						powertext.format(L"Power Production: %d", (Int)energyValue);
+					}
+					else
+					{
+						powertext.format(L"Power Production: %.1f", energyValue);
+					}
+
+					if (energyBonusValue > 0.0f)
+					{
+						UnicodeString bonusText;
+						if (energyBonusValue == (Int)energyBonusValue)
+						{
+							bonusText.format(L" (+%d Bonus)", (Int)energyBonusValue);
+						}
+						else
+						{
+							bonusText.format(L" (+%.1f Bonus)", energyBonusValue);
+						}
+						powertext.concat(bonusText);
+					}
+				}
+			}
+
+			Int buildLimit = thingTemplate->getMaxSimultaneousOfType();
+
+			if (buildLimit > 0)
+			{
+				limittext.format(L"Build Limit: %d", buildLimit);
 			}
 
 			// ask each prerequisite to give us a list of the non satisfied prerequisites
@@ -521,6 +582,19 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 					cost.format( TheGameText->fetch("TOOLTIP:Cost"), costToBuild );
 				}
 
+				buildTimeValue = upgradeTemplate->calcTimeToBuild(player) / (Real)LOGICFRAMES_PER_SECOND;
+				if (buildTimeValue > 0.0f)
+				{
+					if (buildTimeValue == (Int)buildTimeValue)
+					{
+						buildtime.format(L"Research Time: %d sec", (Int)buildTimeValue);
+					}
+					else
+					{
+						buildtime.format(L"Research Time: %.1f sec", buildTimeValue);
+					}
+				}
+
 				if( missingScience )
 				{
 					if( !descrip.isEmpty() )
@@ -616,32 +690,54 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextCost"));
 	if(win)
 	{
-		if( costToBuild > 0 )
-		{
-			win->winHide( FALSE );
-			GadgetStaticTextSetText(win, cost);
-		}
-		else
-		{
-			win->winHide( TRUE );
-		}
-	}
-
-	win = TheWindowManager->winGetWindowFromId(
-		m_buildToolTipLayout->getFirstWindow(),
-		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextBuildTime"));
-	if (win)
-	{
-		if (costToBuild > 0 )
+		if (costToBuild > 0)
 		{
 			win->winHide(FALSE);
-			GadgetStaticTextSetText(win, buildtime);
+
+			UnicodeString costAndTime = cost;
+
+			if (!buildtime.isEmpty())
+			{
+				costAndTime.concat(L"\n");
+				costAndTime.concat(buildtime);
+			}
+
+			if (!powertext.isEmpty())
+			{
+				costAndTime.concat(L"\n");
+				costAndTime.concat(powertext);
+			}
+
+			if (!limittext.isEmpty())
+			{
+				costAndTime.concat(L"\n");
+				costAndTime.concat(limittext);
+			}
+
+			ICoord2D size, newSize;
+			DisplayString* tempDString = TheDisplayStringManager->newDisplayString();
+			win->winGetSize(&size.x, &size.y);
+			tempDString->setFont(win->winGetFont());
+			tempDString->setWordWrap(size.x - 10);
+			tempDString->setText(costAndTime);
+			tempDString->getSize(&newSize.x, &newSize.y);
+			TheDisplayStringManager->freeDisplayString(tempDString);
+			tempDString = nullptr;
+
+			costDiffSize = newSize.y - size.y;
+			if (costDiffSize < 0)
+				costDiffSize = 0;
+
+			win->winSetSize(size.x, size.y + costDiffSize);
+			GadgetStaticTextSetText(win, costAndTime);
 		}
 		else
 		{
 			win->winHide(TRUE);
 		}
 	}
+
+
 
 	win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextDescription"));
 	if(win)
@@ -652,6 +748,10 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 		ICoord2D size, newSize, pos;
 		Int diffSize;
+
+		ICoord2D descPos;
+		win->winGetPosition(&descPos.x, &descPos.y);
+		win->winSetPosition(descPos.x, descPos.y + costDiffSize);
 
 		DisplayString *tempDString = TheDisplayStringManager->newDisplayString();
 		win->winGetSize(&size.x, &size.y);
@@ -674,7 +774,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			diffSize = 64 - size.y;
 		}
 
-		parent->winSetSize(size.x, size.y + diffSize);
+		parent->winSetSize(size.x, size.y + costDiffSize + diffSize);
  		parent->winGetPosition(&pos.x, &pos.y);
 //		if(size.y + diffSize < 102)
 //		{
@@ -698,7 +798,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 		offset.x = curPos.x - basePos.x;
 		offset.y = curPos.y - basePos.y;
 
-		parent->winSetPosition(pos.x, (pos.y - diffSize) + (offset.y - lastOffset.y));
+		parent->winSetPosition(pos.x, (pos.y - costDiffSize - diffSize) + (offset.y - lastOffset.y));
 
 		lastOffset.x = offset.x;
 		lastOffset.y = offset.y;
