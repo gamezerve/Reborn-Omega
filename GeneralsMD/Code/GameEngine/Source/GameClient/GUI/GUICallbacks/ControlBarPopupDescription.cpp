@@ -72,6 +72,7 @@
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
 #include "Common/ProductionPrerequisite.h"
+#include "Common/SpecialPower.h"
 #include "Common/ThingTemplate.h"
 #include "Common/Upgrade.h"
 #include "GameClient/AnimateWindowManager.h"
@@ -247,10 +248,11 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 		return;
 
 	Player* player = ThePlayerList->getLocalPlayer();
-	UnicodeString name, cost, buildtime, powertext, limittext, descrip;
+	UnicodeString name, cost, buildtime, powertext, limittext, reloadtext, descrip;
 	buildtime = UnicodeString::TheEmptyString;
 	powertext = UnicodeString::TheEmptyString;
 	limittext = UnicodeString::TheEmptyString;
+	reloadtext = UnicodeString::TheEmptyString;
 
 	UnicodeString requiresFormat = UnicodeString::TheEmptyString, requiresList;
 	Bool firstRequirement = true;
@@ -260,10 +262,12 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	Real buildTimeValue = 0.0f;
 	Int costDiffSize = 0;
 
+
 	if(commandButton)
 	{
 		const ThingTemplate *thingTemplate = commandButton->getThingTemplate();
 		const UpgradeTemplate *upgradeTemplate = commandButton->getUpgradeTemplate();
+		const SpecialPowerTemplate* specialPowerTemplate = commandButton->getSpecialPowerTemplate();
 
 		ScienceType	st = SCIENCE_INVALID;
 		if( commandButton->getCommandType() != GUI_COMMAND_PLAYER_UPGRADE &&
@@ -400,6 +404,32 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 		}
 
+		GUICommandType commandType = commandButton->getCommandType();
+
+		if (
+			specialPowerTemplate &&
+			(
+				commandType == GUI_COMMAND_SPECIAL_POWER ||
+				commandType == GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT ||
+				commandType == GUI_COMMAND_SPECIAL_POWER_CONSTRUCT ||
+				commandType == GUI_COMMAND_SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT
+				)
+			)
+		{
+			Real reloadTimeValue = specialPowerTemplate->getReloadTime() / (Real)LOGICFRAMES_PER_SECOND;
+			if (reloadTimeValue > 0.0f)
+			{
+				if (reloadTimeValue == (Int)reloadTimeValue)
+				{
+					reloadtext.format(L"Reload Time: %d sec", (Int)reloadTimeValue);
+				}
+				else
+				{
+					reloadtext.format(L"Reload Time: %.1f sec", reloadTimeValue);
+				}
+			}
+		}
+
 		name = TheGameText->fetch(commandButton->getTextLabel().str());
 
 		if( thingTemplate && commandButton->getCommandType() != GUI_COMMAND_PURCHASE_SCIENCE )
@@ -413,6 +443,8 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			{
 				cost.format( TheGameText->fetch("TOOLTIP:Cost"), costToBuild );
 			}
+
+
 
 			buildTimeValue = thingTemplate->calcTimeToBuild(player) / (Real)LOGICFRAMES_PER_SECOND;
 			if (buildTimeValue > 0.0f)
@@ -719,27 +751,42 @@ if (buildLimit > 0)
 	win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextCost"));
 	if(win)
 	{
-		if (costToBuild > 0)
+		if (!cost.isEmpty() || !buildtime.isEmpty() || !reloadtext.isEmpty() || !powertext.isEmpty() || !limittext.isEmpty())
 		{
 			win->winHide(FALSE);
 
-			UnicodeString costAndTime = cost;
+			UnicodeString costAndTime = UnicodeString::TheEmptyString;
+
+			if (!cost.isEmpty())
+			{
+				costAndTime.concat(cost);
+			}
 
 			if (!buildtime.isEmpty())
 			{
-				costAndTime.concat(L"\n");
+				if (!costAndTime.isEmpty())
+					costAndTime.concat(L"\n");
 				costAndTime.concat(buildtime);
+			}
+
+			if (!reloadtext.isEmpty())
+			{
+				if (!costAndTime.isEmpty())
+					costAndTime.concat(L"\n");
+				costAndTime.concat(reloadtext);
 			}
 
 			if (!powertext.isEmpty())
 			{
-				costAndTime.concat(L"\n");
+				if (!costAndTime.isEmpty())
+					costAndTime.concat(L"\n");
 				costAndTime.concat(powertext);
 			}
 
 			if (!limittext.isEmpty())
 			{
-				costAndTime.concat(L"\n");
+				if (!costAndTime.isEmpty())
+					costAndTime.concat(L"\n");
 				costAndTime.concat(limittext);
 			}
 
