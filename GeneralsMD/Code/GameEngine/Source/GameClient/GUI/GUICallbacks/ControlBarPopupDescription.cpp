@@ -246,13 +246,16 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	if(!m_buildToolTipLayout)
 		return;
 
-	Player *player = ThePlayerList->getLocalPlayer();
-	UnicodeString name, cost, descrip;
+	Player* player = ThePlayerList->getLocalPlayer();
+	UnicodeString name, cost, buildtime, descrip;
+	buildtime = UnicodeString::TheEmptyString;
+
 	UnicodeString requiresFormat = UnicodeString::TheEmptyString, requiresList;
 	Bool firstRequirement = true;
-	const ProductionPrerequisite *prereq;
+	const ProductionPrerequisite* prereq;
 	Bool fireScienceButton = false;
 	UnsignedInt costToBuild = 0;
+	Real buildTimeValue = 0.0f;
 
 	if(commandButton)
 	{
@@ -406,6 +409,19 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			if( costToBuild > 0 )
 			{
 				cost.format( TheGameText->fetch("TOOLTIP:Cost"), costToBuild );
+			}
+
+			buildTimeValue = thingTemplate->calcTimeToBuild(player) / (Real)LOGICFRAMES_PER_SECOND;
+			if (buildTimeValue > 0.0f)
+			{
+				if (buildTimeValue == (Int)buildTimeValue)
+				{
+					buildtime.format(L"Build Time: %d sec", (Int)buildTimeValue);
+				}
+				else
+				{
+					buildtime.format(L"Build Time: %.1f sec", buildTimeValue);
+				}
 			}
 
 			// ask each prerequisite to give us a list of the non satisfied prerequisites
@@ -611,6 +627,22 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 		}
 	}
 
+	win = TheWindowManager->winGetWindowFromId(
+		m_buildToolTipLayout->getFirstWindow(),
+		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextBuildTime"));
+	if (win)
+	{
+		if (costToBuild > 0 )
+		{
+			win->winHide(FALSE);
+			GadgetStaticTextSetText(win, buildtime);
+		}
+		else
+		{
+			win->winHide(TRUE);
+		}
+	}
+
 	win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextDescription"));
 	if(win)
 	{
@@ -635,8 +667,11 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
  			return;
 
  		parent->winGetSize(&size.x, &size.y);
- 		if(size.y + diffSize < 102) {
-			diffSize = 102 - size.y;
+ 	//	if(size.y + diffSize < 102) {
+		//	diffSize = 102 - size.y;
+		//}
+		if (size.y + diffSize < 64) {
+			diffSize = 64 - size.y;
 		}
 
 		parent->winSetSize(size.x, size.y + diffSize);
