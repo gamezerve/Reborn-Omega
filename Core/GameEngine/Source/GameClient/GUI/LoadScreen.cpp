@@ -119,6 +119,8 @@ void positionStartSpots( GameInfo *myGame, GameWindow *buttonMapStartPositions[]
 void updateMapStartSpots( GameInfo *myGame, GameWindow *buttonMapStartPositions[], Bool onLoadScreen = FALSE );
 void positionAdditionalImages( MapMetaData *mmd, GameWindow *mapWindow, Bool force);
 
+extern AsciiString previousCampaign;
+
 enum{
 FRAME_TITLES_START = 20,
 FRAME_TELETYPE_START = 24,
@@ -136,6 +138,7 @@ FRAME_RIGHT_VOICE = 140,
 };
 
 static const Int TELETYPE_UPDATE_FREQ = 2; // how many frames between teletype updates
+
 
 
 Bool IsRebornCampaign()
@@ -1260,14 +1263,41 @@ void ShellGameLoadScreen::init( GameInfo *game )
 	static BOOL firstLoad = TRUE;
 
 
+	AsciiString wndFile;
+	AsciiString wndPrefix;
+
+	if (
+		previousCampaign.compare("training") == 0 ||
+		previousCampaign.compare("usa_gen") == 0 ||
+		previousCampaign.compare("gla_gen") == 0 ||
+		previousCampaign.compare("china_gen") == 0
+		)
+	{
+		wndFile = "Menus/ShellGameLoadScreenGen.wnd";
+		wndPrefix = "ShellGameLoadScreenGen.wnd";
+		previousCampaign = AsciiString::TheEmptyString;
+	}
+	else
+	{
+		wndFile = "Menus/ShellGameLoadScreen.wnd";
+		wndPrefix = "ShellGameLoadScreen.wnd";
+		previousCampaign = AsciiString::TheEmptyString;
+	}
+
 	// create the layout of the load screen
-	m_loadScreen = TheWindowManager->winCreateFromScript( "Menus/ShellGameLoadScreen.wnd" );
+	//m_loadScreen = TheWindowManager->winCreateFromScript( "Menus/ShellGameLoadScreen.wnd" );
+	m_loadScreen = TheWindowManager->winCreateFromScript(wndFile);
+
 	DEBUG_ASSERTCRASH(m_loadScreen, ("Can't initialize the ShellGame loadscreen"));
 	m_loadScreen->winHide(FALSE);
 	m_loadScreen->winBringToTop();
 
 	// Store the pointer to the progress bar on the loadscreen
-	m_progressBar = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "ShellGameLoadScreen.wnd:ProgressLoad" ));
+	//m_progressBar = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "ShellGameLoadScreen.wnd:ProgressLoad" ));
+	AsciiString winName;
+	winName.format("%s:ProgressLoad", wndPrefix.str());
+	m_progressBar = TheWindowManager->winGetWindowFromId(m_loadScreen, TheNameKeyGenerator->nameToKey(winName));
+
 	DEBUG_ASSERTCRASH(m_progressBar, ("Can't initialize the progressbar for the single player loadscreen"));
 	GadgetProgressBarSetProgress(m_progressBar, 0 );
 	m_progressBar->winHide(TRUE);
@@ -1277,7 +1307,10 @@ void ShellGameLoadScreen::init( GameInfo *game )
 		m_loadScreen->winSetEnabledImage(0, TheMappedImageCollection->findImageByName("TitleScreen"));
 		TheWritableGlobalData->m_breakTheMovie = FALSE;
 
-		GameWindow *win = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "ShellGameLoadScreen.wnd:StaticTextLegal" ));
+		//GameWindow *win = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "ShellGameLoadScreen.wnd:StaticTextLegal" ));
+		winName.format("%s:StaticTextLegal", wndPrefix.str());
+		GameWindow* win = TheWindowManager->winGetWindowFromId(m_loadScreen, TheNameKeyGenerator->nameToKey(winName));
+
 		if(win)
 			win->winHide(FALSE);
 		firstLoad = FALSE;

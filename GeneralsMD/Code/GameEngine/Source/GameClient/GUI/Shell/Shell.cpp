@@ -787,6 +787,7 @@ void Shell::shutdownComplete( WindowLayout *screen, Bool impendingPush )
 		// no more pending pop for you!
 		m_pendingPop = FALSE;
 
+
 	}
 
 	if(m_clearBackground)
