@@ -478,12 +478,41 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				}
 			}
 
-			Int buildLimit = thingTemplate->getMaxSimultaneousOfType();
+UnsignedInt buildLimit = thingTemplate->getMaxSimultaneousOfType();
+if (buildLimit > 0)
+{
+	Int currentCount = 0;
+	const ThingTemplate* tmpl = thingTemplate;
+	player->countObjectsByThingTemplate(1, &tmpl, false, &currentCount);
 
-			if (buildLimit > 0)
-			{
-				limittext.format(L"Build Limit: %d", buildLimit);
-			}
+	Int queuedCount = 0;
+	Int effectiveCount = currentCount;
+
+	Drawable *draw = TheInGameUI->getFirstSelectedDrawable();
+	Object *selectedObject = draw ? draw->getObject() : nullptr;
+	if (selectedObject)
+	{
+		ProductionUpdateInterface *pui = selectedObject->getProductionUpdateInterface();
+		if (pui)
+		{
+			queuedCount = pui->countUnitTypeInQueue(thingTemplate);
+		}
+
+		effectiveCount = currentCount + queuedCount;
+
+		CanMakeType makeType = TheBuildAssistant->canMakeUnit(selectedObject, thingTemplate);
+		if (makeType == CANMAKE_MAXED_OUT_FOR_PLAYER && effectiveCount < (Int)buildLimit)
+		{
+			effectiveCount = buildLimit;
+		}
+	}
+	else
+	{
+		effectiveCount = currentCount;
+	}
+
+	limittext.format(L"Build Limit: %d/%d", effectiveCount, buildLimit);
+}
 
 			// ask each prerequisite to give us a list of the non satisfied prerequisites
 			for( Int i=0; i<thingTemplate->getPrereqCount(); i++ )
