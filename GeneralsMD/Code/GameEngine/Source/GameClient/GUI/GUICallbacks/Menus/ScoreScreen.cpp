@@ -157,6 +157,8 @@ static GameWindow* staticTextUnitsDestroyedGen = nullptr;
 
 static Bool overidePlayerDisplayName = FALSE;
 
+AsciiString previousCampaign;
+
 //External declarations
 NameKeyType listboxChatWindowScoreScreenID = NAMEKEY_INVALID;
 GameWindow *listboxChatWindowScoreScreen = nullptr;
@@ -699,6 +701,11 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 			}
 			if( controlID == buttonOkIDGen )
 			{
+			
+				const Campaign* camp = TheCampaignManager->getCurrentCampaign();
+				if (camp)
+					previousCampaign = camp->m_name;
+
 				TheShell->pop();
 				TheCampaignManager->setCampaign(AsciiString::TheEmptyString);
 
