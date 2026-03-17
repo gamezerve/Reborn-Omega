@@ -87,6 +87,11 @@ PropagandaTowerBehaviorModuleData::PropagandaTowerBehaviorModuleData()
 	m_upgradedPulseFX = nullptr;
 	m_affectsSelf = FALSE;
 
+	// Reborn: The offset is needed to match the Propaganda Tower's Pulse FX, which is not centered on the tower's origin.
+	m_offset.x = 0.0f; 
+	m_offset.y = 0.0f;
+	m_offset.z = 0.0f;
+
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -105,6 +110,7 @@ PropagandaTowerBehaviorModuleData::PropagandaTowerBehaviorModuleData()
 		{ "UpgradeRequired",				INI::parseAsciiString,					nullptr, offsetof( PropagandaTowerBehaviorModuleData, m_upgradeRequired ) },
 		{ "UpgradedPulseFX",				INI::parseFXList,								nullptr, offsetof( PropagandaTowerBehaviorModuleData, m_upgradedPulseFX ) },
 		{ "AffectsSelf",						INI::parseBool,									nullptr, offsetof( PropagandaTowerBehaviorModuleData, m_affectsSelf ) },
+		{ "Offset",                 INI::parseCoord3D,              nullptr, offsetof(PropagandaTowerBehaviorModuleData, m_offset) }, // Reborn: An offset to match Propaganda Tower's Pulse FX, which is not centered on the tower's origin.
 		{ nullptr, nullptr, nullptr, 0 }
 	};
 
@@ -385,6 +391,11 @@ void PropagandaTowerBehavior::doScan()
 	Object *us = getObject();
 	ObjectTracker *newInsideList = nullptr;
 
+	Coord3D scanCenter = *us->getPosition();
+	scanCenter.x += modData->m_offset.x;
+	scanCenter.y += modData->m_offset.y;
+	scanCenter.z += modData->m_offset.z;
+
 	// The act of scanning is when we play our effect
 	Bool upgradePresent = FALSE;
 	if( m_upgradeRequired )
@@ -489,10 +500,16 @@ void PropagandaTowerBehavior::doScan()
 																};
 
 	// scan objects in our region
-	ObjectIterator *iter = ThePartitionManager->iterateObjectsInRange( us->getPosition(),
-																																		 modData->m_scanRadius,
-																																		 FROM_CENTER_2D,
-																																		 filters );
+	//ObjectIterator *iter = ThePartitionManager->iterateObjectsInRange( us->getPosition(),
+	//																																	 modData->m_scanRadius,
+	//																																	 FROM_CENTER_2D,
+	//																																	 filters );
+	ObjectIterator* iter = ThePartitionManager->iterateObjectsInRange(&scanCenter,
+		modData->m_scanRadius,
+		FROM_CENTER_2D,
+		filters);
+
+
 	MemoryPoolObjectHolder hold( iter );
 	Object *obj;
 	ObjectTracker *newEntry;
