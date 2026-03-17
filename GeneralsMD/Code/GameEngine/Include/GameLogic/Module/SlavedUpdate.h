@@ -38,6 +38,7 @@ const Int SLAVED_UPDATE_RATE = LOGICFRAMES_PER_SECOND/4; ///< This is a low prio
 #include "Common/INI.h"
 #include "GameLogic/Module/UpdateModule.h"
 class DamageInfo;
+class Player;
 enum ModelConditionFlagType CPP_11(: Int);
 
 //-------------------------------------------------------------------------------------------------
@@ -159,9 +160,10 @@ public:
 	virtual void onSlaverDie( const DamageInfo *info ) override;
 	virtual void onSlaverDamage( const DamageInfo *info ) override;
 	virtual void onSlaverSold() override;
+	virtual void onSlaverCaptured(Player* oldOwner, Player* newOwner) override; // Reborn Extention only
 	virtual void onObjectCreated() override;
 	virtual Bool isSelfTasking() const override { return FALSE; };
-	virtual void onSoldComplete();
+	virtual void onSoldComplete() override;
 
 	void doScoutLogic( const Coord3D *mastersDestination );
 	void doAttackLogic( const Object *target );

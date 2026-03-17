@@ -37,6 +37,7 @@
 #include "Common/Xfer.h"
 #include "Common/Team.h"
 #include "Common/MiscAudio.h"
+#include "Common/Player.h"
 #include "Common/Upgrade.h"
 #include "GameClient/Drawable.h"
 #include "GameClient/ParticleSys.h"
@@ -134,6 +135,22 @@ void SlavedUpdate::onSoldComplete()
 		return;
 
 	producer->removeUpgrade(upgrade);
+}
+
+
+
+void SlavedUpdate::onSlaverCaptured(Player* oldOwner, Player* newOwner)
+{
+	const SlavedUpdateModuleData* data = getSlavedUpdateModuleData();
+	Object* me = getObject();
+
+	if (!me || !newOwner)
+		return;
+
+	if (!data->m_isRebornExtention)
+		return;
+
+	me->defect(newOwner->getDefaultTeam(), 0);
 }
 
 //-------------------------------------------------------------------------------------------------

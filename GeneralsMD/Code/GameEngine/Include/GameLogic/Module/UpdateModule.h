@@ -243,6 +243,8 @@ typedef UpdateModule* UpdateModulePtr;
 typedef UpdateModuleInterface* UpdateModulePtr;
 #endif
 
+class Player;
+
 //-------------------------------------------------------------------------------------------------
 class SlavedUpdateInterface
 {
@@ -252,7 +254,8 @@ public:
 	virtual void onSlaverDie( const DamageInfo *info ) = 0;
 	virtual void onSlaverDamage( const DamageInfo *info ) = 0;
 	virtual void onSlaverSold() = 0; // Reborn Extention only
-	virtual void onSoldComplete() {}
+	virtual void onSoldComplete() {} // Reborn Extention only
+	virtual void onSlaverCaptured(Player* oldOwner, Player* newOwner) {}
 	virtual	Bool isSelfTasking() const = 0;
 
 };

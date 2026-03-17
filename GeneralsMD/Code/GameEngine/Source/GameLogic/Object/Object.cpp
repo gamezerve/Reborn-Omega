@@ -4597,6 +4597,24 @@ void Object::onCapture( Player *oldOwner, Player *newOwner )
 	for( BehaviorModule **module = m_behaviors; *module; ++module )
 		(*module)->onCapture( oldOwner, newOwner );
 
+
+	for (Object* other = TheGameLogic->getFirstObject(); other; other = other->getNextObject())
+	{
+		if (other == this)
+			continue;
+
+		for (BehaviorModule** module = other->getBehaviorModules(); *module; ++module)
+		{
+			SlavedUpdateInterface* sdu = (*module)->getSlavedUpdateInterface();
+			if (sdu != nullptr && sdu->getSlaverID() == this->getID())
+			{
+				sdu->onSlaverCaptured(oldOwner, newOwner);
+				break;
+			}
+		}
+	}
+
+
 	//
 	// We have to undo our look for the old team and redo it for the new.
 	// onCapture is used now, so it better be called after ownership changes and not before.
