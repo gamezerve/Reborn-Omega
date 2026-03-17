@@ -32,10 +32,12 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "Common/BuildAssistant.h"
 #include "Common/RandomValue.h"
 #include "Common/Xfer.h"
 #include "Common/Team.h"
 #include "Common/MiscAudio.h"
+#include "Common/Upgrade.h"
 #include "GameClient/Drawable.h"
 #include "GameClient/ParticleSys.h"
 #include "GameLogic/AIPathfind.h"
@@ -91,9 +93,47 @@ void SlavedUpdate::onEnslave( const Object *slaver )
 }
 
 //-------------------------------------------------------------------------------------------------
-void SlavedUpdate::onSlaverDie( const DamageInfo *info )
+//void SlavedUpdate::onSlaverDie( const DamageInfo *info )
+//{
+//	stopSlavedEffects();
+//}
+void SlavedUpdate::onSlaverDie(const DamageInfo* info)
 {
+	const SlavedUpdateModuleData* data = getSlavedUpdateModuleData();
+
+	if (data->m_isRebornExtention)
+	{
+		getObject()->kill();
+		return;
+	}
+
 	stopSlavedEffects();
+}
+
+void SlavedUpdate::onSoldComplete()
+{
+	const SlavedUpdateModuleData* data = getSlavedUpdateModuleData();
+	Object* me = getObject();
+
+	if (!me)
+		return;
+
+	if (!data->m_isRebornExtention)
+		return;
+
+	if (data->m_upgradeToRemoveOnSell.isEmpty())
+		return;
+
+	Object* producer = TheGameLogic->findObjectByID(me->getProducerID());
+	if (!producer)
+		return;
+
+	
+	const UpgradeTemplate* upgrade = TheUpgradeCenter->findUpgrade(data->m_upgradeToRemoveOnSell);
+	if (!upgrade)
+		return;
+
+	producer->removeUpgrade(upgrade);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -105,6 +145,41 @@ void SlavedUpdate::onSlaverDamage( const DamageInfo *info )
 		ai->aiGoProne( info, CMD_FROM_AI );
 }
 
+//void SlavedUpdate::onSlaverSold()
+//{
+//	const SlavedUpdateModuleData* data = getSlavedUpdateModuleData();
+//
+//	if (data->m_isRebornExtention)
+//	{
+//		getObject()->kill();
+//		return;
+//	}
+//
+//	stopSlavedEffects();
+//}
+void SlavedUpdate::onSlaverSold()
+{
+	const SlavedUpdateModuleData* data = getSlavedUpdateModuleData();
+	Object* me = getObject();
+
+	if (!me)
+		return;
+
+	if (data->m_isRebornExtention)
+	{
+		if (me->isKindOf(KINDOF_STRUCTURE))
+		{
+			TheBuildAssistant->sellObject(me);
+		}
+		else
+		{
+			me->kill();
+		}
+		return;
+	}
+
+	stopSlavedEffects();
+}
 
 //-------------------------------------------------------------------------------------------------
 UpdateSleepTime SlavedUpdate::update()
@@ -126,7 +201,7 @@ UpdateSleepTime SlavedUpdate::update()
 	if( m_slaver == INVALID_ID )
 		return UPDATE_SLEEP_NONE;
 
-	const SlavedUpdateModuleData* data = getSlavedUpdateModuleData();
+	/*const SlavedUpdateModuleData* data = getSlavedUpdateModuleData();
 	Object *me = getObject();
 	if( !me )
 	{
@@ -141,21 +216,74 @@ UpdateSleepTime SlavedUpdate::update()
 	if( !locomotor )
 	{
 		return UPDATE_SLEEP_NONE;
+	}*/
+	const SlavedUpdateModuleData* data = getSlavedUpdateModuleData();
+	Object* me = getObject();
+	if (!me)
+	{
+		return UPDATE_SLEEP_NONE;
 	}
 
-	Object *master = TheGameLogic->findObjectByID( m_slaver );
-	if( !master || master->isEffectivelyDead() || master->isDisabledByType( DISABLED_UNMANNED ) )
+	Object* master = TheGameLogic->findObjectByID(m_slaver);
+	if (!master || master->isEffectivelyDead() || master->isDisabledByType(DISABLED_UNMANNED))
 	{
 		stopSlavedEffects();
 
-		//Killing is lame.
-		//me->kill();
+		if (data->m_isRebornExtention)
+		{
+			me->kill();
+		}
+		else
+		{
+			me->setDisabled(DISABLED_UNMANNED);
+			if (me->getAI())
+				me->getAI()->aiIdle(CMD_FROM_AI);
+		}
 
-		//Let's disable the drone so it crashes instead!
-		//Added special case code in physics falling to ensure death.
-		me->setDisabled( DISABLED_UNMANNED );
-    if ( me->getAI() )
-      me->getAI()->aiIdle( CMD_FROM_AI);
+		return UPDATE_SLEEP_NONE;
+	}
+
+	AIUpdateInterface* myAI = me->getAIUpdateInterface();
+	if (!myAI)
+	{
+		return UPDATE_SLEEP_NONE;
+	}
+	Locomotor* locomotor = myAI->getCurLocomotor();
+	if (!locomotor)
+	{
+		return UPDATE_SLEEP_NONE;
+	}
+
+	//Object *master = TheGameLogic->findObjectByID( m_slaver );
+	//if( !master || master->isEffectivelyDead() || master->isDisabledByType( DISABLED_UNMANNED ) )
+	//{
+	//	stopSlavedEffects();
+
+	//	//Killing is lame.
+	//	//me->kill();
+
+	//	//Let's disable the drone so it crashes instead!
+	//	//Added special case code in physics falling to ensure death.
+	//	me->setDisabled( DISABLED_UNMANNED );
+ //   if ( me->getAI() )
+ //     me->getAI()->aiIdle( CMD_FROM_AI);
+
+	//	return UPDATE_SLEEP_NONE;
+	//}
+	if (!master || master->isEffectivelyDead() || master->isDisabledByType(DISABLED_UNMANNED))
+	{
+		stopSlavedEffects();
+
+		if (data->m_isRebornExtention)
+		{
+			me->kill();
+		}
+		else
+		{
+			me->setDisabled(DISABLED_UNMANNED);
+			if (me->getAI())
+				me->getAI()->aiIdle(CMD_FROM_AI);
+		}
 
 		return UPDATE_SLEEP_NONE;
 	}
@@ -717,7 +845,11 @@ void SlavedUpdate::startSlavedEffects( const Object *slaver )
 	m_guardPointOffset.y += data->m_guardMaxRange * Sin( randomDirection );
 
 	// mark selves as not selectable
-	getObject()->setStatus( MAKE_OBJECT_STATUS_MASK( OBJECT_STATUS_UNSELECTABLE ) );
+	//getObject()->setStatus( MAKE_OBJECT_STATUS_MASK( OBJECT_STATUS_UNSELECTABLE ) );
+	if (!data->m_isRebornExtention) // Reborn: mark selves as not selectable Except Extentions
+	{
+		getObject()->setStatus(MAKE_OBJECT_STATUS_MASK(OBJECT_STATUS_UNSELECTABLE));
+	}
 
 
   if ( slaver->testStatus( OBJECT_STATUS_STEALTHED ) )

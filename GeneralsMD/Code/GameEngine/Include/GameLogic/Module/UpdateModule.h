@@ -251,6 +251,8 @@ public:
 	virtual void onEnslave( const Object *slaver ) = 0;
 	virtual void onSlaverDie( const DamageInfo *info ) = 0;
 	virtual void onSlaverDamage( const DamageInfo *info ) = 0;
+	virtual void onSlaverSold() = 0; // Reborn Extention only
+	virtual void onSoldComplete() {}
 	virtual	Bool isSelfTasking() const = 0;
 
 };

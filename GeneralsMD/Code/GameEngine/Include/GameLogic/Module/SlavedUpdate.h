@@ -71,6 +71,10 @@ public:
 
 	Bool m_stayOnSameLayerAsMaster;
 
+	Bool m_isRebornExtention;
+
+	AsciiString m_upgradeToRemoveOnSell;
+
 	SlavedUpdateModuleData()
 	{
 		m_guardMaxRange = 0;
@@ -89,6 +93,8 @@ public:
 		m_minReadyFrames = 0;
 		m_maxReadyFrames = 0;
 		m_stayOnSameLayerAsMaster = false;
+		m_isRebornExtention = false;
+		m_upgradeToRemoveOnSell.clear();
 	}
 
 	static void buildFieldParse(MultiIniFieldParse& p)
@@ -115,6 +121,8 @@ public:
 			{ "RepairWeldingSys",		INI::parseAsciiString,	nullptr, offsetof( SlavedUpdateModuleData, m_weldingSysName ) },
 			{ "RepairWeldingFXBone", INI::parseAsciiString, nullptr, offsetof( SlavedUpdateModuleData, m_weldingFXBone ) },
 			{ "StayOnSameLayerAsMaster", INI::parseBool, nullptr, offsetof( SlavedUpdateModuleData, m_stayOnSameLayerAsMaster ) },
+			{ "IsRebornExtention", INI::parseBool, nullptr, offsetof(SlavedUpdateModuleData, m_isRebornExtention) },
+			{ "UpgradeToRemoveOnSell", INI::parseAsciiString, nullptr, offsetof(SlavedUpdateModuleData, m_upgradeToRemoveOnSell) },
 			{ 0, 0, 0, 0 }
 		};
     p.add(dataFieldParse);
@@ -150,9 +158,10 @@ public:
 	virtual void onEnslave( const Object *slaver ) override;
 	virtual void onSlaverDie( const DamageInfo *info ) override;
 	virtual void onSlaverDamage( const DamageInfo *info ) override;
+	virtual void onSlaverSold() override;
 	virtual void onObjectCreated() override;
 	virtual Bool isSelfTasking() const override { return FALSE; };
-
+	virtual void onSoldComplete();
 
 	void doScoutLogic( const Coord3D *mastersDestination );
 	void doAttackLogic( const Object *target );

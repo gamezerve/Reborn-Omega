@@ -256,6 +256,9 @@ public:
 
 	virtual const std::vector<Coord3D>* getTaxiLocations( ObjectID id ) const = 0;
 	virtual const std::vector<Coord3D>* getCreationLocations( ObjectID id ) const = 0;
+
+	virtual void onSoldComplete() {}
+
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -280,5 +283,6 @@ public:
 	virtual void setScootParms(const Coord3D& start, const Coord3D& end) = 0;
 	virtual void disarm() = 0;
 };
+
 
 //-------------------------------------------------------------------------------------------------

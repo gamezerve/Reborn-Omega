@@ -103,6 +103,7 @@ public:
 	virtual void onEnslave( const Object *slaver ) override;
 	virtual void onSlaverDie( const DamageInfo *info ) override;
 	virtual void onSlaverDamage( const DamageInfo *info ) override;
+	virtual void onSlaverSold() override;
 	virtual void onObjectCreated() override;
 	virtual Bool isSelfTasking() const override { return m_isSelfTasking; };
 
