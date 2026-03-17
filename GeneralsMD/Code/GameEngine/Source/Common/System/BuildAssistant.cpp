@@ -265,6 +265,17 @@ void BuildAssistant::update()
 			// msg.format( L"'%S' has been sold\n", obj->getTemplate()->getName().str() );
 			// TheInGameUI->message( msg );
 
+			for (BehaviorModule** update = obj->getBehaviorModules(); *update; ++update)
+			{
+				SlavedUpdateInterface* sdu = (*update)->getSlavedUpdateInterface();
+				if (sdu != nullptr)
+				{
+					sdu->onSoldComplete();
+					break;
+				}
+			}
+
+
 			// destroy the object
 			TheGameLogic->destroyObject( obj );
 
@@ -1527,6 +1538,22 @@ void BuildAssistant::sellObject( Object *obj )
 	}
 	if( sellInfo != nullptr )
 		return;
+
+	for (Object* other = TheGameLogic->getFirstObject(); other; other = other->getNextObject()) // Reborn: Sell Extentions as well
+	{
+		if (other == obj)
+			continue;
+
+		for (BehaviorModule** update = other->getBehaviorModules(); *update; ++update)
+		{
+			SlavedUpdateInterface* sdu = (*update)->getSlavedUpdateInterface();
+			if (sdu != nullptr && sdu->getSlaverID() == obj->getID())
+			{
+				sdu->onSlaverSold();
+				break;
+			}
+		}
+	}
 
 	// set the construction percent of this object just below 100.0% so we can start counting down
 	obj->setConstructionPercent( 99.9f );

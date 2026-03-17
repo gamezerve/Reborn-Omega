@@ -59,6 +59,11 @@
 const Real CLOSE_ENOUGH = 15;				// Our moveTo commands and pathfinding can't handle people in the way, so quit trying to hump someone on your spot
 const Real CLOSE_ENOUGH_SQR = (CLOSE_ENOUGH * CLOSE_ENOUGH);
 
+void MobMemberSlavedUpdate::onSlaverSold()
+{
+	onSlaverDie(nullptr);
+}
+
 //-------------------------------------------------------------------------------------------------
 MobMemberSlavedUpdate::MobMemberSlavedUpdate( Thing *thing, const ModuleData* moduleData ) : UpdateModule( thing, moduleData )
 {
