@@ -362,6 +362,7 @@ public:
 	virtual void exitObjectInAHurry( Object *newObj) {}; ///< Special call for objects exiting a tunnel network, does NOT change the ai state. jba.
 
 	virtual void setRallyPoint( const Coord3D *pos ) = 0;				///< define a "rally point" for units to move towards
+	virtual void resetRallyPoint() {}														// Reborn
 	virtual const Coord3D *getRallyPoint() const = 0;			///< define a "rally point" for units to move towards
 	virtual Bool useSpawnRallyPoint() const { return FALSE; }
 	virtual Bool getNaturalRallyPoint( Coord3D& rallyPoint, Bool offset = TRUE ) const {rallyPoint.x=rallyPoint.y=rallyPoint.z=0; return false;}	///< get the natural "rally point" for units to move towards

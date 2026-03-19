@@ -206,6 +206,35 @@ static void doSetRallyPoint( Object *obj, const Coord3D& pos )
 
 }
 
+static void doResetRallyPoint(Object* obj)
+{
+	
+	Bool isLocalPlayer = obj->isLocallyControlled();
+
+	ExitInterface* exitInterface = obj->getObjectExitInterface();
+	if (exitInterface)
+	{
+		exitInterface->resetRallyPoint();
+
+		if (isLocalPlayer)
+		{
+			UnicodeString info;
+			info.format(TheGameText->fetch("GUI:RallyPointReset"),
+				obj->getTemplate()->getDisplayName().str());
+			TheInGameUI->message(info);
+
+			static AudioEventRTS rallyPointSet("RallyPointSet");
+			rallyPointSet.setPosition(obj->getPosition());
+			rallyPointSet.setPlayerIndex(obj->getControllingPlayer()->getPlayerIndex());
+			TheAudio->addAudioEvent(&rallyPointSet);
+
+			Drawable* draw = obj->getDrawable();
+			if (draw && draw->isSelected())
+				TheControlBar->markUIDirty();
+		}
+	}
+}
+
 static Object * getSingleObjectFromSelection(const AIGroup *currentlySelectedGroup)
 {
 	if( currentlySelectedGroup && !currentlySelectedGroup->isEmpty() )
@@ -544,6 +573,30 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 			break;
 
 		}
+
+		case GameMessage::MSG_RESET_RALLY_POINT: // Reborn
+		{
+			Object* obj = findObjectByID(msg->getArgument(0)->objectID);
+
+			if (obj)
+			{
+#if !RETAIL_COMPATIBLE_CRC
+				if (obj->getControllingPlayer() != thisPlayer)
+				{
+					DEBUG_CRASH(("MSG_RESET_RALLY_POINT: Player '%ls' attempted to reset the rally point of object '%s' owned by player '%ls'.",
+						thisPlayer->getPlayerDisplayName().str(),
+						obj->getTemplate()->getName().str(),
+						obj->getControllingPlayer()->getPlayerDisplayName().str()));
+					break;
+				}
+#endif
+				
+				doResetRallyPoint(obj);
+			}
+
+			break;
+		}
+
 
 		//---------------------------------------------------------------------------------------------
 		case GameMessage::MSG_DO_WEAPON:

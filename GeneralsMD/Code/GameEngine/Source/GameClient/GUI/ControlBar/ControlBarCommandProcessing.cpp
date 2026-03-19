@@ -758,6 +758,16 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 			break;
 
 		}
+		//---------------------------------------------------------------------------------------------
+		case GUI_COMMAND_RESET_RALLY_POINT: // Reborn
+		{
+			if (obj == nullptr)
+				break;
+
+			GameMessage* msg = TheMessageStream->appendMessage(GameMessage::MSG_RESET_RALLY_POINT);
+			msg->appendObjectIDArgument(obj->getID());
+			break;
+		}
 
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_SELL:

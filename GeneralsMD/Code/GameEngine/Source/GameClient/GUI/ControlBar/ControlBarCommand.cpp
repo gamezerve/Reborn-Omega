@@ -1182,6 +1182,18 @@ CommandAvailability ControlBar::getCommandAvailability( const CommandButton *com
 			break;
 		}
 
+		case GUI_COMMAND_RESET_RALLY_POINT: // Reborn
+		{
+			ExitInterface* exit = obj->getObjectExitInterface();
+			if (exit == nullptr)
+				return COMMAND_HIDDEN;
+
+			if (exit->getRallyPoint() == nullptr)
+				return COMMAND_RESTRICTED;
+
+			break;
+		}
+
 		case GUI_COMMAND_UNIT_BUILD:
 		{
 			// command is a unit build

@@ -472,6 +472,19 @@ GameMessageDisposition GUICommandTranslator::translateGameMessage(const GameMess
 
 					}
 
+					case GUI_COMMAND_RESET_RALLY_POINT:
+					{
+						Drawable* draw = TheInGameUI->getFirstSelectedDrawable();
+						Object* obj = draw ? draw->getObject() : nullptr;
+
+						if (obj)
+						{
+							GameMessage* msg = TheMessageStream->appendMessage(GameMessage::MSG_RESET_RALLY_POINT);
+							msg->appendObjectIDArgument(obj->getID());
+						}
+						break;
+					}
+
 					//---------------------------------------------------------------------------------------
 					case GUICOMMANDMODE_PLACE_BEACON:
 					{
