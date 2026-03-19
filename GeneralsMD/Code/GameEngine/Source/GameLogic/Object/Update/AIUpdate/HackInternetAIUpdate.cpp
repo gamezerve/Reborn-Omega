@@ -42,6 +42,7 @@
 #include "GameLogic/Object.h"
 //#include "GameLogic/PartitionManager.h"
 
+extern Int g_resourceMultiplierPercent;
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -537,6 +538,16 @@ StateReturnType HackInternetState::update()
 						amount = 1;
 						break;
 				}
+
+				DEBUG_LOG(("HackInternet base amount = %u, multiplier = %d", amount, g_resourceMultiplierPercent)); // Reborn
+
+				if (g_resourceMultiplierPercent != 100)
+				{
+					amount = (amount * g_resourceMultiplierPercent) / 100;
+				}
+
+				DEBUG_LOG(("HackInternet final amount = %u", amount));
+
 				money->deposit( amount );
 				owner->getControllingPlayer()->getScoreKeeper()->addMoneyEarned( amount );
 

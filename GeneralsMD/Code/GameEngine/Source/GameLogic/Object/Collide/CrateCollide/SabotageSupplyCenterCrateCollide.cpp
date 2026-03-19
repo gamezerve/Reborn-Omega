@@ -60,7 +60,7 @@
 #include "GameLogic/Module/OCLUpdate.h"
 #include "GameLogic/Module/SabotageSupplyCenterCrateCollide.h"
 
-
+extern Int g_resourceMultiplierPercent;
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -140,6 +140,17 @@ Bool SabotageSupplyCenterCrateCollide::executeCrateBehavior( Object *other )
 	{
 		UnsignedInt cash = targetMoney->countMoney();
 		UnsignedInt desiredAmount = getSabotageSupplyCenterCrateCollideModuleData()->m_stealCashAmount;
+
+		DEBUG_LOG(("SabotageSupplyCenter base steal = %u, multiplier = %d, target cash = %u",
+			getSabotageSupplyCenterCrateCollideModuleData()->m_stealCashAmount,
+			g_resourceMultiplierPercent,
+			targetMoney->countMoney()));
+
+		if (g_resourceMultiplierPercent != 100)
+		{
+			desiredAmount = (desiredAmount * g_resourceMultiplierPercent) / 100;
+		}
+
 		//Check to see if they have the cash, otherwise, take the remainder!
 		cash = min( desiredAmount, cash );
 		if( cash > 0 )
@@ -178,6 +189,7 @@ Bool SabotageSupplyCenterCrateCollide::executeCrateBehavior( Object *other )
 				TheEva->setShouldPlay( EVA_BuildingSabotaged );
 			}
 		}
+		DEBUG_LOG(("SabotageSupplyCenter final steal = %u", cash));
 	}
 
 	return TRUE;

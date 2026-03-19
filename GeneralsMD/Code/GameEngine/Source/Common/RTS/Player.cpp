@@ -105,6 +105,8 @@
 //Grey for neutral.
 #define NEUTRAL_PLAYER_COLOR 0xffffffff
 
+extern Int g_resourceMultiplierPercent;
+
 // ------------------------------------------------------------------------------------------------
 class ClosestKindOfData
 {
@@ -2435,6 +2437,17 @@ void Player::doBountyForKill(const Object* killer, const Object* victim)
 	// TheSuperHackers @bugfix Stubbjax 20/02/2026 Subtract epsilon to ensure bounty is rounded up correctly.
 	Int bounty = ceil((costToBuild * m_cashBountyPercent) - WWMATH_EPSILON);
 #endif
+
+	DEBUG_LOG(("Cash bounty base = %d, multiplier = %d, victim cost = %d, percent = %g",
+		bounty, g_resourceMultiplierPercent, costToBuild, m_cashBountyPercent));
+
+	if (bounty > 0 && g_resourceMultiplierPercent != 100)
+	{
+		bounty = (bounty * g_resourceMultiplierPercent) / 100;
+	}
+
+	DEBUG_LOG(("Cash bounty final = %d", bounty));
+
 
 	if( bounty )
 	{

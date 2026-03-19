@@ -38,6 +38,8 @@
 #include "GameClient/InGameUI.h"
 #include "GameClient/GameText.h"
 
+extern Int g_resourceMultiplierPercent;
+
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -118,6 +120,11 @@ Bool SupplyCenterDockUpdate::action( Object* docker, Object *drone )
 	Player *ownerPlayer = getObject()->getControllingPlayer();
 	while( supplyTruckAI->loseOneBox() )
 		value += ownerPlayer->getSupplyBoxValue();
+
+	if (g_resourceMultiplierPercent != 100) // Reborn: if the resource multiplier is not 100%, scale the value of the delivered boxes accordingly
+	{
+		value = (value * g_resourceMultiplierPercent) / 100;
+	}
 
 	if( value > 0)
 	{

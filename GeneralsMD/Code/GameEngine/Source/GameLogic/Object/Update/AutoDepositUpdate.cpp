@@ -68,6 +68,8 @@
 #include "GameClient/Color.h"
 #include "GameClient/GameText.h"
 
+extern Int g_resourceMultiplierPercent;
+
 //-------------------------------------------------------------------------------------------------
 void parseUpgradePair( INI *ini, void *instance, void *store, const void *userData )
 {
@@ -120,22 +122,29 @@ AutoDepositUpdate::~AutoDepositUpdate()
 void AutoDepositUpdate::awardInitialCaptureBonus( Player *player )
 {
 	m_depositOnFrame = TheGameLogic->getFrame() + getAutoDepositUpdateModuleData()->m_depositFrame;
-	if(!player || !m_awardInitialCaptureBonus || getAutoDepositUpdateModuleData()->m_initialCaptureBonus <= 0)
+	if (!player || !m_awardInitialCaptureBonus || getAutoDepositUpdateModuleData()->m_initialCaptureBonus <= 0)
 		return;
 
-	player->getMoney()->deposit( getAutoDepositUpdateModuleData()->m_initialCaptureBonus );
-	player->getScoreKeeper()->addMoneyEarned( getAutoDepositUpdateModuleData()->m_initialCaptureBonus );
+	Int initialBonus = getAutoDepositUpdateModuleData()->m_initialCaptureBonus;
+	DEBUG_LOG(("Initial capture bonus before multiplier = %d, multiplier = %d", getAutoDepositUpdateModuleData()->m_initialCaptureBonus, g_resourceMultiplierPercent));
+	if (g_resourceMultiplierPercent != 100)
+	{
+		initialBonus = (initialBonus * g_resourceMultiplierPercent) / 100;
+	}
+	DEBUG_LOG(("Initial capture bonus after multiplier = %d", initialBonus));
+	player->getMoney()->deposit(initialBonus);
+	player->getScoreKeeper()->addMoneyEarned(initialBonus);
 
 	//Display cash income floating over the blacklotus
-	if(getAutoDepositUpdateModuleData()->m_initialCaptureBonus > 0)
+	if (initialBonus > 0)
 	{
 		UnicodeString moneyString;
-		moneyString.format( TheGameText->fetch( "GUI:AddCash" ), getAutoDepositUpdateModuleData()->m_initialCaptureBonus );
+		moneyString.format(TheGameText->fetch("GUI:AddCash"), initialBonus);
 		Coord3D pos;
-		pos.set( getObject()->getPosition() );
-		pos.z += 10.0f; //add a little z to make it show up above the unit.
-		Color color = player->getPlayerColor() | GameMakeColor( 0, 0, 0, 230 );
-		TheInGameUI->addFloatingText( moneyString, &pos, color );
+		pos.set(getObject()->getPosition());
+		pos.z += 10.0f;
+		Color color = player->getPlayerColor() | GameMakeColor(0, 0, 0, 230);
+		TheInGameUI->addFloatingText(moneyString, &pos, color);
 	}
 
 	m_awardInitialCaptureBonus = FALSE;
@@ -165,6 +174,11 @@ UpdateSleepTime AutoDepositUpdate::update()
 			return UPDATE_SLEEP_NONE;
 
 		int moneyAmount = modData->m_depositAmount + getUpgradedSupplyBoost();
+
+		if (g_resourceMultiplierPercent != 100) // Reborn: if the resource multiplier is not 100%, scale the value of the deposit accordingly
+		{
+			moneyAmount = (moneyAmount * g_resourceMultiplierPercent) / 100;
+		}
 
 		if( modData->m_isActualMoney )
 		{

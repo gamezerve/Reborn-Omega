@@ -119,6 +119,7 @@ static NameKeyType checkBoxLimitSuperweapons2ID = NAMEKEY_INVALID; //Reborn
 static NameKeyType checkBoxLimitSuperweapons3ID = NAMEKEY_INVALID; //Reborn
 static NameKeyType checkBoxLimitSuperweaponsUnlimitedID = NAMEKEY_INVALID; //Reborn
 static NameKeyType comboBoxStartingCashID = NAMEKEY_INVALID;
+static NameKeyType comboBoxResourceMultiplierID = NAMEKEY_INVALID; // Reborn
 
 // Window Pointers ------------------------------------------------------------------------
 static GameWindow *staticTextGameSpeed = nullptr;
@@ -136,6 +137,7 @@ static GameWindow* checkBoxLimitSuperweapons2 = nullptr; //Reborn
 static GameWindow* checkBoxLimitSuperweapons3 = nullptr; //Reborn
 static GameWindow* checkBoxLimitSuperweaponsUnlimited = nullptr; //Reborn
 static GameWindow *comboBoxStartingCash = nullptr;
+static GameWindow* comboBoxResourceMultiplier = nullptr; // Reborn
 static GameWindow *comboBoxPlayer[MAX_SLOTS] = {0};
 
 static GameWindow *comboBoxColor[MAX_SLOTS] = {0};
@@ -160,6 +162,7 @@ void skirmishUpdateSlotList();
 static void populateSkirmishBattleHonors();
 enum{ GREATER_NO_FPS_LIMIT = 60};
 Bool doUpdateSlotList = TRUE;
+Int g_resourceMultiplierPercent = 100; // Reborn
 
 static Int getNextSelectablePlayer(Int start)
 {
@@ -1038,6 +1041,45 @@ static void handleStartingCashSelection()
   }
 }
 
+static void PopulateResourceMultiplierComboBox(GameWindow* combo) // Reborn: populate the resource multiplier combo box with values from 0.75x to 1.25x in increments of 0.05x
+{
+	if (!combo)
+		return;
+
+	GadgetComboBoxReset(combo);
+
+	Color white = GameMakeColor(255, 255, 255, 255);
+
+	int defaultIndex = 0;
+	int index = 0;
+
+	for (int i = 75; i <= 125; i += 5)
+	{
+		wchar_t buffer[16];
+		swprintf(buffer, 16, L"%.2fx", i / 100.0f);
+
+		GadgetComboBoxAddEntry(combo, UnicodeString(buffer), white);
+		GadgetComboBoxSetItemData(combo, index, (void*)i);
+
+		if (i == g_resourceMultiplierPercent)
+			defaultIndex = index;
+
+		index++;
+	}
+
+	GadgetComboBoxSetSelectedPos(combo, defaultIndex, TRUE);
+}
+
+static void handleResourceMultiplierSelection()
+{
+	if (!comboBoxResourceMultiplier)
+		return;
+
+	Int selIndex;
+	GadgetComboBoxGetSelectedPos(comboBoxResourceMultiplier, &selIndex);
+	g_resourceMultiplierPercent = (Int)GadgetComboBoxGetItemData(comboBoxResourceMultiplier, selIndex);
+}
+
 static void handleLimitSuperweaponsClick()
 {
   GameInfo *myGame = TheSkirmishGameInfo;
@@ -1110,6 +1152,7 @@ void InitSkirmishGameGadgets()
 	staticTextGameSpeedID = TheNameKeyGenerator->nameToKey( "SkirmishGameOptionsMenu.wnd:StaticTextGameSpeed" );
   //checkBoxLimitSuperweaponsID = TheNameKeyGenerator->nameToKey( "SkirmishGameOptionsMenu.wnd:CheckboxLimitSuperweapons" );
   comboBoxStartingCashID = TheNameKeyGenerator->nameToKey( "SkirmishGameOptionsMenu.wnd:ComboBoxStartingCash" );
+	comboBoxResourceMultiplierID = TheNameKeyGenerator->nameToKey("SkirmishGameOptionsMenu.wnd:ComboBoxResourceMultiplier"); // Reborn: resource multiplier combo box
 
 	// Initialize the pointers to our gadgets
 	parentSkirmishGameOptions = TheWindowManager->winGetWindowFromId( nullptr, parentSkirmishGameOptionsID );
@@ -1131,6 +1174,10 @@ void InitSkirmishGameGadgets()
   comboBoxStartingCash = TheWindowManager->winGetWindowFromId( parentSkirmishGameOptions, comboBoxStartingCashID );
   DEBUG_ASSERTCRASH(comboBoxStartingCash, ("Could not find the comboBoxStartingCash"));
   PopulateStartingCashComboBox(comboBoxStartingCash, TheSkirmishGameInfo );
+
+	comboBoxResourceMultiplier = TheWindowManager->winGetWindowFromId(parentSkirmishGameOptions, comboBoxResourceMultiplierID); // Reborn: resource multiplier combo box
+	DEBUG_ASSERTCRASH(comboBoxResourceMultiplier, ("Could not find the comboBoxResourceMultiplier"));
+	PopulateResourceMultiplierComboBox(comboBoxResourceMultiplier);
 
 	textEntryPlayerNameID = TheNameKeyGenerator->nameToKey( "SkirmishGameOptionsMenu.wnd:TextEntryPlayerName" );
   textEntryPlayerName = TheWindowManager->winGetWindowFromId( nullptr, textEntryPlayerNameID );
@@ -1343,7 +1390,24 @@ void updateSkirmishGameOptions()
     }
   }
 
-  DEBUG_ASSERTCRASH( index < itemCount, ("Could not find new starting cash amount %d in list", TheSkirmishGameInfo->getStartingCash().countMoney() ) );
+	DEBUG_ASSERTCRASH( index < itemCount, ("Could not find new starting cash amount %d in list", TheSkirmishGameInfo->getStartingCash().countMoney() ) );
+
+
+	// Reborn: update the resource multiplier combo box to match the current value in TheSkirmishGameInfo
+	if (comboBoxResourceMultiplier)
+	{
+		Int itemCount = GadgetComboBoxGetLength(comboBoxResourceMultiplier);
+		for (Int i = 0; i < itemCount; ++i)
+		{
+			Int value = (Int)GadgetComboBoxGetItemData(comboBoxResourceMultiplier, i);
+			if (value == g_resourceMultiplierPercent)
+			{
+				GadgetComboBoxSetSelectedPos(comboBoxResourceMultiplier, i, TRUE);
+				break;
+			}
+		}
+	}
+
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1651,12 +1715,16 @@ WindowMsgHandledType SkirmishGameOptionsMenuSystem( GameWindow *window, Unsigned
 			{
 				GameWindow *control = (GameWindow *)mData1;
 				Int controlID = control->winGetWindowId();
-        if ( controlID == comboBoxStartingCashID )
-        {
-          handleStartingCashSelection();
-        }
-        else
-        {
+				if (controlID == comboBoxStartingCashID)
+				{
+					handleStartingCashSelection();
+				}
+				else if (controlID == comboBoxResourceMultiplierID) // Reborn: resource multiplier combo box
+				{
+					handleResourceMultiplierSelection();
+				}
+				else
+				{
 				  for (Int i = 0; i < MAX_SLOTS; i++)
 				  {
 					  if (controlID == comboBoxColorID[i])
