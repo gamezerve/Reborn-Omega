@@ -182,6 +182,7 @@ enum GUICommandType CPP_11(: Int)
 	GUI_COMMAND_EXECUTE_RAILED_TRANSPORT,	///< execute railed transport sequence
 	GUI_COMMAND_BEACON_DELETE,						///< delete a beacon
 	GUI_COMMAND_SET_RALLY_POINT,					///< set rally point for a structure
+	GUI_COMMAND_RESET_RALLY_POINT,					///< Reborn: reset rally point for a structure
 	GUI_COMMAND_SELL,											///< sell a structure
 	GUI_COMMAND_FIRE_WEAPON,							///< fire a weapon
 	GUI_COMMAND_SPECIAL_POWER,						///< do a special power
@@ -238,6 +239,7 @@ static const char *const TheGuiCommandNames[] =
 	"EXECUTE_RAILED_TRANSPORT",
 	"BEACON_DELETE",
 	"SET_RALLY_POINT",
+	"RESET_RALLY_POINT", //Reborn
 	"SELL",
 	"FIRE_WEAPON",
 	"SPECIAL_POWER",

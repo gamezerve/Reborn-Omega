@@ -406,6 +406,21 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 		GUICommandType commandType = commandButton->getCommandType();
 
+		if (commandType == GUI_COMMAND_RESET_RALLY_POINT) // Reborn: This is a special case because the button is only disabled when the rally point is already at default, so we want to show that in the tooltip.
+		{
+			Drawable* draw = TheInGameUI->getFirstSelectedDrawable();
+			Object* selectedObject = draw ? draw->getObject() : nullptr;
+
+			if (selectedObject)
+			{
+				ExitInterface* exit = selectedObject->getObjectExitInterface();
+				if (exit && exit->getRallyPoint() == nullptr)
+				{
+					descrip = L"No custom rally point set";
+				}
+			}
+		}
+
 		if (
 			specialPowerTemplate &&
 			(

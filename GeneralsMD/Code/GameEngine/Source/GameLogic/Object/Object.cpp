@@ -5608,6 +5608,7 @@ void Object::doCommandButton( const CommandButton *commandButton, CommandSourceT
 			case GUI_COMMAND_EXECUTE_RAILED_TRANSPORT:
 			case GUI_COMMAND_BEACON_DELETE:
 			case GUI_COMMAND_SET_RALLY_POINT:
+			case GUI_COMMAND_RESET_RALLY_POINT: // Reborn
 			case GUI_COMMAND_TOGGLE_OVERCHARGE:
 #ifdef ALLOW_SURRENDER
 			case GUI_COMMAND_POW_RETURN_TO_PRISON:
@@ -5733,6 +5734,7 @@ void Object::doCommandButtonAtObject( const CommandButton *commandButton, Object
 			case GUI_COMMAND_EXECUTE_RAILED_TRANSPORT:
 			case GUI_COMMAND_BEACON_DELETE:
 			case GUI_COMMAND_SET_RALLY_POINT:
+			case GUI_COMMAND_RESET_RALLY_POINT: // Reborn
 			case GUI_COMMAND_SELL:
 			case GUI_COMMAND_HACK_INTERNET:
 			case GUI_COMMAND_TOGGLE_OVERCHARGE:
@@ -5827,6 +5829,7 @@ void Object::doCommandButtonAtPosition( const CommandButton *commandButton, cons
 			case GUI_COMMAND_EXECUTE_RAILED_TRANSPORT:
 			case GUI_COMMAND_BEACON_DELETE:
 			case GUI_COMMAND_SET_RALLY_POINT:
+			case GUI_COMMAND_RESET_RALLY_POINT: // Reborn
 			case GUI_COMMAND_SELL:
 			case GUI_COMMAND_HACK_INTERNET:
 			case GUI_COMMAND_TOGGLE_OVERCHARGE:
@@ -5893,6 +5896,7 @@ void Object::doCommandButtonUsingWaypoints( const CommandButton *commandButton, 
 			case GUI_COMMAND_EXECUTE_RAILED_TRANSPORT:
 			case GUI_COMMAND_BEACON_DELETE:
 			case GUI_COMMAND_SET_RALLY_POINT:
+			case GUI_COMMAND_RESET_RALLY_POINT: // Reborn
 			case GUI_COMMAND_SELL:
 			case GUI_COMMAND_FIRE_WEAPON:
 			case GUI_COMMAND_HACK_INTERNET:

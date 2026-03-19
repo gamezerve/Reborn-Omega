@@ -87,6 +87,7 @@ public:
 	virtual void exitObjectByBudding( Object *newObj, Object *budHost ) override { return; }
 
 	virtual void setRallyPoint( const Coord3D *pos ) override;				///< define a "rally point" for units to move towards
+	virtual void resetRallyPoint() override; // Reborn
 	virtual const Coord3D *getRallyPoint() const override;			///< define a "rally point" for units to move towards
 	virtual Bool useSpawnRallyPoint() const override;
 	virtual Bool getNaturalRallyPoint( Coord3D& rallyPoint, Bool offset = TRUE ) const override;			///< get the natural "rally point" for units to move towards
@@ -105,6 +106,12 @@ inline void DefaultProductionExitUpdate::setRallyPoint( const Coord3D *pos )
 {
 	m_rallyPoint = *pos;
 	m_rallyPointExists = true;
+}
+
+inline void DefaultProductionExitUpdate::resetRallyPoint() // Reborn
+{
+	m_rallyPoint.zero();
+	m_rallyPointExists = false;
 }
 
 //-------------------------------------------------------------------------------------------------
