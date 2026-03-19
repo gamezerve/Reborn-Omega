@@ -44,6 +44,8 @@
 #include "GameLogic/ExperienceTracker.h"
 #include "GameLogic/Object.h"
 
+extern Int g_resourceMultiplierPercent;
+
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 SalvageCrateCollide::SalvageCrateCollide( Thing *thing, const ModuleData* moduleData ) : CrateCollide( thing, moduleData )
@@ -242,6 +244,15 @@ void SalvageCrateCollide::doMoney( Object *other )
 		money = GameLogicRandomValue( md->m_minimumMoney, md->m_maximumMoney );
 	else
 		money = md->m_minimumMoney;
+
+	DEBUG_LOG(("Salvage money before multiplier = %d, multiplier = %d", money, g_resourceMultiplierPercent));
+
+	if (g_resourceMultiplierPercent != 100)
+	{
+		money = (money * g_resourceMultiplierPercent) / 100;
+	}
+
+	DEBUG_LOG(("Salvage money after multiplier = %d", money));
 
 	if( money > 0 )
 	{
