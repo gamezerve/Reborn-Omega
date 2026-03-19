@@ -432,8 +432,33 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 		name = TheGameText->fetch(commandButton->getTextLabel().str());
 
-		if( thingTemplate && commandButton->getCommandType() != GUI_COMMAND_PURCHASE_SCIENCE )
+		if (commandButton->getCommandType() == GUI_COMMAND_SELL)
 		{
+			Drawable* draw = TheInGameUI->getFirstSelectedDrawable();
+			Object* selectedObject = draw ? draw->getObject() : nullptr;
+
+			if (selectedObject)
+			{
+				const ThingTemplate* selectedTemplate = selectedObject->getTemplate();
+				if (selectedTemplate)
+				{
+					UnsignedInt costToBuild = selectedTemplate->calcCostToBuild(player);
+					UnsignedInt refundValue = selectedTemplate->getRefundValue();
+
+					if (refundValue == 0)
+						refundValue = costToBuild / 2;
+
+					Int percent = 0;
+					if (costToBuild > 0)
+						percent = (refundValue * 100) / costToBuild;
+
+					cost.format(L"Refund Value: %d (%d%% of original cost)", refundValue, percent);
+				}
+			}
+		}
+		else if (thingTemplate && commandButton->getCommandType() != GUI_COMMAND_PURCHASE_SCIENCE)
+		{
+
 			//We are either looking at building a unit or a structure that may or may not have any
 			//prerequisites.
 
