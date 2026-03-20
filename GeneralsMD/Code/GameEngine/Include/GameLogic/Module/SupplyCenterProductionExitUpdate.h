@@ -85,6 +85,7 @@ public:
 
 	virtual void setRallyPoint( const Coord3D *pos ) override;			///< define a "rally point" for units to move towards
 	virtual const Coord3D *getRallyPoint() const override;			///< define a "rally point" for units to move towards
+	virtual void resetRallyPoint() override; // Reborn: reset to the "natural" rally point defined in the module data
 	virtual Bool getExitPosition( Coord3D& exitPosition ) const override;					///< access to the "Door" position of the production object
 	virtual Bool getNaturalRallyPoint( Coord3D& rallyPoint, Bool offset = TRUE ) const override;			///< get the natural "rally point" for units to move towards
 

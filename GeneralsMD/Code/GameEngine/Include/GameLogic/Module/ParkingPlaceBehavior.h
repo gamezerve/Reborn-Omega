@@ -121,6 +121,7 @@ public:
 	virtual Bool getExitPosition( Coord3D& rallyPoint ) const override;
 	virtual Bool getNaturalRallyPoint( Coord3D& rallyPoint, Bool offset = TRUE ) const override;
 	virtual void setRallyPoint( const Coord3D *pos ) override;			///< define a "rally point" for units to move towards
+	virtual void resetRallyPoint() override;
 	virtual const Coord3D *getRallyPoint() const override;			///< define a "rally point" for units to move towards
 
 	// UpdateModule

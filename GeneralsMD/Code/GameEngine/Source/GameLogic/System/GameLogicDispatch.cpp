@@ -208,31 +208,33 @@ static void doSetRallyPoint( Object *obj, const Coord3D& pos )
 
 static void doResetRallyPoint(Object* obj)
 {
-	
 	Bool isLocalPlayer = obj->isLocallyControlled();
-
 	ExitInterface* exitInterface = obj->getObjectExitInterface();
-	if (exitInterface)
+	if (!exitInterface)
+		return;
+
+	exitInterface->resetRallyPoint();
+
+	if (isLocalPlayer)
 	{
-		exitInterface->resetRallyPoint();
+		UnicodeString info;
+		info.format(TheGameText->fetch("GUI:RallyPointReset"),
+			obj->getTemplate()->getDisplayName().str());
+		TheInGameUI->message(info);
 
-		if (isLocalPlayer)
-		{
-			UnicodeString info;
-			info.format(TheGameText->fetch("GUI:RallyPointReset"),
-				obj->getTemplate()->getDisplayName().str());
-			TheInGameUI->message(info);
+		static AudioEventRTS rallyPointSet("RallyPointSet");
+		rallyPointSet.setPosition(obj->getPosition());
+		rallyPointSet.setPlayerIndex(obj->getControllingPlayer()->getPlayerIndex());
+		TheAudio->addAudioEvent(&rallyPointSet);
 
-			static AudioEventRTS rallyPointSet("RallyPointSet");
-			rallyPointSet.setPosition(obj->getPosition());
-			rallyPointSet.setPlayerIndex(obj->getControllingPlayer()->getPlayerIndex());
-			TheAudio->addAudioEvent(&rallyPointSet);
-
-			Drawable* draw = obj->getDrawable();
-			if (draw && draw->isSelected())
-				TheControlBar->markUIDirty();
-		}
+		Drawable* draw = obj->getDrawable();
+		if (draw && draw->isSelected())
+			TheControlBar->markUIDirty();
 	}
+
+	DEBUG_LOG(("Reset rally point requested for object '%s' (id=%d)",
+		obj->getTemplate()->getName().str(),
+		obj->getID()));
 }
 
 static Object * getSingleObjectFromSelection(const AIGroup *currentlySelectedGroup)
