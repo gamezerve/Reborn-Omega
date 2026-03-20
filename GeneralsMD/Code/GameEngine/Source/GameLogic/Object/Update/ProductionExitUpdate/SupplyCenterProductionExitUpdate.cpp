@@ -56,6 +56,12 @@ SupplyCenterProductionExitUpdate::~SupplyCenterProductionExitUpdate()
 {
 }
 
+void SupplyCenterProductionExitUpdate::resetRallyPoint()
+{
+	m_rallyPoint.zero();
+	m_rallyPointExists = FALSE;
+}
+
 //-------------------------------------------------------------------------------------------------
 void SupplyCenterProductionExitUpdate::exitObjectViaDoor( Object *newObj, ExitDoorType exitDoor )
 {

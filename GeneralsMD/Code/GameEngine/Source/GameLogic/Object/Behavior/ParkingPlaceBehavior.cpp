@@ -909,6 +909,12 @@ void ParkingPlaceBehavior::setRallyPoint( const Coord3D *pos )
 	// nothing
 }
 
+void ParkingPlaceBehavior::resetRallyPoint()
+{
+	m_heliRallyPoint.zero();
+	m_heliRallyPointExists = FALSE;
+}
+
 //-------------------------------------------------------------------------------------------------
 const Coord3D* ParkingPlaceBehavior::getRallyPoint() const
 {
