@@ -95,7 +95,7 @@
 
 #include "Common/UnitTimings.h" //Contains the DO_UNIT_TIMINGS define jba.
 
-
+extern Int g_resourceMultiplierPercent; // Reborn
 
 // ------------------------------------------------------------------------------------------------
 static const RGBColor IllegalBuildColor = { 1.0, 0.0, 0.0 };
@@ -2716,9 +2716,22 @@ void InGameUI::createMouseoverHint( const GameMessage *msg )
 			if( warehouseModule != nullptr )
 			{
 				Int boxes = warehouseModule->getBoxesStored();
-				Int value = boxes * TheGlobalData->m_baseValuePerSupplyBox;
-				warehouseFeedback.format(TheGameText->fetch("TOOLTIP:SupplyWarehouse"), value);
-				str.concat(warehouseFeedback);
+				//Int value = boxes * TheGlobalData->m_baseValuePerSupplyBox * g_resourceMultiplierPercent / 100;
+				//warehouseFeedback.format(TheGameText->fetch("TOOLTIP:SupplyWarehouse"), value);
+				//str.concat(warehouseFeedback);
+				if (g_resourceMultiplierPercent != 100) // Reborn
+				{
+					Int value = boxes * TheGlobalData->m_baseValuePerSupplyBox * g_resourceMultiplierPercent / 100;
+					warehouseFeedback.format(TheGameText->fetch("TOOLTIP:SupplyWarehouse"), value);
+					str.concat(warehouseFeedback);
+				}
+				else
+				{
+					Int value = boxes * TheGlobalData->m_baseValuePerSupplyBox;
+					warehouseFeedback.format(TheGameText->fetch("TOOLTIP:SupplyWarehouse"), value);
+					str.concat(warehouseFeedback);
+				}
+
 			}
 
       if (player)
