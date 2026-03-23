@@ -3859,25 +3859,37 @@ Bool GUIEdit::isWindowSelected( GameWindow *window )
 // GUIEdit::selectWindow ======================================================
 /** Add window to selection list */
 //=============================================================================
-void GUIEdit::selectWindow( GameWindow *window )
+void GUIEdit::selectWindow(GameWindow* window)
 {
-	WindowSelectionEntry *entry;
+	WindowSelectionEntry* entry;
 
 	// sanity
-	if( window == nullptr )
+	if (window == nullptr)
 		return;
 
-	// do not add to list if already on it
-	if( isWindowSelected( window ) == TRUE )
+	// OLD
+	// // do not add to list if already on it
+	// if( isWindowSelected( window ) == TRUE )
+	// 	return;
+
+	// NEW
+	// If the window is already selected, still force hierarchy synchronization.
+	// This is important for pasted/cloned windows, because the editor selection
+	// may already be correct while the hierarchy selection is stale.
+	if (isWindowSelected(window) == TRUE)
+	{
+		if (selectionCount() == 1)
+			TheHierarchyView->selectWindow(window);
 		return;
+	}
 
 	// allocate new entry and add to list
 	entry = new WindowSelectionEntry;
-	if( entry == nullptr )
+	if (entry == nullptr)
 	{
 
-		DEBUG_LOG(( "Unable to allocate selection entry for window" ));
-		assert( 0 );
+		DEBUG_LOG(("Unable to allocate selection entry for window"));
+		assert(0);
 		return;
 
 	}
@@ -3886,16 +3898,15 @@ void GUIEdit::selectWindow( GameWindow *window )
 	entry->window = window;
 	entry->prev = nullptr;
 	entry->next = m_selectList;
-	if( m_selectList )
+	if (m_selectList)
 		m_selectList->prev = entry;
 	m_selectList = entry;
 
 	// select this window in the hierarchy if there is only one selected
-	if( selectionCount() == 1 )
-		TheHierarchyView->selectWindow( window );
+	if (selectionCount() == 1)
+		TheHierarchyView->selectWindow(window);
 
 }
-
 // GUIEdit::unSelectWindow ====================================================
 /** Remove window from the selection list */
 //=============================================================================
@@ -4516,14 +4527,28 @@ void GUIEdit::computeResizeLocation( EditMode resizeMode,
 /** Move the window passed into the the absolute position (x,y),
 	* note that there is NO SAFE checking done on that position */
 //=============================================================================
-void GUIEdit::moveWindowTo( GameWindow *window, Int x, Int y )
+void GUIEdit::moveWindowTo(GameWindow* window, Int x, Int y)
 {
 
-	// set the position
-	window->winSetPosition( x, y );
+	// OLD
+	// // set the position
+	// window->winSetPosition( x, y );
+	//
+	// // we've now made a change
+	// setUnsaved( TRUE );
 
-	// we've now made a change
-	setUnsaved( TRUE );
+	// NEW
+	// Set the new position.
+	window->winSetPosition(x, y);
+
+	// Keep hierarchy selection synchronized after move operations.
+	// This is especially important for freshly pasted/cloned windows,
+	// because moving them can leave the hierarchy/UI state desynced.
+	if (isWindowSelected(window) && selectionCount() == 1)
+		TheHierarchyView->selectWindow(window);
+
+	// Mark layout as modified.
+	setUnsaved(TRUE);
 
 }
 

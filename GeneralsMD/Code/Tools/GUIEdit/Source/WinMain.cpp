@@ -242,14 +242,49 @@ Int APIENTRY WinMain(HINSTANCE hInstance,
 				if( returnValue == 0 )
 					quit = TRUE;
 
-				// translate accelerator messages
-				if( !TranslateAccelerator( msg.hwnd, hAccelTable, &msg ) )
+				// OLD
+				// if( !TranslateAccelerator( msg.hwnd, hAccelTable, &msg ) )
+				// {
+				//     TranslateMessage( &msg );
+				//     DispatchMessage( &msg );
+				// }
+
+				// NEW
+				// Do NOT process global accelerators when a text input control has focus.
+				// This allows Ctrl+C / Ctrl+V / Ctrl+X to work inside edit fields.
+				HWND focus = GetFocus();
+				char className[64] = { 0 };
+
+				Bool textInputHasFocus = FALSE;
+
+				if (focus)
 				{
+					GetClassName(focus, className, sizeof(className));
 
-					// translate and dispatch the message
-					TranslateMessage( &msg );
-					DispatchMessage( &msg );
+					if (
+						_stricmp(className, "Edit") == 0 ||
+						_stricmp(className, "ComboBox") == 0 ||
+						_stricmp(className, "RichEdit20A") == 0 ||
+						_stricmp(className, "RichEdit20W") == 0
+						)
+					{
+						textInputHasFocus = TRUE;
+					}
+				}
 
+				if (textInputHasFocus)
+				{
+					// Let the control handle the key normally
+					TranslateMessage(&msg);
+					DispatchMessage(&msg);
+				}
+				else
+				{
+					if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+					{
+						TranslateMessage(&msg);
+						DispatchMessage(&msg);
+					}
 				}
 
 			}
