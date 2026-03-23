@@ -359,10 +359,17 @@ void GUIEditWindowManager::resetClipboard( void )
 //-------------------------------------------------------------------------------------------------
 /** Is the clipboard empty */
 //-------------------------------------------------------------------------------------------------
-Bool GUIEditWindowManager::isClipboardEmpty( void )
+Bool GUIEditWindowManager::isClipboardEmpty(void)
 {
 
-	if( m_clipboard )
+	// OLD
+	// if( m_clipboard )
+	// 	return TRUE;
+	//
+	// return FALSE;
+
+	// NEW
+	if (m_clipboard == nullptr)
 		return TRUE;
 
 	return FALSE;
@@ -660,105 +667,96 @@ void GUIEditWindowManager::validateClipboardNames( GameWindow *root )
 //-------------------------------------------------------------------------------------------------
 /** Paste the contents of the clipboard into the window world */
 //-------------------------------------------------------------------------------------------------
-void GUIEditWindowManager::pasteClipboard( void )
+void GUIEditWindowManager::pasteClipboard(void)
 {
-	GameWindow *window, *next;
-	GameWindow *firstWindow = nullptr;
+	GameWindow* window, * next;
+	GameWindow* firstWindow = nullptr;
 
 	// check for empty clipboard
-	if( m_clipboard == nullptr )
+	if (m_clipboard == nullptr)
 	{
 
-		MessageBox( TheEditor->getWindowHandle(),
-								"Cannot perform paste, the clipboard is empty.",
-								"Clipboard Empty",
-								MB_OK );
+		MessageBox(TheEditor->getWindowHandle(),
+			"Cannot perform paste, the clipboard is empty.",
+			"Clipboard Empty",
+			MB_OK);
 		return;
 
 	}
 
 	// create a duplicate of everything in the clipboard
-	assert( m_clipboardDup == nullptr );
+	assert(m_clipboardDup == nullptr);
 	createClipboardDuplicate();
 
-	//
-	// we are about to paste the contents of the clipboard dupe into the world,
-	// scan through the clipboard dupe and adjust any names that will cause
-	// collisions in the current layout
-	//
-	validateClipboardNames( m_clipboardDup );
+	// ensure unique names before inserting into layout
+	validateClipboardNames(m_clipboardDup);
 
-	// keep a pointer to the first window we will add
+	// keep pointer to first pasted window
 	firstWindow = m_clipboardDup;
 
-	// move everything from the duplicate list into the real world
-	for( window = m_clipboardDup; window; window = next )
+	// move everything from duplicate list into real layout
+	for (window = m_clipboardDup; window; window = next)
 	{
 
-		// get next window
 		next = window->winGetNext();
 
-		// remove from clipboard
-		unlinkFromClipboard( window, &m_clipboardDup );
+		// unlink from clipboard
+		unlinkFromClipboard(window, &m_clipboardDup);
 
-		// place in real layout
-		linkWindow( window );
+		// link into main window system
+		linkWindow(window);
 
-		//
-		// since we just pasted in a new window, offset it a little bit
-		// from the original location based on how many times we're pasted
-		// this set of copies.  This way they won't all stack on top of
-		// each other
-		//
 		ICoord2D pos, safePos;
 
-		window->winGetPosition( &pos.x, &pos.y );
+		window->winGetPosition(&pos.x, &pos.y);
+
+		// apply paste offset to avoid overlap
 		pos.x += m_copySpacing * (m_numCopiesPasted + 1);
 		pos.y += m_copySpacing * (m_numCopiesPasted + 1);
 
-		// kee the location legal
-		TheEditor->computeSafeLocation( window, pos.x, pos.y,
-																		&safePos.x, &safePos.y );
+		// clamp position into valid screen space
+		TheEditor->computeSafeLocation(window, pos.x, pos.y,
+			&safePos.x, &safePos.y);
 
-		// set the new location
-		TheEditor->moveWindowTo( window, safePos.x, safePos.y );
+		TheEditor->moveWindowTo(window, safePos.x, safePos.y);
 
-		// notify the hierarchy of the new window added
-		TheHierarchyView->addWindow( window, HIERARCHY_ADD_AT_TOP );
+		// OLD (causes duplicate hierarchy insertion)
+		// TheHierarchyView->addWindow( window, HIERARCHY_ADD_AT_TOP );
 
+		// NEW
+		// Do NOT add to hierarchy here.
+		// notifyNewWindow() will handle hierarchy insertion later.
 	}
 
-	// the clipboard duplicate list is only for the act of pasting
-	assert( m_clipboardDup == nullptr );
+	assert(m_clipboardDup == nullptr);
 
-	// we've now completed another successful copy pasted in
 	m_numCopiesPasted++;
 
-	//
-	// now that all windows were added to the layout, and we have
-	// the first window that we added ... since we know they were added
-	// at the head of the window list we can traverse from the first
-	// window added to the head of the window list to access each new
-	// window we just pasted.  As a convenience we will unselect anything
-	// selected and select all the windows we added
-	//
+	// select and register newly pasted windows
 	TheEditor->clearSelections();
 	window = firstWindow;
-	while( window )
+
+	while (window)
 	{
 
-		TheEditor->selectWindow( window );
-		window = window->winGetPrev();
+		// OLD (wrong order: notify called on wrong window)
+		// TheEditor->selectWindow( window );
+		// window = window->winGetPrev();
+		// TheEditor->notifyNewWindow( window );
 
-		// notify the editor that each of the windows was created
-		TheEditor->notifyNewWindow( window );
+		// NEW (correct order)
+		// 1. notify editor (adds to hierarchy correctly)
+		// 2. select window
+		// 3. move to previous
+		TheEditor->notifyNewWindow(window);
+		TheEditor->selectWindow(window);
+		window = window->winGetPrev();
 
 	}
 
-	// if we did in fact paste a window then our file contents have changed
-	if( firstWindow )
-		TheEditor->setUnsaved( TRUE );
-
+	// mark layout as modified
+	if (firstWindow)
+		TheEditor->setUnsaved(TRUE);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1365,16 +1363,27 @@ GameWindow *GUIEditWindowManager::duplicateWindow( GameWindow *source,
 		unlinkWindow( duplicate );
 
 	// copy edit data, only for the editor
-	if( duplicate )
+	if (duplicate)
 	{
-		GameWindowEditData *editData = duplicate->winGetEditData();
-		GameWindowEditData *sourceEditData = source->winGetEditData();
+		GameWindowEditData* editData = duplicate->winGetEditData();
+		GameWindowEditData* sourceEditData = source->winGetEditData();
 
-		// set edit data to zero or copy from source
-		if( sourceEditData && editData )
-			*editData = *sourceEditData;
-//			memcpy( editData, sourceEditData, sizeof( GameWindowEditData ) );
+		// OLD
+		// if( sourceEditData && editData )
+		// 	*editData = *sourceEditData;
+		// //			memcpy( editData, sourceEditData, sizeof( GameWindowEditData ) );
 
+		// NEW
+		// Do NOT shallow-copy editor-only edit data from the source window.
+		// A duplicated window must start with fresh editor state, otherwise
+		// hierarchy/context-menu/property references may still point to the
+		// original window's editor state and break after move/reorder actions.
+		if (editData)
+			memset(editData, 0, sizeof(GameWindowEditData));
+
+		// If later you identify specific safe fields inside GameWindowEditData,
+		// copy only those fields individually here.
+		(void)sourceEditData;
 	}
 
 	//
@@ -1453,23 +1462,38 @@ void GUIEditWindowManager::makeChildOf( GameWindow *target,
 	GameWindow *prevParent = target->winGetParent();
 
 	// check for no parent
-	if( parent == nullptr )
+	if (parent == nullptr)
 	{
 
 		// if target already has no parent nothing to do
-		if( prevParent == nullptr )
+		if (prevParent == nullptr)
 			return;
 
 		//
 		// we are removing a parent from the target and placing target
-		// at the top of the window list.  Be sure to preserve the
+		// at the top of the window list. Be sure to preserve the
 		// screen position as the new coords so it's in the same place
 		//
 		ICoord2D screenPos;
-		target->winGetScreenPosition( &screenPos.x, &screenPos.y );
-		unlinkChildWindow( target );
-		linkWindow( target );
-		target->winSetPosition( screenPos.x, screenPos.y );
+		target->winGetScreenPosition(&screenPos.x, &screenPos.y);
+		unlinkChildWindow(target);
+		linkWindow(target);
+		target->winSetPosition(screenPos.x, screenPos.y);
+
+		// OLD
+		// return;
+
+		// NEW
+		// Rebuild the hierarchy entry instead of relying on move logic.
+		// This helps when the hierarchy node/item data becomes stale
+		// after reparenting a cloned window.
+		TheHierarchyView->removeWindow(target);
+		TheHierarchyView->addWindow(target, HIERARCHY_ADD_AT_TOP);
+
+		TheEditor->clearSelections();
+		TheEditor->selectWindow(target);
+		TheHierarchyView->selectWindow(target);
+
 		return;
 
 	}
@@ -1511,21 +1535,37 @@ void GUIEditWindowManager::makeChildOf( GameWindow *target,
 													screenPosBeforeMove.y - parentPos.y );
 
 	// notify the hierarchy of the change
-	TheHierarchyView->moveWindowChildOf( target, parent );
+	TheHierarchyView->moveWindowChildOf(target, parent);
+
+	// OLD
+	// // notify the hierarchy of the change
+	// TheHierarchyView->moveWindowChildOf( target, parent );
+
+	// NEW
+	// Rebuild the hierarchy entry instead of using moveWindowChildOf().
+	// The current bug strongly suggests that the moved hierarchy node keeps
+	// stale item data after a cloned window is reparented.
+	TheHierarchyView->removeWindow(target);
+	TheHierarchyView->addWindow(target, HIERARCHY_ADD_AT_TOP);
 
 	//
 	// run through the move code to keep the child in a legal position
 	// inside the parent client area
 	//
 	ICoord2D origin, safeLoc;
-	target->winGetScreenPosition( &origin.x, &origin.y );
+	target->winGetScreenPosition(&origin.x, &origin.y);
 
-	// kee the location legal
-	TheEditor->computeSafeLocation( target, origin.x, origin.y,
-																	&safeLoc.x, &safeLoc.y );
+	// keep the location legal
+	TheEditor->computeSafeLocation(target, origin.x, origin.y,
+		&safeLoc.x, &safeLoc.y);
 
 	// move the target
-	TheEditor->moveWindowTo( target, safeLoc.x, safeLoc.y );
+	TheEditor->moveWindowTo(target, safeLoc.x, safeLoc.y);
+
+	// Force the moved target to become the active hierarchy selection again.
+	TheEditor->clearSelections();
+	TheEditor->selectWindow(target);
+	TheHierarchyView->selectWindow(target);
 
 }
 

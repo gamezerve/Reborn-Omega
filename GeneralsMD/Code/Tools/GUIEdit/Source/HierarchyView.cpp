@@ -68,6 +68,8 @@
 static ICoord2D dialogPos;
 static ICoord2D dialogSize;
 
+static Bool g_ignoreHierarchySelChanged = FALSE; //Reborn
+
 
 // PUBLIC DATA ////////////////////////////////////////////////////////////////
 HierarchyView *TheHierarchyView = nullptr;  ///< the view singleton
@@ -321,12 +323,16 @@ LRESULT CALLBACK HierarchyView::dialogProc( HWND hWndDialog, UINT message,
 
 			// get the tree item if any that we're over
 			HTREEITEM overItem = TheHierarchyView->treePointToItem( treePoint.x, treePoint.y );
-			if( overItem )
+			if (overItem)
 			{
-				GameWindow *overWindow;
+				GameWindow* overWindow;
+
+				// NEW
+				// Make sure right-click also updates the active tree selection.
+				TreeView_SelectItem(TheHierarchyView->getTreeHandle(), overItem);
 
 				// get the game window from the tree item
-				overWindow = TheHierarchyView->getWindowFromItem( overItem );
+				overWindow = TheHierarchyView->getWindowFromItem(overItem);
 
 				// unselect all windows in the editor
 				TheEditor->clearSelections();
@@ -376,11 +382,36 @@ LRESULT CALLBACK HierarchyView::dialogProc( HWND hWndDialog, UINT message,
 					{
 
 						// ----------------------------------------------------------------
-						case TVN_SELCHANGED:
-						{
-							LPNMTREEVIEW treeNotify = (LPNMTREEVIEW)lParam;
+					case TVN_SELCHANGED:
+					{
+						LPNMTREEVIEW treeNotify = (LPNMTREEVIEW)lParam;
 
-							if( treeNotify->action != TVC_UNKNOWN )
+						// OLD
+						// if( treeNotify->action != TVC_UNKNOWN )
+						// {
+						// 	TVITEM newItem;
+						//
+						// 	// get the new item selected
+						// 	newItem = treeNotify->itemNew;
+						//
+						// 	// get the window data pointers
+						// 	GameWindow *window = (GameWindow *)newItem.lParam;
+						//
+						// 	// unselect everything else and select the new window
+						// 	TheEditor->clearSelections();
+						// 	if( window )
+						// 		TheEditor->selectWindow( window );
+						//
+						// }
+
+						// NEW
+						// Ignore selection-changed notifications while the hierarchy is being
+						// rebuilt internally. Removing a tree item can cause the TreeView to
+						// auto-select some other node, which would otherwise overwrite the
+						// intended editor selection.
+						if (g_ignoreHierarchySelChanged == FALSE)
+						{
+							if (treeNotify->action != TVC_UNKNOWN)
 							{
 								TVITEM newItem;
 
@@ -388,53 +419,120 @@ LRESULT CALLBACK HierarchyView::dialogProc( HWND hWndDialog, UINT message,
 								newItem = treeNotify->itemNew;
 
 								// get the window data pointers
-								GameWindow *window = (GameWindow *)newItem.lParam;
+								GameWindow* window = (GameWindow*)newItem.lParam;
 
 								// unselect everything else and select the new window
 								TheEditor->clearSelections();
-								if( window )
-									TheEditor->selectWindow( window );
-
+								if (window)
+									TheEditor->selectWindow(window);
 							}
-
-							break;
-
 						}
+
+						break;
+
+					}
 
 						// ----------------------------------------------------------------
 						case NM_DBLCLK:
 						{
 
-							// get the selected tree item
-							HTREEITEM selected = TreeView_GetSelection( TheHierarchyView->getTreeHandle() );
-							if( selected )
+							// OLD
+							// // get the selected tree item
+							// HTREEITEM selected = TreeView_GetSelection( TheHierarchyView->getTreeHandle() );
+							// if( selected )
+							// {
+							// 	GameWindow *overWindow;
+							//
+							// 	// get the game window from the tree item
+							// 	overWindow = TheHierarchyView->getWindowFromItem( selected );
+							//
+							// 	// unselect all windows in the editor
+							// 	TheEditor->clearSelections();
+							//
+							// 	// select this one window
+							// 	TheEditor->selectWindow( overWindow );
+							//
+							// 	// set this window as the popup window target
+							// 	TheHierarchyView->setPopupTarget( overWindow );
+							//
+							// 	//
+							// 	// bring up the popup menu, note that we must translate the
+							// 	// local mouse pos to the screen
+							// 	//
+							// 	HMENU menu, subMenu;
+							// 	POINT screen;
+							//
+							// 	menu = LoadMenu( TheEditor->getInstance(), (LPCTSTR)HIERARCHY_POPUP_MENU );
+							// 	subMenu = GetSubMenu( menu, 0 );
+							// 	GetCursorPos( &screen );
+							// 	TrackPopupMenuEx( subMenu, 0, screen.x, screen.y, hWndDialog, nullptr );
+							//
+							// }
+
+							// NEW
+							// Use the item under the mouse cursor instead of relying on the
+							// current tree selection. After drag/drop or reparenting, the
+							// selected tree item can be stale even though the user double-clicks
+							// the correct node.
+							POINT screen;
+							POINT treePoint;
+							HTREEITEM overItem = nullptr;
+
+							GetCursorPos(&screen);
+
+							treePoint = screen;
+							ScreenToClient(TheHierarchyView->getTreeHandle(), &treePoint);
+
+							overItem = TheHierarchyView->treePointToItem(treePoint.x, treePoint.y);
+							if (overItem)
 							{
-								GameWindow *overWindow;
+								GameWindow* overWindow;
 
-								// get the game window from the tree item
-								overWindow = TheHierarchyView->getWindowFromItem( selected );
+								// OLD
+								// // Make the clicked item the active tree selection first.
+								// TreeView_SelectItem( TheHierarchyView->getTreeHandle(), overItem );
+								//
+								// // Get the game window from the clicked tree item.
+								// overWindow = TheHierarchyView->getWindowFromItem( overItem );
+								//
+								// // Synchronize editor selection.
+								// TheEditor->clearSelections();
+								// TheEditor->selectWindow( overWindow );
+								//
+								// // Store popup target for Move / Delete / Properties actions.
+								// TheHierarchyView->setPopupTarget( overWindow );
+								//
+								// // Open the hierarchy popup menu at the cursor position.
+								// HMENU menu, subMenu;
+								// menu = LoadMenu( TheEditor->getInstance(), (LPCTSTR)HIERARCHY_POPUP_MENU );
+								// subMenu = GetSubMenu( menu, 0 );
+								// TrackPopupMenuEx( subMenu, 0, screen.x, screen.y, hWndDialog, nullptr );
 
-								// unselect all windows in the editor
+								// NEW
+								// Get the game window from the clicked tree item.
+								overWindow = TheHierarchyView->getWindowFromItem(overItem);
+
+								// Synchronize editor selection first.
 								TheEditor->clearSelections();
+								TheEditor->selectWindow(overWindow);
 
-								// select this one window
-								TheEditor->selectWindow( overWindow );
+								// Force the hierarchy tree to select and visually refresh the clicked item.
+								// This is important after reparenting, because the old tree item is deleted
+								// and a new one is inserted by moveWindowChildOf().
+								SetFocus(TheHierarchyView->getTreeHandle());
+								TheHierarchyView->selectWindow(overWindow);
+								TreeView_EnsureVisible(TheHierarchyView->getTreeHandle(), overItem);
+								InvalidateRect(TheHierarchyView->getTreeHandle(), nullptr, TRUE);
+								UpdateWindow(TheHierarchyView->getTreeHandle());
 
-								// set this window as the popup window target
-								TheHierarchyView->setPopupTarget( overWindow );
+								// Store popup target for Move / Delete / Properties actions.
+								TheHierarchyView->setPopupTarget(overWindow);
 
-								//
-								// bring up the popup menu, note that we must translate the
-								// local mouse pos to the screen
-								//
+								// Open the hierarchy popup menu at the cursor position.
 								HMENU menu, subMenu;
-								POINT screen;
-
-								menu = LoadMenu( TheEditor->getInstance(), (LPCTSTR)HIERARCHY_POPUP_MENU );
-								subMenu = GetSubMenu( menu, 0 );
-								GetCursorPos( &screen );
-								TrackPopupMenuEx( subMenu, 0, screen.x, screen.y, hWndDialog, nullptr );
-
+								menu = LoadMenu(TheEditor->getInstance(), (LPCTSTR)HIERARCHY_POPUP_MENU);
+								subMenu = GetSubMenu(menu, 0);
+								TrackPopupMenuEx(subMenu, 0, screen.x, screen.y, hWndDialog, nullptr);
 							}
 
 							break;
@@ -1097,24 +1195,28 @@ void HierarchyView::setDialogSize( ICoord2D *size )
 /** Move the window hierarchy representation to be just ahead of the
 	* hierarchy entry of 'aheadOf' */
 //=============================================================================
-void HierarchyView::moveWindowAheadOf( GameWindow *window,
-																			 GameWindow *aheadOf )
+void HierarchyView::moveWindowAheadOf(GameWindow* window,
+	GameWindow* aheadOf)
 {
 
 	// sanity
-	if( window == nullptr )
+	if (window == nullptr)
 		return;
+
+	// NEW
+	// Suppress selection-changed callbacks while rebuilding the tree item.
+	g_ignoreHierarchySelChanged = TRUE;
 
 	// get the window hierarchy entry
-	removeWindow( window );
+	removeWindow(window);
 
 	// we'll say and aheadOf of null means put at the top
-	if( aheadOf == nullptr )
+	if (aheadOf == nullptr)
 	{
-
-		addWindow( window, HIERARCHY_ADD_AT_TOP );
+		addWindow(window, HIERARCHY_ADD_AT_TOP);
+		g_ignoreHierarchySelChanged = FALSE;
+		selectWindow(window);
 		return;
-
 	}
 
 	// get the hierarchy item of the aheadOf window
@@ -1164,6 +1266,13 @@ void HierarchyView::moveWindowAheadOf( GameWindow *window,
 
 	}
 
+#if USE_FAST_FIND_ITEM
+	// NEW
+	// Keep the fast item lookup in sync after reordering.
+	// Without this, later selection/highlight operations can target a stale tree item.
+	m_treeHash[window] = newItem;
+#endif
+
 	//
 	// add ALL the children of this window as well, do not worry about
 	// gadget children
@@ -1174,6 +1283,14 @@ void HierarchyView::moveWindowAheadOf( GameWindow *window,
 
 		addWindowToTree( child, newItem, HIERARCHY_ADD_AT_BOTTOM, TRUE, TRUE );
 
+
+		// NEW
+// Restore normal selection handling after tree rebuild.
+		g_ignoreHierarchySelChanged = FALSE;
+
+		// Force the moved window to become the active tree selection again.
+		selectWindow(window);
+
 	}
 
 }
@@ -1182,40 +1299,75 @@ void HierarchyView::moveWindowAheadOf( GameWindow *window,
 /** Move the hierarchy entry for window so that it is now the first
 	* child in the list under parent */
 //=============================================================================
-void HierarchyView::moveWindowChildOf( GameWindow *window, GameWindow *parent )
+void HierarchyView::moveWindowChildOf(GameWindow* window, GameWindow* parent)
 {
 
 	// sanity
-	if( window == nullptr )
+	if (window == nullptr)
 		return;
+
+	// OLD
+	// // remove the window from the hierarchy
+	// removeWindow( window );
+	//
+	// // if parent is nullptr we'll put at top of list
+	// if( parent == nullptr )
+	// {
+	//
+	// 	addWindow( window, HIERARCHY_ADD_AT_TOP );
+	// 	return;
+	//
+	// }
+	//
+	// // find the entry of the parent
+	// HTREEITEM parentItem = findTreeEntry( parent );
+	// if( parentItem == nullptr )
+	// {
+	//
+	// 	DEBUG_LOG(( "moveWindowChildOf: No parent entry" ));
+	// 	assert( 0 );
+	// 	return;
+	//
+	// }
+	//
+	// // add the window as child of the parent at the top, dont forget to
+	// // also add the children of the window too!
+	// addWindowToTree( window, parentItem, HIERARCHY_ADD_AT_TOP, TRUE, FALSE );
+
+	// NEW
+	// Temporarily suppress TVN_SELCHANGED while we rebuild the hierarchy node.
+	// Deleting the old tree item can cause TreeView to auto-select another item.
+	g_ignoreHierarchySelChanged = TRUE;
 
 	// remove the window from the hierarchy
-	removeWindow( window );
+	removeWindow(window);
 
 	// if parent is nullptr we'll put at top of list
-	if( parent == nullptr )
+	if (parent == nullptr)
 	{
+		addWindow(window, HIERARCHY_ADD_AT_TOP);
+	}
+	else
+	{
+		// find the entry of the parent
+		HTREEITEM parentItem = findTreeEntry(parent);
+		if (parentItem == nullptr)
+		{
+			g_ignoreHierarchySelChanged = FALSE;
+			DEBUG_LOG(("moveWindowChildOf: No parent entry"));
+			assert(0);
+			return;
+		}
 
-		addWindow( window, HIERARCHY_ADD_AT_TOP );
-		return;
-
+		// add the window as child of the parent at the top, dont forget to
+		// also add the children of the window too!
+		addWindowToTree(window, parentItem, HIERARCHY_ADD_AT_TOP, TRUE, FALSE);
 	}
 
-	// find the entry of the parent
-	HTREEITEM parentItem = findTreeEntry( parent );
-	if( parentItem == nullptr )
-	{
+	g_ignoreHierarchySelChanged = FALSE;
 
-		DEBUG_LOG(( "moveWindowChildOf: No parent entry" ));
-		assert( 0 );
-		return;
-
-	}
-
-	// add the window as child of the parent at the top, dont forget to
-	// also add the children of the window too!
-	addWindowToTree( window, parentItem, HIERARCHY_ADD_AT_TOP, TRUE, FALSE );
-
+	// Force the moved window to become the active tree selection again.
+	selectWindow(window);
 }
 
 // HierarchyView::treePointToItem =============================================
