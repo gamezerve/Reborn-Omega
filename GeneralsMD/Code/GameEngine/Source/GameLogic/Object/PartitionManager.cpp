@@ -1933,8 +1933,10 @@ void PartitionData::doSmallFill(
 	Real halfCellSize = ThePartitionManager->getCellSize() * 0.5f;
 	if (radius > halfCellSize)
 	{
-		DEBUG_CRASH(("object is too large to use a 'small' geometry, truncating size to cellsize"));
-		radius = halfCellSize;
+		//DEBUG_CRASH(("object is too large to use a 'small' geometry, truncating size to cellsize"));
+		//radius = halfCellSize;
+		DEBUG_CRASH(("object is too large to use a 'small' geometry, truncating size to cellsize (radius=%f halfCellSize=%f center=(%f,%f))",
+			radius, halfCellSize, centerX, centerY));
 	}
 
 	Int cx1, cy1, cx2, cy2;
@@ -2113,6 +2115,50 @@ void PartitionData::updateCellsTouched()
 	removeAllTouchedCells();
 	if (isSmall)
 	{
+		Real halfCellSize = ThePartitionManager->getCellSize() * 0.5f;
+
+		if (majorRadius > halfCellSize)
+		{
+			const char* geomName = "UNKNOWN";
+			switch (geom)
+			{
+			case GEOMETRY_SPHERE:   geomName = "GEOMETRY_SPHERE"; break;
+			case GEOMETRY_CYLINDER: geomName = "GEOMETRY_CYLINDER"; break;
+			case GEOMETRY_BOX:      geomName = "GEOMETRY_BOX"; break;
+			}
+
+			if (obj)
+			{
+				DEBUG_LOG((
+					"SMALL_GEOMETRY_OVERFLOW: object='%s' obj=%08lx id=%d geom=%s isSmall=%d pos=(%f,%f,%f) majorRadius=%f minorRadius=%f halfCellSize=%f cellSize=%f",
+					obj->getTemplate()->getName().str(),
+					obj,
+					obj->getID(),
+					geomName,
+					isSmall,
+					pos.x, pos.y, pos.z,
+					majorRadius,
+					minorRadius,
+					halfCellSize,
+					ThePartitionManager->getCellSize()
+					));
+			}
+			else if (m_ghostObject)
+			{
+				DEBUG_LOG((
+					"SMALL_GEOMETRY_OVERFLOW: ghostObject=%08lx geom=%s isSmall=%d pos=(%f,%f,%f) majorRadius=%f minorRadius=%f halfCellSize=%f cellSize=%f",
+					m_ghostObject,
+					geomName,
+					isSmall,
+					pos.x, pos.y, pos.z,
+					majorRadius,
+					minorRadius,
+					halfCellSize,
+					ThePartitionManager->getCellSize()
+					));
+			}
+		}
+
 		doSmallFill(pos.x, pos.y, majorRadius);
 	}
 	else
