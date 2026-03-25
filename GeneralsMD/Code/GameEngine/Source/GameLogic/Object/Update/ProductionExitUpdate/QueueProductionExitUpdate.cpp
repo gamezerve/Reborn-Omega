@@ -63,6 +63,12 @@ QueueProductionExitUpdate::~QueueProductionExitUpdate()
 {
 }
 
+void QueueProductionExitUpdate::resetRallyPoint()
+{
+	m_rallyPoint.zero();
+	m_rallyPointExists = FALSE;
+}
+
 //-------------------------------------------------------------------------------------------------
 void QueueProductionExitUpdate::exitObjectViaDoor( Object *newObj, ExitDoorType exitDoor )
 {
