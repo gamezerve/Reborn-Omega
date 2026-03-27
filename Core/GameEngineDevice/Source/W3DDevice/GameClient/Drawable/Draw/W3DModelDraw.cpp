@@ -2324,7 +2324,7 @@ static void doHideShowBoneSubObjs(Bool state, Int numSubObjects, Int boneIdx, Re
 }
 
 //-------------------------------------------------------------------------------------------------
-void ModelConditionInfo::WeaponBarrelInfo::setMuzzleFlashHidden(RenderObjClass *fullObject, Bool hide) const
+void ModelConditionInfo::WeaponBarrelInfo::setMuzzleFlashHidden(RenderObjClass* fullObject, Bool hide) const
 {
 	if (fullObject)
 	{
@@ -2336,7 +2336,21 @@ void ModelConditionInfo::WeaponBarrelInfo::setMuzzleFlashHidden(RenderObjClass *
 		}
 		else
 		{
-			DEBUG_CRASH(("*** ASSET ERROR: childObject %s not found in setMuzzleFlashHidden()",m_muzzleFlashBoneName.str()));
+			const char* modelName = "<unknown>";
+			//const char* templateName = "<unknown>";
+
+			if (fullObject)
+			{
+				modelName = fullObject->Get_Name();
+			}
+
+			DEBUG_CRASH((
+				"*** ASSET ERROR: childObject '%s' not found in setMuzzleFlashHidden() | model=%s | boneIndex=%d | hide=%d",
+				m_muzzleFlashBoneName.str(),
+				modelName,
+				m_muzzleFlashBone,
+				hide ? 1 : 0
+				));
 		}
 	}
 }
