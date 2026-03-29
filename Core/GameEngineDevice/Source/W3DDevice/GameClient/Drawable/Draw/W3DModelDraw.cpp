@@ -2384,7 +2384,32 @@ void W3DModelDraw::doHideShowSubObjs(const std::vector<ModelConditionInfo::HideS
 			}
 			else
 			{
-				DEBUG_CRASH(("*** ASSET ERROR: SubObject %s not found (%s)!",it->subObjName.str(),getDrawable()->getTemplate()->getName().str()));
+				//DEBUG_CRASH(("*** ASSET ERROR: SubObject %s not found (%s)!",it->subObjName.str(),getDrawable()->getTemplate()->getName().str()));
+				const char* modelName = "<null-render>";
+				const char* stateDesc = "<null-state>";
+
+				if (m_renderObject)
+				{
+					modelName = m_renderObject->Get_Name();
+				}
+
+				if (m_curState)
+				{
+					stateDesc = m_curState->getDescription().str();
+				}
+
+				DEBUG_CRASH((
+					"*** ASSET ERROR: SubObject '%s' not found"
+					" | object=%s"
+					" | model=%s"
+					" | state=%s"
+					" | action=%s",
+					it->subObjName.str(),
+					getDrawable()->getTemplate()->getName().str(),
+					modelName,
+					stateDesc,
+					it->hide ? "HideSubObject" : "ShowSubObject"
+					));
 			}
 		}
 	}
@@ -4011,7 +4036,32 @@ void W3DModelDraw::updateSubObjects()
 			}
 			else
 			{
-				DEBUG_CRASH(("*** ASSET ERROR: SubObject %s not found (%s)!",it->subObjName.str(),getDrawable()->getTemplate()->getName().str()));
+				//DEBUG_CRASH(("*** ASSET ERROR: SubObject %s not found (%s)!",it->subObjName.str(),getDrawable()->getTemplate()->getName().str()));
+				const char* modelName = "<null-render>";
+				const char* stateDesc = "<null-state>";
+
+				if (m_renderObject)
+				{
+					modelName = m_renderObject->Get_Name();
+				}
+
+				if (m_curState)
+				{
+					stateDesc = m_curState->getDescription().str();
+				}
+
+				DEBUG_CRASH((
+					"*** ASSET ERROR: SubObject '%s' not found"
+					" | object=%s"
+					" | model=%s"
+					" | state=%s"
+					" | action=%s",
+					it->subObjName.str(),
+					getDrawable()->getTemplate()->getName().str(),
+					modelName,
+					stateDesc,
+					it->hide ? "HideSubObject" : "ShowSubObject"
+					));
 			}
 		}
 	}

@@ -139,7 +139,21 @@ private:
 			for (Int i = it->getConditionsYesCount()-1; i >= 0; --i)
 			{
 				const BITSET& yesFlags = it->getNthConditionsYes(i);
+				Bool missingRequiredBit = false;
 
+				for (Int bit = 0; bit < yesFlags.size(); ++bit)
+				{
+					if (yesFlags.test(bit) && !bits.test(bit))
+					{
+						missingRequiredBit = true;
+						break;
+					}
+				}
+
+				if (missingRequiredBit)
+				{
+					continue;
+				}
 				// the best match has the most "yes" matches and the smallest number of "no" matches.
 				// if there are ties, then prefer the model with the smaller number of irrelevant 'yes' bits.
 				// (example of why tiebreaker is necessary: if we want to match FRONTCRUSHED,
