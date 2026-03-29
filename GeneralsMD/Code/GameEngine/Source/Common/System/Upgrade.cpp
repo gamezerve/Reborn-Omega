@@ -30,6 +30,9 @@
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include <windows.h> // Reborn: for CreateDirectoryA
+#include <stdio.h>   // Reborn: for file writing
+
 #define DEFINE_VETERANCY_NAMES
 #include "Common/Upgrade.h"
 #include "Common/Player.h"
@@ -48,6 +51,32 @@ static_assert(ARRAY_SIZE(TheUpgradeTypeNames) == NUM_UPGRADE_TYPES + 1, "Incorre
 
 // PUBLIC /////////////////////////////////////////////////////////////////////////////////////////
 class UpgradeCenter *TheUpgradeCenter = nullptr;
+
+
+static void WriteUpgradeListFile(const UpgradeTemplate* head) // Reborn: writes a text file with the list of all upgrades
+{
+	CreateDirectoryA("RebornStatus", nullptr);
+
+	FILE* fp = fopen("RebornStatus\\UpgradeList.txt", "wt");
+	if (!fp)
+		return;
+
+	int count = 0;
+	for (const UpgradeTemplate* upgrade = head; upgrade; upgrade = upgrade->friend_getNext())
+	{
+		const char* name = upgrade->getUpgradeName().str();
+		if (name && *name)
+		{
+			fprintf(fp, "%s\n", name);
+			++count;
+		}
+	}
+
+	fprintf(fp, "\nTotalUpgrades=%d\n", count);
+	fclose(fp);
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // UPGRADE ////////////////////////////////////////////////////////////////////////////////////////
@@ -281,15 +310,19 @@ void UpgradeCenter::init()
 //-------------------------------------------------------------------------------------------------
 void UpgradeCenter::reset()
 {
-	if( TheMappedImageCollection && !buttonImagesCached )
+	if (TheMappedImageCollection && !buttonImagesCached)
 	{
-		UpgradeTemplate *upgrade;
-		for( upgrade = m_upgradeList; upgrade; upgrade = upgrade->friend_getNext() )
+		UpgradeTemplate* upgrade;
+		for (upgrade = m_upgradeList; upgrade; upgrade = upgrade->friend_getNext())
 		{
 			upgrade->cacheButtonImage();
 		}
 		buttonImagesCached = TRUE;
 	}
+
+#ifdef RTS_DEBUG
+	WriteUpgradeListFile(m_upgradeList); // Reborn: write out the list of upgrades to a file for debugging purposes
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
