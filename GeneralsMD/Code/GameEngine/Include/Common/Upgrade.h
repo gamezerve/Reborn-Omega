@@ -264,5 +264,14 @@ protected:
 
 };
 
+void SetCurrentThingTemplateUpgradeField(const char* fieldName);
+void ClearCurrentThingTemplateUpgradeField();
+void BeginThingTemplateUpgradeCapture(const char* thingName);
+void EndThingTemplateUpgradeCapture();
+void RecordThingTemplateUpgradeToken(const char* token);
+void RecordThingTemplateUpgradeCameo(const char* thingName, const char* upgradeName);
+void FlushThingTemplateUpgradeReport();
+Bool IsKnownUpgradeName(const char* token);
+
 // EXTERNALS //////////////////////////////////////////////////////////////////////////////////////
 extern UpgradeCenter *TheUpgradeCenter;

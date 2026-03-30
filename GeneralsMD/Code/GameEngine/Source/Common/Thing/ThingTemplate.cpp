@@ -56,6 +56,7 @@
 #include "Common/ThingFactory.h"
 #include "Common/ThingSort.h"
 #include "Common/BitFlagsIO.h"
+#include "Common/Upgrade.h"
 
 #include "GameClient/Drawable.h"
 #include "GameClient/FXList.h"
@@ -76,6 +77,23 @@
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 const Int USE_EXP_VALUE_FOR_SKILL_VALUE = -999;
+
+
+
+class ThingTemplateUpgradeCaptureScope
+{
+public:
+	ThingTemplateUpgradeCaptureScope(const ThingTemplate* thing)
+	{
+		if (thing)
+			BeginThingTemplateUpgradeCapture(thing->getName().str());
+	}
+
+	~ThingTemplateUpgradeCaptureScope()
+	{
+		EndThingTemplateUpgradeCapture();
+	}
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -506,7 +524,9 @@ Bool ModuleInfo::clearAiModuleInfo()
 //-------------------------------------------------------------------------------------------------
 void ThingTemplate::parseModuleName(INI* ini, void *instance, void* store, const void* userData)
 {
+	
 	ThingTemplate* self = (ThingTemplate*)instance;
+	ThingTemplateUpgradeCaptureScope upgradeCaptureScope(self);
 	ModuleInfo* mi = (ModuleInfo*)store;
 	ModuleType type = (ModuleType)(UnsignedInt)userData;
 	const char* token = ini->getNextToken();
@@ -1250,6 +1270,19 @@ ThingTemplate::~ThingTemplate()
 //=============================================================================
 void ThingTemplate::resolveNames()
 {
+
+	ThingTemplateUpgradeCaptureScope upgradeCaptureScope(this);
+
+	for (Int cameoIndex = 0; cameoIndex < MAX_UPGRADE_CAMEO_UPGRADES; ++cameoIndex)
+	{
+		AsciiString cameoName = getUpgradeCameoName(cameoIndex);
+		if (cameoName.isNotEmpty())
+		{
+			RecordThingTemplateUpgradeCameo(getName().str(), cameoName.str());
+		}
+	}
+
+
 	Int i, j;
 
 	//Kris: July 31, 2003

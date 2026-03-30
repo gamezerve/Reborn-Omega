@@ -2386,17 +2386,22 @@ void W3DModelDraw::doHideShowSubObjs(const std::vector<ModelConditionInfo::HideS
 			{
 				//DEBUG_CRASH(("*** ASSET ERROR: SubObject %s not found (%s)!",it->subObjName.str(),getDrawable()->getTemplate()->getName().str()));
 				const char* modelName = "<null-render>";
+
+#ifdef DEBUG
 				const char* stateDesc = "<null-state>";
+#endif
 
 				if (m_renderObject)
 				{
 					modelName = m_renderObject->Get_Name();
 				}
-
+#ifdef DEBUG
 				if (m_curState)
 				{
 					stateDesc = m_curState->getDescription().str();
 				}
+#endif
+
 
 				DEBUG_CRASH((
 					"*** ASSET ERROR: SubObject '%s' not found"
@@ -4038,17 +4043,23 @@ void W3DModelDraw::updateSubObjects()
 			{
 				//DEBUG_CRASH(("*** ASSET ERROR: SubObject %s not found (%s)!",it->subObjName.str(),getDrawable()->getTemplate()->getName().str()));
 				const char* modelName = "<null-render>";
+
+#ifdef DEBUG
 				const char* stateDesc = "<null-state>";
+#endif
 
 				if (m_renderObject)
 				{
 					modelName = m_renderObject->Get_Name();
 				}
 
+#ifdef DEBUG
 				if (m_curState)
 				{
 					stateDesc = m_curState->getDescription().str();
 				}
+#endif
+				
 
 				DEBUG_CRASH((
 					"*** ASSET ERROR: SubObject '%s' not found"

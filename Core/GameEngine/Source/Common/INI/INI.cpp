@@ -1557,7 +1557,16 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 						// parse this block and check for parse errors
 						try {
 
-						(*parse)( this, what, (char *)what + offset + parseTableList.getNthExtraOffset(ptIdx), userData );
+						//(*parse)( this, what, (char *)what + offset + parseTableList.getNthExtraOffset(ptIdx), userData );
+							SetCurrentThingTemplateUpgradeField(field);
+							try {
+								(*parse)(this, what, (char*)what + offset + parseTableList.getNthExtraOffset(ptIdx), userData);
+								ClearCurrentThingTemplateUpgradeField();
+							}
+							catch (...) {
+								ClearCurrentThingTemplateUpgradeField();
+								throw;
+							}
 
 						} catch (...) {
 							DEBUG_CRASH( ("[LINE: %d - FILE: '%s'] Error reading field '%s' of block '%s'",
@@ -1604,18 +1613,32 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 //-------------------------------------------------------------------------------------------------
 /*static*/ const char* INI::getNextToken(const char* seps)
 {
-	if (!seps) seps = getSeps();
-	const char *token = ::strtok(nullptr, seps);
+	if (!seps)
+		seps = getSeps();
+
+	const char* token = ::strtok(nullptr, seps);
+
 	if (!token)
 		throw INI_INVALID_DATA;
+
+	RecordThingTemplateUpgradeToken(token);
+
 	return token;
 }
 
 //-------------------------------------------------------------------------------------------------
 /*static*/ const char* INI::getNextTokenOrNull(const char* seps)
 {
-	if (!seps) seps = getSeps();
-	const char *token = ::strtok(nullptr, seps);
+	if (!seps)
+		seps = getSeps();
+
+	const char* token = ::strtok(nullptr, seps);
+
+	if (token)
+	{
+		RecordThingTemplateUpgradeToken(token);
+	}
+
 	return token;
 }
 

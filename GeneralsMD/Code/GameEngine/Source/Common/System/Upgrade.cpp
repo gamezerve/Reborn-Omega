@@ -32,11 +32,15 @@
 
 #include <windows.h> // Reborn: for CreateDirectoryA
 #include <stdio.h>   // Reborn: for file writing
+#include <set>
+#include <map>
 
 #define DEFINE_VETERANCY_NAMES
 #include "Common/Upgrade.h"
 #include "Common/Player.h"
 #include "Common/Xfer.h"
+#include "Common/ThingTemplate.h"
+#include "Common/ThingFactory.h"
 #include "GameClient/InGameUI.h"
 #include "GameClient/Image.h"
 
@@ -52,6 +56,315 @@ static_assert(ARRAY_SIZE(TheUpgradeTypeNames) == NUM_UPGRADE_TYPES + 1, "Incorre
 // PUBLIC /////////////////////////////////////////////////////////////////////////////////////////
 class UpgradeCenter *TheUpgradeCenter = nullptr;
 
+static AsciiString g_currentThingTemplateUpgradeCapture;
+static Bool g_isThingTemplateUpgradeCaptureActive = FALSE;
+static Bool g_upgradeReportDirty = FALSE;
+static std::set<AsciiString> g_knownUpgradeNames;
+
+struct ThingTemplateUpgradeReportEntry
+{
+	std::set<AsciiString> cameos;
+	std::set<AsciiString> refs;
+};
+
+static std::map<AsciiString, ThingTemplateUpgradeReportEntry> g_thingTemplateUpgradeReport;
+
+
+
+void BeginThingTemplateUpgradeCapture(const char* thingName)
+{
+	if (thingName == nullptr || thingName[0] == 0)
+		return;
+
+	g_currentThingTemplateUpgradeCapture = thingName;
+	g_isThingTemplateUpgradeCaptureActive = TRUE;
+}
+
+void EndThingTemplateUpgradeCapture()
+{
+	g_currentThingTemplateUpgradeCapture.clear();
+	g_isThingTemplateUpgradeCaptureActive = FALSE;
+}
+
+Bool IsKnownUpgradeName(const char* token)
+{
+	if (token == nullptr || token[0] == 0)
+		return FALSE;
+
+	return g_knownUpgradeNames.find(AsciiString(token)) != g_knownUpgradeNames.end();
+}
+
+static Bool LooksLikeUpgradeName(const char* token)
+{
+	if (token == nullptr || token[0] == 0)
+		return FALSE;
+
+	if (strnicmp(token, "Upgrade_", 8) == 0)
+	{
+		unsigned char next = (unsigned char)token[8];
+		if (next >= '0' && next <= '9')
+			return FALSE;
+
+		return TRUE;
+	}
+
+	return strstr(token, "_Upgrade_") != nullptr;
+}
+
+
+static AsciiString g_currentThingTemplateUpgradeField;
+
+static Bool ShouldIgnoreUpgradeReferenceForCurrentField()
+{
+	if (g_currentThingTemplateUpgradeField.isEmpty())
+		return FALSE;
+
+	if (stricmp(g_currentThingTemplateUpgradeField.str(), "UpgradeToRemove") == 0)
+		return TRUE;
+
+	if (stricmp(g_currentThingTemplateUpgradeField.str(), "UpgradeToRemoveOnSell") == 0)
+		return TRUE;
+
+	if (stricmp(g_currentThingTemplateUpgradeField.str(), "UpgradeToGrant") == 0)
+		return TRUE;
+
+	return FALSE;
+}
+
+void RecordThingTemplateUpgradeToken(const char* token)
+{
+	if (!g_isThingTemplateUpgradeCaptureActive)
+		return;
+	if (g_currentThingTemplateUpgradeCapture.isEmpty())
+		return;
+	if (token == nullptr || token[0] == 0)
+		return;
+	if (!LooksLikeUpgradeName(token))
+		return;
+	if (ShouldIgnoreUpgradeReferenceForCurrentField())
+		return;
+
+
+	g_thingTemplateUpgradeReport[g_currentThingTemplateUpgradeCapture].refs.insert(AsciiString(token));
+	g_upgradeReportDirty = TRUE;
+}
+
+void RecordThingTemplateUpgradeCameo(const char* thingName, const char* upgradeName)
+{
+	if (thingName == nullptr || thingName[0] == 0 || upgradeName == nullptr || upgradeName[0] == 0)
+		return;
+
+	g_thingTemplateUpgradeReport[AsciiString(thingName)].cameos.insert(AsciiString(upgradeName));
+	g_thingTemplateUpgradeReport[AsciiString(thingName)].refs.insert(AsciiString(upgradeName));
+	g_upgradeReportDirty = TRUE;
+}
+
+
+void SetCurrentThingTemplateUpgradeField(const char* fieldName)
+{
+	if (fieldName && fieldName[0])
+		g_currentThingTemplateUpgradeField = fieldName;
+	else
+		g_currentThingTemplateUpgradeField.clear();
+}
+
+void ClearCurrentThingTemplateUpgradeField()
+{
+	g_currentThingTemplateUpgradeField.clear();
+}
+
+
+static Bool IsUpgradeCameoException(const char* upgradeName)
+{
+	if (upgradeName == nullptr || upgradeName[0] == 0)
+		return FALSE;
+
+	static const std::set<AsciiString> s_exceptions =
+	{
+		"Upgrade_CostReduction",
+		"Upgrade_GLARadar",
+		"Upgrade_BecomeRealGLASupplyStash",
+		"Upgrade_BecomeRealGLACommandCenter",
+		"Upgrade_BecomeRealGLABlackMarket",
+		"Upgrade_BecomeRealGLABarracks",
+		"Upgrade_BecomeRealGLAArmsDealer",
+		"Upgrade_Veterancy_ELITE",
+		"Upgrade_Veterancy_HEROIC",
+		"Upgrade_ChinaEMPMines",
+		"Upgrade_ChinaMines",
+		"Upgrade_AmericaRangerTaunt",
+		"Upgrade_AmericaMOAB",
+		"Upgrade_AmericaRadar",
+		"Upgrade_GLAWorkerFakeCommandSet",
+		"Upgrade_GLAWorkerRealCommandSet"
+	};
+
+	return s_exceptions.find(AsciiString(upgradeName)) != s_exceptions.end();
+}
+
+
+static Bool IsTrainabilityRelatedUpgradeReferenceException(const ThingTemplate* thing, const char* upgradeName)
+{
+	if (thing == nullptr || upgradeName == nullptr || upgradeName[0] == 0)
+		return FALSE;
+
+	static const std::set<AsciiString> s_trainabilityRelatedExceptions =
+	{
+		"Upgrade_AmericaAdvancedTraining",
+	};
+
+	return s_trainabilityRelatedExceptions.find(AsciiString(upgradeName)) != s_trainabilityRelatedExceptions.end();
+}
+
+static const char* GetUpgradeCameoExceptionReason(const char* upgradeName)
+{
+	if (upgradeName == nullptr || upgradeName[0] == 0)
+		return nullptr;
+
+	if (IsUpgradeCameoException(upgradeName))
+		return "placeholder upgrade (Excluded)";
+
+	return nullptr;
+}
+
+static const char* GetTrainabilityRelatedUpgradeReferenceExceptionReason(const ThingTemplate* thing, const char* upgradeName)
+{
+	if (upgradeName == nullptr || upgradeName[0] == 0)
+		return nullptr;
+
+	if (IsTrainabilityRelatedUpgradeReferenceException(thing, upgradeName))
+	{
+		if (thing && !thing->isTrainable())
+			return "object is not trainable (Excluded)";
+
+		return "trainability-related upgrade";
+	}
+
+	return nullptr;
+}
+
+static const char* GetUpgradeReferenceExceptionReason(const ThingTemplate* thing, const char* upgradeName)
+{
+	const char* reason = GetUpgradeCameoExceptionReason(upgradeName);
+	if (reason != nullptr)
+		return reason;
+
+	reason = GetTrainabilityRelatedUpgradeReferenceExceptionReason(thing, upgradeName);
+	if (reason != nullptr)
+		return reason;
+
+	return nullptr;
+}
+
+void FlushThingTemplateUpgradeReport()
+{
+	if (!g_upgradeReportDirty)
+		return;
+
+	CreateDirectoryA("RebornStatus", nullptr);
+
+	FILE* fp = fopen("RebornStatus\\ThingTemplateUpgradeRefs.txt", "wt");
+	if (fp == nullptr)
+		return;
+
+	FILE* overflowFp = fopen("RebornStatus\\ThingTemplateUpgradeRefs_TooManyEffectiveReferences.txt", "wt");
+
+	for (std::map<AsciiString, ThingTemplateUpgradeReportEntry>::const_iterator it = g_thingTemplateUpgradeReport.begin(); it != g_thingTemplateUpgradeReport.end(); ++it)
+	{
+		const ThingTemplate* thing = TheThingFactory ? TheThingFactory->findTemplate(it->first.str()) : nullptr;
+		Int cameoCount = (Int)it->second.cameos.size();
+		Int totalRefCount = (Int)it->second.refs.size();
+		Int exceptionRefCount = 0;
+		Int effectiveRefCount = 0;
+
+		AsciiString missing;
+
+		for (std::set<AsciiString>::const_iterator r = it->second.refs.begin(); r != it->second.refs.end(); ++r)
+		{
+			const char* exceptionReason = GetUpgradeReferenceExceptionReason(thing, r->str());
+			if (exceptionReason != nullptr)
+			{
+				exceptionRefCount++;
+				continue;
+			}
+
+			effectiveRefCount++;
+
+			if (it->second.cameos.find(*r) == it->second.cameos.end())
+			{
+				if (!missing.isEmpty())
+					missing.concat(", ");
+				missing.concat(*r);
+			}
+		}
+
+		if (!missing.isEmpty())
+		{
+			DEBUG_ASSERTCRASH(false, ("ThingTemplate '%s' has upgrade references missing from UpgradeCameos: %s",
+				it->first.str(), missing.str()));
+		}
+
+		if (effectiveRefCount > 7)
+		{
+			DEBUG_ASSERTCRASH(false, ("ThingTemplate '%s' has %d effective upgrade references which exceeds the supported UpgradeCameo limit of 7",
+				it->first.str(), effectiveRefCount));
+
+			if (overflowFp != nullptr)
+			{
+				fprintf(overflowFp, "Object=%s\n", it->first.str());
+				fprintf(overflowFp, "  UpgradeCameoCount=%d\n", cameoCount);
+				fprintf(overflowFp, "  AllUpgradeReferencesCount=%d\n", totalRefCount);
+				fprintf(overflowFp, "  AllUpgradeReferencesExceptionCount=%d\n", exceptionRefCount);
+				fprintf(overflowFp, "  AllUpgradeReferencesEffectiveCount=%d\n", effectiveRefCount);
+
+				fprintf(overflowFp, "  UpgradeCameos:\n");
+				for (std::set<AsciiString>::const_iterator c = it->second.cameos.begin(); c != it->second.cameos.end(); ++c)
+					fprintf(overflowFp, "    %s\n", c->str());
+
+				fprintf(overflowFp, "  AllUpgradeReferences:\n");
+				for (std::set<AsciiString>::const_iterator r = it->second.refs.begin(); r != it->second.refs.end(); ++r)
+				{
+					const char* exceptionReason = GetUpgradeReferenceExceptionReason(thing, r->str());
+					if (exceptionReason != nullptr)
+						fprintf(overflowFp, "    %s (%s)\n", r->str(), exceptionReason);
+					else
+						fprintf(overflowFp, "    %s\n", r->str());
+				}
+
+				fprintf(overflowFp, "\n");
+			}
+		}
+
+		fprintf(fp, "Object=%s\n", it->first.str());
+		fprintf(fp, "  UpgradeCameoCount=%d\n", cameoCount);
+		fprintf(fp, "  AllUpgradeReferencesCount=%d\n", totalRefCount);
+		fprintf(fp, "  AllUpgradeReferencesExceptionCount=%d\n", exceptionRefCount);
+		fprintf(fp, "  AllUpgradeReferencesEffectiveCount=%d\n", effectiveRefCount);
+
+		fprintf(fp, "  UpgradeCameos:\n");
+		for (std::set<AsciiString>::const_iterator c = it->second.cameos.begin(); c != it->second.cameos.end(); ++c)
+			fprintf(fp, "    %s\n", c->str());
+
+		fprintf(fp, "  AllUpgradeReferences:\n");
+		for (std::set<AsciiString>::const_iterator r = it->second.refs.begin(); r != it->second.refs.end(); ++r)
+		{
+			const char* exceptionReason = GetUpgradeReferenceExceptionReason(thing, r->str());
+			if (exceptionReason != nullptr)
+				fprintf(fp, "    %s (%s)\n", r->str(), exceptionReason);
+			else
+				fprintf(fp, "    %s\n", r->str());
+		}
+
+		fprintf(fp, "\n");
+	}
+
+	fclose(fp);
+
+	if (overflowFp != nullptr)
+		fclose(overflowFp);
+
+	g_upgradeReportDirty = FALSE;
+}
 
 static void WriteUpgradeListFile(const UpgradeTemplate* head) // Reborn: writes a text file with the list of all upgrades
 {
@@ -323,6 +636,15 @@ void UpgradeCenter::reset()
 #ifdef RTS_DEBUG
 	WriteUpgradeListFile(m_upgradeList); // Reborn: write out the list of upgrades to a file for debugging purposes
 #endif
+
+#ifdef RTS_DEBUG
+	for (UpgradeTemplate* upgrade = m_upgradeList; upgrade; upgrade = upgrade->friend_getNext())
+	{
+		g_knownUpgradeNames.insert(upgrade->getUpgradeName());
+	}
+
+	FlushThingTemplateUpgradeReport();
+#endif
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -509,26 +831,20 @@ std::vector<AsciiString> UpgradeCenter::getUpgradeNames() const
 //-------------------------------------------------------------------------------------------------
 /** Parse an upgrade definition */
 //-------------------------------------------------------------------------------------------------
-void UpgradeCenter::parseUpgradeDefinition( INI *ini )
+void UpgradeCenter::parseUpgradeDefinition(INI* ini)
 {
-	// read the name
 	const char* name = ini->getNextToken();
 
-	// find existing item if present
-	UpgradeTemplate* upgrade = TheUpgradeCenter->findNonConstUpgradeByKey( NAMEKEY(name) );
-	if( upgrade == nullptr )
+	UpgradeTemplate* upgrade = TheUpgradeCenter->findNonConstUpgradeByKey(NAMEKEY(name));
+	if (upgrade == nullptr)
 	{
-
-		// allocate a new item
-		upgrade = TheUpgradeCenter->newUpgrade( name );
-
+		upgrade = TheUpgradeCenter->newUpgrade(name);
 	}
 
-	// sanity
-	DEBUG_ASSERTCRASH( upgrade, ("parseUpgradeDefinition: Unable to allocate upgrade '%s'", name) );
+	DEBUG_ASSERTCRASH(upgrade, ("parseUpgradeDefinition: Unable to allocate upgrade '%s'", name));
 
-	// parse the ini definition
-	ini->initFromINI( upgrade, upgrade->getFieldParse() );
+	g_knownUpgradeNames.insert(AsciiString(name));
 
+	ini->initFromINI(upgrade, upgrade->getFieldParse());
 }
 
