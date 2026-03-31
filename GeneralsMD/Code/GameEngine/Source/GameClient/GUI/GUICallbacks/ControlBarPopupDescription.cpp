@@ -88,10 +88,13 @@
 #include "GameClient/InGameUI.h"
 #include "GameClient/ControlBar.h"
 #include "GameClient/DisplayStringManager.h"
+#include "GameLogic/Module/BattlePlanUpdate.h"
 #include "GameLogic/GameLogic.h"
+#include "GameLogic/Module/MaxHealthUpgrade.h"
 #include "GameLogic/Module/OverchargeBehavior.h"
 #include "GameLogic/Module/ProductionUpdate.h"
 #include "GameLogic/ScriptEngine.h"
+#include "GameLogic/Module/ActiveBody.h"
 
 #include "GameNetwork/NetworkInterface.h"
 
@@ -248,11 +251,12 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 		return;
 
 	Player* player = ThePlayerList->getLocalPlayer();
-	UnicodeString name, cost, buildtime, powertext, limittext, reloadtext, descrip;
+	UnicodeString name, cost, buildtime, powertext, limittext, reloadtext, descrip, healthText, shroudText;
 	buildtime = UnicodeString::TheEmptyString;
 	powertext = UnicodeString::TheEmptyString;
 	limittext = UnicodeString::TheEmptyString;
 	reloadtext = UnicodeString::TheEmptyString;
+	healthText = UnicodeString::TheEmptyString;
 
 	UnicodeString requiresFormat = UnicodeString::TheEmptyString, requiresList;
 	Bool firstRequirement = true;
@@ -478,10 +482,29 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			//prerequisites.
 
 			//Format the cost only when we have to pay for it.
-			costToBuild = thingTemplate->calcCostToBuild( player );
-			if( costToBuild > 0 )
+			Int baseCost = thingTemplate->friend_getBuildCost();
+			costToBuild = thingTemplate->calcCostToBuild(player);
+
+			if (costToBuild > 0)
 			{
-				cost.format( TheGameText->fetch("TOOLTIP:Cost"), costToBuild );
+				cost.format(TheGameText->fetch("TOOLTIP:Cost"), costToBuild);
+
+				if (baseCost > 0 && costToBuild != baseCost)
+				{
+					Int percentDiff = ((Int)costToBuild - baseCost) * 100 / baseCost;
+					UnicodeString costModifierText;
+
+					if (percentDiff < 0)
+					{
+						costModifierText.format(L" (%d%% cheaper then original)", -percentDiff);
+					}
+					else if (percentDiff > 0)
+					{
+						costModifierText.format(L" (%d%% more expensive then original)", percentDiff);
+					}
+
+					cost.concat(costModifierText);
+				}
 			}
 
 
@@ -546,6 +569,70 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 							bonusText.format(L" (+%.1f Bonus)", energyBonusValue);
 						}
 						powertext.concat(bonusText);
+					}
+				}
+			}
+
+			const ActiveBodyModuleData* bodyData = thingTemplate->friend_getActiveBodyModuleData();
+			const MaxHealthUpgradeModuleData* maxHealthUpgradeData = thingTemplate->friend_getMaxHealthUpgradeModuleData();
+
+			if (bodyData)
+			{
+				if (maxHealthUpgradeData && maxHealthUpgradeData->m_addMaxHealth > 0.0f)
+				{
+					UnicodeString triggerUpgradeDisplay = L"an upgrade";
+
+					if (!maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames.empty())
+					{
+						AsciiString triggerUpgradeName = maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames[0];
+						const UpgradeTemplate* triggerUpgradeTemplate = TheUpgradeCenter->findUpgrade(triggerUpgradeName);
+
+						if (triggerUpgradeTemplate && triggerUpgradeTemplate->getDisplayNameLabel().isNotEmpty())
+						{
+							triggerUpgradeDisplay = TheGameText->fetch(triggerUpgradeTemplate->getDisplayNameLabel().str());
+						}
+						else
+						{
+							triggerUpgradeDisplay.format(L"%S", triggerUpgradeName.str());
+						}
+					}
+
+					healthText.format(L"Health: %.0f (+%.0f with %ls)",
+						bodyData->m_maxHealth,
+						maxHealthUpgradeData->m_addMaxHealth,
+						triggerUpgradeDisplay.str());
+				}
+				else
+				{
+					healthText.format(L"Health: %.0f", bodyData->m_maxHealth);
+				}
+			}
+
+			if (thingTemplate->getShroudClearingRange() > 0.0f)
+			{
+				Real shroudRange = thingTemplate->getShroudClearingRange();
+				shroudText.format(L"Shroud Clear Range: %.0f", shroudRange);
+
+				Drawable* draw = TheInGameUI->getFirstSelectedDrawable();
+				Object* selectedObject = draw ? draw->getObject() : nullptr;
+
+				if (selectedObject)
+				{
+					Player* selectedPlayer = selectedObject->getControllingPlayer();
+
+					if (selectedPlayer && selectedPlayer->getBattlePlansActiveSpecific(PLANSTATUS_SEARCHANDDESTROY) > 0)
+					{
+						Real scalar = selectedPlayer->getBattlePlanSightRangeScalar();
+
+						if (scalar > 1.0f)
+						{
+							Int percentBonus = (Int)((scalar - 1.0f) * 100.0f + 0.5f);
+							Real bonusAmount = shroudRange * (scalar - 1.0f);
+
+							UnicodeString shroudBonusText;
+							shroudBonusText.format(L" (+%.0f, +%d%% with Search and Destroy)", bonusAmount, percentBonus);
+							shroudText.concat(shroudBonusText);
+						}
 					}
 				}
 			}
@@ -821,6 +908,20 @@ if (buildLimit > 0)
 				if (!costAndTime.isEmpty())
 					costAndTime.concat(L"\n");
 				costAndTime.concat(powertext);
+			}
+
+			if (!healthText.isEmpty())
+			{
+				if (!costAndTime.isEmpty())
+					costAndTime.concat(L"\n");
+				costAndTime.concat(healthText);
+			}
+
+			if (!shroudText.isEmpty())
+			{
+				if (!costAndTime.isEmpty())
+					costAndTime.concat(L"\n");
+				costAndTime.concat(shroudText);
 			}
 
 			if (!limittext.isEmpty())

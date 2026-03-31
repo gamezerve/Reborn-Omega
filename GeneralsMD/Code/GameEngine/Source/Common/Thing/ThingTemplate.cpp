@@ -64,6 +64,7 @@
 #include "GameClient/Image.h"
 #include "GameClient/Shadow.h"
 
+#include "GameLogic/Module/ActiveBody.h"
 #include "GameLogic/Armor.h"
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/Module/SpecialPowerModule.h"
@@ -1642,3 +1643,38 @@ ModuleData* ModuleInfo::friend_getNthData(Int i)
 	return nullptr;
 }
 
+//---------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
+const ActiveBodyModuleData* ThingTemplate::friend_getActiveBodyModuleData() const
+{
+	for (Int i = 0; i < m_behaviorModuleInfo.getCount(); ++i)
+	{
+		const ModuleData* moduleData = m_behaviorModuleInfo.getNthData(i);
+
+		if (moduleData)
+		{
+			const ActiveBodyModuleData* bodyData = dynamic_cast<const ActiveBodyModuleData*>(moduleData);
+			if (bodyData)
+				return bodyData;
+		}
+	}
+
+	return nullptr;
+}
+
+const MaxHealthUpgradeModuleData* ThingTemplate::friend_getMaxHealthUpgradeModuleData() const
+{
+	for (Int i = 0; i < m_behaviorModuleInfo.getCount(); ++i)
+	{
+		const ModuleData* moduleData = m_behaviorModuleInfo.getNthData(i);
+
+		if (moduleData)
+		{
+			const MaxHealthUpgradeModuleData* upgradeData = dynamic_cast<const MaxHealthUpgradeModuleData*>(moduleData);
+			if (upgradeData)
+				return upgradeData;
+		}
+	}
+
+	return nullptr;
+}

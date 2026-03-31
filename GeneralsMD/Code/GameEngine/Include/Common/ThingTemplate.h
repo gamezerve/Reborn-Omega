@@ -44,6 +44,7 @@
 #include "Common/UnicodeString.h"
 
 #include "GameLogic/ArmorSet.h"
+#include "GameLogic/Module/MaxHealthUpgrade.h"
 #include "GameLogic/WeaponSet.h"
 #include "Common/STLTypedefs.h"
 #include "GameClient/Color.h"
@@ -136,6 +137,10 @@ enum ThingTemplateAudioType CPP_11(: Int)
 
 	TTAUDIO_COUNT
 };
+
+class ActiveBodyModuleData;
+
+class MaxHealthUpgradeModuleData;
 
 class AudioArray
 {
@@ -588,6 +593,9 @@ public:
 
 	/// Used only by Skirmish AI. Everyone else should call calcCostToBuild.
 	Int friend_getBuildCost() const { return m_buildCost; }
+	const ActiveBodyModuleData* friend_getActiveBodyModuleData() const;
+	const MaxHealthUpgradeModuleData* friend_getMaxHealthUpgradeModuleData() const;
+	Real getShroudClearingRange() const { return m_shroudClearingRange; }
 
 	const AsciiString& getDefaultOwningSide() const { return m_defaultOwningSide; }
 
@@ -775,8 +783,8 @@ private:
 	UnsignedByte	m_crushableLevel;						///< Specifies the level of crushability (must be hit by a crusher greater than this to crush me).
 
 
+	
 };
-
 //-----------------------------------------------------------------------------
 //           Inlining
 //-----------------------------------------------------------------------------

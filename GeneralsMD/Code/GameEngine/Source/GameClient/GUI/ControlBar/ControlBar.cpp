@@ -129,6 +129,72 @@ static void commandButtonTooltip(GameWindow *window,
 	TheControlBar->showBuildTooltipLayout(window);
 }
 
+static void unitUpgradeTooltip(GameWindow* window,
+	WinInstanceData* instData,
+	UnsignedInt mouse)
+{
+	const UpgradeTemplate* upgrade = TheControlBar->getUpgradeTemplateForCameoWindow(window);
+	if (!upgrade)
+		return;
+
+	TheControlBar->showUpgradeCameoTooltip(window, upgrade);
+}
+
+const UpgradeTemplate* ControlBar::getUpgradeTemplateForCameoWindow(GameWindow* window) const
+{
+	if (!window)
+		return nullptr;
+
+	for (Int i = 0; i < MAX_RIGHT_HUD_UPGRADE_CAMEOS; ++i)
+	{
+		if (m_rightHUDUpgradeCameos[i] == window)
+			return m_rightHUDUpgradeTooltipTemplates[i];
+	}
+
+	return nullptr;
+}
+
+void ControlBar::showUpgradeCameoTooltip(GameWindow* window, const UpgradeTemplate* upgrade)
+{
+	if (!window || !upgrade || !m_buildToolTipLayout)
+		return;
+
+	UnicodeString emptyText;
+	UnicodeString titleText;
+
+	const AsciiString& displayNameLabel = upgrade->getDisplayNameLabel();
+	if (displayNameLabel.isNotEmpty())
+		titleText = TheGameText->fetch(displayNameLabel);
+	else
+		titleText.translate(upgrade->getUpgradeName());
+
+	GameWindow* titleWin = TheWindowManager->winGetWindowFromId(
+		nullptr,
+		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextName")
+	);
+
+	GameWindow* descWin = TheWindowManager->winGetWindowFromId(
+		nullptr,
+		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextDescription")
+	);
+
+	GameWindow* costWin = TheWindowManager->winGetWindowFromId(
+		nullptr,
+		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextCost")
+	);
+
+	if (titleWin)
+		GadgetStaticTextSetText(titleWin, titleText);
+
+	if (descWin)
+		GadgetStaticTextSetText(descWin, emptyText);
+
+	if (costWin)
+		GadgetStaticTextSetText(costWin, emptyText);
+
+	m_buildToolTipLayout->hide(FALSE);
+}
+
 /// mark the UI as dirty so the context of everything is re-evaluated
 void ControlBar::markUIDirty()
 {
@@ -928,6 +994,10 @@ ControlBar::ControlBar()
 	m_rightHUDCameoWindow = nullptr;
 	for( i = 0; i < MAX_RIGHT_HUD_UPGRADE_CAMEOS; i++ )
 		m_rightHUDUpgradeCameos[i];
+	for (i = 0; i < MAX_RIGHT_HUD_UPGRADE_CAMEOS; ++i)
+	{
+		m_rightHUDUpgradeTooltipTemplates[i] = nullptr;
+	}
 	m_rightHUDUnitSelectParent = nullptr;
 	m_communicatorButton = nullptr;
 	m_currentSelectedDrawable = nullptr;
@@ -2574,8 +2644,14 @@ void ControlBar::setPortraitByImage( const Image *image )
 		//m_rightHUDWindow->winSetEnabledImage( 0, image );
 		m_rightHUDWindow->winClearStatus( WIN_STATUS_IMAGE );
 		m_rightHUDCameoWindow->winSetStatus( WIN_STATUS_IMAGE );
-		for(Int i = 0; i < MAX_UPGRADE_CAMEO_UPGRADES; ++i)
+		//for(Int i = 0; i < MAX_UPGRADE_CAMEO_UPGRADES; ++i)
+		//	m_rightHUDUpgradeCameos[i]->winHide(TRUE);
+		for (Int i = 0; i < MAX_RIGHT_HUD_UPGRADE_CAMEOS; ++i)
+		{
+			m_rightHUDUpgradeTooltipTemplates[i] = nullptr;
+			m_rightHUDUpgradeCameos[i]->winSetTooltipFunc(nullptr);
 			m_rightHUDUpgradeCameos[i]->winHide(TRUE);
+		}
 
 	}
 	else
@@ -2583,8 +2659,14 @@ void ControlBar::setPortraitByImage( const Image *image )
 		m_rightHUDWindow->winSetStatus( WIN_STATUS_IMAGE );
 		m_rightHUDCameoWindow->winClearStatus( WIN_STATUS_IMAGE );
 		m_rightHUDUnitSelectParent->winHide(TRUE);
-		for(Int i = 0; i < MAX_UPGRADE_CAMEO_UPGRADES; ++i)
+		//for(Int i = 0; i < MAX_UPGRADE_CAMEO_UPGRADES; ++i)
+		//	m_rightHUDUpgradeCameos[i]->winHide(TRUE);
+		for (Int i = 0; i < MAX_RIGHT_HUD_UPGRADE_CAMEOS; ++i)
+		{
+			m_rightHUDUpgradeTooltipTemplates[i] = nullptr;
+			m_rightHUDUpgradeCameos[i]->winSetTooltipFunc(nullptr);
 			m_rightHUDUpgradeCameos[i]->winHide(TRUE);
+		}
 		//m_rightHUDWindow->winSetEnabledImage( 0, image );
 		//m_rightHUDWindow->winSetStatus( WIN_STATUS_IMAGE );
 
@@ -2645,37 +2727,44 @@ void ControlBar::setPortraitByObject( Object *obj )
 		m_rightHUDWindow->winClearStatus( WIN_STATUS_IMAGE );
 		m_rightHUDCameoWindow->winSetStatus( WIN_STATUS_IMAGE );
 
-		for(Int i = 0; i < MAX_UPGRADE_CAMEO_UPGRADES; ++i)
+		for (Int i = 0; i < MAX_RIGHT_HUD_UPGRADE_CAMEOS; ++i)
 		{
 			AsciiString upgradeName = thing->getUpgradeCameoName(i);
-			if(upgradeName.isEmpty())
+
+			if (upgradeName.isEmpty())
 			{
-				m_rightHUDUpgradeCameos[i]->winHide(TRUE);
-				continue;
-			}
-			const UpgradeTemplate *ut =  TheUpgradeCenter->findUpgrade(upgradeName);
-			if(!ut)
-			{
+				m_rightHUDUpgradeTooltipTemplates[i] = nullptr;
+				m_rightHUDUpgradeCameos[i]->winSetTooltipFunc(nullptr);
 				m_rightHUDUpgradeCameos[i]->winHide(TRUE);
 				continue;
 			}
 
-			m_rightHUDUpgradeCameos[i]->winHide(FALSE);
-			m_rightHUDUpgradeCameos[i]->winSetEnabledImage( 0, ut->getButtonImage() );
-			if( obj->hasUpgrade(ut) )
+			const UpgradeTemplate* ut = TheUpgradeCenter->findUpgrade(upgradeName);
+			if (!ut)
 			{
-				//Object level upgrades
-				m_rightHUDUpgradeCameos[i]->winEnable( TRUE );
+				m_rightHUDUpgradeTooltipTemplates[i] = nullptr;
+				m_rightHUDUpgradeCameos[i]->winSetTooltipFunc(nullptr);
+				m_rightHUDUpgradeCameos[i]->winHide(TRUE);
+				continue;
 			}
-			else if( player && player->hasUpgradeComplete( ut ) )
+
+			m_rightHUDUpgradeTooltipTemplates[i] = ut;
+
+			m_rightHUDUpgradeCameos[i]->winHide(FALSE);
+			m_rightHUDUpgradeCameos[i]->winSetEnabledImage(0, ut->getButtonImage());
+			m_rightHUDUpgradeCameos[i]->winSetTooltipFunc(unitUpgradeTooltip);
+
+			if (obj->hasUpgrade(ut))
 			{
-				//Player level upgrades
-				m_rightHUDUpgradeCameos[i]->winEnable( TRUE );
+				m_rightHUDUpgradeCameos[i]->winEnable(TRUE);
+			}
+			else if (player && player->hasUpgradeComplete(ut))
+			{
+				m_rightHUDUpgradeCameos[i]->winEnable(TRUE);
 			}
 			else
 			{
-				//Failure
-				m_rightHUDUpgradeCameos[i]->winEnable( FALSE );
+				m_rightHUDUpgradeCameos[i]->winEnable(FALSE);
 			}
 		}
 
@@ -2686,8 +2775,14 @@ void ControlBar::setPortraitByObject( Object *obj )
 		m_rightHUDUnitSelectParent->winHide(TRUE);
 		m_rightHUDWindow->winSetStatus( WIN_STATUS_IMAGE );
 		m_rightHUDCameoWindow->winClearStatus( WIN_STATUS_IMAGE );
-		for(Int i = 0; i < MAX_UPGRADE_CAMEO_UPGRADES; ++i)
+		//for(Int i = 0; i < MAX_UPGRADE_CAMEO_UPGRADES; ++i)
+		//	m_rightHUDUpgradeCameos[i]->winHide(TRUE);
+		for (Int i = 0; i < MAX_RIGHT_HUD_UPGRADE_CAMEOS; ++i)
+		{
+			m_rightHUDUpgradeTooltipTemplates[i] = nullptr;
+			m_rightHUDUpgradeCameos[i]->winSetTooltipFunc(nullptr);
 			m_rightHUDUpgradeCameos[i]->winHide(TRUE);
+		}
 
 		//Clear any overlay the portrait had on it.
 		GadgetButtonDrawOverlayImage( m_rightHUDCameoWindow, nullptr );

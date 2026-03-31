@@ -3522,7 +3522,16 @@ Int Player::getBattlePlansActiveSpecific( BattlePlanStatus plan ) const
 	}
 	return 0;
 }
+//-------------------------------------------------------------------------------------------------
+Real Player::getBattlePlanSightRangeScalar() const
+{
+	if (m_battlePlanBonuses)
+	{
+		return m_battlePlanBonuses->m_sightRangeScalar;
+	}
 
+	return 1.0f;
+}
 //------------------------------------------------------------------------------------------------
 static void localApplyBattlePlanBonusesToObject( Object *obj, void *userData )
 {

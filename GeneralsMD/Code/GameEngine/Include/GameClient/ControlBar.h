@@ -33,6 +33,7 @@
 #include "Common/AudioEventRTS.h"
 #include "Common/GameType.h"
 #include "Common/Overridable.h"
+#include "Common/ThingTemplate.h"
 #include "Common/Science.h"
 #include "GameClient/Color.h"
 
@@ -342,6 +343,9 @@ public:
 	CommandButtonMappedBorderType getCommandButtonMappedBorderType() const { return m_commandButtonBorder; }
 	const Image* getButtonImage() const { return m_buttonImage;	}
 	void cacheButtonImage();
+
+
+
 
 	GameWindow* getWindow() const { return m_window;	}
 	Int getFlashCount() const { return m_flashCount; }
@@ -904,6 +908,7 @@ protected:
 	GameWindow *m_rightHUDWindow;									///< window of the right HUD display
 	GameWindow *m_rightHUDCameoWindow;									///< window of the right HUD display
 	GameWindow *m_rightHUDUpgradeCameos[MAX_RIGHT_HUD_UPGRADE_CAMEOS];
+	AsciiString m_rightHUDUpgradeTooltipNames[MAX_UPGRADE_CAMEO_UPGRADES];
 	GameWindow *m_rightHUDUnitSelectParent;
 
 	GameWindow *m_communicatorButton;             ///< button for the communicator
@@ -977,6 +982,9 @@ protected:
 	Bool m_showBuildToolTipLayout;											///< every frame we test to see if we are going to continue showing this or not.
 public:
 	void showBuildTooltipLayout( GameWindow *cmdButton );
+	void showUpgradeCameoTooltip(GameWindow* window, const UpgradeTemplate* upgrade);
+	const UpgradeTemplate* getUpgradeTemplateForCameoWindow(GameWindow* window) const;
+	const UpgradeTemplate* m_rightHUDUpgradeTooltipTemplates[MAX_RIGHT_HUD_UPGRADE_CAMEOS];
 	void hideBuildTooltipLayout();
 	void deleteBuildTooltipLayout();
 	Bool getShowBuildTooltipLayout(){return m_showBuildToolTipLayout;	}

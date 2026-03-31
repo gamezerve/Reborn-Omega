@@ -141,16 +141,30 @@ void HotKeyManager::reset()
 }
 
 //-----------------------------------------------------------------------------
-void HotKeyManager::addHotKey( GameWindow *win, const AsciiString& keyIn)
+void HotKeyManager::addHotKey(GameWindow* win, const AsciiString& keyIn)
 {
 	AsciiString key = keyIn;
 	key.toLower();
+
 	HotKeyMap::iterator it = m_hotKeyMap.find(key);
-	if( it != m_hotKeyMap.end() )
+	if (it != m_hotKeyMap.end())
 	{
-		DEBUG_CRASH(("Hotkey %s is already mapped to window %s, current window is %s", key.str(), it->second.m_win->winGetInstanceData()->m_decoratedNameString.str(), win->winGetInstanceData()->m_decoratedNameString.str()));
+		const char* existingName = it->second.m_win ? it->second.m_win->winGetInstanceData()->m_decoratedNameString.str() : "";
+		const char* currentName = win ? win->winGetInstanceData()->m_decoratedNameString.str() : "";
+
+		// Ignore duplicate hotkeys coming from GeneralsExpPoints windows
+		if (strstr(currentName, "GeneralsExpPoints.wnd:") != nullptr)
+		{
+			return;
+		}
+
+		DEBUG_CRASH(("Hotkey %s is already mapped to window %s, current window is %s",
+			key.str(),
+			existingName,
+			currentName));
 		return;
 	}
+
 	HotKey newHK;
 	newHK.m_key.set(key);
 	newHK.m_win = win;

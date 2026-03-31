@@ -372,6 +372,7 @@ public:
 	void changeBattlePlan( BattlePlanStatus plan, Int delta, const BattlePlanBonusesData *bonus );
 	Int getNumBattlePlansActive() const { return m_bombardBattlePlans + m_holdTheLineBattlePlans + m_searchAndDestroyBattlePlans; }
 	Int getBattlePlansActiveSpecific( BattlePlanStatus plan ) const;
+	Real getBattlePlanSightRangeScalar() const;
 	void applyBattlePlanBonusesForObject( Object *obj ) const;	//New object or converted object gaining our current battle plan bonuses.
 	void removeBattlePlanBonusesForObject( Object *obj ) const; //Object left team
 	void applyBattlePlanBonusesForPlayerObjects( const BattlePlanBonusesData *bonus ); //Battle plan bonuses changing, so apply to all of our objects!
