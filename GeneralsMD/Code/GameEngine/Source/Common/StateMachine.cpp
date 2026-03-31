@@ -116,24 +116,9 @@ StateReturnType State::friend_checkForTransitions( StateReturnType status )
 	StIncrementer inc(checkfortransitionsnum);
 	if (checkfortransitionsnum >= 20)
 	{
-#ifdef STATE_MACHINE_DEBUG
-		const char* ownerName = (getMachineOwner() && getMachineOwner()->getTemplate()) ? getMachineOwner()->getTemplate()->getName().str() : "<no owner>";
-		const char* stateName = getName().isNotEmpty() ? getName().str() : "<unnamed>";
-#endif
-		DEBUG_LOG(("SM_ASSERT frame=%u object=%s machine=%p state=%d[%s] transitionDepth=%d status=%d",
-			TheGameLogic->getFrame(),
-			ownerName,
-			getMachine(),
-			(Int)getID(),
-			stateName,
-			checkfortransitionsnum,
-			(Int)status));
 		DEBUG_CRASH(("checkfortransitionsnum is > 20"));
 		return STATE_FAILURE;
 	}
-
-
-
 
 	DEBUG_ASSERTCRASH(!IS_STATE_SLEEP(status), ("Please handle sleep states prior to this"));
 
@@ -182,14 +167,6 @@ StateReturnType State::friend_checkForTransitions( StateReturnType status )
 					if (it->test( this, it->userData ))
 					{
 						// test returned true, change to associated state
-
-						DEBUG_LOG(("SM_CONDITION frame=%u object=%s state=%d[%s] condition=%s toState=%d",
-							TheGameLogic->getFrame(),
-							getMachineOwner() ? getMachineOwner()->getTemplate()->getName().str() : "<null>",
-							(Int)getID(),
-							getName().isNotEmpty() ? getName().str() : "<unnamed>",
-							it->description ? it->description : "<no description>",
-							(Int)it->toStateID));
 
 	#ifdef STATE_MACHINE_DEBUG
 						if (getMachine()->getWantsDebugOutput())
@@ -605,22 +582,7 @@ StateReturnType StateMachine::internalSetState( StateID newStateID )
 				return STATE_FAILURE;
 			}
 		}
-#ifdef _DEBUG
-		{
-			const char* ownerName = (m_owner && m_owner->getTemplate()) ? m_owner->getTemplate()->getName().str() : "<no owner>";
-			const char* oldStateName = (m_currentState && m_currentState->getName().isNotEmpty()) ? m_currentState->getName().str() : "<null>";
-			const char* newStateName = (newState && newState->getName().isNotEmpty()) ? newState->getName().str() : "<null>";
 
-			DEBUG_LOG(("SM_TRANSITION frame=%u object=%s machine=%p oldState=%d[%s] newState=%d[%s]",
-				TheGameLogic->getFrame(),
-				ownerName,
-				this,
-				m_currentState ? (Int)m_currentState->getID() : -1,
-				oldStateName,
-				(Int)newStateID,
-				newStateName));
-		}
-#endif
 		// extract the state associated with the given ID
 		newState = internalGetState( newStateID );
 #ifdef STATE_MACHINE_DEBUG
