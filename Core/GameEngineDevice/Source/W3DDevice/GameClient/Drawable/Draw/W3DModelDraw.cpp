@@ -2384,37 +2384,8 @@ void W3DModelDraw::doHideShowSubObjs(const std::vector<ModelConditionInfo::HideS
 			}
 			else
 			{
-				//DEBUG_CRASH(("*** ASSET ERROR: SubObject %s not found (%s)!",it->subObjName.str(),getDrawable()->getTemplate()->getName().str()));
-				const char* modelName = "<null-render>";
-
-#ifdef DEBUG
-				const char* stateDesc = "<null-state>";
-#endif
-
-				if (m_renderObject)
-				{
-					modelName = m_renderObject->Get_Name();
-				}
-#ifdef DEBUG
-				if (m_curState)
-				{
-					stateDesc = m_curState->getDescription().str();
-				}
-#endif
-
-
-				DEBUG_CRASH((
-					"*** ASSET ERROR: SubObject '%s' not found"
-					" | object=%s"
-					" | model=%s"
-					" | state=%s"
-					" | action=%s",
-					it->subObjName.str(),
-					getDrawable()->getTemplate()->getName().str(),
-					modelName,
-					stateDesc,
-					it->hide ? "HideSubObject" : "ShowSubObject"
-					));
+				DEBUG_CRASH(("*** ASSET ERROR: SubObject %s not found (%s)!",it->subObjName.str(),getDrawable()->getTemplate()->getName().str()));
+				
 			}
 		}
 	}
@@ -4041,38 +4012,7 @@ void W3DModelDraw::updateSubObjects()
 			}
 			else
 			{
-				//DEBUG_CRASH(("*** ASSET ERROR: SubObject %s not found (%s)!",it->subObjName.str(),getDrawable()->getTemplate()->getName().str()));
-				const char* modelName = "<null-render>";
-
-#ifdef DEBUG
-				const char* stateDesc = "<null-state>";
-#endif
-
-				if (m_renderObject)
-				{
-					modelName = m_renderObject->Get_Name();
-				}
-
-#ifdef DEBUG
-				if (m_curState)
-				{
-					stateDesc = m_curState->getDescription().str();
-				}
-#endif
-				
-
-				DEBUG_CRASH((
-					"*** ASSET ERROR: SubObject '%s' not found"
-					" | object=%s"
-					" | model=%s"
-					" | state=%s"
-					" | action=%s",
-					it->subObjName.str(),
-					getDrawable()->getTemplate()->getName().str(),
-					modelName,
-					stateDesc,
-					it->hide ? "HideSubObject" : "ShowSubObject"
-					));
+				DEBUG_CRASH(("*** ASSET ERROR: SubObject %s not found (%s)!",it->subObjName.str(),getDrawable()->getTemplate()->getName().str()));
 			}
 		}
 	}
