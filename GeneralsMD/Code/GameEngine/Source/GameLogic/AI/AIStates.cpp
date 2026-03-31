@@ -257,6 +257,10 @@ void AttackStateMachine::loadPostProcess()
 //----------------------------------------------------------------------------------------------------------
 static Bool inWeaponRangeObject(State *thisState, void* userData);
 
+
+static Bool outOfWeaponRangeObjectAndCanPursue(State* thisState, void* userData);
+static Bool outOfWeaponRangeObjectAndCannotPursue(State* thisState, void* userData);
+
 //----------------------------------------------------------------------------------------------------------
 /**
  * Create an AI state machine. Define all of the states the machine
@@ -268,19 +272,21 @@ AttackStateMachine::AttackStateMachine( Object *obj, AIAttackState* att, AsciiSt
 	// we want to use the CONTINUE mode (not NEW) since we already have acquired the target.
 	static const StateConditionInfo objectConditionsNormal[] =
 	{
-		StateConditionInfo(outOfWeaponRangeObject, AttackStateMachine::CHASE_TARGET, nullptr),
-		StateConditionInfo(wantToSquishTarget, AttackStateMachine::CHASE_TARGET, nullptr),
-		StateConditionInfo(cannotPossiblyAttackObject, EXIT_MACHINE_WITH_FAILURE, (void*)ATTACK_CONTINUED_TARGET),
-		StateConditionInfo(nullptr, INVALID_STATE_ID, nullptr)
+	StateConditionInfo(outOfWeaponRangeObjectAndCanPursue, AttackStateMachine::CHASE_TARGET, nullptr),
+	StateConditionInfo(outOfWeaponRangeObjectAndCannotPursue, AttackStateMachine::APPROACH_TARGET, nullptr),
+	StateConditionInfo(wantToSquishTarget, AttackStateMachine::CHASE_TARGET, nullptr),
+	StateConditionInfo(cannotPossiblyAttackObject, EXIT_MACHINE_WITH_FAILURE, (void*)ATTACK_CONTINUED_TARGET),
+	StateConditionInfo(nullptr, INVALID_STATE_ID, nullptr)
 	};
 
 	// we want to use the CONTINUE mode (not NEW) since we already have acquired the target.
 	static const StateConditionInfo objectConditionsForced[] =
 	{
-		StateConditionInfo(outOfWeaponRangeObject, AttackStateMachine::CHASE_TARGET, nullptr),
-		StateConditionInfo(cannotPossiblyAttackObject, EXIT_MACHINE_WITH_FAILURE, (void*)ATTACK_CONTINUED_TARGET_FORCED),
-		StateConditionInfo(wantToSquishTarget, AttackStateMachine::CHASE_TARGET, nullptr),
-		StateConditionInfo(nullptr, INVALID_STATE_ID, nullptr)
+	StateConditionInfo(outOfWeaponRangeObjectAndCanPursue, AttackStateMachine::CHASE_TARGET, nullptr),
+	StateConditionInfo(outOfWeaponRangeObjectAndCannotPursue, AttackStateMachine::APPROACH_TARGET, nullptr),
+	StateConditionInfo(cannotPossiblyAttackObject, EXIT_MACHINE_WITH_FAILURE, (void*)ATTACK_CONTINUED_TARGET_FORCED),
+	StateConditionInfo(wantToSquishTarget, AttackStateMachine::CHASE_TARGET, nullptr),
+	StateConditionInfo(nullptr, INVALID_STATE_ID, nullptr)
 	};
 
 	const StateConditionInfo* objectConditions = forceAttacking ? objectConditionsForced : objectConditionsNormal;
@@ -338,11 +344,21 @@ AttackStateMachine::AttackStateMachine( Object *obj, AIAttackState* att, AsciiSt
 			/* we're a rider on a mobile object, so we can't control our motion.
 				just make bogus states that always fall back into "aim".
 			*/
-			defineState(	AttackStateMachine::CHASE_TARGET,
-										newInstance(ContinueState)(this),
-										EXIT_MACHINE_WITH_FAILURE,
-										EXIT_MACHINE_WITH_FAILURE,
-										portableStructureChaseConditions );
+			defineState(AttackStateMachine::CHASE_TARGET,
+				newInstance(ContinueState)(this),
+				EXIT_MACHINE_WITH_FAILURE,
+				EXIT_MACHINE_WITH_FAILURE,
+				portableStructureChaseConditions);
+
+			/*
+				Portable structures also cannot directly control their own movement, so approach
+				needs to behave like the bogus chase state above.
+			*/
+			defineState(AttackStateMachine::APPROACH_TARGET,
+				newInstance(ContinueState)(this),
+				EXIT_MACHINE_WITH_FAILURE,
+				EXIT_MACHINE_WITH_FAILURE,
+				portableStructureChaseConditions);
 		}
 		else if (attackingObject)
 		{
@@ -350,10 +366,10 @@ AttackStateMachine::AttackStateMachine( Object *obj, AIAttackState* att, AsciiSt
 				This state will pursue a target that is moving away from it.  If it is not moving away,
 				it will drop into the AIAttackApproachTarget state.
 			*/
-			defineState(	AttackStateMachine::CHASE_TARGET,
-										newInstance(AIAttackPursueTargetState)( this, follow, attackingObject, forceAttacking ),
-										AttackStateMachine::APPROACH_TARGET,
-										AttackStateMachine::APPROACH_TARGET );
+			defineState(AttackStateMachine::CHASE_TARGET,
+				newInstance(AIAttackPursueTargetState)(this, follow, attackingObject, forceAttacking),
+				AttackStateMachine::AIM_AT_TARGET,
+				EXIT_MACHINE_WITH_FAILURE);
 
 			/*
 				This state will succeed when we have a useful weapon within range of victim, and fail
@@ -391,10 +407,20 @@ AttackStateMachine::AttackStateMachine( Object *obj, AIAttackState* att, AsciiSt
 		/*
 			This state always instantly fails, so when immobile things transition here, we bail.
 		*/
-		defineState(	AttackStateMachine::CHASE_TARGET,
-									newInstance(FailureState)(this),
-									EXIT_MACHINE_WITH_FAILURE,
-									EXIT_MACHINE_WITH_FAILURE );
+		defineState(AttackStateMachine::CHASE_TARGET,
+			newInstance(FailureState)(this),
+			EXIT_MACHINE_WITH_FAILURE,
+			EXIT_MACHINE_WITH_FAILURE);
+
+		/*
+			Immobile attackers may now transition into APPROACH_TARGET from AIM_AT_TARGET
+			when they cannot pursue. Since immobile units cannot move, approach should
+			also immediately fail just like chase.
+		*/
+		defineState(AttackStateMachine::APPROACH_TARGET,
+			newInstance(FailureState)(this),
+			EXIT_MACHINE_WITH_FAILURE,
+			EXIT_MACHINE_WITH_FAILURE);
 	}
 
 };
@@ -1092,22 +1118,22 @@ Squad *AIStateMachine::getGoalSquad()
  * Return true if the machine's owner's current weapon's range
  * cannot reach the goalObject.
  */
-Bool outOfWeaponRangeObject( State *thisState, void* userData )
+Bool outOfWeaponRangeObject(State* thisState, void* userData)
 {
-	Object *obj = thisState->getMachineOwner();
-	Object *victim = thisState->getMachineGoalObject();
-	Weapon *weapon = obj->getCurrentWeapon();
+	Object* obj = thisState->getMachineOwner();
+	Object* victim = thisState->getMachineGoalObject();
+	Weapon* weapon = obj->getCurrentWeapon();
 
 	CRCDEBUG_LOG(("outOfWeaponRangeObject()"));
 	if (victim && weapon)
 	{
 		Bool viewBlocked = false;
-		AIUpdateInterface *ai = obj->getAI();
+		AIUpdateInterface* ai = obj->getAI();
 		Bool onGround = true;
 		if (ai) {
 			onGround = ai->isDoingGroundMovement();
 		}
-		if( obj->isKindOf(KINDOF_IMMOBILE) ) {
+		if (obj->isKindOf(KINDOF_IMMOBILE)) {
 			onGround = true;
 		}
 		// brutal special case for stinger soldiers, who
@@ -1116,8 +1142,8 @@ Bool outOfWeaponRangeObject( State *thisState, void* userData )
 		{
 			onGround = true;
 		}
-		Object *containedBy = obj->getContainedBy();
-		if( containedBy && (containedBy->isKindOf( KINDOF_STRUCTURE ) || !containedBy->isAirborneTarget()) )
+		Object* containedBy = obj->getContainedBy();
+		if (containedBy && (containedBy->isKindOf(KINDOF_STRUCTURE) || !containedBy->isAirborneTarget()))
 		{
 			//Contained objects on the ground -- garrisoned buildings for example!
 			onGround = true;
@@ -1128,16 +1154,64 @@ Bool outOfWeaponRangeObject( State *thisState, void* userData )
 		{
 			viewBlocked = TheAI->pathfinder()->isAttackViewBlockedByObstacle(obj, *obj->getPosition(), victim, *victim->getPosition());
 		}
+
+		Bool inRange = weapon->isWithinAttackRange(obj, victim);
+
 		// A weapon with leech range temporarily has unlimited range and is locked onto its target.
-		if (!weapon->hasLeechRange() && viewBlocked)
+		if (!weapon->hasLeechRange() && (viewBlocked || !inRange))
 		{
-			//CRCDEBUG_LOG(("outOfWeaponRangeObject() - object %d (%s) view is blocked for attacking %d (%s)",
-			//	obj->getID(), obj->getTemplate()->getName().str(),
-			//	victim->getID(), victim->getTemplate()->getName().str()));
-			return true;
-		}
-		if (!weapon->hasLeechRange() && !weapon->isWithinAttackRange(obj, victim))
-		{
+			// If we cannot meaningfully move anyway, don't force a transition into chase/approach loop.
+			if (ai)
+			{
+				WhichTurretType tur = ai->getWhichTurretForCurWeapon();
+				if (tur != TURRET_INVALID)
+				{
+					Real speed = ai->getCurLocomotorSpeed();
+					if (speed <= 0.0f)
+					{
+						DEBUG_LOG(("COND outOfWeaponRangeObject SUPPRESSED object=%s target=%s reason=immobile_or_overridden viewBlocked=%d inRange=%d turret=%d speed=%.2f",
+							obj ? obj->getTemplate()->getName().str() : "<null>",
+							victim ? victim->getTemplate()->getName().str() : "<null>",
+							viewBlocked,
+							inRange,
+							(Int)tur,
+							speed));
+						return false;
+					}
+				}
+			}
+
+			if (viewBlocked)
+			{
+#ifdef DEBUG
+				WhichTurretType tur = ai ? ai->getWhichTurretForCurWeapon() : TURRET_INVALID;
+#endif
+				DEBUG_LOG(("COND outOfWeaponRangeObject TRUE object=%s target=%s reason=viewBlocked viewBlocked=%d inRange=%d hasLeech=%d turret=%d objPos=(%.2f,%.2f,%.2f) victimPos=(%.2f,%.2f,%.2f)",
+					obj ? obj->getTemplate()->getName().str() : "<null>",
+					victim ? victim->getTemplate()->getName().str() : "<null>",
+					viewBlocked,
+					inRange,
+					weapon->hasLeechRange(),
+					(Int)tur,
+					obj->getPosition()->x, obj->getPosition()->y, obj->getPosition()->z,
+					victim->getPosition()->x, victim->getPosition()->y, victim->getPosition()->z));
+				//CRCDEBUG_LOG(("outOfWeaponRangeObject() - object %d (%s) view is blocked for attacking %d (%s)",
+				//	obj->getID(), obj->getTemplate()->getName().str(),
+				//	victim->getID(), victim->getTemplate()->getName().str()));
+				return true;
+			}
+#ifdef DEBUG
+			WhichTurretType tur = ai ? ai->getWhichTurretForCurWeapon() : TURRET_INVALID;
+#endif
+			DEBUG_LOG(("COND outOfWeaponRangeObject TRUE object=%s target=%s reason=notInRange viewBlocked=%d inRange=%d hasLeech=%d turret=%d objPos=(%.2f,%.2f,%.2f) victimPos=(%.2f,%.2f,%.2f)",
+				obj ? obj->getTemplate()->getName().str() : "<null>",
+				victim ? victim->getTemplate()->getName().str() : "<null>",
+				viewBlocked,
+				inRange,
+				weapon->hasLeechRange(),
+				(Int)tur,
+				obj->getPosition()->x, obj->getPosition()->y, obj->getPosition()->z,
+				victim->getPosition()->x, victim->getPosition()->y, victim->getPosition()->z));
 			//CRCDEBUG_LOG(("outOfWeaponRangeObject() - object %d (%s) is out of range for attacking %d (%s)",
 			//	obj->getID(), obj->getTemplate()->getName().str(),
 			//	victim->getID(), victim->getTemplate()->getName().str()));
@@ -1147,7 +1221,6 @@ Bool outOfWeaponRangeObject( State *thisState, void* userData )
 
 	return false;
 }
-
 static Bool inWeaponRangeObject(State *thisState, void* userData)
 {
 	return !outOfWeaponRangeObject(thisState, userData);
@@ -1171,6 +1244,9 @@ Bool wantToSquishTarget( State *thisState, void* userData )
 					obj->getControllingPlayer()->getPlayerType()==PLAYER_COMPUTER) {
 					if (obj->canCrushOrSquish(victim)) {
 						if (!obj->isKindOf(KINDOF_DONT_AUTO_CRUSH_INFANTRY)) {
+							DEBUG_LOG(("COND wantToSquishTarget TRUE object=%s target=%s",
+								obj ? obj->getTemplate()->getName().str() : "<null>",
+								victim ? victim->getTemplate()->getName().str() : "<null>"));
 							return true;
 						}
 					}
@@ -1242,11 +1318,17 @@ static Bool cannotPossiblyAttackObject( State *thisState, void* userData )
 	{
 		if( !obj->isAbleToAttack() )
 		{
+			DEBUG_LOG(("COND cannotPossiblyAttackObject TRUE object=%s target=%s",
+				thisState->getMachineOwner() ? thisState->getMachineOwner()->getTemplate()->getName().str() : "<null>",
+				thisState->getMachineGoalObject() ? thisState->getMachineGoalObject()->getTemplate()->getName().str() : "<null>"));
 			return TRUE;
 		}
 		CanAttackResult result = obj->getAbleToAttackSpecificObject( attackType, victim, obj->getAI()->getLastCommandSource() );
 		if( result != ATTACKRESULT_POSSIBLE && result != ATTACKRESULT_POSSIBLE_AFTER_MOVING )
 		{
+			DEBUG_LOG(("COND cannotPossiblyAttackObject TRUE object=%s target=%s",
+				thisState->getMachineOwner() ? thisState->getMachineOwner()->getTemplate()->getName().str() : "<null>",
+				thisState->getMachineGoalObject() ? thisState->getMachineGoalObject()->getTemplate()->getName().str() : "<null>"));
 			return TRUE;
 		}
 	}
@@ -2393,6 +2475,81 @@ static Bool canPursue(Object *source, Weapon *weapon, Object *victim)
 	return true;
 }
 
+
+static Bool outOfWeaponRangeObjectAndCanPursue(State* thisState, void* userData)
+{
+	if (!outOfWeaponRangeObject(thisState, userData))
+	{
+		return false;
+	}
+
+	Object* source = thisState->getMachineOwner();
+	Object* victim = thisState->getMachineGoalObject();
+	if (!source || !victim)
+	{
+		return false;
+	}
+
+	AIUpdateInterface* ai = source->getAI();
+	if (ai && ai->getCurrentStateID() != AI_GUARD_RETALIATE)
+	{
+		if (source->getControllingPlayer()->getPlayerType() == PLAYER_HUMAN)
+		{
+			if (ai->getLastCommandSource() == CMD_FROM_AI)
+			{
+				return false;
+			}
+		}
+	}
+
+	Weapon* weapon = source->getCurrentWeapon();
+	if (!weapon)
+	{
+		return false;
+	}
+
+	if (!canPursue(source, weapon, victim))
+	{
+		DEBUG_LOG(("COND outOfWeaponRangeObjectAndCanPursue FALSE object=%s target=%s reason=cannotPursue",
+			source->getTemplate()->getName().str(),
+			victim->getTemplate()->getName().str()));
+		return false;
+	}
+
+	return true;
+}
+
+static Bool outOfWeaponRangeObjectAndCannotPursue(State* thisState, void* userData)
+{
+	if (!outOfWeaponRangeObject(thisState, userData))
+	{
+		return false;
+	}
+
+	Object* source = thisState->getMachineOwner();
+	Object* victim = thisState->getMachineGoalObject();
+	if (!source || !victim)
+	{
+		return false;
+	}
+
+	Weapon* weapon = source->getCurrentWeapon();
+	if (!weapon)
+	{
+		return false;
+	}
+
+	if (canPursue(source, weapon, victim))
+	{
+		return false;
+	}
+
+	DEBUG_LOG(("COND outOfWeaponRangeObjectAndCannotPursue TRUE object=%s target=%s",
+		source->getTemplate()->getName().str(),
+		victim->getTemplate()->getName().str()));
+
+	return true;
+}
 //----------------------------------------------------------------------------------------------------------
 /**
  * Compute a valid spot to fire our weapon from.
@@ -2671,6 +2828,20 @@ StateReturnType AIAttackApproachTargetState::updateInternal()
 	Object *victim = getMachineGoalObject();
 	if (victim)
 	{
+		DEBUG_LOG(("AI_ATTACK ApproachTarget ENTER object=%s target=%s hasWeapon=%d stopIfInRange=%d inRange=%d doingGround=%d mobile=%d pos=(%.2f,%.2f,%.2f) targetPos=(%.2f,%.2f,%.2f)",
+			source ? source->getTemplate()->getName().str() : "<null>",
+			victim ? victim->getTemplate()->getName().str() : "<null>",
+			weapon != nullptr,
+			m_stopIfInRange,
+			(weapon && victim) ? weapon->isWithinAttackRange(source, victim) : 0,
+			ai ? ai->isDoingGroundMovement() : 0,
+			source ? source->isMobile() : 0,
+			source ? source->getPosition()->x : -1.0f,
+			source ? source->getPosition()->y : -1.0f,
+			source ? source->getPosition()->z : -1.0f,
+			victim ? victim->getPosition()->x : -1.0f,
+			victim ? victim->getPosition()->y : -1.0f,
+			victim ? victim->getPosition()->z : -1.0f));
  		if (source->getControllingPlayer()->getPlayerType() == PLAYER_COMPUTER)
 		{
 			Bool hunt = ai->getCurrentStateID() == AI_HUNT;
@@ -2700,28 +2871,54 @@ StateReturnType AIAttackApproachTargetState::updateInternal()
 		{
 			return STATE_SUCCESS;
 		}
-		if (m_stopIfInRange && weapon && weapon->isWithinAttackRange(source, victim))
+		if (weapon && weapon->isWithinAttackRange(source, victim))
 		{
 			Bool viewBlocked = false;
 			if (victim && ai->isDoingGroundMovement() && !victim->isSignificantlyAboveTerrain())
 			{
 				viewBlocked = TheAI->pathfinder()->isAttackViewBlockedByObstacle(source, *source->getPosition(), victim, *victim->getPosition());
 			}
+
+			DEBUG_LOG(("AI_ATTACK ApproachTarget RANGE_CHECK object=%s target=%s stopIfInRange=%d inRange=1 viewBlocked=%d",
+				source ? source->getTemplate()->getName().str() : "<null>",
+				victim ? victim->getTemplate()->getName().str() : "<null>",
+				m_stopIfInRange,
+				viewBlocked));
+
 			if (!viewBlocked)
 			{
-				return STATE_SUCCESS;
+				DEBUG_LOG(("AI_ATTACK ApproachTarget SUCCESS_IN_RANGE object=%s target=%s",
+					source ? source->getTemplate()->getName().str() : "<null>",
+					victim ? victim->getTemplate()->getName().str() : "<null>"));
+
+				return STATE_SLEEP(1);
 			}
 		}
 		// find a good spot to shoot from
 		//CRCDEBUG_LOG(("AIAttackApproachTargetState::updateInternal() - calling computePath() to victim for object %d", getMachineOwner()->getID()));
-		if (computePath() == false)
+		Bool computedPath = computePath();
+		DEBUG_LOG(("AI_ATTACK ApproachTarget COMPUTEPATH object=%s target=%s computedPath=%d",
+			source ? source->getTemplate()->getName().str() : "<null>",
+			victim ? victim->getTemplate()->getName().str() : "<null>",
+			computedPath));
+		if (computedPath == false)
 			return STATE_SUCCESS;
 		code = AIInternalMoveToState::update();
+		DEBUG_LOG(("AI_ATTACK ApproachTarget MOVE_RESULT object=%s target=%s code=%d",
+			source ? source->getTemplate()->getName().str() : "<null>",
+			victim ? victim->getTemplate()->getName().str() : "<null>",
+			(Int)code));
 
 
 		if (code != STATE_CONTINUE)
 		{
-			return STATE_SUCCESS;	// Always return state success, as state failure exits the attack.
+			DEBUG_LOG(("AI_ATTACK ApproachTarget FINISH_TO_SUCCESS object=%s target=%s code=%d",
+				source ? source->getTemplate()->getName().str() : "<null>",
+				victim ? victim->getTemplate()->getName().str() : "<null>",
+				(Int)code));
+
+			return STATE_SLEEP(1);
+			// Always return state success, as state failure exits the attack.
 			// we may need to aim & do another approach if the target moved.  jba.
 		}
 	}
@@ -2760,7 +2957,6 @@ StateReturnType AIAttackApproachTargetState::update()
 
 	if (m_follow && m_isAttackingObject)
 	{
-		// Basically, if the object is alive, we continue, in case the target moves.
 		Object* victim = getMachineGoalObject();
 		if (source && victim && source->isMobile() && !victim->getTemplate()->isKindOf(KINDOF_IMMOBILE))
 		{
@@ -2768,9 +2964,10 @@ StateReturnType AIAttackApproachTargetState::update()
 			{
 				m_isInitialApproach = false;
 			}
-			// Object is still alive (and so are we)
-			// It could move (and so can we), so just continue & keep checking.
-			code = STATE_CONTINUE;
+			else
+			{
+				code = STATE_CONTINUE;
+			}
 		}
 	}
 
@@ -2786,6 +2983,8 @@ StateReturnType AIAttackApproachTargetState::update()
 			}
 		}
 	}
+
+
 
 	return code;
 }
@@ -2948,22 +3147,25 @@ StateReturnType AIAttackPursueTargetState::onEnter()
 	// contained by AIAttackState, so no separate timer
 	// If we return STATE_SUCCESS or STATE_FAILURE, we proceed to AIAttackApproachTargetState.
 	Object* source = getMachineOwner();
+	DEBUG_LOG(("ENTER AIAttackPursueTargetState object=%s target=%s",
+		source->getTemplate()->getName().str(),
+		getMachineGoalObject() ? getMachineGoalObject()->getTemplate()->getName().str() : "<null>"));
 	AIUpdateInterface* ai = source->getAI();
 
 	if (source->isKindOf(KINDOF_PROJECTILE))
 	{
 		//CRCDEBUG_LOG(("AIAttackPursueTargetState::onEnter() - is a projectile for object %d (%s)", getMachineOwner()->getID(), getMachineOwner()->getTemplate()->getName().str()));
-		return STATE_SUCCESS;	 // Projectiles go directly to AIAttackApproachTargetState.
+		return STATE_SLEEP(1);	 // Projectiles go directly to AIAttackApproachTargetState.
 	}
 
 	if (getMachine()->isGoalObjectDestroyed())
 	{
 		//CRCDEBUG_LOG(("AIAttackPursueTargetState::onEnter() - goal object is destroyed for object %d (%s)", getMachineOwner()->getID(), getMachineOwner()->getTemplate()->getName().str()));
-		return STATE_SUCCESS; // Already killed victim.
+		return STATE_SLEEP(1); // Already killed victim.
 	}
 	if (!m_isAttackingObject)	{
 		//CRCDEBUG_LOG(("AIAttackPursueTargetState::onEnter() - not attacking for object %d (%s)", getMachineOwner()->getID(), getMachineOwner()->getTemplate()->getName().str()));
-		return STATE_SUCCESS; // only pursue objects - positions don't move.
+		return STATE_SLEEP(1); // only pursue objects - positions don't move.
 	}
 
 	setAdjustsDestination(false);
@@ -2971,14 +3173,17 @@ StateReturnType AIAttackPursueTargetState::onEnter()
 	// Check here:  If we are a player, and we got to this state via an ai command (ie we auto-acquired),
 	// we don't want to chase the unit.
 	// Kris (July 2003): If we are retaliating... don't succeed out!
-	if( ai->getCurrentStateID() != AI_GUARD_RETALIATE )
+	if (ai->getCurrentStateID() != AI_GUARD_RETALIATE)
 	{
 		if (source->getControllingPlayer()->getPlayerType() == PLAYER_HUMAN)
 		{
 			if (ai->getLastCommandSource() == CMD_FROM_AI)
 			{
-				return STATE_SUCCESS;
+				DEBUG_LOG(("AIAttackPursueTargetState forcing sleep object=%s target=%s",
+					source->getTemplate()->getName().str(),
+					getMachineGoalObject() ? getMachineGoalObject()->getTemplate()->getName().str() : "<null>"));
 
+				return STATE_SLEEP(1);
 			}
 		}
 	}
@@ -2991,34 +3196,52 @@ StateReturnType AIAttackPursueTargetState::onEnter()
 
 	// See if we're close enough.
 	Object *victim = getMachineGoalObject();
-	if (victim) {
+	if (victim)
+	{
 		Weapon* weapon = source->getCurrentWeapon();
 		if (!weapon)
 		{
+			DEBUG_LOG(("AIAttackPursueTargetState no weapon object=%s target=%s",
+				source->getTemplate()->getName().str(),
+				victim ? victim->getTemplate()->getName().str() : "<null>"));
 			return STATE_FAILURE;
 		}
-		if (!canPursue(source, weapon, victim) )
+
+		if (!canPursue(source, weapon, victim))
 		{
-			//CRCDEBUG_LOG(("AIAttackPursueTargetState::onEnter() - can't pursue for object %d (%s)", getMachineOwner()->getID(), getMachineOwner()->getTemplate()->getName().str()));
-			return STATE_SUCCESS;
+			DEBUG_LOG(("AIAttackPursueTargetState cannot pursue object=%s target=%s",
+				source->getTemplate()->getName().str(),
+				victim->getTemplate()->getName().str()));
+			return STATE_SLEEP(1);
 		}
-	}	else {
-		//CRCDEBUG_LOG(("AIAttackPursueTargetState::onEnter() - no victim for object %d (%s)", getMachineOwner()->getID(), getMachineOwner()->getTemplate()->getName().str()));
-		return STATE_SUCCESS; // gotta have a victim.
 	}
-	// If we have a turret, start aiming.
+	else
+	{
+		DEBUG_LOG(("AIAttackPursueTargetState no victim object=%s",
+			source->getTemplate()->getName().str()));
+		return STATE_SLEEP(1);
+	}
+
 	WhichTurretType tur = ai->getWhichTurretForCurWeapon();
 	if (tur != TURRET_INVALID)
 	{
 		ai->setTurretTargetObject(tur, victim, m_isForceAttacking);
-	} else {
-		//CRCDEBUG_LOG(("AIAttackPursueTargetState::onEnter() - no turret for object %d (%s)", getMachineOwner()->getID(), getMachineOwner()->getTemplate()->getName().str()));
-		return STATE_SUCCESS; // we only pursue with turrets, as non-turreted weapons can't fire on the run.
+	}
+	else
+	{
+		DEBUG_LOG(("AIAttackPursueTargetState no turret object=%s target=%s",
+			source->getTemplate()->getName().str(),
+			victim ? victim->getTemplate()->getName().str() : "<null>"));
+		return STATE_SLEEP(1);
 	}
 
-	// find a good spot to shoot from
 	if (computePath() == false)
-		return STATE_SUCCESS;
+	{
+		DEBUG_LOG(("AIAttackPursueTargetState computePath false object=%s target=%s",
+			source->getTemplate()->getName().str(),
+			victim ? victim->getTemplate()->getName().str() : "<null>"));
+		return STATE_SLEEP(1);
+	}
 
 	return AIInternalMoveToState::onEnter();
 }
@@ -3053,6 +3276,14 @@ StateReturnType AIAttackPursueTargetState::updateInternal()
 		if (code != STATE_CONTINUE)
 		{
 			//CRCDEBUG_LOG(("AIAttackPursueTargetState::updateInternal() - failed internal update() for object %d (%s)", getMachineOwner()->getID(), getMachineOwner()->getTemplate()->getName().str()));
+
+			// If movement finished this frame, stay in pursue for one more update so we do not
+			// instantly bounce back into Aim -> Fire -> Pursue in the same frame.
+			if (code == STATE_SUCCESS)
+			{
+				return STATE_CONTINUE;
+			}
+
 			return STATE_SUCCESS;	// Always return state success, as state failure exits the attack.
 			// we may need to aim & do another approach if the target moved.  jba.
 		}
@@ -3115,7 +3346,17 @@ StateReturnType AIAttackPursueTargetState::update()
 			}
 		}
 	}
+#ifdef DEBUG
+	Object* victim = getMachineGoalObject();
+	Weapon* weapon = source->getCurrentWeapon();
+#endif
 
+	DEBUG_LOG(("AI_ATTACK PursueTarget object=%s target=%s hasWeapon=%d canPursue=%d inRange=%d",
+		source->getTemplate()->getName().str(),
+		victim ? victim->getTemplate()->getName().str() : "<null>",
+		weapon != nullptr,
+		(victim && weapon) ? canPursue(source, weapon, victim) : 0,
+		(victim && weapon) ? weapon->isWithinAttackRange(source, victim) : 0));
 	return code;
 }
 
@@ -5021,6 +5262,8 @@ StateReturnType AIAttackAimAtTargetState::update()
 	Object* source = getMachineOwner();
 	AIUpdateInterface* sourceAI = source->getAI();
 
+
+
 	if (!source->hasAnyWeapon())
 		return STATE_FAILURE;
 
@@ -5059,6 +5302,13 @@ StateReturnType AIAttackAimAtTargetState::update()
 		// else fall thru!
 	}
 
+	DEBUG_LOG(("AI_ATTACK AimAtTarget object=%s target=%s hasWeapon=%d turret=%d turretTurnRate=%.2f",
+		source->getTemplate()->getName().str(),
+		victim ? victim->getTemplate()->getName().str() : "<null>",
+		source->getCurrentWeapon() != nullptr,
+		(Int)tur,
+		(tur != TURRET_INVALID) ? sourceAI->getTurretTurnRate(tur) : -1.0f));
+
 	// no else here!
 	{
 		Real relAngle = m_isAttackingObject ?
@@ -5090,7 +5340,7 @@ StateReturnType AIAttackAimAtTargetState::update()
 			sourceAI->setLocomotorGoalPositionExplicit(m_isAttackingObject ? *victim->getPosition() : *getMachineGoalPosition());
 		}
 
-		if (fabs(relAngle) < aimDelta /*&& !m_preAttackFrames*/ )
+		if (fabs(relAngle) < aimDelta /*&& !m_preAttackFrames*/)
 		{
 			AIUpdateInterface* victimAI = victim ? victim->getAI() : nullptr;
 			// add ourself as a targeter BEFORE calling isTemporarilyPreventingAimSuccess().
@@ -5105,7 +5355,31 @@ StateReturnType AIAttackAimAtTargetState::update()
 			}
 			else
 			{
-				return STATE_SUCCESS;
+				Weapon* weapon = source->getCurrentWeapon();
+
+				// Don't claim aim success if we still cannot legally fire because of range limits.
+				Bool inRange = FALSE;
+				if (m_isAttackingObject)
+					inRange = weapon ? weapon->isWithinAttackRange(source, victim) : FALSE;
+				else
+					inRange = weapon ? weapon->isWithinAttackRange(source, getMachineGoalPosition()) : FALSE;
+
+				if (!weapon || !inRange)
+				{
+					return STATE_CONTINUE;
+				}
+
+				if (m_isAttackingObject && victim)
+				{
+					AIUpdateInterface* victimAI = victim->getAI();
+
+					if (victimAI && victimAI->isTemporarilyPreventingAimSuccess())
+					{
+						return STATE_CONTINUE;
+					}
+				}
+
+				return STATE_SLEEP(1);
 			}
 		}
 	}

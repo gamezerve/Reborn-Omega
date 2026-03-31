@@ -162,8 +162,9 @@ public:
 	const Object* getMachineGoalObject() const;
 	const Coord3D* getMachineGoalPosition() const;
 
+	
 #ifdef STATE_MACHINE_DEBUG
-	virtual AsciiString getName() const {return m_name;}
+	virtual AsciiString getName() const { return m_name; }
 	std::vector<StateID> *getTransitions();
 #endif
 
