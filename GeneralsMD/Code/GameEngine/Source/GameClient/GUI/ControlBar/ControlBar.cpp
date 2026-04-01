@@ -159,6 +159,23 @@ void ControlBar::showUpgradeCameoTooltip(GameWindow* window, const UpgradeTempla
 	if (!window || !upgrade || !m_buildToolTipLayout)
 		return;
 
+	if (TheInGameUI->areTooltipsDisabled())
+		return;
+
+	if (TheScriptEngine->isGameEnding())
+		return;
+
+	if (TheGameLogic->isInReplayGame())
+		return;
+
+	if (TheInGameUI->isQuitMenuVisible())
+		return;
+
+	TheControlBar->showBuildTooltipLayout(window);
+
+	if (m_buildToolTipLayout->isHidden())
+		return;
+
 	UnicodeString emptyText;
 	UnicodeString titleText;
 
@@ -191,8 +208,6 @@ void ControlBar::showUpgradeCameoTooltip(GameWindow* window, const UpgradeTempla
 
 	if (costWin)
 		GadgetStaticTextSetText(costWin, emptyText);
-
-	m_buildToolTipLayout->hide(FALSE);
 }
 
 /// mark the UI as dirty so the context of everything is re-evaluated
