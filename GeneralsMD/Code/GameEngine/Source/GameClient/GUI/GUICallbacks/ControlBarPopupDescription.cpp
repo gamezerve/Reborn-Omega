@@ -95,6 +95,12 @@
 #include "GameLogic/Module/ProductionUpdate.h"
 #include "GameLogic/ScriptEngine.h"
 #include "GameLogic/Module/ActiveBody.h"
+#include "GameLogic/Module/AIUpdate.h"
+#include "GameLogic/Locomotor.h"
+#include "GameLogic/Object.h"
+#include "GameLogic/Module/AIUpdate.h"
+#include "GameLogic/LocomotorSet.h"
+#include "GameLogic/Locomotor.h"
 
 #include "GameNetwork/NetworkInterface.h"
 
@@ -251,7 +257,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 		return;
 
 	Player* player = ThePlayerList->getLocalPlayer();
-	UnicodeString name, cost, buildtime, powertext, limittext, reloadtext, descrip, healthText, shroudText;
+	UnicodeString name, cost, buildtime, powertext, limittext, reloadtext, descrip, healthText, shroudText, locomotorText;
 	buildtime = UnicodeString::TheEmptyString;
 	powertext = UnicodeString::TheEmptyString;
 	limittext = UnicodeString::TheEmptyString;
@@ -637,6 +643,36 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				}
 			}
 
+			AIUpdateModuleData* aiData = const_cast<ThingTemplate*>(thingTemplate)->friend_getAIModuleInfo();
+
+			if (aiData && !thingTemplate->isKindOf(KINDOF_STRUCTURE))
+			{
+				const LocomotorTemplateVector* locoVector = aiData->findLocomotorTemplateVector(LOCOMOTORSET_NORMAL);
+
+				if (locoVector && !locoVector->empty())
+				{
+					const LocomotorTemplate* locoTemplate = (*locoVector)[0];
+
+					if (locoTemplate)
+					{
+						Locomotor* tempLocomotor = TheLocomotorStore->newLocomotor(locoTemplate);
+
+						if (tempLocomotor)
+						{
+							Real speed = tempLocomotor->getMaxSpeedForCondition(BODY_PRISTINE);
+							Real displaySpeed = speed * LOGICFRAMES_PER_SECOND;
+
+							if (displaySpeed > 0.0f)
+							{
+								locomotorText.format(L"Movement Speed: %d", REAL_TO_INT_FLOOR(displaySpeed + 0.5f));
+							}
+
+							deleteInstance(tempLocomotor);
+						}
+					}
+				}
+			}
+
 UnsignedInt buildLimit = thingTemplate->getMaxSimultaneousOfType();
 if (buildLimit > 0)
 {
@@ -922,6 +958,13 @@ if (buildLimit > 0)
 				if (!costAndTime.isEmpty())
 					costAndTime.concat(L"\n");
 				costAndTime.concat(shroudText);
+			}
+
+			if (!locomotorText.isEmpty())
+			{
+				if (!costAndTime.isEmpty())
+					costAndTime.concat(L"\n");
+				costAndTime.concat(locomotorText);
 			}
 
 			if (!limittext.isEmpty())
