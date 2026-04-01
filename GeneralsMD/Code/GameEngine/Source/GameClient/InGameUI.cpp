@@ -2654,6 +2654,45 @@ void InGameUI::createMouseoverHint( const GameMessage *msg )
 
 
 			UnicodeString str = thingTemplate->getDisplayName();
+			if (thingTemplate && thingTemplate->getDefaultOwningSide().isNotEmpty())
+			{
+				UnicodeString sidePrefix;
+				AsciiString rawSide = thingTemplate->getDefaultOwningSide();
+
+				if (rawSide.compareNoCase("America") == 0)
+					sidePrefix = L"USA";
+				else if (rawSide.compareNoCase("AmericaSuperWeaponGeneral") == 0)
+					sidePrefix = L"SupW";
+				else if (rawSide.compareNoCase("AmericaLaserGeneral") == 0)
+					sidePrefix = L"Lazr";
+				else if (rawSide.compareNoCase("AmericaAirForceGeneral") == 0)
+					sidePrefix = L"AirF";
+				else if (rawSide.compareNoCase("GLA") == 0)
+					sidePrefix = L"GLA";
+				else if (rawSide.compareNoCase("GLAToxinGeneral") == 0)
+					sidePrefix = L"Toxin";
+				else if (rawSide.compareNoCase("GLADemolitionGeneral") == 0)
+					sidePrefix = L"Demo";
+				else if (rawSide.compareNoCase("GLAStealthGeneral") == 0)
+					sidePrefix = L"Slth";
+				else if (rawSide.compareNoCase("China") == 0)
+					sidePrefix = L"China";
+				else if (rawSide.compareNoCase("ChinaTankGeneral") == 0)
+					sidePrefix = L"Tank";
+				else if (rawSide.compareNoCase("ChinaInfantryGeneral") == 0)
+					sidePrefix = L"Infa";
+				else if (rawSide.compareNoCase("ChinaNukeGeneral") == 0)
+					sidePrefix = L"Nuke";
+				else if (rawSide.compareNoCase("Boss") == 0)
+					sidePrefix = L"Boss";
+
+				if (!sidePrefix.isEmpty())
+				{
+					sidePrefix.concat(L" - ");
+					sidePrefix.concat(str);
+					str = sidePrefix;
+				}
+			}
 			UnicodeString displayName = thingTemplate->getDisplayName();
 			if( str.isEmpty() )
 			{
