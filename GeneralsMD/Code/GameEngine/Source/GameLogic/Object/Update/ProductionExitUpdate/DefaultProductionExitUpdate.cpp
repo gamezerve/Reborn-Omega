@@ -60,7 +60,63 @@ void DefaultProductionExitUpdate::exitObjectViaDoor( Object *newObj, ExitDoorTyp
 {
 	DEBUG_ASSERTCRASH(exitDoor == DOOR_1, ("multiple exit doors not supported here"));
 
-	Object *creationObject = getObject();
+	const DefaultProductionExitUpdateModuleData* data = getDefaultProductionExitUpdateModuleData();
+	Object* creationObject = getObject();
+
+	if (newObj && creationObject && data->m_specialObject.isNotEmpty())
+	{
+		const ThingTemplate* newTemplate = newObj->getTemplate();
+		if (newTemplate && newTemplate->getName() == data->m_specialObject)
+		{
+			Coord3D spawnPos = *creationObject->getPosition();
+
+			Real angle = creationObject->getOrientation();
+			Real sinAngle = sin(angle);
+			Real cosAngle = cos(angle);
+
+			spawnPos.x += cosAngle * data->m_specialSpawnForwardOffset;
+			spawnPos.y += sinAngle * data->m_specialSpawnForwardOffset;
+
+			spawnPos.x += -sinAngle * data->m_specialSpawnLateralOffset;
+			spawnPos.y += cosAngle * data->m_specialSpawnLateralOffset;
+
+			spawnPos.z = TheTerrainLogic->getLayerHeight(spawnPos.x, spawnPos.y, creationObject->getLayer());
+
+			newObj->setPosition(&spawnPos);
+
+			Real finalAngle = angle;
+			if (data->m_specialObjectSpawnsRotated)
+			{
+				Real randomTurn = (GameLogicRandomValue(0, 1) == 0) ? 1.57079632679f : -1.57079632679f;
+				finalAngle += randomTurn;
+			}
+
+			newObj->setOrientation(finalAngle);
+			newObj->setLayer(creationObject->getLayer());
+
+			TheAI->pathfinder()->addObjectToPathfindMap(newObj);
+
+			if (data->m_specialObjectUsesCustomRallyPoint)
+			{
+				const Coord3D* rallyPoint = getRallyPoint();
+				if (rallyPoint)
+				{
+					AIUpdateInterface* ai = newObj->getAIUpdateInterface();
+					if (ai)
+					{
+						std::vector<Coord3D> exitPath;
+						exitPath.push_back(*rallyPoint);
+						ai->aiFollowExitProductionPath(&exitPath, creationObject, CMD_FROM_AI);
+					}
+				}
+			}
+
+			return;
+		}
+	}
+
+
+	//Object *creationObject = getObject();
 	if (creationObject)
 	{
 		const DefaultProductionExitUpdateModuleData* md = getDefaultProductionExitUpdateModuleData();

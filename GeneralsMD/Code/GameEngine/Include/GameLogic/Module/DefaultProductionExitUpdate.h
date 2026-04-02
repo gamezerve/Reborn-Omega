@@ -44,11 +44,22 @@ public:
 	Coord3D m_naturalRallyPoint;
 	Bool		m_useSpawnRallyPoint;
 
+	AsciiString m_specialObject;
+	Real m_specialSpawnForwardOffset;
+	Real m_specialSpawnLateralOffset;
+	Bool m_specialObjectSpawnsRotated;
+	Bool m_specialObjectUsesCustomRallyPoint;
+
 	DefaultProductionExitUpdateModuleData()
 	{
 		m_unitCreatePoint.zero();
 		m_naturalRallyPoint.zero();
 		m_useSpawnRallyPoint = false;
+		m_specialObject.clear();
+		m_specialSpawnForwardOffset = 0.0f;
+		m_specialSpawnLateralOffset = 0.0f;
+		m_specialObjectSpawnsRotated = false;
+		m_specialObjectUsesCustomRallyPoint = false;
 	}
 
 	static void buildFieldParse(MultiIniFieldParse& p)
@@ -59,6 +70,11 @@ public:
 			{ "UnitCreatePoint",		INI::parseCoord3D,		nullptr, offsetof( DefaultProductionExitUpdateModuleData, m_unitCreatePoint ) },
 			{ "NaturalRallyPoint",  INI::parseCoord3D,		nullptr, offsetof( DefaultProductionExitUpdateModuleData, m_naturalRallyPoint ) },
 			{ "UseSpawnRallyPoint", INI::parseBool,				nullptr, offsetof( DefaultProductionExitUpdateModuleData, m_useSpawnRallyPoint ) },
+			{ "SpecialObject", INI::parseAsciiString, nullptr, offsetof(DefaultProductionExitUpdateModuleData, m_specialObject) },
+			{ "SpecialSpawnForwardOffset", INI::parseReal, nullptr, offsetof(DefaultProductionExitUpdateModuleData, m_specialSpawnForwardOffset) },
+			{ "SpecialSpawnLateralOffset", INI::parseReal, nullptr, offsetof(DefaultProductionExitUpdateModuleData, m_specialSpawnLateralOffset) },
+			{ "SpecialObjectSpawnsRotated", INI::parseBool, nullptr, offsetof(DefaultProductionExitUpdateModuleData, m_specialObjectSpawnsRotated) },
+      { "SpecialObjectUsesCustomRallyPoint", INI::parseBool, nullptr, offsetof(DefaultProductionExitUpdateModuleData, m_specialObjectUsesCustomRallyPoint) },
 			{ 0, 0, 0, 0 }
 		};
     p.add(dataFieldParse);
