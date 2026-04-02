@@ -159,6 +159,7 @@ const char* const KindOfMaskType::s_bitNameList[] =
 	"CONSERVATIVE_BUILDING",
 	"IGNORE_DOCKING_BONES",
 	"CAN_ATTACK_RIDER",
+	"NAVAL_YARD",
 
 	nullptr
 };

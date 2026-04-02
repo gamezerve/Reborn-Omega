@@ -340,6 +340,20 @@ void W3DWaypointBuffer::drawWaypoints(RenderInfoClass &rinfo)
 					points[ numPoints ].Set( Vector3( exitPoint.x, exitPoint.y, exitPoint.z ) );
 					numPoints++;
 
+					const Coord3D* rallyPoint = exitInterface->getRallyPoint();
+					if (!rallyPoint)
+						continue;
+
+					if (obj->isKindOf(KINDOF_NAVAL_YARD))
+					{
+						points[numPoints].Set(Vector3(rallyPoint->x, rallyPoint->y, rallyPoint->z));
+						numPoints++;
+
+						m_line->Set_Points(numPoints, points);
+						m_line->Render(localRinfo);
+						continue;
+					}
+
 					Bool boxWrap = TRUE;
 					Coord3D naturalRallyPoint;
 					if (exitInterface->getNaturalRallyPoint(naturalRallyPoint, FALSE))//FALSE means "without the extra offset"
@@ -358,7 +372,7 @@ void W3DWaypointBuffer::drawWaypoints(RenderInfoClass &rinfo)
 					else
 						continue; //next drawable
 
-					const Coord3D *rallyPoint = exitInterface->getRallyPoint();
+					//const Coord3D *rallyPoint = exitInterface->getRallyPoint();
 					if( rallyPoint )
 					{
 						if( boxWrap )
@@ -513,16 +527,22 @@ void W3DWaypointBuffer::drawWaypoints(RenderInfoClass &rinfo)
 						points[ numPoints ].Set( Vector3( rallyPoint->x, rallyPoint->y, rallyPoint->z ) );
 						numPoints++;
 
+						m_waypointNodeRobj->Set_Position(Vector3(naturalRallyPoint.x, naturalRallyPoint.y, naturalRallyPoint.z));
+						WW3D::Render(*m_waypointNodeRobj, localRinfo);
+
+						m_line->Set_Points(numPoints, points);
+						m_line->Render(localRinfo);
+
 					}
 					else
 						continue;
 
-					m_waypointNodeRobj->Set_Position(Vector3(naturalRallyPoint.x,naturalRallyPoint.y,naturalRallyPoint.z));
-					WW3D::Render(*m_waypointNodeRobj,localRinfo); //The little hockey puck
+					//m_waypointNodeRobj->Set_Position(Vector3(naturalRallyPoint.x,naturalRallyPoint.y,naturalRallyPoint.z));
+					//WW3D::Render(*m_waypointNodeRobj,localRinfo); //The little hockey puck
 
 
-					m_line->Set_Points( numPoints, points );
-					m_line->Render( localRinfo );
+					//m_line->Set_Points( numPoints, points );
+					//m_line->Render( localRinfo );
 
 				}
 

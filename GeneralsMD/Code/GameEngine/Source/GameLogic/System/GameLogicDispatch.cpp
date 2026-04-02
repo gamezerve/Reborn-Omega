@@ -147,9 +147,36 @@ static void doSetRallyPoint( Object *obj, const Coord3D& pos )
 	// for now, just use the basic human locomotor ... and enable the above code when Steven
 	// tells me how to get the locomotor sets based on a thing template (CBD)
 	//
-	NameKeyType key = NAMEKEY( "BasicHumanLocomotor" );
+
+
+
+	//NameKeyType key = NAMEKEY( "BasicHumanLocomotor" );
+	//LocomotorSet locomotorSet;
+	//locomotorSet.addLocomotor( TheLocomotorStore->findLocomotorTemplate( key ) );
+
+	NameKeyType key;
+	if (obj->isKindOf(KINDOF_NAVAL_YARD))
+		key = NAMEKEY("BasicAmphibiousLocomotor");
+	else
+		key = NAMEKEY("BasicHumanLocomotor");
+
 	LocomotorSet locomotorSet;
-	locomotorSet.addLocomotor( TheLocomotorStore->findLocomotorTemplate( key ) );
+	locomotorSet.addLocomotor(TheLocomotorStore->findLocomotorTemplate(key));
+	if (TheAI->pathfinder()->clientSafeQuickDoesPathExist(locomotorSet, obj->getPosition(), &pos) == FALSE)
+	{
+		if (isLocalPlayer)
+		{
+			TheInGameUI->message(TheGameText->fetch("GUI:RallyPointNoPath"));
+
+			static AudioEventRTS rallyNotSet("UnableToSetRallyPoint");
+			rallyNotSet.setPosition(&pos);
+			rallyNotSet.setPlayerIndex(obj->getControllingPlayer()->getPlayerIndex());
+			TheAudio->addAudioEvent(&rallyNotSet);
+		}
+
+		return;
+	}
+
 	if( TheAI->pathfinder()->clientSafeQuickDoesPathExist( locomotorSet, obj->getPosition(), &pos ) == FALSE )
 	{
 
