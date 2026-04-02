@@ -985,6 +985,9 @@ public:
 	void showUpgradeCameoTooltip(GameWindow* window, const UpgradeTemplate* upgrade);
 	const UpgradeTemplate* getUpgradeTemplateForCameoWindow(GameWindow* window) const;
 	const UpgradeTemplate* m_rightHUDUpgradeTooltipTemplates[MAX_RIGHT_HUD_UPGRADE_CAMEOS];
+	void showSelectedUnitCameoTooltip(GameWindow* window);
+	void showSelectedUnitTooltipLayout(GameWindow* window, Object* obj);
+	Drawable* getCurrentSelectedDrawable() const { return m_currentSelectedDrawable; }
 	void hideBuildTooltipLayout();
 	void deleteBuildTooltipLayout();
 	Bool getShowBuildTooltipLayout(){return m_showBuildToolTipLayout;	}

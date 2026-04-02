@@ -241,6 +241,60 @@ void ControlBar::showBuildTooltipLayout( GameWindow *cmdButton )
 
 }
 
+static UnicodeString getSidePrefixedThingName(const ThingTemplate* thingTemplate)
+{
+	if (!thingTemplate)
+		return UnicodeString::TheEmptyString;
+
+	UnicodeString result;
+
+	if (!thingTemplate->getDisplayName().isEmpty())
+		result = thingTemplate->getDisplayName();
+	else
+		result.translate(thingTemplate->getName());
+
+	if (thingTemplate->getDefaultOwningSide().isNotEmpty())
+	{
+		UnicodeString sidePrefix;
+		AsciiString rawSide = thingTemplate->getDefaultOwningSide();
+
+		if (rawSide.compareNoCase("America") == 0)
+			sidePrefix = L"USA";
+		else if (rawSide.compareNoCase("AmericaSuperWeaponGeneral") == 0)
+			sidePrefix = L"SupW";
+		else if (rawSide.compareNoCase("AmericaLaserGeneral") == 0)
+			sidePrefix = L"Lazr";
+		else if (rawSide.compareNoCase("AmericaAirForceGeneral") == 0)
+			sidePrefix = L"AirF";
+		else if (rawSide.compareNoCase("GLA") == 0)
+			sidePrefix = L"GLA";
+		else if (rawSide.compareNoCase("GLAToxinGeneral") == 0)
+			sidePrefix = L"Toxin";
+		else if (rawSide.compareNoCase("GLADemolitionGeneral") == 0)
+			sidePrefix = L"Demo";
+		else if (rawSide.compareNoCase("GLAStealthGeneral") == 0)
+			sidePrefix = L"Slth";
+		else if (rawSide.compareNoCase("China") == 0)
+			sidePrefix = L"China";
+		else if (rawSide.compareNoCase("ChinaTankGeneral") == 0)
+			sidePrefix = L"Tank";
+		else if (rawSide.compareNoCase("ChinaInfantryGeneral") == 0)
+			sidePrefix = L"Infa";
+		else if (rawSide.compareNoCase("ChinaNukeGeneral") == 0)
+			sidePrefix = L"Nuke";
+		else if (rawSide.compareNoCase("Boss") == 0)
+			sidePrefix = L"Boss";
+
+		if (!sidePrefix.isEmpty())
+		{
+			sidePrefix.concat(L" - ");
+			sidePrefix.concat(result);
+			result = sidePrefix;
+		}
+	}
+
+	return result;
+}
 
 void ControlBar::repopulateBuildTooltipLayout()
 {
@@ -715,7 +769,30 @@ if (buildLimit > 0)
 			for( Int i=0; i<thingTemplate->getPrereqCount(); i++ )
 			{
 				prereq = thingTemplate->getNthPrereq(i);
+				//requiresList = prereq->getRequiresList(player);
 				requiresList = prereq->getRequiresList(player);
+
+				if (requiresList != UnicodeString::TheEmptyString && prereq->getNumUnitPrereqs() > 0)
+				{
+					UnicodeString taggedRequiresList = UnicodeString::TheEmptyString;
+
+					for (Int prereqIndex = 0; prereqIndex < prereq->getNumUnitPrereqs(); ++prereqIndex)
+					{
+						const ThingTemplate* prereqThing = prereq->getUnitPrereq(prereqIndex);
+						if (!prereqThing)
+							continue;
+
+						UnicodeString taggedName = getSidePrefixedThingName(prereqThing);
+
+						if (!taggedRequiresList.isEmpty())
+							taggedRequiresList.concat(L", ");
+
+						taggedRequiresList.concat(taggedName);
+					}
+
+					if (!taggedRequiresList.isEmpty())
+						requiresList = taggedRequiresList;
+				}
 
 				if( requiresList != UnicodeString::TheEmptyString )
 				{
@@ -847,6 +924,28 @@ if (buildLimit > 0)
 				{
 					prereq = thingTemplate->getNthPrereq(i);
 					requiresList = prereq->getRequiresList(player);
+
+					if (requiresList != UnicodeString::TheEmptyString && prereq->getNumUnitPrereqs() > 0)
+					{
+						UnicodeString taggedRequiresList = UnicodeString::TheEmptyString;
+
+						for (Int prereqIndex = 0; prereqIndex < prereq->getNumUnitPrereqs(); ++prereqIndex)
+						{
+							const ThingTemplate* prereqThing = prereq->getUnitPrereq(prereqIndex);
+							if (!prereqThing)
+								continue;
+
+							UnicodeString taggedName = getSidePrefixedThingName(prereqThing);
+
+							if (!taggedRequiresList.isEmpty())
+								taggedRequiresList.concat(L", ");
+
+							taggedRequiresList.concat(taggedName);
+						}
+
+						if (!taggedRequiresList.isEmpty())
+							requiresList = taggedRequiresList;
+					}
 
 					if( requiresList != UnicodeString::TheEmptyString )
 					{
@@ -1113,6 +1212,260 @@ if (buildLimit > 0)
 	}
 	m_buildToolTipLayout->hide(FALSE);
 }
+
+
+void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
+{
+	if (!window || !obj || !m_buildToolTipLayout)
+		return;
+
+	if (TheInGameUI->areTooltipsDisabled() || TheScriptEngine->isGameEnding())
+		return;
+
+	if (TheGameLogic->isInReplayGame())
+		return;
+
+	if (TheInGameUI->isQuitMenuVisible())
+		return;
+
+	if (TheDisconnectMenu && TheDisconnectMenu->isScreenVisible())
+		return;
+
+	m_showBuildToolTipLayout = TRUE;
+
+	Player* player = ThePlayerList->getLocalPlayer();
+	const ThingTemplate* thing = obj->getTemplate();
+	if (!player || !thing)
+		return;
+
+	UnicodeString name, cost, buildtime, powertext, limittext, healthText, shroudText, locomotorText, infoText, descrip;
+	descrip = UnicodeString::TheEmptyString;
+
+	if (!thing->getDisplayName().isEmpty())
+		name = thing->getDisplayName();
+	else
+		name.translate(thing->getName());
+
+	if (thing->getDefaultOwningSide().isNotEmpty())
+	{
+		UnicodeString sidePrefix;
+		AsciiString rawSide = thing->getDefaultOwningSide();
+
+		if (rawSide.compareNoCase("America") == 0)
+			sidePrefix = L"USA";
+		else if (rawSide.compareNoCase("AmericaSuperWeaponGeneral") == 0)
+			sidePrefix = L"SupW";
+		else if (rawSide.compareNoCase("AmericaLaserGeneral") == 0)
+			sidePrefix = L"Lazr";
+		else if (rawSide.compareNoCase("AmericaAirForceGeneral") == 0)
+			sidePrefix = L"AirF";
+		else if (rawSide.compareNoCase("GLA") == 0)
+			sidePrefix = L"GLA";
+		else if (rawSide.compareNoCase("GLAToxinGeneral") == 0)
+			sidePrefix = L"Toxin";
+		else if (rawSide.compareNoCase("GLADemolitionGeneral") == 0)
+			sidePrefix = L"Demo";
+		else if (rawSide.compareNoCase("GLAStealthGeneral") == 0)
+			sidePrefix = L"Slth";
+		else if (rawSide.compareNoCase("China") == 0)
+			sidePrefix = L"China";
+		else if (rawSide.compareNoCase("ChinaTankGeneral") == 0)
+			sidePrefix = L"Tank";
+		else if (rawSide.compareNoCase("ChinaInfantryGeneral") == 0)
+			sidePrefix = L"Infa";
+		else if (rawSide.compareNoCase("ChinaNukeGeneral") == 0)
+			sidePrefix = L"Nuke";
+		else if (rawSide.compareNoCase("Boss") == 0)
+			sidePrefix = L"Boss";
+
+		if (!sidePrefix.isEmpty())
+		{
+			sidePrefix.concat(L" - ");
+			sidePrefix.concat(name);
+			name = sidePrefix;
+		}
+	}
+
+
+
+
+
+	const ActiveBodyModuleData* bodyData = thing->friend_getActiveBodyModuleData();
+	const MaxHealthUpgradeModuleData* maxHealthUpgradeData = thing->friend_getMaxHealthUpgradeModuleData();
+
+	if (bodyData)
+	{
+		if (maxHealthUpgradeData && maxHealthUpgradeData->m_addMaxHealth > 0.0f)
+		{
+			UnicodeString triggerUpgradeDisplay = L"an upgrade";
+
+			if (!maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames.empty())
+			{
+				AsciiString triggerUpgradeName = maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames[0];
+				const UpgradeTemplate* triggerUpgradeTemplate = TheUpgradeCenter->findUpgrade(triggerUpgradeName);
+
+				if (triggerUpgradeTemplate && triggerUpgradeTemplate->getDisplayNameLabel().isNotEmpty())
+					triggerUpgradeDisplay = TheGameText->fetch(triggerUpgradeTemplate->getDisplayNameLabel().str());
+				else
+					triggerUpgradeDisplay.format(L"%S", triggerUpgradeName.str());
+			}
+
+			healthText.format(L"Health: %.0f (+%.0f with %ls)",
+				bodyData->m_maxHealth,
+				maxHealthUpgradeData->m_addMaxHealth,
+				triggerUpgradeDisplay.str());
+		}
+		else
+		{
+			healthText.format(L"Health: %.0f", bodyData->m_maxHealth);
+		}
+	}
+
+	if (thing->getShroudClearingRange() > 0.0f)
+	{
+		Real shroudRange = thing->getShroudClearingRange();
+		shroudText.format(L"Shroud Clear Range: %.0f", shroudRange);
+	}
+
+	AIUpdateModuleData* aiData = const_cast<ThingTemplate*>(thing)->friend_getAIModuleInfo();
+	if (aiData && !thing->isKindOf(KINDOF_STRUCTURE))
+	{
+		const LocomotorTemplateVector* locoVector = aiData->findLocomotorTemplateVector(LOCOMOTORSET_NORMAL);
+		if (locoVector && !locoVector->empty())
+		{
+			const LocomotorTemplate* locoTemplate = (*locoVector)[0];
+			if (locoTemplate)
+			{
+				Locomotor* tempLocomotor = TheLocomotorStore->newLocomotor(locoTemplate);
+				if (tempLocomotor)
+				{
+					Real speed = tempLocomotor->getMaxSpeedForCondition(BODY_PRISTINE);
+					Real displaySpeed = speed * LOGICFRAMES_PER_SECOND;
+					if (displaySpeed > 0.0f)
+						locomotorText.format(L"Movement Speed: %d", REAL_TO_INT_FLOOR(displaySpeed + 0.5f));
+
+					deleteInstance(tempLocomotor);
+				}
+			}
+		}
+	}
+
+	UnsignedInt buildLimit = thing->getMaxSimultaneousOfType();
+	if (buildLimit > 0)
+	{
+		Int currentCount = 0;
+		const ThingTemplate* tmpl = thing;
+		player->countObjectsByThingTemplate(1, &tmpl, false, &currentCount);
+		limittext.format(L"Build Limit: %d/%d", currentCount, buildLimit);
+	}
+
+
+	if (!healthText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(healthText); }
+	if (!shroudText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(shroudText); }
+	if (!locomotorText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(locomotorText); }
+	if (!limittext.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(limittext); }
+
+	GameWindow* root = m_buildToolTipLayout->getFirstWindow();
+
+	GameWindow* titleWin = TheWindowManager->winGetWindowFromId(root, TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextName"));
+	GameWindow* descWin = TheWindowManager->winGetWindowFromId(root, TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextDescription"));
+	GameWindow* costWin = TheWindowManager->winGetWindowFromId(root, TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextCost"));
+
+	if (titleWin)
+	{
+		titleWin->winHide(FALSE);
+		GadgetStaticTextSetText(titleWin, name);
+	}
+
+	if (descWin)
+	{
+		descWin->winHide(FALSE);
+		GadgetStaticTextSetText(descWin, descrip);
+	}
+
+	if (costWin)
+	{
+		costWin->winHide(FALSE);
+		GadgetStaticTextSetText(costWin, infoText);
+	}
+
+
+	{
+		static NameKeyType winNamekey = TheNameKeyGenerator->nameToKey("ControlBar.wnd:BackgroundMarker");
+		static ICoord2D lastOffset = { 0, 0 };
+
+		GameWindow* root = m_buildToolTipLayout->getFirstWindow();
+		if (!root || !costWin || !descWin)
+			return;
+
+		ICoord2D size, newSize, pos;
+		Int costDiffSize = 0;
+		Int diffSize = 0;
+
+		DisplayString* tempDString = TheDisplayStringManager->newDisplayString();
+
+		costWin->winGetSize(&size.x, &size.y);
+		tempDString->setFont(costWin->winGetFont());
+		tempDString->setWordWrap(size.x - 10);
+		tempDString->setText(infoText);
+		tempDString->getSize(&newSize.x, &newSize.y);
+
+		costDiffSize = newSize.y - size.y;
+		if (costDiffSize < 0)
+			costDiffSize = 0;
+
+		costWin->winSetSize(size.x, size.y + costDiffSize);
+		GadgetStaticTextSetText(costWin, infoText);
+
+		ICoord2D descPos;
+		descWin->winGetPosition(&descPos.x, &descPos.y);
+		descWin->winSetPosition(descPos.x, descPos.y + costDiffSize);
+
+		descWin->winGetSize(&size.x, &size.y);
+		tempDString->setFont(descWin->winGetFont());
+		tempDString->setWordWrap(size.x - 10);
+		tempDString->setText(descrip);
+		tempDString->getSize(&newSize.x, &newSize.y);
+
+		diffSize = newSize.y - size.y;
+
+		TheDisplayStringManager->freeDisplayString(tempDString);
+		tempDString = nullptr;
+
+		root->winGetSize(&size.x, &size.y);
+
+		if (size.y + diffSize < 64)
+			diffSize = 64 - size.y;
+
+		root->winSetSize(size.x, size.y + costDiffSize + diffSize);
+		root->winGetPosition(&pos.x, &pos.y);
+
+		GameWindow* marker = TheWindowManager->winGetWindowFromId(nullptr, winNamekey);
+		static ICoord2D basePos;
+		if (!marker)
+			return;
+
+		getBackgroundMarkerPos(&basePos.x, &basePos.y);
+
+		ICoord2D curPos, offset;
+		marker->winGetScreenPosition(&curPos.x, &curPos.y);
+
+		offset.x = curPos.x - basePos.x;
+		offset.y = curPos.y - basePos.y;
+
+		root->winSetPosition(pos.x, (pos.y - costDiffSize - diffSize) + (offset.y - lastOffset.y));
+
+		lastOffset.x = offset.x;
+		lastOffset.y = offset.y;
+
+		descWin->winGetSize(&size.x, &size.y);
+		descWin->winSetSize(size.x, size.y + diffSize);
+		GadgetStaticTextSetText(descWin, descrip);
+	}
+
+	m_buildToolTipLayout->hide(FALSE);
+}
+
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------

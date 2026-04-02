@@ -96,6 +96,17 @@ public:
 
 	Int getAllPossibleBuildFacilityTemplates(const ThingTemplate* tmpls[], Int maxtmpls) const;
 
+	Int getNumUnitPrereqs() const { return (Int)m_prereqUnits.size(); }
+
+	const ThingTemplate* getUnitPrereq(Int index) const
+	{
+		if (index < 0 || index >= (Int)m_prereqUnits.size())
+			return nullptr;
+
+		return m_prereqUnits[index].unit;
+	}
+
+
 private:
 
 	enum
