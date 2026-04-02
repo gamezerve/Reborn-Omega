@@ -2664,7 +2664,7 @@ void InGameUI::createMouseoverHint( const GameMessage *msg )
 				else if (rawSide.compareNoCase("AmericaSuperWeaponGeneral") == 0)
 					sidePrefix = L"SupW";
 				else if (rawSide.compareNoCase("AmericaLaserGeneral") == 0)
-					sidePrefix = L"Lazr";
+					sidePrefix = L"Laser";
 				else if (rawSide.compareNoCase("AmericaAirForceGeneral") == 0)
 					sidePrefix = L"AirF";
 				else if (rawSide.compareNoCase("GLA") == 0)

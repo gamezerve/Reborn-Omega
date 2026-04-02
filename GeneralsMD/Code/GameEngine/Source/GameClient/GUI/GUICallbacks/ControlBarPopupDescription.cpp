@@ -109,6 +109,12 @@ static GameWindow *theWindow = nullptr;
 static AnimateWindowManager *theAnimateWindowManager = nullptr;
 static GameWindow *prevWindow = nullptr;
 static Bool useAnimation = FALSE;
+static Bool s_tooltipSizesInitialized = FALSE;
+static ICoord2D s_tooltipRootDefaultSize = { 0, 0 };
+static ICoord2D s_tooltipRootDefaultPos = { 0, 0 };
+static ICoord2D s_tooltipCostDefaultSize = { 0, 0 };
+static ICoord2D s_tooltipDescDefaultSize = { 0, 0 };
+static ICoord2D s_tooltipDescDefaultPos = { 0, 0 };
 const ThingTemplate* thingTemplate = nullptr;
 void ControlBarPopupDescriptionUpdateFunc( WindowLayout *layout, void *param )
 {
@@ -241,6 +247,55 @@ void ControlBar::showBuildTooltipLayout( GameWindow *cmdButton )
 
 }
 
+static void resetBuildTooltipLayoutToDefaults(WindowLayout* layout)
+{
+	if (!layout)
+		return;
+
+	GameWindow* root = layout->getFirstWindow();
+	if (!root)
+		return;
+
+	GameWindow* costWin = TheWindowManager->winGetWindowFromId(
+		root,
+		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextCost")
+	);
+
+	GameWindow* descWin = TheWindowManager->winGetWindowFromId(
+		root,
+		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextDescription")
+	);
+
+	if (!s_tooltipSizesInitialized)
+	{
+		root->winGetSize(&s_tooltipRootDefaultSize.x, &s_tooltipRootDefaultSize.y);
+		root->winGetPosition(&s_tooltipRootDefaultPos.x, &s_tooltipRootDefaultPos.y);
+
+		if (costWin)
+			costWin->winGetSize(&s_tooltipCostDefaultSize.x, &s_tooltipCostDefaultSize.y);
+
+		if (descWin)
+		{
+			descWin->winGetSize(&s_tooltipDescDefaultSize.x, &s_tooltipDescDefaultSize.y);
+			descWin->winGetPosition(&s_tooltipDescDefaultPos.x, &s_tooltipDescDefaultPos.y);
+		}
+
+		s_tooltipSizesInitialized = TRUE;
+	}
+
+	root->winSetSize(s_tooltipRootDefaultSize.x, s_tooltipRootDefaultSize.y);
+	root->winSetPosition(s_tooltipRootDefaultPos.x, s_tooltipRootDefaultPos.y);
+
+	if (costWin)
+		costWin->winSetSize(s_tooltipCostDefaultSize.x, s_tooltipCostDefaultSize.y);
+
+	if (descWin)
+	{
+		descWin->winSetSize(s_tooltipDescDefaultSize.x, s_tooltipDescDefaultSize.y);
+		descWin->winSetPosition(s_tooltipDescDefaultPos.x, s_tooltipDescDefaultPos.y);
+	}
+}
+
 static UnicodeString getSidePrefixedThingName(const ThingTemplate* thingTemplate)
 {
 	if (!thingTemplate)
@@ -263,7 +318,7 @@ static UnicodeString getSidePrefixedThingName(const ThingTemplate* thingTemplate
 		else if (rawSide.compareNoCase("AmericaSuperWeaponGeneral") == 0)
 			sidePrefix = L"SupW";
 		else if (rawSide.compareNoCase("AmericaLaserGeneral") == 0)
-			sidePrefix = L"Lazr";
+			sidePrefix = L"Laser";
 		else if (rawSide.compareNoCase("AmericaAirForceGeneral") == 0)
 			sidePrefix = L"AirF";
 		else if (rawSide.compareNoCase("GLA") == 0)
@@ -310,6 +365,8 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 {
 	if(!m_buildToolTipLayout)
 		return;
+
+	resetBuildTooltipLayoutToDefaults(m_buildToolTipLayout);
 
 	Player* player = ThePlayerList->getLocalPlayer();
 	UnicodeString name, cost, buildtime, powertext, limittext, reloadtext, descrip, healthText, shroudText, locomotorText;
@@ -1017,7 +1074,7 @@ if (buildLimit > 0)
 		else if (rawSide.compareNoCase("AmericaSuperWeaponGeneral") == 0)
 			sidePrefix = L"SupW";
 		else if (rawSide.compareNoCase("AmericaLaserGeneral") == 0)
-			sidePrefix = L"Lazr";
+			sidePrefix = L"Laser";
 		else if (rawSide.compareNoCase("AmericaAirForceGeneral") == 0)
 			sidePrefix = L"AirF";
 		else if (rawSide.compareNoCase("GLA") == 0)
@@ -1256,7 +1313,7 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 		else if (rawSide.compareNoCase("AmericaSuperWeaponGeneral") == 0)
 			sidePrefix = L"SupW";
 		else if (rawSide.compareNoCase("AmericaLaserGeneral") == 0)
-			sidePrefix = L"Lazr";
+			sidePrefix = L"Laser";
 		else if (rawSide.compareNoCase("AmericaAirForceGeneral") == 0)
 			sidePrefix = L"AirF";
 		else if (rawSide.compareNoCase("GLA") == 0)
@@ -1393,6 +1450,12 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 	{
 		static NameKeyType winNamekey = TheNameKeyGenerator->nameToKey("ControlBar.wnd:BackgroundMarker");
 		static ICoord2D lastOffset = { 0, 0 };
+		if (s_tooltipSizesInitialized)
+		{
+			lastOffset.x = 0;
+			lastOffset.y = 0;
+		}
+
 
 		GameWindow* root = m_buildToolTipLayout->getFirstWindow();
 		if (!root || !costWin || !descWin)

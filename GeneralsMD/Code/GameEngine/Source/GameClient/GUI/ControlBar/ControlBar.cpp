@@ -51,6 +51,7 @@
 #include "Common/Recorder.h"
 #include "Common/BuildAssistant.h"
 
+#include "GameClient/DisconnectMenu.h"
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/Object.h"
 #include "GameLogic/Module/ProductionUpdate.h"
@@ -159,6 +160,8 @@ static void unitUpgradeTooltip(GameWindow* window,
 	TheControlBar->showUpgradeCameoTooltip(window, upgrade);
 }
 
+
+
 const UpgradeTemplate* ControlBar::getUpgradeTemplateForCameoWindow(GameWindow* window) const
 {
 	if (!window)
@@ -190,9 +193,29 @@ void ControlBar::showUpgradeCameoTooltip(GameWindow* window, const UpgradeTempla
 	if (TheInGameUI->isQuitMenuVisible())
 		return;
 
-	TheControlBar->showBuildTooltipLayout(window);
+	if (TheDisconnectMenu && TheDisconnectMenu->isScreenVisible())
+		return;
 
-	if (m_buildToolTipLayout->isHidden())
+	GameWindow* root = m_buildToolTipLayout->getFirstWindow();
+	if (!root)
+		return;
+
+	GameWindow* titleWin = TheWindowManager->winGetWindowFromId(
+		root,
+		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextName")
+	);
+
+	GameWindow* descWin = TheWindowManager->winGetWindowFromId(
+		root,
+		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextDescription")
+	);
+
+	GameWindow* costWin = TheWindowManager->winGetWindowFromId(
+		root,
+		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextCost")
+	);
+
+	if (!titleWin || !descWin || !costWin)
 		return;
 
 	UnicodeString emptyText;
@@ -204,31 +227,17 @@ void ControlBar::showUpgradeCameoTooltip(GameWindow* window, const UpgradeTempla
 	else
 		titleText.translate(upgrade->getUpgradeName());
 
-	GameWindow* titleWin = TheWindowManager->winGetWindowFromId(
-		nullptr,
-		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextName")
-	);
+	titleWin->winHide(FALSE);
+	descWin->winHide(FALSE);
+	costWin->winHide(FALSE);
 
-	GameWindow* descWin = TheWindowManager->winGetWindowFromId(
-		nullptr,
-		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextDescription")
-	);
+	GadgetStaticTextSetText(titleWin, titleText);
+	GadgetStaticTextSetText(descWin, emptyText);
+	GadgetStaticTextSetText(costWin, emptyText);
 
-	GameWindow* costWin = TheWindowManager->winGetWindowFromId(
-		nullptr,
-		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextCost")
-	);
-
-	if (titleWin)
-		GadgetStaticTextSetText(titleWin, titleText);
-
-	if (descWin)
-		GadgetStaticTextSetText(descWin, emptyText);
-
-	if (costWin)
-		GadgetStaticTextSetText(costWin, emptyText);
+	m_showBuildToolTipLayout = TRUE;
+	m_buildToolTipLayout->hide(FALSE);
 }
-
 
 //void ControlBar::showSelectedUnitCameoTooltip(GameWindow* window)
 //{
