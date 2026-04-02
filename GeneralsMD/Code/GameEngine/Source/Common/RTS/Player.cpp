@@ -2907,7 +2907,9 @@ Bool Player::canBuildMoreOfType( const ThingTemplate *whatToBuild ) const
     // out of the factory. When we do our Starcraft port and have flying Terran
     // buildings, we'll have to change this ;-)
     // Remember: To ASSUME makes an ASS out of U and ME.
-    typeCountData.checkProductionInterface = !whatToBuild->isKindOf( KINDOF_STRUCTURE );
+		// 
+    //typeCountData.checkProductionInterface = !whatToBuild->isKindOf( KINDOF_STRUCTURE );
+		typeCountData.checkProductionInterface = TRUE; // Reborn: To correct Aircraft Carrier build limit from Naval Yard
 
     iterateObjects( countExisting, &typeCountData );
     if( typeCountData.count >= maxSimultaneousOfType )
