@@ -975,13 +975,46 @@ void Locomotor::locoUpdate_moveTowardsPosition(Object* obj, const Coord3D& goalP
 //	DEBUG_ASSERTLOG(obj->getID() != TheObjectIDToDebug, ("locoUpdate_moveTowardsPosition %f %f %f (dtg %f, spd %f), speed %f (%f)",goalPos.x,goalPos.y,goalPos.z,onPathDistToGoal,desiredSpeed,physics->getSpeed(),physics->getForwardSpeed2D()));
 #endif
 
+
+	Bool allowShoreLanding = false;
+
+	if (obj->isKindOf(KINDOF_TRANSPORT) &&
+		m_template->m_surfaces == LOCOMOTORSURFACE_WATER)
+	{
+		const Real SHORE_TOLERANCE = 500.5f * PATHFIND_CELL_SIZE_F;
+
+		Bool goalNearWater = false;
+		for (Int j = -1; j <= 1 && !goalNearWater; ++j)
+		{
+			for (Int i = -1; i <= 1; ++i)
+			{
+				Coord3D testGoal = goalPos;
+				testGoal.x += i * SHORE_TOLERANCE;
+				testGoal.y += j * SHORE_TOLERANCE;
+
+				if (TheAI->pathfinder()->validMovementTerrain(obj->getLayer(), this, &testGoal))
+				{
+					goalNearWater = true;
+					break;
+				}
+			}
+		}
+
+		if (goalNearWater)
+		{
+			allowShoreLanding = true;
+		}
+	}
+
+
 	//
 	// do not allow for invalid positions that the pathfinder cannot handle ... for airborne
 	// objects we don't need the pathfinder so we'll ignore this
 	//
-	if( BitIsSet( m_template->m_surfaces, LOCOMOTORSURFACE_AIR ) == false &&
-			!TheAI->pathfinder()->validMovementTerrain(obj->getLayer(), this, obj->getPosition()) &&
-			!getFlag(ALLOW_INVALID_POSITION))
+	if (BitIsSet(m_template->m_surfaces, LOCOMOTORSURFACE_AIR) == false &&
+		!TheAI->pathfinder()->validMovementTerrain(obj->getLayer(), this, obj->getPosition()) &&
+		!getFlag(ALLOW_INVALID_POSITION) &&
+		!allowShoreLanding)
 	{
 		// Somehow, we have gotten to an invalid location.
 		if (fixInvalidPosition(obj, physics))
