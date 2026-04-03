@@ -149,7 +149,9 @@ void HotKeyManager::addHotKey(GameWindow* win, const AsciiString& keyIn)
 	HotKeyMap::iterator it = m_hotKeyMap.find(key);
 	if (it != m_hotKeyMap.end())
 	{
+#ifdef RTS_DEBUG
 		const char* existingName = it->second.m_win ? it->second.m_win->winGetInstanceData()->m_decoratedNameString.str() : "";
+#endif
 		const char* currentName = win ? win->winGetInstanceData()->m_decoratedNameString.str() : "";
 
 		// Ignore duplicate hotkeys coming from GeneralsExpPoints windows
