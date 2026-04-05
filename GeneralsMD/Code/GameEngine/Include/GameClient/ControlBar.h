@@ -317,6 +317,10 @@ public:
 	Bool isValidObjectTarget(const Object* sourceObj, const Object* targetObj) const;
 	Bool isValidObjectTarget(const Drawable* source, const Drawable* target) const;
 
+	mutable const Image* m_runtimeOverrideButtonImage = nullptr;
+	void setRuntimeOverrideButtonImage(const Image* image) const { m_runtimeOverrideButtonImage = image; }
+	void clearRuntimeOverrideButtonImage() const { m_runtimeOverrideButtonImage = nullptr; }
+
 	// Note: It is perfectly valid for either (or both!) of targetObj and targetLocation to be nullptr.
 	// This is a convenience function to make several calls to other functions.
 	Bool isValidToUseOn(const Object *sourceObj, const Object *targetObj, const Coord3D *targetLocation, CommandSourceType commandSource) const;
@@ -341,7 +345,16 @@ public:
 	Int getMaxShotsToFire() const { return m_maxShotsToFire; }
 	const ScienceVec& getScienceVec() const { return m_science; }
 	CommandButtonMappedBorderType getCommandButtonMappedBorderType() const { return m_commandButtonBorder; }
-	const Image* getButtonImage() const { return m_buttonImage;	}
+
+
+	//const Image* getButtonImage() const { return m_buttonImage;	}
+	const Image* getButtonImage() const
+	{
+		if (m_runtimeOverrideButtonImage)
+			return m_runtimeOverrideButtonImage;
+		return m_buttonImage;
+	}
+
 	void cacheButtonImage();
 
 
@@ -765,6 +778,8 @@ public:
 
 	/// set the command data into the button
 	void setControlCommand( GameWindow *button, const CommandButton *commandButton );
+
+	void setControlCommand(GameWindow* button, const CommandButton* commandButton, Object* contextObj);
 
 	void getForegroundMarkerPos(Int *x, Int *y);
 	void getBackgroundMarkerPos(Int *x, Int *y);

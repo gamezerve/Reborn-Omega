@@ -471,6 +471,7 @@ set(GAMEENGINE_SRC
     Include/GameLogic/Module/WeaponBonusUpgrade.h
     Include/GameLogic/Module/WeaponSetUpgrade.h
     Include/GameLogic/Module/WorkerAIUpdate.h
+    Include/GameLogic/Reborn/ImageUpgradeReborn.h 
     Include/GameLogic/Object.h
     Include/GameLogic/ObjectCreationList.h
     Include/GameLogic/ObjectIter.h
@@ -1070,6 +1071,7 @@ set(GAMEENGINE_SRC
     Source/GameLogic/Object/Upgrade/WeaponSetUpgrade.cpp
     Source/GameLogic/Object/Weapon.cpp
     Source/GameLogic/Object/WeaponSet.cpp
+    Source/GameLogic/Reborn/ImageUpgradeReborn.cpp
     Source/GameLogic/ScriptEngine/ScriptActions.cpp
     Source/GameLogic/ScriptEngine/ScriptConditions.cpp
     Source/GameLogic/ScriptEngine/ScriptEngine.cpp

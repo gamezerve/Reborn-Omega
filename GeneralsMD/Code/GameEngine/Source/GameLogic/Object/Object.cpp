@@ -112,6 +112,7 @@
 #include "Common/AudioEventInfo.h"
 #include "Common/DynamicAudioEventInfo.h"
 
+#include "GameLogic/Reborn/ImageUpgradeReborn.h"
 
 #ifdef DEBUG_OBJECT_ID_EXISTS
 ObjectID TheObjectIDToDebug = INVALID_ID;
@@ -6528,4 +6529,19 @@ ObjectID Object::calculateCountermeasureToDivertTo( const Object& victim )
 		}
 	}
 	return INVALID_ID;
+}
+
+
+ImageUpgradeReborn* Object::getImageUpgradeReborn() const
+{
+	static const NameKeyType key_ImageUpgradeReborn = NAMEKEY("ImageUpgradeReborn");
+
+	ImageUpgradeReborn* imageUpgrade = (ImageUpgradeReborn*)findUpdateModule(key_ImageUpgradeReborn);
+	if (!imageUpgrade)
+		return nullptr;
+
+	if (!imageUpgrade->isImageUpgradeActive())
+		return nullptr;
+
+	return imageUpgrade;
 }

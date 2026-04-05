@@ -92,6 +92,9 @@
 #include "GameNetwork/GameInfo.h"
 
 
+#include "GameLogic/Reborn/ImageUpgradeReborn.h"
+
+
 // PUBLIC /////////////////////////////////////////////////////////////////////////////////////////
 ControlBar *TheControlBar = nullptr;
 
@@ -1171,7 +1174,18 @@ void CommandButton::copyImagesFrom( const CommandButton *button, Bool markUIDirt
 {
 	if( m_buttonImage != button->getButtonImage() )
 	{
+
+		DEBUG_LOG(("REBORN copyImagesFrom BEFORE: this=%s src=%s thisImg=%p srcImg=%p\n",
+			getName().str(),
+			button->getName().str(),
+			m_buttonImage,
+			button->getButtonImage()));
+
 		m_buttonImage = button->getButtonImage();
+
+		DEBUG_LOG(("REBORN copyImagesFrom AFTER: this=%s newThisImg=%p\n",
+			getName().str(),
+			m_buttonImage));
 
 		//Code renderer handles these states now.
 		//m_disabledImage = button->getDisabledImage();
@@ -2863,39 +2877,61 @@ void ControlBar::setCommandBarBorder( GameWindow *button, CommandButtonMappedBor
 	}
 }
 
+static Bool isImageUpgradeRebornActiveForBuildCommand(const Object* obj, const ImageUpgradeRebornModuleData* data)
+{
+	if (!obj || !data)
+		return FALSE;
+
+	Player* player = obj->getControllingPlayer();
+	if (!player)
+		return FALSE;
+
+	UpgradeMaskType activationMask;
+	UpgradeMaskType conflictingMask;
+	data->m_upgradeMuxData.getUpgradeActivationMasks(activationMask, conflictingMask);
+
+
+
+	const UpgradeMaskType& playerMask = player->getCompletedUpgradeMask();
+
+	const Bool active = playerMask.testForAll(activationMask);
+
+	DEBUG_LOG(("REBORN ACTIVE CHECK MASK: obj=%p player=%p active=%d\n",
+		obj,
+		player,
+		active));
+
+	return active;
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Set the command data into the control */
 //-------------------------------------------------------------------------------------------------
-void ControlBar::setControlCommand( GameWindow *button, const CommandButton *commandButton )
+void ControlBar::setControlCommand( GameWindow *button, const CommandButton *commandButton, Object *contextObj )
 {
 
 	// the window must be a gadget button
-	if( button->winGetInputFunc() != GadgetPushButtonInput )
+	if (button->winGetInputFunc() != GadgetPushButtonInput)
 	{
-
-		DEBUG_CRASH( ("setControlCommand: Window is not a button") );
+		DEBUG_CRASH(("setControlCommand: Window is not a button"));
 		return;
-
 	}
 
 	// sanity
-	if( commandButton == nullptr )
+	if (commandButton == nullptr)
 	{
-
-		DEBUG_CRASH( ("setControlCommand: null commandButton passed in") );
+		DEBUG_CRASH(("setControlCommand: null commandButton passed in"));
 		return;
-
 	}
 
 	//
 	// set the button gadget control to be a normal button or a check like button if
 	// the command says it needs one
 	//
-	if( BitIsSet( commandButton->getOptions(), CHECK_LIKE ))
-		GadgetButtonEnableCheckLike( button, TRUE, FALSE );
+	if (BitIsSet(commandButton->getOptions(), CHECK_LIKE))
+		GadgetButtonEnableCheckLike(button, TRUE, FALSE);
 	else
-		GadgetButtonEnableCheckLike( button, FALSE, FALSE );
+		GadgetButtonEnableCheckLike(button, FALSE, FALSE);
 
 	//
 	// set the imagry ... note that for 99% of the command buttons it's sufficient to specify
@@ -2906,8 +2942,76 @@ void ControlBar::setControlCommand( GameWindow *button, const CommandButton *com
 	// the states of these buttons we would add additional lines to the INI for a command
 	// button and store those additional images in the command button
 	//
-	if( commandButton->getButtonImage() )
-		GadgetButtonSetEnabledImage( button, commandButton->getButtonImage() );
+	//if( commandButton->getButtonImage() )
+	//	GadgetButtonSetEnabledImage( button, commandButton->getButtonImage() );
+	CommandButton* mutableButton = const_cast<CommandButton*>(commandButton);
+	mutableButton->clearRuntimeOverrideButtonImage();
+
+	const Image* effectiveImage = commandButton->getButtonImage();
+
+	if (commandButton->getCommandType() == GUI_COMMAND_UNIT_BUILD)
+	{
+		const ThingTemplate* buildThing = commandButton->getThingTemplate();
+		Player* selectedPlayer = nullptr;
+
+		if (contextObj)
+			selectedPlayer = contextObj->getControllingPlayer();
+
+		DEBUG_LOG(("REBORN BUILD START: cmd=%s buildThing=%s contextObj=%p selectedPlayer=%p original=%p\n",
+			commandButton->getName().str(),
+			buildThing ? buildThing->getName().str() : "<null>",
+			contextObj,
+			selectedPlayer,
+			commandButton->getButtonImage()));
+
+		if (buildThing)
+		{
+			const ImageUpgradeRebornModuleData* rebornData = buildThing->friend_getImageUpgradeRebornModuleData();
+
+			DEBUG_LOG(("REBORN BUILD DATA: cmd=%s rebornData=%p\n",
+				commandButton->getName().str(),
+				rebornData));
+
+			if (rebornData)
+			{
+				Bool active = isImageUpgradeRebornActiveForBuildCommand(contextObj, rebornData);
+				const Image* rebornCommandButtonImage = rebornData->getResolvedNewCommandButtonImage();
+				const Image* rebornButtonImage = rebornCommandButtonImage ? rebornCommandButtonImage : rebornData->getResolvedNewButtonImage();
+
+				DEBUG_LOG(("REBORN BUILD CHECK: cmd=%s active=%d rebornButtonImage=%p\n",
+					commandButton->getName().str(),
+					active,
+					rebornButtonImage));
+
+				CommandButton* mutableButton = const_cast<CommandButton*>(commandButton);
+
+				if (active && rebornButtonImage)
+				{
+					effectiveImage = rebornButtonImage;
+					mutableButton->setRuntimeOverrideButtonImage(rebornButtonImage);
+				}
+				else
+				{
+					mutableButton->clearRuntimeOverrideButtonImage();
+				}
+			}
+		}
+	}
+
+
+	if (effectiveImage)
+	{
+		GadgetButtonSetEnabledImage(button, effectiveImage);
+		GadgetButtonSetDisabledImage(button, effectiveImage);
+		GadgetButtonSetDisabledSelectedImage(button, effectiveImage);
+		GadgetButtonSetHiliteImage(button, effectiveImage);
+		GadgetButtonSetHiliteSelectedImage(button, effectiveImage);
+		GadgetButtonSetEnabledSelectedImage(button, effectiveImage);
+	}
+
+	DEBUG_LOG(("REBORN BUILD FINAL: cmd=%s final=%p\n",
+		commandButton->getName().str(),
+		effectiveImage));
 
 	//if( commandButton->getDisabledImage() )
 	//{
@@ -2923,12 +3027,10 @@ void ControlBar::setControlCommand( GameWindow *button, const CommandButton *com
 	//}  // end if
 
 	// set the text
-	if( commandButton->getTextLabel().isEmpty() == FALSE || !commandButton->getScienceVec().empty())
-	{
+	if (commandButton->getTextLabel().isEmpty() == FALSE || !commandButton->getScienceVec().empty())
 		button->winSetTooltipFunc(commandButtonTooltip);
-	}
 	else
-		GadgetButtonSetText( button, L"" );
+		GadgetButtonSetText(button, L"");
 
 	// save the command in the user data of the window
 	GadgetButtonSetData(button, (void*)commandButton);
@@ -2944,6 +3046,15 @@ void ControlBar::setControlCommand( GameWindow *button, const CommandButton *com
 	}
 	GadgetButtonSetAltSound(button, "GUICommandBarClick");
 
+}
+
+void ControlBar::setControlCommand(GameWindow* button, const CommandButton* commandButton)
+{
+	Object* contextObj = nullptr;
+	if (m_currentSelectedDrawable)
+		contextObj = m_currentSelectedDrawable->getObject();
+
+	setControlCommand(button, commandButton, contextObj);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -3058,6 +3169,8 @@ void ControlBar::setPortraitByObject( Object *obj )
 		const ThingTemplate *thing = obj->getTemplate();
 		Player *player = obj->getControllingPlayer();
 
+
+
 		//If we have an enemy stealth disguised unit, swap portraits!
 		Drawable *draw = obj->getDrawable();
 		if( draw && draw->getStealthLook() == STEALTHLOOK_DISGUISED_ENEMY )
@@ -3077,7 +3190,21 @@ void ControlBar::setPortraitByObject( Object *obj )
 			}
 		}
 
-		const Image* portrait = thing->getSelectedPortraitImage();
+		//const Image* portrait = thing->getSelectedPortraitImage();
+		const Image* portrait = nullptr;
+
+				ImageUpgradeReborn* imageUpgrade = obj ? obj->getImageUpgradeReborn() : nullptr;
+
+		if (imageUpgrade && imageUpgrade->getNewSelectPortraitImage())
+		{
+			portrait = imageUpgrade->getNewSelectPortraitImage();
+		}
+		else
+		{
+			portrait = thing->getSelectedPortraitImage();
+		}
+
+
 
 		m_rightHUDUnitSelectParent->winHide(FALSE);
 		// enable the window window as an image window and set the image

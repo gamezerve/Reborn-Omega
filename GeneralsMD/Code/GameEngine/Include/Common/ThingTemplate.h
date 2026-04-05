@@ -66,6 +66,8 @@ class WeaponTemplateSet;
 class ArmorTemplateSet;
 class FXList;
 
+class ImageUpgradeRebornModuleData; // Reborn
+
 // TYPEDEFS FOR FILE //////////////////////////////////////////////////////////////////////////////
 typedef std::map<AsciiString, AudioEventRTS> PerUnitSoundMap;
 typedef std::map<AsciiString, const FXList*> PerUnitFXMap;
@@ -459,6 +461,8 @@ public:
 
 	const Image *getSelectedPortraitImage() const { return m_selectedPortraitImage; }
 	const Image *getButtonImage() const { return m_buttonImage; }
+
+	const ImageUpgradeRebornModuleData* friend_getImageUpgradeRebornModuleData() const;
 
 	//Code renderer handles these states now.
 	//const AsciiString& getInventoryImageName( InventoryImageType type ) const { return m_inventoryImage[ type ]; }

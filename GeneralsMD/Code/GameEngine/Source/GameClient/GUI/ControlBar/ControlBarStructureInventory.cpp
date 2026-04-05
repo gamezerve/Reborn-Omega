@@ -44,6 +44,7 @@
 #include "GameClient/GadgetPushButton.h"
 #include "GameClient/HotKey.h"
 
+#include "GameLogic/Reborn/ImageUpgradeReborn.h"
 
 #define STOP_ID			10
 #define EVACUATE_ID	11
@@ -75,7 +76,21 @@ void ControlBar::populateButtonProc( Object *obj, void *userData )
 
 	// set the UI button that will allow us to press it and cause the object to exit the container
 	const Image *image;
-	image = obj->getTemplate()->getButtonImage();
+
+	//image = obj->getTemplate()->getButtonImage();
+	ImageUpgradeReborn* imageUpgrade = obj->getImageUpgradeReborn();
+
+	if (imageUpgrade && imageUpgrade->getNewButtonImage())
+	{
+		image = imageUpgrade->getNewButtonImage();
+	}
+	else
+	{
+		image = obj->getTemplate()->getButtonImage();
+	}
+
+
+
 	GadgetButtonSetEnabledImage( info->inventoryButtons[ info->buttonIndex ], image );
 
 	//Show the auto-contained object's veterancy symbol!

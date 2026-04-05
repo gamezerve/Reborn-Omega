@@ -40,7 +40,7 @@
 #include "GameClient/InGameUI.h"
 #include "GameLogic/Object.h"
 
-
+#include "GameLogic/Reborn/ImageUpgradeReborn.h"
 
 
 //-------------------------------------------------------------------------------------------------
@@ -272,20 +272,62 @@ void ControlBar::populateMultiSelect()
 			if( portraitSet == FALSE )
 			{
 
-				portrait = draw->getTemplate()->getSelectedPortraitImage();
+				//portrait = draw->getTemplate()->getSelectedPortraitImage();
+				Object* obj = draw->getObject();
+
+				ImageUpgradeReborn* imageUpgrade = obj ? obj->getImageUpgradeReborn() : nullptr;
+
+				if (imageUpgrade && imageUpgrade->getNewSelectPortraitImage())
+				{
+					portrait = imageUpgrade->getNewSelectPortraitImage();
+				}
+				else
+				{
+					portrait = draw->getTemplate()->getSelectedPortraitImage();
+				}
+
+
+
+
+
+
+
 				portraitObj = draw->getObject();
 				portraitSet = TRUE;
 
 			}
-			else if( draw->getTemplate()->getSelectedPortraitImage() != portrait )
-				portrait = nullptr;
+			//else if( draw->getTemplate()->getSelectedPortraitImage() != portrait )
+			else
+			{
+				const Image* comparePortrait = nullptr;
+
+				Object* obj = draw->getObject();
+				ImageUpgradeReborn* imageUpgrade = obj ? obj->getImageUpgradeReborn() : nullptr;
+
+				if (imageUpgrade && imageUpgrade->getNewSelectPortraitImage())
+				{
+					comparePortrait = imageUpgrade->getNewSelectPortraitImage();
+				}
+				else
+				{
+					comparePortrait = draw->getTemplate()->getSelectedPortraitImage();
+				}
+
+				if (comparePortrait != portrait)
+				{
+					portrait = nullptr;
+					break;
+				}
+			}
+
 
 		}
 
 	}
 
 	// set the portrait image
-	setPortraitByObject( portraitObj );
+	//setPortraitByObject( portraitObj );
+	setPortraitByObject(portraitObj);
 
 }
 
