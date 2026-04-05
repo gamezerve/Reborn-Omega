@@ -59,6 +59,7 @@
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GadgetPushButton.h"
 
+#include "GameLogic/Reborn/ImageUpgradeReborn.h"
 
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 static GameWindow *commandWindows[ MAX_COMMANDS_PER_SET ];
@@ -110,7 +111,23 @@ void ControlBar::populateInvDataCallback( Object *obj, void *userData )
 
 	// fill out the control enabled, hilite, and pushed images
 	const Image *image;
-	image = obj->getTemplate()->getButtonImage();
+
+	//image = obj->getTemplate()->getButtonImage();
+	ImageUpgradeReborn* imageUpgrade = obj->getImageUpgradeReborn();
+
+	if (imageUpgrade && imageUpgrade->getNewButtonImage())
+	{
+		image = imageUpgrade->getNewButtonImage();
+	}
+	else
+	{
+		image = obj->getTemplate()->getButtonImage();
+	}
+
+
+
+
+
 	GadgetButtonSetEnabledImage( control, image );
 
 	//No longer used
@@ -334,8 +351,10 @@ void ControlBar::populateCommand( Object *obj )
 				// enable by default
 				m_commandWindows[ i ]->winEnable( TRUE );
 
+
+				const_cast<CommandButton*>(commandButton)->clearRuntimeOverrideButtonImage();
 				// populate the visible button with data from the command button
-				setControlCommand( m_commandWindows[ i ], commandButton );
+				setControlCommand( m_commandWindows[ i ], commandButton, obj );
 
 				//
 				// commands that require sciences we don't have are hidden so they never show up
@@ -541,6 +560,23 @@ void ControlBar::resetBuildQueueData()
 
 }
 
+static Bool isImageUpgradeRebornActiveForBuildQueue(const Object* obj, const ImageUpgradeRebornModuleData* data)
+{
+	if (!obj || !data)
+		return FALSE;
+
+	Player* player = obj->getControllingPlayer();
+	if (!player)
+		return FALSE;
+
+	UpgradeMaskType activationMask;
+	UpgradeMaskType conflictingMask;
+	data->m_upgradeMuxData.getUpgradeActivationMasks(activationMask, conflictingMask);
+
+	const UpgradeMaskType& playerMask = player->getCompletedUpgradeMask();
+	return playerMask.testForAll(activationMask);
+}
+
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 void ControlBar::populateBuildQueue( Object *producer )
@@ -594,6 +630,11 @@ void ControlBar::populateBuildQueue( Object *producer )
 		//Clear any potential veterancy rank, or else we'll see it when it's empty!
 		GadgetButtonDrawOverlayImage( m_queueData[ i ].control, nullptr );
 
+		GadgetButtonSetEnabledImage(m_queueData[i].control, nullptr);
+		GadgetButtonSetHiliteImage(m_queueData[i].control, nullptr);
+		GadgetButtonSetHiliteSelectedImage(m_queueData[i].control, nullptr);
+		GadgetButtonSetEnabledSelectedImage(m_queueData[i].control, nullptr);
+
 	}
 
 	// step through each object being built and set the image data for the buttons
@@ -624,8 +665,31 @@ void ControlBar::populateBuildQueue( Object *producer )
 			// set the images
 			m_queueData[ windowIndex ].control->winEnable( TRUE );
 			m_queueData[ windowIndex ].control->winSetStatus( WIN_STATUS_USE_OVERLAY_STATES );
-			image = production->getProductionObject()->getButtonImage();
-			GadgetButtonSetEnabledImage( m_queueData[ windowIndex ].control, image );
+
+			//image = production->getProductionObject()->getButtonImage();
+			//GadgetButtonSetEnabledImage( m_queueData[ windowIndex ].control, image );
+
+			const ThingTemplate* queueThing = production->getProductionObject();
+			const Image* queueImage = queueThing ? queueThing->getButtonImage() : nullptr;
+
+			if (queueThing)
+			{
+				const ImageUpgradeRebornModuleData* rebornData = queueThing->friend_getImageUpgradeRebornModuleData();
+
+				if (rebornData && isImageUpgradeRebornActiveForBuildQueue(producer, rebornData))
+				{
+					const Image* rebornButtonImage = rebornData->getResolvedNewButtonImage();
+					if (rebornButtonImage)
+					{
+						queueImage = rebornButtonImage;
+					}
+				}
+			}
+
+			GadgetButtonSetEnabledImage(m_queueData[windowIndex].control, queueImage);
+			GadgetButtonSetHiliteImage(m_queueData[windowIndex].control, queueImage);
+			GadgetButtonSetHiliteSelectedImage(m_queueData[windowIndex].control, queueImage);
+			GadgetButtonSetEnabledSelectedImage(m_queueData[windowIndex].control, queueImage);
 
 			//No longer used.
 			//image = TheMappedImageCollection->findImageByName( production->getProductionObject()->getInventoryImageName( INV_IMAGE_HILITE ) );

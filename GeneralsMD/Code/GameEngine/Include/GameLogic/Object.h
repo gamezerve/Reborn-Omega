@@ -121,6 +121,11 @@ enum WeaponStatus CPP_11(: Int);
 enum RadarPriorityType CPP_11(: Int);
 enum CanAttackResult CPP_11(: Int);
 
+
+
+class ImageUpgradeReborn; // Reborn of the upgrade system, this time with images!
+
+
 // For ObjectScriptStatusBit
 #include "GameLogic/ObjectScriptStatusBits.h"
 
@@ -289,6 +294,7 @@ public:
 
 	BehaviorModule** getBehaviorModules() const { return m_behaviors; }
 
+
 	BodyModuleInterface* getBodyModule() const { return m_body; }
 	ContainModuleInterface* getContain() const { return m_contain; }
   StealthUpdate*          getStealth() const { return m_stealth; }
@@ -414,6 +420,8 @@ public:
 
 	// this is intended for use ONLY by GameLogic.
 	static void friend_deleteInstance(Object* object) { deleteInstance(object); }
+
+	ImageUpgradeReborn* getImageUpgradeReborn() const;
 
 	/// cache the partition module (should be called only by PartitionData)
 	void friend_setPartitionData(PartitionData *pd) { m_partitionData = pd; }
@@ -819,6 +827,8 @@ private:
 	Bool													m_isReceivingDifficultyBonus;
 
 };
+
+
 
 // deleteInstance is not meant to be used with Object in order to require the use of TheGameLogic->destroyObject()
 void deleteInstance(Object* object) CPP_11(= delete);

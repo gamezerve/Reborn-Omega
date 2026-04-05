@@ -280,6 +280,9 @@
 #include "GameClient/Module/SwayClientUpdate.h"
 #include "GameClient/Module/BeaconClientUpdate.h"
 
+// Reborn includes
+#include "GameLogic/Reborn/ImageUpgradeReborn.h"
+
 // PUBLIC DATA ////////////////////////////////////////////////////////////////////////////////////
 ModuleFactory *TheModuleFactory = nullptr;  ///< the module factory singleton
 
@@ -557,6 +560,12 @@ void ModuleFactory::init()
 	addModule( AnimatedParticleSysBoneClientUpdate );
 	addModule( SwayClientUpdate );
 	addModule( BeaconClientUpdate );
+
+
+
+	// Reborn modules
+	addModule(ImageUpgradeReborn);
+
 
 }
 

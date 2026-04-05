@@ -101,6 +101,7 @@ static PoolSizeRec PoolSizes[] =
 	{ "AudioEventInfo", 4096, 64 },
 	{ "AudioRequest", 256, 8 },
 	{ "AutoHealBehavior", 1024, 256 },
+	{ "ImageUpgradeReborn", 1024, 256 },
 	{ "WeaponBonusUpdate", 16, 16 },
 	{ "GrantStealthBehavior", 4096, 32 },
 	{ "NeutronBlastBehavior", 4096, 32 },

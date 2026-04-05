@@ -72,6 +72,8 @@
 #include "GameLogic/Powers.h"
 #include "GameLogic/Weapon.h"
 
+#include "GameLogic/Reborn/ImageUpgradeReborn.h"
+
 #include "Common/UnitTimings.h" //Contains the DO_UNIT_TIMINGS define jba.
 
 
@@ -1673,6 +1675,21 @@ const MaxHealthUpgradeModuleData* ThingTemplate::friend_getMaxHealthUpgradeModul
 			const MaxHealthUpgradeModuleData* upgradeData = dynamic_cast<const MaxHealthUpgradeModuleData*>(moduleData);
 			if (upgradeData)
 				return upgradeData;
+		}
+	}
+
+	return nullptr;
+}
+
+const ImageUpgradeRebornModuleData* ThingTemplate::friend_getImageUpgradeRebornModuleData() const
+{
+	const ModuleInfo& mi = getBehaviorModuleInfo();
+
+	for (Int i = 0; i < mi.getCount(); ++i)
+	{
+		if (mi.getNthName(i).compare("ImageUpgradeReborn") == 0)
+		{
+			return (const ImageUpgradeRebornModuleData*)mi.getNthData(i);
 		}
 	}
 
