@@ -283,6 +283,10 @@ AIUpdateInterface::AIUpdateInterface( Thing *thing, const ModuleData* moduleData
 	m_isInUpdate = FALSE;
 	m_fixLocoInPostProcess = FALSE;
 
+	m_waypointLoopEnabled = FALSE;
+	m_waypointLoopStartIndex = -1;
+
+
 	// ---------------------------------------------
 
 	for (i = 0; i < MAX_TURRETS; i++)
@@ -3354,34 +3358,106 @@ void AIUpdateInterface::privateFollowWaypointPathAsTeamExact( const Waypoint *wa
 	getStateMachine()->setState( AI_FOLLOW_WAYPOINT_PATH_AS_TEAM_EXACT );
 }
 
-//----------------------------------------------------------------------------------------
-void AIUpdateInterface::privateFollowPathAppend( const Coord3D *pos, CommandSourceType cmdSource )
+////----------------------------------------------------------------------------------------
+//void AIUpdateInterface::privateFollowPathAppend( const Coord3D *pos, CommandSourceType cmdSource )
+//{
+//	// We're adding a dynamic waypoint!
+//	Bool effectivelyMoving = isMoving() || isWaitingForPath();
+//
+//	if (getAIStateType() == AI_FOLLOW_PATH && getStateMachine()->getGoalPathSize() > 0 && effectivelyMoving)
+//	{
+//		//We already have a path, so simply add the point to the end of it!
+//		getStateMachine()->addToGoalPath(pos);
+//	}
+//	else if (effectivelyMoving)
+//	{
+//		//Our unit is moving to a point already so simply add our waypoint after that point
+//		//and convert it to a waypoint command!
+//		std::vector<Coord3D> path;
+//		path.push_back( *getGoalPosition() );
+//		path.push_back( *pos );
+//		privateFollowPath( &path, nullptr, cmdSource, false );
+//	}
+//	else
+//	{
+//		//Hopefully we're idle or doing something that doesn't require movement.
+//		std::vector<Coord3D> path;
+//		path.push_back( *pos );
+//		privateFollowPath( &path, nullptr, cmdSource, false );
+//	}
+//}
+void AIUpdateInterface::privateFollowPathAppend(const Coord3D* pos, CommandSourceType cmdSource)
 {
-	// We're adding a dynamic waypoint!
+	if (pos == nullptr)
+		return;
+
 	Bool effectivelyMoving = isMoving() || isWaitingForPath();
 
 	if (getAIStateType() == AI_FOLLOW_PATH && getStateMachine()->getGoalPathSize() > 0 && effectivelyMoving)
 	{
-		//We already have a path, so simply add the point to the end of it!
+		const Real loopThreshold = 80.0f;
+		Int goalPathSize = getStateMachine()->getGoalPathSize();
+
+		const Coord3D* curPos = getObject()->getPosition();
+		Bool clickedNearOrigin = FALSE;
+
+		if (curPos)
+		{
+			Real odx = curPos->x - pos->x;
+			Real ody = curPos->y - pos->y;
+			Real originDistSqr = odx * odx + ody * ody;
+
+			if (originDistSqr <= loopThreshold * loopThreshold)
+			{
+				clickedNearOrigin = TRUE;
+			}
+		}
+
+		if (!clickedNearOrigin)
+		{
+			for (Int i = 0; i < goalPathSize; ++i)
+			{
+				const Coord3D* existing = getStateMachine()->getGoalPathPosition(i);
+				if (existing == nullptr)
+					continue;
+
+				Real dx = existing->x - pos->x;
+				Real dy = existing->y - pos->y;
+				Real distSqr = dx * dx + dy * dy;
+
+				if (distSqr <= loopThreshold * loopThreshold)
+				{
+					if (i < goalPathSize - 1)
+					{
+						m_waypointLoopEnabled = TRUE;
+						m_waypointLoopStartIndex = i;
+						return;
+					}
+
+					break;
+				}
+			}
+		}
+
 		getStateMachine()->addToGoalPath(pos);
 	}
 	else if (effectivelyMoving)
 	{
-		//Our unit is moving to a point already so simply add our waypoint after that point
-		//and convert it to a waypoint command!
 		std::vector<Coord3D> path;
-		path.push_back( *getGoalPosition() );
-		path.push_back( *pos );
-		privateFollowPath( &path, nullptr, cmdSource, false );
+		path.push_back(*getGoalPosition());
+		path.push_back(*pos);
+
+		privateFollowPath(&path, nullptr, cmdSource, false);
 	}
 	else
 	{
-		//Hopefully we're idle or doing something that doesn't require movement.
 		std::vector<Coord3D> path;
-		path.push_back( *pos );
-		privateFollowPath( &path, nullptr, cmdSource, false );
+		path.push_back(*pos);
+
+		privateFollowPath(&path, nullptr, cmdSource, false);
 	}
 }
+
 
 //----------------------------------------------------------------------------------------
 /**
@@ -3397,6 +3473,11 @@ void AIUpdateInterface::privateFollowPath( std::vector<Coord3D>* path, Object *i
 	//other systems (like the battle drone) change the locomotor based on what it's trying to do, and
 	//doesn't want to get reset when ordered to move.
 	//chooseLocomotorSet(LOCOMOTORSET_NORMAL);
+
+
+	m_waypointLoopEnabled = FALSE;
+	m_waypointLoopStartIndex = -1;
+
 
 	// clear current state machine
 	getStateMachine()->clear();

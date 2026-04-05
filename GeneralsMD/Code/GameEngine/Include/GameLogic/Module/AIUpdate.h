@@ -648,6 +648,10 @@ public:
 	// this is intended for use ONLY by W3dWaypointBuffer.
 	Int friend_getCurrentGoalPathIndex() const { return m_nextGoalPathIndex; }
 
+	// Reborn: This is intended for use ONLY by W3dWaypointBuffer, to allow it to loop over part of the waypoint path.
+	Bool friend_isWaypointLoopEnabled() const { return m_waypointLoopEnabled; }
+	Int friend_getWaypointLoopStartIndex() const { return m_waypointLoopStartIndex; }
+
 	// this is intended for use ONLY by AIFollowPathState.
 	void friend_setCurrentGoalPathIndex( Int index ) { m_nextGoalPathIndex = index; }
 #ifdef DEBUG_LOGGING
@@ -711,6 +715,9 @@ private:
 	Int								m_waypointCount;										///< number of waypoints in the queue
 	Int								m_waypointIndex;										///< current waypoint we are moving to
 	const Waypoint*		m_completedWaypoint;								///< Set to the last waypoint in a path when the FollowWaypointPath is complete.
+
+	Bool m_waypointLoopEnabled;
+	Int m_waypointLoopStartIndex;
 
 	// Pathfinding ---------------------------------------------------------------------------------------------
 	Path*				m_path;											///< current path to follow (for moving)

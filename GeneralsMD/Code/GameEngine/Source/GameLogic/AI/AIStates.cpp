@@ -3368,27 +3368,104 @@ StateReturnType AIFollowPathState::update()
 		//determine which waypoints to plot in the waypoint renderer.
 		ai->friend_setCurrentGoalPathIndex( m_index );
 		ai->ignoreObstacleID(INVALID_ID); // we have exited whatever object we are leaving, if any.  jba.
+		//if (pos == nullptr)
+		//{
+		//	// reached the end of the path
+		//	return STATE_SUCCESS;
+		//}
 		if (pos == nullptr)
 		{
-			// reached the end of the path
+			if (ai->friend_isWaypointLoopEnabled() &&
+				ai->friend_getWaypointLoopStartIndex() >= 0 &&
+				ai->friend_getWaypointLoopStartIndex() < ai->friend_getWaypointGoalPathSize())
+			{
+				m_index = ai->friend_getWaypointLoopStartIndex();
+				pos = ai->friend_getGoalPathPosition(m_index);
+			}
+		}
+
+		ai->friend_setCurrentGoalPathIndex(m_index);
+		ai->ignoreObstacleID(INVALID_ID);
+
+		if (pos == nullptr)
+		{
 			return STATE_SUCCESS;
 		}
+
+
 
 		ai->friend_startingMove();
 		// set next movement goal
 		m_goalPosition = *pos;
- 		const Coord3D *nextPos = ai->friend_getGoalPathPosition( m_index+1 );
 
- 		if (nextPos)
+
+
+ 	//	const Coord3D *nextPos = ai->friend_getGoalPathPosition( m_index+1 );
+
+ 	//	if (nextPos)
+		//{
+		//	Coord2D delta;
+		//	delta.x = nextPos->x - pos->x;
+		//	delta.y = nextPos->y - pos->y;
+		//	Real offset = delta.length();
+ 	//		const Coord3D *followingPos = ai->friend_getGoalPathPosition( m_index+2 );
+		//	if (followingPos) offset += 4*PATHFIND_CELL_SIZE_F;
+		//	ai->setPathExtraDistance(offset);
+		//	// We are in the middle of a path, so don't set the final goal location yet.
+		//	setAdjustsDestination(false);
+		//}
+		//else
+		//{
+		//	setAdjustsDestination(m_adjustFinal && (m_adjustFinalOverride || ai->isDoingGroundMovement()));
+		//	if (getAdjustsDestination())
+		//	{
+		//		if (!TheAI->pathfinder()->adjustDestination(getMachineOwner(), ai->getLocomotorSet(), &m_goalPosition)) {
+		//			return STATE_FAILURE;
+		//		}
+		//		TheAI->pathfinder()->updateGoal(getMachineOwner(), &m_goalPosition, TheTerrainLogic->getLayerForDestination(&m_goalPosition));
+		//	}
+
+		//	// urg. hacky. if we are a projectile on the last segment, turn on precise z-pos.
+		//	if (obj->isKindOf(KINDOF_PROJECTILE))
+		//	{
+		//		if (ai && ai->getCurLocomotor())
+		//			ai->getCurLocomotor()->setUsePreciseZPos(true);
+		//	}
+		//}
+
+
+		const Coord3D* nextPos = ai->friend_getGoalPathPosition(m_index + 1);
+
+		if (nextPos == nullptr &&
+			ai->friend_isWaypointLoopEnabled() &&
+			ai->friend_getWaypointLoopStartIndex() >= 0 &&
+			ai->friend_getWaypointLoopStartIndex() < ai->friend_getWaypointGoalPathSize())
+		{
+			nextPos = ai->friend_getGoalPathPosition(ai->friend_getWaypointLoopStartIndex());
+		}
+
+		if (nextPos)
 		{
 			Coord2D delta;
 			delta.x = nextPos->x - pos->x;
 			delta.y = nextPos->y - pos->y;
 			Real offset = delta.length();
- 			const Coord3D *followingPos = ai->friend_getGoalPathPosition( m_index+2 );
-			if (followingPos) offset += 4*PATHFIND_CELL_SIZE_F;
+
+			const Coord3D* followingPos = ai->friend_getGoalPathPosition(m_index + 2);
+			if (followingPos == nullptr &&
+				ai->friend_isWaypointLoopEnabled() &&
+				ai->friend_getWaypointLoopStartIndex() >= 0 &&
+				ai->friend_getWaypointLoopStartIndex() < ai->friend_getWaypointGoalPathSize())
+			{
+				followingPos = ai->friend_getGoalPathPosition(ai->friend_getWaypointLoopStartIndex() + 1);
+			}
+
+			if (followingPos)
+				offset += 4 * PATHFIND_CELL_SIZE_F;
+
 			ai->setPathExtraDistance(offset);
-			// We are in the middle of a path, so don't set the final goal location yet.
+
+			// Loop varsa son waypoint'i final goal gibi görme.
 			setAdjustsDestination(false);
 		}
 		else
@@ -3402,13 +3479,14 @@ StateReturnType AIFollowPathState::update()
 				TheAI->pathfinder()->updateGoal(getMachineOwner(), &m_goalPosition, TheTerrainLogic->getLayerForDestination(&m_goalPosition));
 			}
 
-			// urg. hacky. if we are a projectile on the last segment, turn on precise z-pos.
 			if (obj->isKindOf(KINDOF_PROJECTILE))
 			{
 				if (ai && ai->getCurLocomotor())
 					ai->getCurLocomotor()->setUsePreciseZPos(true);
 			}
 		}
+
+
 		computePath();
 		return STATE_CONTINUE;
 	}

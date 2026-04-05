@@ -207,6 +207,50 @@ void W3DWaypointBuffer::drawWaypoints(RenderInfoClass &rinfo)
 					//Now render the lines in one pass!
 					m_line->Set_Points( numPoints, points );
 					m_line->Render( localRinfo );
+
+					// Reborn: If the waypoint loop is enabled, then render a line from the last waypoint back to the loop start index.
+					if (ai->friend_isWaypointLoopEnabled())
+					{
+						Int loopStartIndex = ai->friend_getWaypointLoopStartIndex();
+
+						if (loopStartIndex >= 0 && loopStartIndex < goalSize)
+						{
+							Vector3 loopPoints[MAX_DISPLAY_NODES + 1];
+							Int loopPointCount = 0;
+
+							for (Int i = loopStartIndex; i < goalSize; ++i)
+							{
+								const Coord3D* waypoint = ai->friend_getGoalPathPosition(i);
+								if (waypoint)
+								{
+									if (loopPointCount < MAX_DISPLAY_NODES + 1)
+									{
+										loopPoints[loopPointCount].Set(Vector3(waypoint->x, waypoint->y, waypoint->z));
+										loopPointCount++;
+									}
+
+									m_waypointNodeRobj->Set_Position(Vector3(waypoint->x, waypoint->y, waypoint->z));
+									WW3D::Render(*m_waypointNodeRobj, localRinfo);
+								}
+							}
+
+							const Coord3D* loopStartWaypoint = ai->friend_getGoalPathPosition(loopStartIndex);
+							if (loopStartWaypoint && loopPointCount >= 2 && loopPointCount < MAX_DISPLAY_NODES + 1)
+							{
+								loopPoints[loopPointCount].Set(Vector3(loopStartWaypoint->x, loopStartWaypoint->y, loopStartWaypoint->z));
+								loopPointCount++;
+							}
+
+							if (loopPointCount >= 2)
+							{
+								m_line->Set_Color(Vector3(1.0f, 0.55f, 0.0f));
+								m_line->Set_Points(loopPointCount, loopPoints);
+								m_line->Render(localRinfo);
+								m_line->Set_Color(Vector3(0.25f, 0.5f, 1.0f));
+							}
+						}
+					}
+
 				}
 			}
 		}
