@@ -476,6 +476,18 @@ static Bool ParseTeamsDataChunk(DataChunkInput &file, DataChunkInfo *info, void 
 	return true;
 }
 
+
+
+static Bool hasSkirmishPlayerForTemplate(SidesList* sides, const AsciiString& playerTemplateName)
+{
+	for (Int i = 0; i < sides->getNumSkirmishSides(); ++i)
+	{
+		if (sides->getSkirmishSideInfo(i)->getDict()->getAsciiString(TheKey_playerFaction) == playerTemplateName)
+			return true;
+	}
+	return false;
+}
+
 void SidesList::prepareForMP_or_Skirmish()
 {
 	m_skirmishTeamrec.clear();
@@ -504,6 +516,15 @@ void SidesList::prepareForMP_or_Skirmish()
 		removeSide(i);
 		i--;
 	}
+
+
+	if (!hasSkirmishPlayerForTemplate(this, "FactionBossGeneral"))
+	{
+		DEBUG_LOG(("Auto-adding missing skirmish player for FactionBossGeneral"));
+		addSkirmishPlayerByTemplate("FactionBossGeneral");
+	}
+
+
 	Bool gotScripts = false;
 	for (i=0; i<m_numSkirmishSides; i++) {
 		if (m_skirmishSides[i].getDict()->getAsciiString(TheKey_playerFaction) == "FactionCivilian") {
@@ -718,6 +739,64 @@ void SidesList::addPlayerByTemplate(AsciiString playerTemplateName)
 	d.setAsciiString(TheKey_teamOwner, playerName);
 	d.setBool(TheKey_teamIsSingleton, true);
 	addTeam(&d);
+}
+
+void SidesList::addSkirmishPlayerByTemplate(AsciiString playerTemplateName)
+{
+	AsciiString playerName;
+	UnicodeString playerDisplayName;
+
+	if (playerTemplateName.isEmpty())
+	{
+		return;
+	}
+
+	if (playerTemplateName == "FactionBossGeneral")
+	{
+		playerName = "SkirmishChinaBossGeneral";
+	}
+	else
+	{
+		playerName.set("Skirmish");
+		if (playerTemplateName.startsWith("Faction"))
+		{
+			playerName.concat(playerTemplateName.str() + 7);
+		}
+		else
+		{
+			playerName.concat(playerTemplateName);
+		}
+	}
+
+	playerDisplayName.translate(playerName);
+
+	Dict d;
+
+	d.clear();
+	d.setAsciiString(TheKey_playerName, playerName);
+	d.setBool(TheKey_playerIsHuman, false);
+	d.setBool(TheKey_playerIsSkirmish, true);
+	d.setUnicodeString(TheKey_playerDisplayName, playerDisplayName);
+	d.setAsciiString(TheKey_playerFaction, playerTemplateName);
+	d.setAsciiString(TheKey_playerAllies, AsciiString::TheEmptyString);
+	d.setAsciiString(TheKey_playerEnemies, AsciiString::TheEmptyString);
+
+	DEBUG_ASSERTCRASH(m_numSkirmishSides < MAX_PLAYER_COUNT, ("too many skirmish players"));
+	if (m_numSkirmishSides < MAX_PLAYER_COUNT)
+	{
+		m_skirmishSides[m_numSkirmishSides].init(&d);
+		++m_numSkirmishSides;
+	}
+
+	AsciiString playerTeamName;
+	playerTeamName.set("team");
+	playerTeamName.concat(playerName);
+
+	d.clear();
+	d.setAsciiString(TheKey_teamName, playerTeamName);
+	d.setAsciiString(TheKey_teamOwner, playerName);
+	d.setBool(TheKey_teamIsSingleton, true);
+	addSkirmishTeam(&d);
 }
 
 Bool SidesList::validateSides()

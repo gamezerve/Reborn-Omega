@@ -178,6 +178,8 @@ public:
 
 	void addPlayerByTemplate(AsciiString playerTemplateName);
 
+	void addSkirmishPlayerByTemplate(AsciiString playerTemplateName);
+
 	enum
 	{
 		MAX_TEAM_DEPTH = 3
