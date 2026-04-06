@@ -730,7 +730,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			if (thingTemplate->getShroudClearingRange() > 0.0f)
 			{
 				Real shroudRange = thingTemplate->getShroudClearingRange();
-				shroudText.format(L"Shroud Clear Range: %.0f", shroudRange);
+				shroudText.format(L"Shroud Clearing Range: %.0f", shroudRange);
 
 				Drawable* draw = TheInGameUI->getFirstSelectedDrawable();
 				Object* selectedObject = draw ? draw->getObject() : nullptr;
@@ -1378,11 +1378,28 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 		}
 	}
 
-	if (thing->getShroudClearingRange() > 0.0f)
+if (thing->getShroudClearingRange() > 0.0f)
+{
+	Real shroudRange = thing->getShroudClearingRange();
+	shroudText.format(L"Shroud Clearing Range: %.0f", shroudRange);
+
+	Player* selectedPlayer = obj->getControllingPlayer();
+
+	if (selectedPlayer && selectedPlayer->getBattlePlansActiveSpecific(PLANSTATUS_SEARCHANDDESTROY) > 0)
 	{
-		Real shroudRange = thing->getShroudClearingRange();
-		shroudText.format(L"Shroud Clear Range: %.0f", shroudRange);
+		Real scalar = selectedPlayer->getBattlePlanSightRangeScalar();
+
+		if (scalar > 1.0f)
+		{
+			Int percentBonus = (Int)((scalar - 1.0f) * 100.0f + 0.5f);
+			Real bonusAmount = shroudRange * (scalar - 1.0f);
+
+			UnicodeString shroudBonusText;
+			shroudBonusText.format(L" (+%.0f, +%d%% with Search and Destroy)", bonusAmount, percentBonus);
+			shroudText.concat(shroudBonusText);
+		}
 	}
+}
 
 	AIUpdateModuleData* aiData = const_cast<ThingTemplate*>(thing)->friend_getAIModuleInfo();
 	if (aiData && !thing->isKindOf(KINDOF_STRUCTURE))
