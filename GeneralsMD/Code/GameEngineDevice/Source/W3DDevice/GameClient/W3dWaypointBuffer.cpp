@@ -182,31 +182,55 @@ void W3DWaypointBuffer::drawWaypoints(RenderInfoClass &rinfo)
 				AIUpdateInterface *ai = obj->getAI();
 				Int goalSize = ai ? ai->friend_getWaypointGoalPathSize() : 0;
 				Int gpIdx = ai ? ai->friend_getCurrentGoalPathIndex() : 0;
-				if( ai && gpIdx >= 0 && gpIdx < goalSize )
+				if (ai && gpIdx >= 0 && gpIdx < goalSize)
 				{
-					const Coord3D *pos = obj->getPosition();
-					points[ 0 ].Set( Vector3( pos->x, pos->y, pos->z ) );
+					const Coord3D* pos = obj->getPosition();
+					points[0].Set(Vector3(pos->x, pos->y, pos->z));
 
-					for( int i = gpIdx; i < goalSize; i++ )
+					Int normalEndIndex = goalSize;
+
+					if (ai->friend_isWaypointLoopEnabled())
 					{
-						const Coord3D *waypoint = ai->friend_getGoalPathPosition( i );
-						if( waypoint )
+						Int loopStartIndex = ai->friend_getWaypointLoopStartIndex();
+
+						if (loopStartIndex >= 0 && loopStartIndex < goalSize)
+						{
+							if (gpIdx < loopStartIndex)
+							{
+								normalEndIndex = loopStartIndex + 1;
+							}
+							else
+							{
+								normalEndIndex = gpIdx;
+							}
+						}
+					}
+
+					for (int i = gpIdx; i < normalEndIndex; i++)
+					{
+						const Coord3D* waypoint = ai->friend_getGoalPathPosition(i);
+						if (waypoint)
 						{
 							//Render line from previous point to current node.
 
-							if( numPoints < MAX_DISPLAY_NODES + 1 )
+							if (numPoints < MAX_DISPLAY_NODES + 1)
 							{
-								points[ numPoints ].Set( Vector3( waypoint->x, waypoint->y, waypoint->z ) );
+								points[numPoints].Set(Vector3(waypoint->x, waypoint->y, waypoint->z));
 								numPoints++;
 							}
 
-							m_waypointNodeRobj->Set_Position(Vector3(waypoint->x,waypoint->y,waypoint->z));
-							WW3D::Render(*m_waypointNodeRobj,localRinfo);
+							m_waypointNodeRobj->Set_Position(Vector3(waypoint->x, waypoint->y, waypoint->z));
+							WW3D::Render(*m_waypointNodeRobj, localRinfo);
 						}
 					}
+
+					if (numPoints >= 2)
+					{
+						m_line->Set_Color(Vector3(0.25f, 0.5f, 1.0f));
 					//Now render the lines in one pass!
 					m_line->Set_Points( numPoints, points );
 					m_line->Render( localRinfo );
+					}
 
 					// Reborn: If the waypoint loop is enabled, then render a line from the last waypoint back to the loop start index.
 					if (ai->friend_isWaypointLoopEnabled())
