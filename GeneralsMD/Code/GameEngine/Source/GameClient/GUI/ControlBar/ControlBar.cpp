@@ -2957,20 +2957,20 @@ void ControlBar::setControlCommand( GameWindow *button, const CommandButton *com
 		if (contextObj)
 			selectedPlayer = contextObj->getControllingPlayer();
 
-		DEBUG_LOG(("REBORN BUILD START: cmd=%s buildThing=%s contextObj=%p selectedPlayer=%p original=%p\n",
-			commandButton->getName().str(),
-			buildThing ? buildThing->getName().str() : "<null>",
-			contextObj,
-			selectedPlayer,
-			commandButton->getButtonImage()));
+		 ////DEBUG_LOG(("REBORN BUILD START: cmd=%s buildThing=%s contextObj=%p selectedPlayer=%p original=%p\n",
+			////commandButton->getName().str(),
+			////buildThing ? buildThing->getName().str() : "<null>",
+			////contextObj,
+			////selectedPlayer,
+			////commandButton->getButtonImage()));
 
 		if (buildThing)
 		{
 			const ImageUpgradeRebornModuleData* rebornData = buildThing->friend_getImageUpgradeRebornModuleData();
 
-			DEBUG_LOG(("REBORN BUILD DATA: cmd=%s rebornData=%p\n",
-				commandButton->getName().str(),
-				rebornData));
+			////DEBUG_LOG(("REBORN BUILD DATA: cmd=%s rebornData=%p\n",
+			////	commandButton->getName().str(),
+			////	rebornData));
 
 			if (rebornData)
 			{
@@ -2978,10 +2978,10 @@ void ControlBar::setControlCommand( GameWindow *button, const CommandButton *com
 				const Image* rebornCommandButtonImage = rebornData->getResolvedNewCommandButtonImage();
 				const Image* rebornButtonImage = rebornCommandButtonImage ? rebornCommandButtonImage : rebornData->getResolvedNewButtonImage();
 
-				DEBUG_LOG(("REBORN BUILD CHECK: cmd=%s active=%d rebornButtonImage=%p\n",
-					commandButton->getName().str(),
-					active,
-					rebornButtonImage));
+				////DEBUG_LOG(("REBORN BUILD CHECK: cmd=%s active=%d rebornButtonImage=%p\n",
+				////	commandButton->getName().str(),
+				////	active,
+				////	rebornButtonImage));
 
 				CommandButton* mutableButton = const_cast<CommandButton*>(commandButton);
 
@@ -3009,9 +3009,9 @@ void ControlBar::setControlCommand( GameWindow *button, const CommandButton *com
 		GadgetButtonSetEnabledSelectedImage(button, effectiveImage);
 	}
 
-	DEBUG_LOG(("REBORN BUILD FINAL: cmd=%s final=%p\n",
-		commandButton->getName().str(),
-		effectiveImage));
+	////DEBUG_LOG(("REBORN BUILD FINAL: cmd=%s final=%p\n",
+	////	commandButton->getName().str(),
+	////	effectiveImage));
 
 	//if( commandButton->getDisabledImage() )
 	//{
