@@ -763,15 +763,15 @@ void ControlBar::updateContextCommand()
 	if( m_currentSelectedDrawable )
 		obj = m_currentSelectedDrawable->getObject();
 
-	if (obj)
-	{
-		DEBUG_LOG(("updateContextCommand: current obj = %s\n",
-			obj->getTemplate()->getName().str()));
-	}
-	else
-	{
-		DEBUG_LOG(("updateContextCommand: current obj = <null>\n"));
-	}
+	//if (obj)
+	//{
+	//	DEBUG_LOG(("updateContextCommand: current obj = %s\n",
+	//		obj->getTemplate()->getName().str()));
+	//}
+	//else
+	//{
+	//	DEBUG_LOG(("updateContextCommand: current obj = <null>\n"));
+	//}
 
 	//
 	// the contents of objects are usually showed on the UI, when those contents change
@@ -1494,11 +1494,11 @@ CommandAvailability ControlBar::getCommandAvailability( const CommandButton *com
 			DEBUG_ASSERTCRASH( command->getSpecialPowerTemplate() != nullptr,
 												 ("The special power in the command '%s' is null", command->getName().str()) );
 
-			DEBUG_LOG(("getCommandAvailability: obj=%s command=%s specialPower=%s\n",
-				obj ? obj->getTemplate()->getName().str() : "<null>",
-				command ? command->getName().str() : "<null>",
-				(command&& command->getSpecialPowerTemplate()) ?
-				command->getSpecialPowerTemplate()->getName().str() : "<null>"));
+			//DEBUG_LOG(("getCommandAvailability: obj=%s command=%s specialPower=%s\n",
+			//	obj ? obj->getTemplate()->getName().str() : "<null>",
+			//	command ? command->getName().str() : "<null>",
+			//	(command&& command->getSpecialPowerTemplate()) ?
+			//	command->getSpecialPowerTemplate()->getName().str() : "<null>"));
 
 			// get special power module from the object to execute it
 			SpecialPowerModuleInterface *mod = obj->getSpecialPowerModule( command->getSpecialPowerTemplate() );
