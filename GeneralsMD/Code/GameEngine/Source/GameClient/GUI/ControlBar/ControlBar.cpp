@@ -1158,6 +1158,10 @@ const FieldParse CommandSet::m_commandSetFieldParseTable[] =
 	{ "16",			CommandSet::parseCommandButton, (void *)15,		offsetof( CommandSet, m_command ) },
 	{ "17",			CommandSet::parseCommandButton, (void *)16,		offsetof( CommandSet, m_command ) },
 	{ "18",			CommandSet::parseCommandButton, (void *)17,		offsetof( CommandSet, m_command ) },
+	{ "19",			CommandSet::parseCommandButton, (void *)18,		offsetof( CommandSet, m_command ) },
+	{ "20",			CommandSet::parseCommandButton, (void *)19,		offsetof( CommandSet, m_command ) },
+	{ "21",			CommandSet::parseCommandButton, (void *)20,		offsetof( CommandSet, m_command ) },
+	{ "22",			CommandSet::parseCommandButton, (void *)21,		offsetof( CommandSet, m_command ) },
 	{ nullptr,			nullptr,														 nullptr,				0	}
 
 };
@@ -4245,6 +4249,21 @@ void ControlBar::updateSpecialPowerShortcut()
 		}
 
 	}
+}
+
+
+Int ControlBar::getVisibleSpecialPowerShortcutButtonCount() const
+{
+	Int visibleButtons = 0;
+
+	for (Int i = 0; i < m_currentlyUsedSpecialPowersButtons; ++i)
+	{
+		GameWindow* win = m_specialPowerShortcutButtons[i];
+		if (win && !win->winIsHidden())
+			visibleButtons++;
+	}
+
+	return visibleButtons;
 }
 
 //-------------------------------------------------------------------------------------------------

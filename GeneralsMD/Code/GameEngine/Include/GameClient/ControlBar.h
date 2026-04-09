@@ -683,6 +683,9 @@ public:
 	void onPlayerRankChanged(const Player *p);
 	void onPlayerSciencePurchasePointsChanged(const Player *p);
 
+
+	Int getVisibleSpecialPowerShortcutButtonCount() const;
+
 	/** if this button is part of the context sensitive command system, process a button click
 	the gadgetMessage is either a GBM_SELECTED or GBM_SELECTED_RIGHT */
 	CBCommandStatus processContextSensitiveButtonClick( GameWindow *button,

@@ -133,6 +133,98 @@ static UnicodeString formatIncomeValue(UnsignedInt cashPerMin)
 	return result;
 }
 
+
+
+static Int getReadySuperweaponHeightCompensation()
+{
+	if (!TheDisplay)
+		return 1;
+
+	Real scaleFrom800x600 = (Real)TheDisplay->getHeight() / 600.0f;
+	Int compensation = REAL_TO_INT_FLOOR(1.0f * scaleFrom800x600 + 0.5f);
+
+	if (compensation < 1)
+		compensation = 1;
+
+	return compensation;
+}
+
+static Int getSuperweaponLeftShiftStartIndexForLayout(const AsciiString& shortcutBarName, Int visibleShortcutButtons)
+{
+	if (shortcutBarName == "GenPowersShortcutBarUS.wnd")
+	{
+		if (visibleShortcutButtons >= 22) return 2;
+		if (visibleShortcutButtons >= 21) return 4;
+		if (visibleShortcutButtons >= 20) return 6;
+		if (visibleShortcutButtons >= 19) return 8;
+		if (visibleShortcutButtons >= 18) return 11;
+		if (visibleShortcutButtons >= 17) return 13;
+		if (visibleShortcutButtons >= 16) return 15;
+		if (visibleShortcutButtons >= 15) return 17;
+		if (visibleShortcutButtons >= 14) return 20;
+		if (visibleShortcutButtons >= 13) return 22;
+		if (visibleShortcutButtons >= 12) return 24;
+	}
+	else if (shortcutBarName == "GenPowersShortcutBarGLA.wnd")
+	{
+		if (visibleShortcutButtons >= 22) return 1;
+		if (visibleShortcutButtons >= 21) return 4;
+		if (visibleShortcutButtons >= 20) return 6;
+		if (visibleShortcutButtons >= 19) return 6;
+		if (visibleShortcutButtons >= 18) return 9;
+		if (visibleShortcutButtons >= 17) return 12;
+		if (visibleShortcutButtons >= 16) return 15;
+		if (visibleShortcutButtons >= 15) return 17;
+		if (visibleShortcutButtons >= 14) return 19;
+		if (visibleShortcutButtons >= 13) return 21;
+		if (visibleShortcutButtons >= 12) return 24;
+	}
+	else if (shortcutBarName == "GenPowersShortcutBarChina.wnd")
+	{
+		if (visibleShortcutButtons >= 22) return 2;
+		if (visibleShortcutButtons >= 21) return 4;
+		if (visibleShortcutButtons >= 20) return 6;
+		if (visibleShortcutButtons >= 19) return 8;
+		if (visibleShortcutButtons >= 18) return 10;
+		if (visibleShortcutButtons >= 17) return 12;
+		if (visibleShortcutButtons >= 16) return 15;
+		if (visibleShortcutButtons >= 15) return 17;
+		if (visibleShortcutButtons >= 14) return 19;
+		if (visibleShortcutButtons >= 13) return 21;
+		if (visibleShortcutButtons >= 12) return 24;
+	}
+	if (visibleShortcutButtons >= 22) return 2;
+	if (visibleShortcutButtons >= 21) return 4;
+	if (visibleShortcutButtons >= 20) return 6;
+	if (visibleShortcutButtons >= 19) return 8;
+	if (visibleShortcutButtons >= 18) return 11;
+	if (visibleShortcutButtons >= 17) return 13;
+	if (visibleShortcutButtons >= 16) return 15;
+	if (visibleShortcutButtons >= 15) return 17;
+	if (visibleShortcutButtons >= 14) return 20;
+	if (visibleShortcutButtons >= 13) return 22;
+	if (visibleShortcutButtons >= 12) return 24;
+
+	return -1;
+}
+
+static Int getShortcutDrivenHorizontalShift(Int visibleShortcutButtons)
+{
+	if (visibleShortcutButtons <= 11)
+		return 0;
+
+	if (!TheDisplay)
+		return 77;
+
+	Real scaleFrom800x600 = (Real)TheDisplay->getWidth() / 800.0f;
+	Int shift = REAL_TO_INT_FLOOR(48.0f * scaleFrom800x600 + 0.5f);
+
+	if (shift < 48)
+		shift = 48;
+
+	return shift;
+}
+
 //-------------------------------------------------------------------------------------------------
 /// The InGameUI singleton instance.
 InGameUI *TheInGameUI = nullptr;
@@ -3913,11 +4005,44 @@ void InGameUI::postDraw()
 		Int startX = (Int)(m_superweaponPosition.x * TheDisplay->getWidth());
 		Int startY = (Int)(m_superweaponPosition.y * TheDisplay->getHeight());
 
+
+
 		Int bottomMargin = (Int)( (Real)TheTacticalView->getHeight() * 0.82f );
 
 
 
 		Bool marginExceeded = FALSE;
+
+
+		Int visibleShortcutButtons = (TheControlBar) ? TheControlBar->getVisibleSpecialPowerShortcutButtonCount() : 0;
+
+		Int totalVisibleSuperweapons = 0;
+		for (Int playerIndex = 0; playerIndex < MAX_PLAYER_COUNT; ++playerIndex)
+		{
+			for (SuperweaponMap::iterator mapIt = m_superweapons[playerIndex].begin(); mapIt != m_superweapons[playerIndex].end(); ++mapIt)
+			{
+				for (SuperweaponList::iterator listIt = mapIt->second.begin(); listIt != mapIt->second.end(); ++listIt)
+				{
+					SuperweaponInfo* info = *listIt;
+					if (info && !info->m_hiddenByScript && !info->m_hiddenByScience)
+						totalVisibleSuperweapons++;
+				}
+			}
+		}
+
+		AsciiString shortcutBarName;
+
+		Player* localPlayer = ThePlayerList ? ThePlayerList->getLocalPlayer() : nullptr;
+		if (localPlayer && localPlayer->getPlayerTemplate())
+		{
+			shortcutBarName = localPlayer->getPlayerTemplate()->getSpecialPowerShortcutWinName();
+		}
+
+		Int leftShiftStartIndex = getSuperweaponLeftShiftStartIndexForLayout(shortcutBarName, visibleShortcutButtons);
+
+		Int drawnVisibleSuperweaponIndex = 0;
+		const Int shiftedTimerOffsetX = getShortcutDrivenHorizontalShift(visibleShortcutButtons);
+
 
 		for (Int i=0; i<MAX_PLAYER_COUNT; ++i)
 		{
@@ -3931,14 +4056,24 @@ void InGameUI::postDraw()
 					DEBUG_ASSERTCRASH(info, ("No superweapon info!"));
 					if (info && !info->m_hiddenByScript && !info->m_hiddenByScience)
 					{
+
+						Int currentVisibleSuperweaponIndex = drawnVisibleSuperweaponIndex;
+						drawnVisibleSuperweaponIndex++;
+
+
 						//enforce bottom margin of tactical view
-						if ( startY >= bottomMargin)
+						if (startY >= bottomMargin)
 						{
 							UnicodeString ellipsis;
 							ellipsis.format(L"...");
-							info->setText( ellipsis, ellipsis );
-							info->setFont( m_superweaponReadyFont, m_superweaponNormalPointSize, m_superweaponNormalBold );
-							info->drawTime( startX,	startY, m_superweaponFlashColor, bgColor );
+							info->setText(ellipsis, ellipsis);
+							info->setFont(m_superweaponReadyFont, m_superweaponNormalPointSize, m_superweaponNormalBold);
+
+							Int drawX = startX;
+							if (leftShiftStartIndex >= 0 && currentVisibleSuperweaponIndex >= leftShiftStartIndex)
+								drawX -= shiftedTimerOffsetX;
+
+							info->drawTime(drawX, startY, m_superweaponFlashColor, bgColor);
 
 							marginExceeded = TRUE;
 						}
@@ -4070,6 +4205,10 @@ void InGameUI::postDraw()
                     info->setText(name, time);
                   }
 
+									Int drawX = startX;
+									if (leftShiftStartIndex >= 0 && currentVisibleSuperweaponIndex >= leftShiftStartIndex)
+										drawX -= shiftedTimerOffsetX;
+
                   if (isReady)
 								  {
 									  if ( m_superweaponFlashDuration != 0.0f )
@@ -4079,25 +4218,33 @@ void InGameUI::postDraw()
 											  m_superweaponUsedFlashColor = !m_superweaponUsedFlashColor;
 											  m_superweaponLastFlashFrame = TheGameLogic->getFrame();
 										  }
-										  info->drawName( startX,
+										  info->drawName(drawX,
 											  startY, (m_superweaponUsedFlashColor)?0:m_superweaponFlashColor, bgColor );
-										  info->drawTime( startX,
+										  info->drawTime(drawX,
 											  startY, (m_superweaponUsedFlashColor)?0:m_superweaponFlashColor, bgColor );
 									  }
 									  else
 									  {
-										  info->drawName( startX, startY, 0, bgColor );
-										  info->drawTime( startX, startY, 0, bgColor );
+										  info->drawName(drawX, startY, 0, bgColor );
+										  info->drawTime(drawX, startY, 0, bgColor );
 									  }
 								  }
 								  else
 								  {
-									  info->drawName( startX,	startY, 0, bgColor );
-									  info->drawTime( startX, startY, 0, bgColor );
+									  info->drawName(drawX,	startY, 0, bgColor );
+									  info->drawTime(drawX, startY, 0, bgColor );
 								  }
 
 								  // increment text spot to next location
-								  startY += info->getHeight();
+									Int lineAdvance = info->getHeight();
+
+									if (isReady)
+										lineAdvance -= getReadySuperweaponHeightCompensation();
+
+									if (lineAdvance < 1)
+										lineAdvance = 1;
+
+									startY += lineAdvance;
 
                 }
                 if (info->getSpecialPowerTemplate()->isSharedNSync())
@@ -4172,7 +4319,13 @@ void InGameUI::postDraw()
 				}
 
 				// draw the text
+				Int visibleShortcutButtons = (TheControlBar) ? TheControlBar->getVisibleSpecialPowerShortcutButtonCount() : 0;
+				Int shiftedTimerOffsetX = getShortcutDrivenHorizontalShift(visibleShortcutButtons);
+
 				Int drawX = startX;
+				if (shiftedTimerOffsetX > 0)
+					drawX -= shiftedTimerOffsetX;
+
 				if (reverseXDir)
 					drawX -= info->displayString->getWidth();
 				if (!readySecs && info->isCountdown)
