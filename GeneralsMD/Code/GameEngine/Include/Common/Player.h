@@ -79,6 +79,7 @@ class TunnelTracker;
 class Upgrade;
 class UpgradeTemplate;
 class SpecialPowerModule;
+class SpecialPowerTemplate;
 
 struct BattlePlanBonusesData;
 class BattlePlanBonuses;
@@ -97,6 +98,7 @@ enum ScienceAvailabilityType CPP_11(: Int)
 
 	SCIENCE_AVAILABILITY_COUNT,
 };
+
 
 #ifdef DEFINE_SCIENCE_AVAILABILITY_NAMES
 static const char *const ScienceAvailabilityNames[] =
@@ -221,6 +223,8 @@ public:
 
 	void deletePlayerAI();
 
+	Object* findMostReadyShortcutSpecialPower(const SpecialPowerTemplate* spTemplate);
+
 	UnicodeString getPlayerDisplayName() { return m_playerDisplayName; }
 	NameKeyType getPlayerNameKey() const { return m_playerNameKey; }
 
@@ -296,6 +300,7 @@ public:
 
 	// Counts available shortcut special power of specified type that can fire now.
 	Int countReadyShortcutSpecialPowersOfType( SpecialPowerType spType );
+	Int countReadyShortcutSpecialPowers(const SpecialPowerTemplate* spTemplate);
 
 	/// return t if the player has the given science, either intrinsically, via specialization, or via capture.
 	Bool hasScience(ScienceType t) const;

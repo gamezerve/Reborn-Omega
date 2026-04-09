@@ -1198,6 +1198,7 @@ struct PlayerObjectFindInfo
 	UnsignedInt lowestReadyFrame;
 	UnsignedInt highestPercentage;
 	UnsignedInt numReady;
+	const SpecialPowerTemplate* spTemplate;
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -1288,6 +1289,50 @@ static void doFindSpecialPowerSourceObject( Object *obj, void *userData )
 	}
 }
 
+static void doCountSpecialPowersReadyByTemplate(Object* obj, void* userData)
+{
+	PlayerObjectFindInfo* info = (PlayerObjectFindInfo*)userData;
+
+	if (!obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION)
+		&& !obj->testStatus(OBJECT_STATUS_SOLD)
+		&& !obj->isEffectivelyDead())
+	{
+		const SpecialPowerTemplate* spTemplate = info->spTemplate;
+		if (!spTemplate)
+			return;
+
+		SpecialPowerModuleInterface* spmInterface = obj->getSpecialPowerModule(spTemplate);
+		if (spmInterface && !spmInterface->isScriptOnly())
+		{
+			if (spmInterface->getSpecialPowerTemplate()->isSharedNSync() && info->numReady == 1)
+				return;
+
+			UnsignedInt readyFrame = spmInterface->getReadyFrame();
+
+#if defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
+			if (!TheGlobalData->m_specialPowerUsesDelay)
+				readyFrame = 0;
+#endif
+
+			if (readyFrame < TheGameLogic->getFrame() && !obj->isDisabled())
+				info->numReady++;
+		}
+	}
+}
+
+Int Player::countReadyShortcutSpecialPowers(const SpecialPowerTemplate* spTemplate)
+{
+	PlayerObjectFindInfo info;
+	info.player = this;
+	info.obj = nullptr;
+	info.spType = SPECIAL_INVALID;
+	info.spTemplate = spTemplate;
+	info.lowestReadyFrame = 0xffffffff;
+	info.numReady = 0;
+
+	iterateObjects(doCountSpecialPowersReadyByTemplate, &info);
+	return info.numReady;
+}
 //-------------------------------------------------------------------------------------------------
 // Iterator function
 // Count number of specified special powers that are ready to fire now.
@@ -1449,6 +1494,69 @@ Object* Player::findMostReadyShortcutSpecialPowerOfType( SpecialPowerType spType
 	return info.obj;
 }
 
+static void doFindSpecialPowerSourceObjectByTemplate(Object* obj, void* userData);
+
+Object* Player::findMostReadyShortcutSpecialPower(const SpecialPowerTemplate* spTemplate)
+{
+	PlayerObjectFindInfo info;
+	info.player = this;
+	info.obj = nullptr;
+	info.spType = SPECIAL_INVALID;
+	info.spTemplate = spTemplate;
+	info.lowestReadyFrame = 0xffffffff;
+	info.numReady = 0;
+
+	iterateObjects(doFindSpecialPowerSourceObjectByTemplate, &info);
+
+	return info.obj;
+}
+
+static void doFindSpecialPowerSourceObjectByTemplate(Object* obj, void* userData)
+{
+	PlayerObjectFindInfo* info = (PlayerObjectFindInfo*)userData;
+
+	if (info->lowestReadyFrame == 0)
+	{
+		return;
+	}
+
+	if (!obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION)
+		&& !obj->testStatus(OBJECT_STATUS_SOLD)
+		&& !obj->isEffectivelyDead())
+	{
+		const SpecialPowerTemplate* spTemplate = info->spTemplate;
+
+		if (spTemplate)
+		{
+			SpecialPowerModuleInterface* spmInterface = obj->getSpecialPowerModule(spTemplate);
+
+			if (spmInterface && !spmInterface->isScriptOnly())
+			{
+				UnsignedInt readyFrame = spmInterface->getReadyFrame();
+
+#if defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
+				if (!TheGlobalData->m_specialPowerUsesDelay)
+					readyFrame = 0;
+#endif
+
+				if (obj->isDisabled())
+					readyFrame = UINT_MAX - 10;
+
+				if (readyFrame < TheGameLogic->getFrame())
+				{
+					info->obj = obj;
+					info->lowestReadyFrame = 0;
+					return;
+				}
+				else if (readyFrame < info->lowestReadyFrame)
+				{
+					info->obj = obj;
+					info->lowestReadyFrame = readyFrame;
+				}
+			}
+		}
+	}
+}
 //-------------------------------------------------------------------------------------------------
 Object* Player::findMostReadyShortcutWeaponForThing( const ThingTemplate *thing, UnsignedInt &mostReadyPercentage )
 {

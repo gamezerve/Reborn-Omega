@@ -3939,7 +3939,8 @@ void ControlBar::populateSpecialPowerShortcut( Player *player)
 				}
 
 				//We just need to find something that has the power.
-				Object *obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( commandButton->getSpecialPowerTemplate()->getSpecialPowerType() );
+				//Object *obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( commandButton->getSpecialPowerTemplate()->getSpecialPowerType() );
+				Object* obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPower(commandButton->getSpecialPowerTemplate());
 				if( !obj )
 				{
 					continue;
@@ -4189,7 +4190,8 @@ void ControlBar::updateSpecialPowerShortcut()
 		Object *obj = nullptr;
 		if( spTemplate )
 		{
-			obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( command->getSpecialPowerTemplate()->getSpecialPowerType() );
+			//obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( command->getSpecialPowerTemplate()->getSpecialPowerType() );
+			obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPower(spTemplate);
 			availability = getCommandAvailability( command, obj, win );
 		}
 		else if( command->getCommandType() == GUI_COMMAND_SELECT_ALL_UNITS_OF_TYPE )
@@ -4297,7 +4299,8 @@ void ControlBar::drawSpecialPowerShortcutMultiplierText()
 			Int numReady = 0;
 			if( spTemplate )
 			{
-				numReady = ThePlayerList->getLocalPlayer()->countReadyShortcutSpecialPowersOfType( spTemplate->getSpecialPowerType() );
+				//numReady = ThePlayerList->getLocalPlayer()->countReadyShortcutSpecialPowersOfType( spTemplate->getSpecialPowerType() );
+				numReady = ThePlayerList->getLocalPlayer()->countReadyShortcutSpecialPowers(spTemplate);
 			}
 			if( numReady > 1 ) // Lorenzen changed... Displaying a "1" is superfluous
 			{

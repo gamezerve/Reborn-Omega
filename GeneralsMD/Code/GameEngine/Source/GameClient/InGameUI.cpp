@@ -1512,7 +1512,8 @@ void InGameUI::setRadiusCursor(RadiusCursorType cursorType, const SpecialPowerTe
 	{
 		if( ThePlayerList && ThePlayerList->getLocalPlayer() && specPowTempl != nullptr )
 		{
-			obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( specPowTempl->getSpecialPowerType() );
+			//obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( specPowTempl->getSpecialPowerType() );
+			obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPower(specPowTempl);
 		}
 	}
 	else
