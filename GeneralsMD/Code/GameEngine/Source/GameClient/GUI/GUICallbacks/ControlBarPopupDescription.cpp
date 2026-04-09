@@ -101,6 +101,7 @@
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/LocomotorSet.h"
 #include "GameLogic/Locomotor.h"
+#include "GameLogic/Module/PowerPlantUpgrade.h"
 
 #include "GameNetwork/NetworkInterface.h"
 
@@ -1387,6 +1388,56 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 		}
 	}
 
+
+	UnicodeString powerText = UnicodeString::TheEmptyString;
+
+	Real baseEnergyValue = thing->getEnergyProduction();
+	Real bonusEnergyValue = 0.0f;
+	Real displayEnergyValue = baseEnergyValue;
+
+	if (baseEnergyValue > 0.0f)
+	{
+		static NameKeyType powerPlantUpgradeKey = NAMEKEY("PowerPlantUpgrade");
+
+		for (BehaviorModule** bmi = obj->getBehaviorModules(); *bmi; ++bmi)
+		{
+			UpgradeModuleInterface* upgradeMod = (*bmi)->getUpgrade();
+			if (!upgradeMod)
+				continue;
+
+			if ((*bmi)->getModuleNameKey() == powerPlantUpgradeKey && upgradeMod->isAlreadyUpgraded())
+			{
+				bonusEnergyValue = thing->getEnergyBonus();
+				displayEnergyValue += bonusEnergyValue;
+				break;
+			}
+		}
+	}
+
+	if (displayEnergyValue != 0.0f)
+	{
+		if (displayEnergyValue < 0.0f)
+		{
+			powerText.format(L"Power Consumption: %.0f", -displayEnergyValue);
+		}
+		else
+		{
+			if (bonusEnergyValue > 0.0f)
+			{
+				powerText.format(L"Power Production: %.0f (Base: %.0f, +%.0f Bonus)",
+					displayEnergyValue,
+					baseEnergyValue,
+					bonusEnergyValue);
+			}
+			else
+			{
+				powerText.format(L"Power Production: %.0f", displayEnergyValue);
+			}
+		}
+	}
+
+
+
 if (thing->getShroudClearingRange() > 0.0f)
 {
 	Real shroudRange = thing->getShroudClearingRange();
@@ -1444,6 +1495,7 @@ if (thing->getShroudClearingRange() > 0.0f)
 
 
 	if (!healthText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(healthText); }
+	if (!powerText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(powerText); }
 	if (!shroudText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(shroudText); }
 	if (!locomotorText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(locomotorText); }
 	if (!limittext.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(limittext); }
