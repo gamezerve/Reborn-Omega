@@ -1349,9 +1349,14 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 
 	const ActiveBodyModuleData* bodyData = thing->friend_getActiveBodyModuleData();
 	const MaxHealthUpgradeModuleData* maxHealthUpgradeData = thing->friend_getMaxHealthUpgradeModuleData();
+	BodyModuleInterface* liveBody = obj->getBodyModule();
 
-	if (bodyData)
+	if (bodyData && liveBody)
 	{
+		Real currentHealth = liveBody->getHealth();
+		Real baseMaxHealth = bodyData->m_maxHealth;
+		Real displayMaxHealth = liveBody->getMaxHealth();
+
 		if (maxHealthUpgradeData && maxHealthUpgradeData->m_addMaxHealth > 0.0f)
 		{
 			UnicodeString triggerUpgradeDisplay = L"an upgrade";
@@ -1367,14 +1372,18 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 					triggerUpgradeDisplay.format(L"%S", triggerUpgradeName.str());
 			}
 
-			healthText.format(L"Health: %.0f (+%.0f with %ls)",
-				bodyData->m_maxHealth,
+			healthText.format(L"Health: %.0f / %.0f (Base: %.0f, +%.0f with %ls)",
+				currentHealth,
+				displayMaxHealth,
+				baseMaxHealth,
 				maxHealthUpgradeData->m_addMaxHealth,
 				triggerUpgradeDisplay.str());
 		}
 		else
 		{
-			healthText.format(L"Health: %.0f", bodyData->m_maxHealth);
+			healthText.format(L"Health: %.0f / %.0f",
+				currentHealth,
+				displayMaxHealth);
 		}
 	}
 
