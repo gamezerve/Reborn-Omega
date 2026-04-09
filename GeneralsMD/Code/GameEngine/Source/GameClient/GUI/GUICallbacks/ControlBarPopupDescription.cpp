@@ -102,6 +102,7 @@
 #include "GameLogic/LocomotorSet.h"
 #include "GameLogic/Locomotor.h"
 #include "GameLogic/Module/PowerPlantUpgrade.h"
+#include "GameLogic/Module/SpecialPowerModule.h"
 
 #include "GameNetwork/NetworkInterface.h"
 
@@ -117,18 +118,22 @@ static ICoord2D s_tooltipCostDefaultSize = { 0, 0 };
 static ICoord2D s_tooltipDescDefaultSize = { 0, 0 };
 static ICoord2D s_tooltipDescDefaultPos = { 0, 0 };
 const ThingTemplate* thingTemplate = nullptr;
-void ControlBarPopupDescriptionUpdateFunc( WindowLayout *layout, void *param )
+void ControlBarPopupDescriptionUpdateFunc(WindowLayout* layout, void* param)
 {
-	if(TheScriptEngine->isGameEnding())
+	if (TheScriptEngine->isGameEnding())
 		TheControlBar->hideBuildTooltipLayout();
 
-	if(theAnimateWindowManager && !TheControlBar->getShowBuildTooltipLayout() && !theAnimateWindowManager->isReversed())
+	if (theAnimateWindowManager && !TheControlBar->getShowBuildTooltipLayout() && !theAnimateWindowManager->isReversed())
 		theAnimateWindowManager->reverseAnimateWindow();
-	else if(!TheControlBar->getShowBuildTooltipLayout() && (!TheGlobalData->m_animateWindows || !useAnimation))
+	else if (!TheControlBar->getShowBuildTooltipLayout() && (!TheGlobalData->m_animateWindows || !useAnimation))
 		TheControlBar->deleteBuildTooltipLayout();
 
+	if (TheControlBar->getShowBuildTooltipLayout())
+	{
+		TheControlBar->repopulateBuildTooltipLayout();
+	}
 
-	if ( useAnimation && theAnimateWindowManager && TheGlobalData->m_animateWindows)
+	if (useAnimation && theAnimateWindowManager && TheGlobalData->m_animateWindows)
 	{
 		Bool wasFinished = theAnimateWindowManager->isFinished();
 		theAnimateWindowManager->update();
@@ -139,7 +144,6 @@ void ControlBarPopupDescriptionUpdateFunc( WindowLayout *layout, void *param )
 			TheControlBar->deleteBuildTooltipLayout();
 		}
 	}
-
 }
 
 // ---------------------------------------------------------------------------------------
@@ -556,15 +560,45 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			)
 		{
 			Real reloadTimeValue = specialPowerTemplate->getReloadTime() / (Real)LOGICFRAMES_PER_SECOND;
+
+			Real remainingTimeValue = 0.0f;
+
+			Drawable* draw = TheInGameUI->getFirstSelectedDrawable();
+			Object* selectedObject = draw ? draw->getObject() : nullptr;
+
+			if (selectedObject)
+			{
+				SpecialPowerType spType = specialPowerTemplate->getSpecialPowerType();
+				SpecialPowerModuleInterface* spm = selectedObject->findSpecialPowerModuleInterface(spType);
+
+				if (spm)
+				{
+					UnsignedInt readyFrame = spm->getReadyFrame();
+					UnsignedInt currentFrame = TheGameLogic->getFrame();
+
+					if (readyFrame > currentFrame)
+					{
+						UnsignedInt remainingFrames = readyFrame - currentFrame;
+						remainingTimeValue = remainingFrames / (Real)LOGICFRAMES_PER_SECOND;
+					}
+				}
+			}
+
+			Int reloadTimeDisplay = REAL_TO_INT_FLOOR(reloadTimeValue + 0.5f);
+			Int remainingTimeDisplay = REAL_TO_INT_FLOOR(remainingTimeValue + 0.5f);
+
 			if (reloadTimeValue > 0.0f)
 			{
-				if (reloadTimeValue == (Int)reloadTimeValue)
+				if (remainingTimeValue > 0.0f)
 				{
-					reloadtext.format(L"Reload Time: %d sec", (Int)reloadTimeValue);
+					reloadtext.format(L"Reload Time: %d sec (%d sec remaining)",
+						reloadTimeDisplay,
+						remainingTimeDisplay);
 				}
 				else
 				{
-					reloadtext.format(L"Reload Time: %.1f sec", reloadTimeValue);
+					reloadtext.format(L"Reload Time: %d sec (Ready)",
+						reloadTimeDisplay);
 				}
 			}
 		}
@@ -1409,6 +1443,23 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 			{
 				bonusEnergyValue = thing->getEnergyBonus();
 				displayEnergyValue += bonusEnergyValue;
+				break;
+			}
+		}
+
+		if (bonusEnergyValue == 0.0f)
+		{
+			for (BehaviorModule** bmi = obj->getBehaviorModules(); *bmi; ++bmi)
+			{
+				OverchargeBehaviorInterface* obi = (*bmi)->getOverchargeBehaviorInterface();
+				if (!obi)
+					continue;
+
+				if (obi->isOverchargeActive())
+				{
+					bonusEnergyValue = thing->getEnergyBonus();
+					displayEnergyValue += bonusEnergyValue;
+				}
 				break;
 			}
 		}
