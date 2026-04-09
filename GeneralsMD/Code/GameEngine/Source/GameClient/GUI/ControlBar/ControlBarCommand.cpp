@@ -763,6 +763,16 @@ void ControlBar::updateContextCommand()
 	if( m_currentSelectedDrawable )
 		obj = m_currentSelectedDrawable->getObject();
 
+	if (obj)
+	{
+		DEBUG_LOG(("updateContextCommand: current obj = %s\n",
+			obj->getTemplate()->getName().str()));
+	}
+	else
+	{
+		DEBUG_LOG(("updateContextCommand: current obj = <null>\n"));
+	}
+
 	//
 	// the contents of objects are usually showed on the UI, when those contents change
 	// we always to update the UI
@@ -1079,7 +1089,9 @@ CommandAvailability ControlBar::getCommandAvailability( const CommandButton *com
 			|| command->getCommandType() == GUI_COMMAND_SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT )
 	{
 		if (ThePlayerList && ThePlayerList->getLocalPlayer())
-			obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( command->getSpecialPowerTemplate()->getSpecialPowerType() );
+			//obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( command->getSpecialPowerTemplate()->getSpecialPowerType() );
+			obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPower(
+				command->getSpecialPowerTemplate());
 		else
 			obj = nullptr;
 	}
@@ -1481,6 +1493,13 @@ CommandAvailability ControlBar::getCommandAvailability( const CommandButton *com
 			// sanity
 			DEBUG_ASSERTCRASH( command->getSpecialPowerTemplate() != nullptr,
 												 ("The special power in the command '%s' is null", command->getName().str()) );
+
+			DEBUG_LOG(("getCommandAvailability: obj=%s command=%s specialPower=%s\n",
+				obj ? obj->getTemplate()->getName().str() : "<null>",
+				command ? command->getName().str() : "<null>",
+				(command&& command->getSpecialPowerTemplate()) ?
+				command->getSpecialPowerTemplate()->getName().str() : "<null>"));
+
 			// get special power module from the object to execute it
 			SpecialPowerModuleInterface *mod = obj->getSpecialPowerModule( command->getSpecialPowerTemplate() );
 
