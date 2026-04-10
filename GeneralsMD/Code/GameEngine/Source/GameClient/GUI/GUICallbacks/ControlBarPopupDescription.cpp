@@ -106,6 +106,9 @@
 #include "GameLogic/Module/SpecialPowerModule.h"
 #include "GameLogic/Module/StealthDetectorUpdate.h"
 #include "GameLogic/Module/SpawnBehavior.h"
+#include "GameLogic/Module/ObjectCreationUpgrade.h"
+#include "GameLogic/ObjectCreationList.h"
+
 
 #include "GameNetwork/NetworkInterface.h"
 
@@ -367,6 +370,59 @@ static const StealthDetectorUpdateModuleData* getTooltipStealthDetectorData(
 	return nullptr;
 }
 
+static const ThingTemplate* getTooltipProducedThingTemplate(
+	const CommandButton* commandButton,
+	Object* selectedObject)
+{
+	if (!commandButton)
+		return nullptr;
+
+	if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE)
+		return commandButton->getThingTemplate();
+
+	if (!selectedObject)
+		return nullptr;
+
+	const UpgradeTemplate* upgradeTemplate = commandButton->getUpgradeTemplate();
+	if (!upgradeTemplate)
+		return nullptr;
+
+	const ThingTemplate* selectedTemplate = selectedObject->getTemplate();
+	if (!selectedTemplate)
+		return nullptr;
+
+	const ModuleInfo& behaviorModules = selectedTemplate->getBehaviorModuleInfo();
+
+	for (Int i = 0; i < behaviorModules.getCount(); ++i)
+	{
+		const ModuleData* moduleData = behaviorModules.getNthData(i);
+		if (!moduleData)
+			continue;
+
+		AsciiString moduleName = behaviorModules.getNthName(i);
+		if (moduleName.compareNoCase("ObjectCreationUpgrade") != 0)
+			continue;
+
+		const ObjectCreationUpgradeModuleData* ocuData =
+			static_cast<const ObjectCreationUpgradeModuleData*>(moduleData);
+
+		if (!ocuData || !ocuData->m_ocl)
+			continue;
+
+		Bool matchesUpgrade =
+			ocuData->m_upgradeMuxData.isTriggeredBy(upgradeTemplate->getUpgradeName().str());
+
+		if (!matchesUpgrade)
+			continue;
+
+		const ThingTemplate* producedThing = ocuData->m_ocl->getFirstCreatedThingTemplate();
+		if (producedThing)
+			return producedThing;
+	}
+
+	return nullptr;
+}
+
 static UnicodeString getSidePrefixedThingName(const ThingTemplate* thingTemplate)
 {
 	if (!thingTemplate)
@@ -459,9 +515,15 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 	if(commandButton)
 	{
-		//const ThingTemplate *thingTemplate = commandButton->getThingTemplate();
-		thingTemplate = commandButton->getThingTemplate();
-		const UpgradeTemplate *upgradeTemplate = commandButton->getUpgradeTemplate();
+		////const ThingTemplate *thingTemplate = commandButton->getThingTemplate();
+		//thingTemplate = commandButton->getThingTemplate();
+		//const UpgradeTemplate *upgradeTemplate = commandButton->getUpgradeTemplate();
+		//const SpecialPowerTemplate* specialPowerTemplate = commandButton->getSpecialPowerTemplate();
+		Drawable* draw = TheInGameUI->getFirstSelectedDrawable();
+		Object* selectedObject = draw ? draw->getObject() : nullptr;
+
+		thingTemplate = getTooltipProducedThingTemplate(commandButton, selectedObject);
+		const UpgradeTemplate* upgradeTemplate = commandButton->getUpgradeTemplate();
 		const SpecialPowerTemplate* specialPowerTemplate = commandButton->getSpecialPowerTemplate();
 
 		ScienceType	st = SCIENCE_INVALID;
@@ -540,7 +602,8 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				}
 
 				//Special case: When building units & buildings, the CanMakeType determines reasons for not being able to buy stuff.
-				else if( thingTemplate )
+				//else if( thingTemplate )
+				else if (thingTemplate && commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE)
 				{
 					CanMakeType makeType = TheBuildAssistant->canMakeUnit( selectedObject, commandButton->getThingTemplate() );
 					switch( makeType )
@@ -574,7 +637,43 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 						//	break;
 					}
 				}
+				else if (thingTemplate && upgradeTemplate && commandButton->getCommandType() == GUI_COMMAND_OBJECT_UPGRADE)
+				{
+					Bool alreadyUpgraded = false;
+					Bool conflictingUpgrade = false;
 
+					if (selectedObject)
+					{
+						alreadyUpgraded = selectedObject->hasUpgrade(upgradeTemplate);
+						conflictingUpgrade = !selectedObject->affectedByUpgrade(upgradeTemplate);
+					}
+
+					if (alreadyUpgraded)
+					{
+						descrip = TheGameText->fetch("TOOLTIP:AlreadyUpgradedDefault");
+					}
+					else if (conflictingUpgrade)
+					{
+						if (commandButton->getConflictingLabel().isNotEmpty())
+							descrip = TheGameText->fetch(commandButton->getConflictingLabel());
+						else
+							descrip = TheGameText->fetch("TOOLTIP:HasConflictingUpgradeDefault");
+					}
+					else if (!player->hasUpgradeInProduction(upgradeTemplate))
+					{
+						ProductionUpdateInterface* pui = selectedObject->getProductionUpdateInterface();
+						if (pui && pui->getProductionCount() == MAX_BUILD_QUEUE_BUTTONS)
+						{
+							descrip.concat(L"\n\n");
+							descrip.concat(TheGameText->fetch("TOOLTIP:TooltipCannotPurchaseBecauseQueueFull"));
+						}
+						else if (!TheUpgradeCenter->canAffordUpgrade(ThePlayerList->getLocalPlayer(), upgradeTemplate, FALSE))
+						{
+							descrip.concat(L"\n\n");
+							descrip.concat(TheGameText->fetch("TOOLTIP:TooltipNotEnoughMoneyToBuild"));
+						}
+					}
+				}
 				//Special case: When building upgrades
 				else if( upgradeTemplate && !player->hasUpgradeInProduction( upgradeTemplate ) )
 				{
@@ -905,6 +1004,11 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			{
 				Real stealthDetectRange = stealthDetectorData->m_detectionRange;
 
+				if (stealthDetectRange <= 0.0f)
+				{
+					stealthDetectRange = thingTemplate->getVisionRangeForTooltip();
+				}
+
 				if (stealthDetectRange > 0.0f)
 				{
 					if (stealthSourceThing && stealthSourceThing != thingTemplate)
@@ -964,45 +1068,51 @@ if (buildLimit > 0)
 	limittext.format(L"Build Limit: %d/%d", effectiveCount, buildLimit);
 }
 
-			// ask each prerequisite to give us a list of the non satisfied prerequisites
-			for( Int i=0; i<thingTemplate->getPrereqCount(); i++ )
+
+if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE)
+{
+	// ask each prerequisite to give us a list of the non satisfied prerequisites
+	for (Int i = 0; i < thingTemplate->getPrereqCount(); i++)
+	{
+		prereq = thingTemplate->getNthPrereq(i);
+		//requiresList = prereq->getRequiresList(player);
+		requiresList = prereq->getRequiresList(player);
+
+		if (requiresList != UnicodeString::TheEmptyString && prereq->getNumUnitPrereqs() > 0)
+		{
+			UnicodeString taggedRequiresList = UnicodeString::TheEmptyString;
+
+			for (Int prereqIndex = 0; prereqIndex < prereq->getNumUnitPrereqs(); ++prereqIndex)
 			{
-				prereq = thingTemplate->getNthPrereq(i);
-				//requiresList = prereq->getRequiresList(player);
-				requiresList = prereq->getRequiresList(player);
+				const ThingTemplate* prereqThing = prereq->getUnitPrereq(prereqIndex);
+				if (!prereqThing)
+					continue;
 
-				if (requiresList != UnicodeString::TheEmptyString && prereq->getNumUnitPrereqs() > 0)
-				{
-					UnicodeString taggedRequiresList = UnicodeString::TheEmptyString;
+				UnicodeString taggedName = getSidePrefixedThingName(prereqThing);
 
-					for (Int prereqIndex = 0; prereqIndex < prereq->getNumUnitPrereqs(); ++prereqIndex)
-					{
-						const ThingTemplate* prereqThing = prereq->getUnitPrereq(prereqIndex);
-						if (!prereqThing)
-							continue;
+				if (!taggedRequiresList.isEmpty())
+					taggedRequiresList.concat(L", ");
 
-						UnicodeString taggedName = getSidePrefixedThingName(prereqThing);
-
-						if (!taggedRequiresList.isEmpty())
-							taggedRequiresList.concat(L", ");
-
-						taggedRequiresList.concat(taggedName);
-					}
-
-					if (!taggedRequiresList.isEmpty())
-						requiresList = taggedRequiresList;
-				}
-
-				if( requiresList != UnicodeString::TheEmptyString )
-				{
-					// make sure to put in 'returns' to space things correctly
-					if (firstRequirement)
-						firstRequirement = false;
-					else
-						requiresFormat.concat(L", ");
-				}
-				requiresFormat.concat(requiresList);
+				taggedRequiresList.concat(taggedName);
 			}
+
+			if (!taggedRequiresList.isEmpty())
+				requiresList = taggedRequiresList;
+		}
+
+		if (requiresList != UnicodeString::TheEmptyString)
+		{
+			// make sure to put in 'returns' to space things correctly
+			if (firstRequirement)
+				firstRequirement = false;
+			else
+				requiresFormat.concat(L", ");
+		}
+		requiresFormat.concat(requiresList);
+	}
+
+}
+
 			if( !requiresFormat.isEmpty() )
 			{
 				UnicodeString requireFormat = TheGameText->fetch("CONTROLBAR:Requirements");
@@ -1666,6 +1776,11 @@ const StealthDetectorUpdateModuleData* stealthDetectorData =
 if (stealthDetectorData)
 {
 	Real stealthDetectRange = stealthDetectorData->m_detectionRange;
+
+	if (stealthDetectRange <= 0.0f && thing)
+	{
+		stealthDetectRange = thing->getVisionRangeForTooltip();
+	}
 
 	if (stealthDetectRange > 0.0f)
 	{
