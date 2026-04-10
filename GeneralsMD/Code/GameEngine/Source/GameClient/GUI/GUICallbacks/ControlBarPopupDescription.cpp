@@ -478,6 +478,34 @@ static UnicodeString getSidePrefixedThingName(const ThingTemplate* thingTemplate
 	return result;
 }
 
+
+static UnicodeString getMaxHealthTriggerUpgradeDisplay(const MaxHealthUpgradeModuleData* maxHealthUpgradeData)
+{
+	if (!maxHealthUpgradeData)
+		return L"an upgrade";
+
+	AsciiString triggerUpgradeName = maxHealthUpgradeData->m_tooltipTriggerUpgradeName;
+
+	if (triggerUpgradeName.isEmpty() && !maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames.empty())
+	{
+		triggerUpgradeName = maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames[0];
+	}
+
+	if (triggerUpgradeName.isEmpty())
+		return L"an upgrade";
+
+	const UpgradeTemplate* triggerUpgradeTemplate = TheUpgradeCenter->findUpgrade(triggerUpgradeName);
+
+	if (triggerUpgradeTemplate && triggerUpgradeTemplate->getDisplayNameLabel().isNotEmpty())
+	{
+		return TheGameText->fetch(triggerUpgradeTemplate->getDisplayNameLabel().str());
+	}
+
+	UnicodeString result;
+	result.format(L"%S", triggerUpgradeName.str());
+	return result;
+}
+
 void ControlBar::repopulateBuildTooltipLayout()
 {
 	if(!prevWindow || !m_buildToolTipLayout)
@@ -905,26 +933,45 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			const ActiveBodyModuleData* bodyData = thingTemplate->friend_getActiveBodyModuleData();
 			const MaxHealthUpgradeModuleData* maxHealthUpgradeData = thingTemplate->friend_getMaxHealthUpgradeModuleData();
 
+			//DEBUG_LOG(("HealthTooltip template=%s maxHealthUpgradeData=%08X activationCount=%d",
+			//	thingTemplate ? thingTemplate->getName().str() : "null",
+			//	maxHealthUpgradeData,
+			//	maxHealthUpgradeData ? (Int)maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames.size() : -1));
+
+			if (maxHealthUpgradeData)
+			{
+				for (size_t debugUpgradeIndex = 0; debugUpgradeIndex < maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames.size(); ++debugUpgradeIndex)
+				{
+					AsciiString debugUpgradeName = maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames[debugUpgradeIndex];
+
+					//DEBUG_LOG(("HealthTooltip template=%s activationUpgrade[%d]=%s",
+					//	thingTemplate ? thingTemplate->getName().str() : "null",
+					//	(Int)debugUpgradeIndex,
+					//	debugUpgradeName.str()));
+
+					const UpgradeTemplate* debugUpgradeTemplate = TheUpgradeCenter->findUpgrade(debugUpgradeName);
+
+					if (debugUpgradeTemplate)
+					{
+						//DEBUG_LOG(("HealthTooltip template=%s activationUpgrade[%d] displayLabel=%s",
+						//	thingTemplate ? thingTemplate->getName().str() : "null",
+						//	(Int)debugUpgradeIndex,
+						//	debugUpgradeTemplate->getDisplayNameLabel().str()));
+					}
+					else
+					{
+						//DEBUG_LOG(("HealthTooltip template=%s activationUpgrade[%d] upgradeTemplate=null",
+						//	thingTemplate ? thingTemplate->getName().str() : "null",
+						//	(Int)debugUpgradeIndex));
+					}
+				}
+			}
+
 			if (bodyData)
 			{
 				if (maxHealthUpgradeData && maxHealthUpgradeData->m_addMaxHealth > 0.0f)
 				{
-					UnicodeString triggerUpgradeDisplay = L"an upgrade";
-
-					if (!maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames.empty())
-					{
-						AsciiString triggerUpgradeName = maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames[0];
-						const UpgradeTemplate* triggerUpgradeTemplate = TheUpgradeCenter->findUpgrade(triggerUpgradeName);
-
-						if (triggerUpgradeTemplate && triggerUpgradeTemplate->getDisplayNameLabel().isNotEmpty())
-						{
-							triggerUpgradeDisplay = TheGameText->fetch(triggerUpgradeTemplate->getDisplayNameLabel().str());
-						}
-						else
-						{
-							triggerUpgradeDisplay.format(L"%S", triggerUpgradeName.str());
-						}
-					}
+					UnicodeString triggerUpgradeDisplay = getMaxHealthTriggerUpgradeDisplay(maxHealthUpgradeData);
 
 					healthText.format(L"Health: %.0f (+%.0f with %ls)",
 						bodyData->m_maxHealth,
@@ -1642,6 +1689,39 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 	const ActiveBodyModuleData* bodyData = thing->friend_getActiveBodyModuleData();
 	const MaxHealthUpgradeModuleData* maxHealthUpgradeData = thing->friend_getMaxHealthUpgradeModuleData();
 	
+	//DEBUG_LOG(("SelectedTooltip thing=%s maxHealthUpgradeData=%08X activationCount=%d",
+	//	thing ? thing->getName().str() : "null",
+	//	maxHealthUpgradeData,
+	//	maxHealthUpgradeData ? (Int)maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames.size() : -1));
+
+	if (maxHealthUpgradeData)
+	{
+		for (size_t debugUpgradeIndex = 0; debugUpgradeIndex < maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames.size(); ++debugUpgradeIndex)
+		{
+			AsciiString debugUpgradeName = maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames[debugUpgradeIndex];
+
+			//DEBUG_LOG(("SelectedTooltip thing=%s activationUpgrade[%d]=%s",
+			//	thing ? thing->getName().str() : "null",
+			//	(Int)debugUpgradeIndex,
+			//	debugUpgradeName.str()));
+
+			const UpgradeTemplate* debugUpgradeTemplate = TheUpgradeCenter->findUpgrade(debugUpgradeName);
+
+			if (debugUpgradeTemplate)
+			{
+				//DEBUG_LOG(("SelectedTooltip thing=%s activationUpgrade[%d] displayLabel=%s",
+				//	thing ? thing->getName().str() : "null",
+				//	(Int)debugUpgradeIndex,
+				//	debugUpgradeTemplate->getDisplayNameLabel().str()));
+			}
+			else
+			{
+				//DEBUG_LOG(("SelectedTooltip thing=%s activationUpgrade[%d] upgradeTemplate=null",
+				//	thing ? thing->getName().str() : "null",
+				//	(Int)debugUpgradeIndex));
+			}
+		}
+	}
 
 	if (bodyData && liveBody)
 	{
@@ -1651,18 +1731,7 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 
 		if (maxHealthUpgradeData && maxHealthUpgradeData->m_addMaxHealth > 0.0f)
 		{
-			UnicodeString triggerUpgradeDisplay = L"an upgrade";
-
-			if (!maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames.empty())
-			{
-				AsciiString triggerUpgradeName = maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames[0];
-				const UpgradeTemplate* triggerUpgradeTemplate = TheUpgradeCenter->findUpgrade(triggerUpgradeName);
-
-				if (triggerUpgradeTemplate && triggerUpgradeTemplate->getDisplayNameLabel().isNotEmpty())
-					triggerUpgradeDisplay = TheGameText->fetch(triggerUpgradeTemplate->getDisplayNameLabel().str());
-				else
-					triggerUpgradeDisplay.format(L"%S", triggerUpgradeName.str());
-			}
+			UnicodeString triggerUpgradeDisplay = getMaxHealthTriggerUpgradeDisplay(maxHealthUpgradeData);
 
 			healthText.format(L"Health: %.0f / %.0f (Base: %.0f, +%.0f with %ls)",
 				currentHealth,
@@ -1982,3 +2051,4 @@ void ControlBar::deleteBuildTooltipLayout()
 	theAnimateWindowManager = nullptr;
 
 }
+
