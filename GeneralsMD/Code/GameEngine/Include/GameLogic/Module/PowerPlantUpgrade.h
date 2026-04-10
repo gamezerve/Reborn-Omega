@@ -39,11 +39,23 @@ class Player;
 //-------------------------------------------------------------------------------------------------
 /** The Power Plant upgrade module */
 //-------------------------------------------------------------------------------------------------
+
+class PowerPlantUpgradeModuleData : public UpgradeModuleData
+{
+public:
+	PowerPlantUpgradeModuleData();
+
+	static void buildFieldParse(MultiIniFieldParse& p);
+
+	AsciiString m_tooltipTriggerUpgradeName;
+};
+
 class PowerPlantUpgrade : public UpgradeModule
 {
 
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE( PowerPlantUpgrade, "PowerPlantUpgrade" )
-	MAKE_STANDARD_MODULE_MACRO( PowerPlantUpgrade );
+	//MAKE_STANDARD_MODULE_MACRO( PowerPlantUpgrade );
+	MAKE_STANDARD_MODULE_MACRO_WITH_MODULE_DATA(PowerPlantUpgrade, PowerPlantUpgradeModuleData);
 
 public:
 

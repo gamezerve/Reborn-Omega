@@ -506,6 +506,33 @@ static UnicodeString getMaxHealthTriggerUpgradeDisplay(const MaxHealthUpgradeMod
 	return result;
 }
 
+static UnicodeString getPowerPlantTriggerUpgradeDisplay(const PowerPlantUpgradeModuleData* powerPlantUpgradeData)
+{
+	if (!powerPlantUpgradeData)
+		return L"overcharge";
+
+	AsciiString triggerUpgradeName = powerPlantUpgradeData->m_tooltipTriggerUpgradeName;
+
+	if (triggerUpgradeName.isEmpty() && !powerPlantUpgradeData->m_upgradeMuxData.m_activationUpgradeNames.empty())
+	{
+		triggerUpgradeName = powerPlantUpgradeData->m_upgradeMuxData.m_activationUpgradeNames[0];
+	}
+
+	if (triggerUpgradeName.isEmpty())
+		return L"overcharge";
+
+	const UpgradeTemplate* triggerUpgradeTemplate = TheUpgradeCenter->findUpgrade(triggerUpgradeName);
+
+	if (triggerUpgradeTemplate && triggerUpgradeTemplate->getDisplayNameLabel().isNotEmpty())
+	{
+		return TheGameText->fetch(triggerUpgradeTemplate->getDisplayNameLabel().str());
+	}
+
+	UnicodeString result;
+	result.format(L"%S", triggerUpgradeName.str());
+	return result;
+}
+
 void ControlBar::repopulateBuildTooltipLayout()
 {
 	if(!prevWindow || !m_buildToolTipLayout)
@@ -916,14 +943,33 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 					if (energyBonusValue > 0.0f)
 					{
+						const PowerPlantUpgradeModuleData* powerPlantUpgradeData = nullptr;
+
+						const ModuleInfo& behaviorModules = thingTemplate->getBehaviorModuleInfo();
+						for (Int i = 0; i < behaviorModules.getCount(); ++i)
+						{
+							const ModuleData* moduleData = behaviorModules.getNthData(i);
+							if (!moduleData)
+								continue;
+
+							AsciiString moduleName = behaviorModules.getNthName(i);
+							if (moduleName.compareNoCase("PowerPlantUpgrade") != 0)
+								continue;
+
+							powerPlantUpgradeData = static_cast<const PowerPlantUpgradeModuleData*>(moduleData);
+							break;
+						}
+
+						UnicodeString triggerUpgradeDisplay = getPowerPlantTriggerUpgradeDisplay(powerPlantUpgradeData);
+
 						UnicodeString bonusText;
 						if (energyBonusValue == (Int)energyBonusValue)
 						{
-							bonusText.format(L" (+%d Bonus)", (Int)energyBonusValue);
+							bonusText.format(L" (+%d Bonus with %ls)", (Int)energyBonusValue, triggerUpgradeDisplay.str());
 						}
 						else
 						{
-							bonusText.format(L" (+%.1f Bonus)", energyBonusValue);
+							bonusText.format(L" (+%.1f Bonus with %ls)", energyBonusValue, triggerUpgradeDisplay.str());
 						}
 						powertext.concat(bonusText);
 					}
@@ -1801,10 +1847,54 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 		{
 			if (bonusEnergyValue > 0.0f)
 			{
-				powerText.format(L"Power Production: %.0f (Base: %.0f, +%.0f Bonus)",
+				UnicodeString bonusSourceText = L"Bonus";
+
+				const PowerPlantUpgradeModuleData* powerPlantUpgradeData = nullptr;
+				Bool overchargeActive = FALSE;
+
+				const ModuleInfo& behaviorModules = thing->getBehaviorModuleInfo();
+				for (Int i = 0; i < behaviorModules.getCount(); ++i)
+				{
+					const ModuleData* moduleData = behaviorModules.getNthData(i);
+					if (!moduleData)
+						continue;
+
+					AsciiString moduleName = behaviorModules.getNthName(i);
+					if (moduleName.compareNoCase("PowerPlantUpgrade") != 0)
+						continue;
+
+					powerPlantUpgradeData =
+						static_cast<const PowerPlantUpgradeModuleData*>(moduleData);
+					break;
+				}
+
+				for (BehaviorModule** bmi = obj->getBehaviorModules(); *bmi; ++bmi)
+				{
+					OverchargeBehaviorInterface* obi = (*bmi)->getOverchargeBehaviorInterface();
+					if (obi && obi->isOverchargeActive())
+					{
+						overchargeActive = TRUE;
+						break;
+					}
+				}
+
+				if (powerPlantUpgradeData)
+				{
+					UnicodeString triggerUpgradeDisplay =
+						getPowerPlantTriggerUpgradeDisplay(powerPlantUpgradeData);
+
+					bonusSourceText.format(L"Bonus with %ls", triggerUpgradeDisplay.str());
+				}
+				else if (overchargeActive)
+				{
+					bonusSourceText = L"Bonus from Overcharge";
+				}
+
+				powerText.format(L"Power Production: %.0f (Base: %.0f, +%.0f %ls)",
 					displayEnergyValue,
 					baseEnergyValue,
-					bonusEnergyValue);
+					bonusEnergyValue,
+					bonusSourceText.str());
 			}
 			else
 			{
