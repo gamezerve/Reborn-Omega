@@ -39,6 +39,45 @@
 #include "GameLogic/Module/PowerPlantUpdate.h"
 #include "GameLogic/Module/PowerPlantUpgrade.h"
 
+
+static void parsePowerPlantTriggeredBy(INI* ini, void* instance, void* store, const void* /*userData*/)
+{
+	PowerPlantUpgradeModuleData* data = static_cast<PowerPlantUpgradeModuleData*>(store);
+
+	INI::parseAsciiStringVector(
+		ini,
+		instance,
+		&data->m_upgradeMuxData.m_activationUpgradeNames,
+		nullptr);
+
+	if (data->m_tooltipTriggerUpgradeName.isEmpty() && !data->m_upgradeMuxData.m_activationUpgradeNames.empty())
+	{
+		data->m_tooltipTriggerUpgradeName = data->m_upgradeMuxData.m_activationUpgradeNames[0];
+	}
+}
+
+PowerPlantUpgradeModuleData::PowerPlantUpgradeModuleData()
+{
+	m_tooltipTriggerUpgradeName.clear();
+}
+
+void PowerPlantUpgradeModuleData::buildFieldParse(MultiIniFieldParse& p)
+{
+	ModuleData::buildFieldParse(p);
+
+	static const FieldParse dataFieldParse[] =
+	{
+		{ "TriggeredBy", parsePowerPlantTriggeredBy, nullptr, 0 },
+		{ "ConflictsWith", INI::parseAsciiStringVector, nullptr, offsetof(PowerPlantUpgradeModuleData, m_upgradeMuxData.m_conflictingUpgradeNames) },
+		{ "RemovesUpgrades", INI::parseAsciiStringVector, nullptr, offsetof(PowerPlantUpgradeModuleData, m_upgradeMuxData.m_removalUpgradeNames) },
+		{ "FXListUpgrade", INI::parseFXList, nullptr, offsetof(PowerPlantUpgradeModuleData, m_upgradeMuxData.m_fxListUpgrade) },
+		{ "RequiresAllTriggers", INI::parseBool, nullptr, offsetof(PowerPlantUpgradeModuleData, m_upgradeMuxData.m_requiresAllTriggers) },
+		{ nullptr, nullptr, nullptr, 0 }
+	};
+
+	p.add(dataFieldParse);
+}
+
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 PowerPlantUpgrade::PowerPlantUpgrade( Thing *thing, const ModuleData* moduleData ) :
