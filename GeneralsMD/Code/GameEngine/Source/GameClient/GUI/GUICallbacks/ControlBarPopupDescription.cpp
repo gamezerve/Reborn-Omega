@@ -1093,7 +1093,12 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			const StealthDetectorUpdateModuleData* stealthDetectorData =
 				getTooltipStealthDetectorData(thingTemplate, &stealthSourceThing);
 
-			if (stealthDetectorData)
+			Bool allowSpawnProvidedStealthTooltip =
+				(stealthSourceThing == nullptr) ||
+				(stealthSourceThing == thingTemplate) ||
+				thingTemplate->isKindOf(KINDOF_SPAWNS_ARE_THE_WEAPONS);
+
+			if (stealthDetectorData && allowSpawnProvidedStealthTooltip)
 			{
 				Real stealthDetectRange = stealthDetectorData->m_detectionRange;
 
