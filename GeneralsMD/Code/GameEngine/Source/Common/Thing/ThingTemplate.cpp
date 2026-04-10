@@ -71,6 +71,7 @@
 #include "GameLogic/Object.h"
 #include "GameLogic/Powers.h"
 #include "GameLogic/Weapon.h"
+#include "GameLogic/Module/StealthDetectorUpdate.h"
 
 #include "GameLogic/Reborn/ImageUpgradeReborn.h"
 
@@ -418,7 +419,25 @@ Bool ModuleInfo::clearModuleDataWithTag(const AsciiString& tagToClear, AsciiStri
 }
 
 
+const StealthDetectorUpdateModuleData* ThingTemplate::friend_getStealthDetectorUpdateModuleData() const
+{
+	const ModuleInfo& behaviorModules = getBehaviorModuleInfo();
 
+	for (Int i = 0; i < behaviorModules.getCount(); ++i)
+	{
+		const ModuleData* moduleData = behaviorModules.getNthData(i);
+		if (!moduleData)
+			continue;
+
+		AsciiString moduleName = behaviorModules.getNthName(i);
+		if (moduleName.compareNoCase("StealthDetectorUpdate") != 0)
+			continue;
+
+		return static_cast<const StealthDetectorUpdateModuleData*>(moduleData);
+	}
+
+	return nullptr;
+}
 
 
 //-------------------------------------------------------------------------------------------------
