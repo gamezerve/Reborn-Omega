@@ -105,6 +105,7 @@
 #include "GameLogic/Module/PowerPlantUpgrade.h"
 #include "GameLogic/Module/SpecialPowerModule.h"
 #include "GameLogic/Module/StealthDetectorUpdate.h"
+#include "GameLogic/Module/SpawnBehavior.h"
 
 #include "GameNetwork/NetworkInterface.h"
 
@@ -301,6 +302,69 @@ static void resetBuildTooltipLayoutToDefaults(WindowLayout* layout)
 		descWin->winSetSize(s_tooltipDescDefaultSize.x, s_tooltipDescDefaultSize.y);
 		descWin->winSetPosition(s_tooltipDescDefaultPos.x, s_tooltipDescDefaultPos.y);
 	}
+}
+
+static const StealthDetectorUpdateModuleData* getTooltipStealthDetectorData(
+	const ThingTemplate* tt,
+	const ThingTemplate** sourceThing)
+{
+	if (sourceThing)
+		*sourceThing = nullptr;
+
+	if (!tt)
+		return nullptr;
+
+	const StealthDetectorUpdateModuleData* directData =
+		tt->friend_getStealthDetectorUpdateModuleData();
+
+	if (directData)
+	{
+		if (sourceThing)
+			*sourceThing = tt;
+		return directData;
+	}
+
+	const ModuleInfo& behaviorModules = tt->getBehaviorModuleInfo();
+
+	for (Int i = 0; i < behaviorModules.getCount(); ++i)
+	{
+		const ModuleData* moduleData = behaviorModules.getNthData(i);
+		if (!moduleData)
+			continue;
+
+		AsciiString moduleName = behaviorModules.getNthName(i);
+		if (moduleName.compareNoCase("SpawnBehavior") != 0)
+			continue;
+
+		const SpawnBehaviorModuleData* spawnData =
+			static_cast<const SpawnBehaviorModuleData*>(moduleData);
+
+		if (!spawnData)
+			continue;
+
+		for (std::vector<AsciiString>::const_iterator it = spawnData->m_spawnTemplateNameData.begin();
+			it != spawnData->m_spawnTemplateNameData.end();
+			++it)
+		{
+			const ThingTemplate* spawnedThing =
+				TheThingFactory->findTemplate(*it);
+
+			if (!spawnedThing)
+				continue;
+
+			const StealthDetectorUpdateModuleData* spawnedDetectorData =
+				spawnedThing->friend_getStealthDetectorUpdateModuleData();
+
+			if (spawnedDetectorData)
+			{
+				if (sourceThing)
+					*sourceThing = spawnedThing;
+				return spawnedDetectorData;
+			}
+		}
+	}
+
+	return nullptr;
 }
 
 static UnicodeString getSidePrefixedThingName(const ThingTemplate* thingTemplate)
@@ -833,8 +897,9 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				}
 			}
 
+			const ThingTemplate* stealthSourceThing = nullptr;
 			const StealthDetectorUpdateModuleData* stealthDetectorData =
-				thingTemplate->friend_getStealthDetectorUpdateModuleData();
+				getTooltipStealthDetectorData(thingTemplate, &stealthSourceThing);
 
 			if (stealthDetectorData)
 			{
@@ -842,7 +907,24 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 				if (stealthDetectRange > 0.0f)
 				{
-					stealthDetectText.format(L"Stealth Detection Range: %.0f", stealthDetectRange);
+					if (stealthSourceThing && stealthSourceThing != thingTemplate)
+					{
+						UnicodeString sourceName;
+
+						if (!stealthSourceThing->getDisplayName().isEmpty())
+							sourceName = stealthSourceThing->getDisplayName();
+						else
+							sourceName.translate(stealthSourceThing->getName());
+
+						stealthDetectText.format(
+							L"Stealth Detection Range: %.0f (via %ls)",
+							stealthDetectRange,
+							sourceName.str());
+					}
+					else
+					{
+						stealthDetectText.format(L"Stealth Detection Range: %.0f", stealthDetectRange);
+					}
 				}
 			}
 
@@ -1577,18 +1659,36 @@ if (thing->getShroudClearingRange() > 0.0f)
 	}
 }
 
-			const StealthDetectorUpdateModuleData* stealthDetectorData =
-			thing->friend_getStealthDetectorUpdateModuleData();
+const ThingTemplate* stealthSourceThing = nullptr;
+const StealthDetectorUpdateModuleData* stealthDetectorData =
+getTooltipStealthDetectorData(thing, &stealthSourceThing);
 
-			if (stealthDetectorData)
-			{
-				Real stealthDetectRange = stealthDetectorData->m_detectionRange;
+if (stealthDetectorData)
+{
+	Real stealthDetectRange = stealthDetectorData->m_detectionRange;
 
-				if (stealthDetectRange > 0.0f)
-				{
-					stealthDetectText.format(L"Stealth Detection Range: %.0f", stealthDetectRange);
-				}
-			}
+	if (stealthDetectRange > 0.0f)
+	{
+		if (stealthSourceThing && stealthSourceThing != thing)
+		{
+			UnicodeString sourceName;
+
+			if (!stealthSourceThing->getDisplayName().isEmpty())
+				sourceName = stealthSourceThing->getDisplayName();
+			else
+				sourceName.translate(stealthSourceThing->getName());
+
+			stealthDetectText.format(
+				L"Stealth Detection Range: %.0f (via %ls)",
+				stealthDetectRange,
+				sourceName.str());
+		}
+		else
+		{
+			stealthDetectText.format(L"Stealth Detection Range: %.0f", stealthDetectRange);
+		}
+	}
+}
 
 			AIUpdateModuleData* aiData = const_cast<ThingTemplate*>(thing)->friend_getAIModuleInfo();
 			if (aiData && !thing->isKindOf(KINDOF_STRUCTURE))
