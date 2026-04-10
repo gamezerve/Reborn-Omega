@@ -43,24 +43,42 @@ MaxHealthUpgradeModuleData::MaxHealthUpgradeModuleData()
 {
 	m_addMaxHealth = 0.0f;
 	m_maxHealthChangeType = SAME_CURRENTHEALTH;
+	m_tooltipTriggerUpgradeName.clear();
 }
+static void parseMaxHealthTriggeredBy(INI* ini, void* instance, void* store, const void* /*userData*/)
+{
+	MaxHealthUpgradeModuleData* data = static_cast<MaxHealthUpgradeModuleData*>(store);
 
+	INI::parseAsciiStringVector(
+		ini,
+		instance,
+		&data->m_upgradeMuxData.m_activationUpgradeNames,
+		nullptr);
+
+	if (data->m_tooltipTriggerUpgradeName.isEmpty() && !data->m_upgradeMuxData.m_activationUpgradeNames.empty())
+	{
+		data->m_tooltipTriggerUpgradeName = data->m_upgradeMuxData.m_activationUpgradeNames[0];
+	}
+}
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 void MaxHealthUpgradeModuleData::buildFieldParse(MultiIniFieldParse& p)
 {
-
-  UpgradeModuleData::buildFieldParse( p );
+	ModuleData::buildFieldParse(p);
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "AddMaxHealth",					INI::parseReal,					nullptr,										offsetof( MaxHealthUpgradeModuleData, m_addMaxHealth ) },
-		{ "ChangeType",						INI::parseIndexList,		TheMaxHealthChangeTypeNames, offsetof( MaxHealthUpgradeModuleData, m_maxHealthChangeType ) },
+		{ "TriggeredBy", parseMaxHealthTriggeredBy, nullptr, 0 },
+		{ "ConflictsWith", INI::parseAsciiStringVector, nullptr, offsetof(MaxHealthUpgradeModuleData, m_upgradeMuxData.m_conflictingUpgradeNames) },
+		{ "RemovesUpgrades", INI::parseAsciiStringVector, nullptr, offsetof(MaxHealthUpgradeModuleData, m_upgradeMuxData.m_removalUpgradeNames) },
+		{ "FXListUpgrade", INI::parseFXList, nullptr, offsetof(MaxHealthUpgradeModuleData, m_upgradeMuxData.m_fxListUpgrade) },
+		{ "RequiresAllTriggers", INI::parseBool, nullptr, offsetof(MaxHealthUpgradeModuleData, m_upgradeMuxData.m_requiresAllTriggers) },
+		{ "AddMaxHealth", INI::parseReal, nullptr, offsetof(MaxHealthUpgradeModuleData, m_addMaxHealth) },
+		{ "ChangeType", INI::parseIndexList, TheMaxHealthChangeTypeNames, offsetof(MaxHealthUpgradeModuleData, m_maxHealthChangeType) },
 		{ nullptr, nullptr, nullptr, 0 }
 	};
 
-  p.add(dataFieldParse);
-
+	p.add(dataFieldParse);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -119,6 +137,7 @@ void MaxHealthUpgrade::xfer( Xfer *xfer )
 	UpgradeModule::xfer( xfer );
 
 }
+
 
 // ------------------------------------------------------------------------------------------------
 /** Load post process */

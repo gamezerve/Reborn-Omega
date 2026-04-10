@@ -49,6 +49,7 @@ public:
 
 	Real								m_addMaxHealth;
 	MaxHealthChangeType m_maxHealthChangeType;
+	AsciiString					m_tooltipTriggerUpgradeName;
 
 };
 
