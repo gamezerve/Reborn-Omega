@@ -380,10 +380,13 @@ static const ThingTemplate* getTooltipProducedThingTemplate(
 	if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE)
 		return commandButton->getThingTemplate();
 
+	const UpgradeTemplate* upgradeTemplate = commandButton->getUpgradeTemplate();
+	if (upgradeTemplate && upgradeTemplate->getUpgradeName().compareNoCase("Upgrade_GLAWorkerFakeCommandSet") == 0)
+		return commandButton->getThingTemplate();
+
 	if (!selectedObject)
 		return nullptr;
 
-	const UpgradeTemplate* upgradeTemplate = commandButton->getUpgradeTemplate();
 	if (!upgradeTemplate)
 		return nullptr;
 
