@@ -68,6 +68,8 @@ public:
 
 	virtual void onDelete() override;																///< we have some work to do when this module goes away
 
+	const ObjectCreationUpgradeModuleData* friend_getObjectCreationUpgradeModuleData() const { return getObjectCreationUpgradeModuleData(); }
+
 protected:
 
 	virtual void upgradeImplementation() override; ///< Here's the actual work of Upgrading

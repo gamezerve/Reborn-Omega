@@ -41,6 +41,7 @@ class ObjectCreationList;
 class ObjectCreationListStore;
 class INI;
 class Object;
+class ThingTemplate;
 
 //-------------------------------------------------------------------------------------------------
 /**
@@ -131,6 +132,8 @@ public:
 	void clear();
 
 	void addObjectCreationNugget(ObjectCreationNugget* nugget);
+	const ThingTemplate* getFirstCreatedThingTemplate() const;
+
 
 	// Kris: August 23, 2003
 	// All OCLs return the first object that is created (or null if not applicable).

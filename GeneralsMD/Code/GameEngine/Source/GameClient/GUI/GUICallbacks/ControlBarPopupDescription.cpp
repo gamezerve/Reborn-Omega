@@ -1661,7 +1661,7 @@ if (thing->getShroudClearingRange() > 0.0f)
 
 const ThingTemplate* stealthSourceThing = nullptr;
 const StealthDetectorUpdateModuleData* stealthDetectorData =
-getTooltipStealthDetectorData(thing, &stealthSourceThing);
+	getTooltipStealthDetectorData(thing, &stealthSourceThing);
 
 if (stealthDetectorData)
 {

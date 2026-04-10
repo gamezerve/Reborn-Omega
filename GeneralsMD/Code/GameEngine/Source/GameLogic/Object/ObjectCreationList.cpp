@@ -914,6 +914,11 @@ public:
 		((std::vector<AnimSet>*)store)->push_back(anim);
 	}
 
+
+	public:
+		Bool createsObjects() const { return m_nameAreObjects; }
+		const std::vector<AsciiString>& getNames() const { return m_names; }
+
 protected:
 
 	void doStuffToObj(
@@ -1532,6 +1537,32 @@ void ObjectCreationList::addObjectCreationNugget(ObjectCreationNugget* nugget)
 {
 	m_nuggets.push_back(nugget);
 	TheObjectCreationListStore->addObjectCreationNugget(nugget);
+}
+
+const ThingTemplate* ObjectCreationList::getFirstCreatedThingTemplate() const
+{
+	for (ObjectCreationNuggetVector::const_iterator i = m_nuggets.begin(); i != m_nuggets.end(); ++i)
+	{
+		const GenericObjectCreationNugget* nugget =
+			dynamic_cast<const GenericObjectCreationNugget*>(*i);
+
+		if (!nugget)
+			continue;
+
+		if (nugget->createsObjects())
+		{
+			const std::vector<AsciiString>& names = nugget->getNames();
+
+			if (!names.empty())
+			{
+				const ThingTemplate* tmpl = TheThingFactory->findTemplate(names[0]);
+				if (tmpl)
+					return tmpl;
+			}
+		}
+	}
+
+	return nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------
