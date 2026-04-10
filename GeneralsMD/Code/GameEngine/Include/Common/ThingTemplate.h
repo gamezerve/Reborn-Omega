@@ -144,6 +144,8 @@ class ActiveBodyModuleData;
 
 class MaxHealthUpgradeModuleData;
 
+class StealthDetectorUpdateModuleData;
+
 class AudioArray
 {
 public:
@@ -602,6 +604,7 @@ public:
 	const ActiveBodyModuleData* friend_getActiveBodyModuleData() const;
 	const MaxHealthUpgradeModuleData* friend_getMaxHealthUpgradeModuleData() const;
 	Real getShroudClearingRange() const { return m_shroudClearingRange; }
+	const StealthDetectorUpdateModuleData* friend_getStealthDetectorUpdateModuleData() const;
 
 	const AsciiString& getDefaultOwningSide() const { return m_defaultOwningSide; }
 

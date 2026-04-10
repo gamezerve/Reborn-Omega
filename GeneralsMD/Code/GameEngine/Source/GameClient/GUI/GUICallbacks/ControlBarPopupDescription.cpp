@@ -104,6 +104,7 @@
 #include "GameLogic/Locomotor.h"
 #include "GameLogic/Module/PowerPlantUpgrade.h"
 #include "GameLogic/Module/SpecialPowerModule.h"
+#include "GameLogic/Module/StealthDetectorUpdate.h"
 
 #include "GameNetwork/NetworkInterface.h"
 
@@ -375,12 +376,13 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	resetBuildTooltipLayoutToDefaults(m_buildToolTipLayout);
 
 	Player* player = ThePlayerList->getLocalPlayer();
-	UnicodeString name, cost, buildtime, powertext, limittext, reloadtext, descrip, healthText, shroudText, locomotorText;
+	UnicodeString name, cost, buildtime, powertext, limittext, reloadtext, descrip, healthText, shroudText, locomotorText, stealthDetectText;
 	buildtime = UnicodeString::TheEmptyString;
 	powertext = UnicodeString::TheEmptyString;
 	limittext = UnicodeString::TheEmptyString;
 	reloadtext = UnicodeString::TheEmptyString;
 	healthText = UnicodeString::TheEmptyString;
+	stealthDetectText = UnicodeString::TheEmptyString;
 
 	UnicodeString requiresFormat = UnicodeString::TheEmptyString, requiresList;
 	Bool firstRequirement = true;
@@ -831,6 +833,19 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				}
 			}
 
+			const StealthDetectorUpdateModuleData* stealthDetectorData =
+				thingTemplate->friend_getStealthDetectorUpdateModuleData();
+
+			if (stealthDetectorData)
+			{
+				Real stealthDetectRange = stealthDetectorData->m_detectionRange;
+
+				if (stealthDetectRange > 0.0f)
+				{
+					stealthDetectText.format(L"Stealth Detection Range: %.0f", stealthDetectRange);
+				}
+			}
+
 UnsignedInt buildLimit = thingTemplate->getMaxSimultaneousOfType();
 if (buildLimit > 0)
 {
@@ -1183,13 +1198,6 @@ if (buildLimit > 0)
 				costAndTime.concat(reloadtext);
 			}
 
-			if (!powertext.isEmpty())
-			{
-				if (!costAndTime.isEmpty())
-					costAndTime.concat(L"\n");
-				costAndTime.concat(powertext);
-			}
-
 			if (!healthText.isEmpty())
 			{
 				if (!costAndTime.isEmpty())
@@ -1197,11 +1205,25 @@ if (buildLimit > 0)
 				costAndTime.concat(healthText);
 			}
 
+			if (!powertext.isEmpty())
+			{
+				if (!costAndTime.isEmpty())
+					costAndTime.concat(L"\n");
+				costAndTime.concat(powertext);
+			}
+
 			if (!shroudText.isEmpty())
 			{
 				if (!costAndTime.isEmpty())
 					costAndTime.concat(L"\n");
 				costAndTime.concat(shroudText);
+			}
+
+			if (!stealthDetectText.isEmpty())
+			{
+				if (!costAndTime.isEmpty())
+					costAndTime.concat(L"\n");
+				costAndTime.concat(stealthDetectText);
 			}
 
 			if (!locomotorText.isEmpty())
@@ -1217,6 +1239,8 @@ if (buildLimit > 0)
 					costAndTime.concat(L"\n");
 				costAndTime.concat(limittext);
 			}
+
+			costAndTime.concat(L"\n");
 
 			ICoord2D size, newSize;
 			DisplayString* tempDString = TheDisplayStringManager->newDisplayString();
@@ -1340,8 +1364,9 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 	if (!player || !thing)
 		return;
 
-	UnicodeString name, cost, buildtime, powertext, limittext, healthText, shroudText, locomotorText, infoText, descrip;
+	UnicodeString name, cost, buildtime, powertext, limittext, healthText, shroudText, locomotorText, stealthDetectText, infoText, descrip;
 	descrip = UnicodeString::TheEmptyString;
+	stealthDetectText = UnicodeString::TheEmptyString;
 
 	if (!thing->getDisplayName().isEmpty())
 		name = thing->getDisplayName();
@@ -1552,42 +1577,56 @@ if (thing->getShroudClearingRange() > 0.0f)
 	}
 }
 
-	AIUpdateModuleData* aiData = const_cast<ThingTemplate*>(thing)->friend_getAIModuleInfo();
-	if (aiData && !thing->isKindOf(KINDOF_STRUCTURE))
-	{
-		const LocomotorTemplateVector* locoVector = aiData->findLocomotorTemplateVector(LOCOMOTORSET_NORMAL);
-		if (locoVector && !locoVector->empty())
-		{
-			const LocomotorTemplate* locoTemplate = (*locoVector)[0];
-			if (locoTemplate)
-			{
-				Locomotor* tempLocomotor = TheLocomotorStore->newLocomotor(locoTemplate);
-				if (tempLocomotor)
-				{
-					Real speed = tempLocomotor->getMaxSpeedForCondition(BODY_PRISTINE);
-					Real displaySpeed = speed * LOGICFRAMES_PER_SECOND;
-					if (displaySpeed > 0.0f)
-						locomotorText.format(L"Movement Speed: %d", REAL_TO_INT_FLOOR(displaySpeed + 0.5f));
+			const StealthDetectorUpdateModuleData* stealthDetectorData =
+			thing->friend_getStealthDetectorUpdateModuleData();
 
-					deleteInstance(tempLocomotor);
+			if (stealthDetectorData)
+			{
+				Real stealthDetectRange = stealthDetectorData->m_detectionRange;
+
+				if (stealthDetectRange > 0.0f)
+				{
+					stealthDetectText.format(L"Stealth Detection Range: %.0f", stealthDetectRange);
 				}
 			}
-		}
-	}
 
-	UnsignedInt buildLimit = thing->getMaxSimultaneousOfType();
-	if (buildLimit > 0)
-	{
-		Int currentCount = 0;
-		const ThingTemplate* tmpl = thing;
-		player->countObjectsByThingTemplate(1, &tmpl, false, &currentCount);
-		limittext.format(L"Build Limit: %d/%d", currentCount, buildLimit);
-	}
+			AIUpdateModuleData* aiData = const_cast<ThingTemplate*>(thing)->friend_getAIModuleInfo();
+			if (aiData && !thing->isKindOf(KINDOF_STRUCTURE))
+			{
+				const LocomotorTemplateVector* locoVector = aiData->findLocomotorTemplateVector(LOCOMOTORSET_NORMAL);
+				if (locoVector && !locoVector->empty())
+				{
+					const LocomotorTemplate* locoTemplate = (*locoVector)[0];
+					if (locoTemplate)
+					{
+						Locomotor* tempLocomotor = TheLocomotorStore->newLocomotor(locoTemplate);
+						if (tempLocomotor)
+						{
+							Real speed = tempLocomotor->getMaxSpeedForCondition(BODY_PRISTINE);
+							Real displaySpeed = speed * LOGICFRAMES_PER_SECOND;
+							if (displaySpeed > 0.0f)
+								locomotorText.format(L"Movement Speed: %d", REAL_TO_INT_FLOOR(displaySpeed + 0.5f));
+
+							deleteInstance(tempLocomotor);
+						}
+					}
+				}
+			}
+
+			UnsignedInt buildLimit = thing->getMaxSimultaneousOfType();
+			if (buildLimit > 0)
+			{
+				Int currentCount = 0;
+				const ThingTemplate* tmpl = thing;
+				player->countObjectsByThingTemplate(1, &tmpl, false, &currentCount);
+				limittext.format(L"Build Limit: %d/%d", currentCount, buildLimit);
+			}
 
 
 	if (!healthText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(healthText); }
 	if (!powerText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(powerText); }
 	if (!shroudText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(shroudText); }
+	if (!stealthDetectText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(stealthDetectText); }
 	if (!locomotorText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(locomotorText); }
 	if (!limittext.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(limittext); }
 
