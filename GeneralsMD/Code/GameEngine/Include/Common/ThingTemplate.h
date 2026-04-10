@@ -424,6 +424,8 @@ public:
 	/// set the display name
 	const UnicodeString& getDisplayName() const { return m_displayName; }  ///< return display name
 
+	const AsciiString& getRebornFakeBaseObject() const { return m_rebornfakebaseobject; }
+
 	RadarPriorityType getDefaultRadarPriority() const { return (RadarPriorityType)m_radarPriority; }  ///< return radar priority from INI
 
 	// note, you should not call this directly; rather, call Object::getTransportSlotCount().
@@ -684,6 +686,7 @@ private:
 	AsciiString				m_defaultOwningSide;	///< default owning side (owning player is inferred)
 	AsciiString				m_commandSetString;
 	AsciiString				m_selectedPortraitImageName;
+	AsciiString				m_rebornfakebaseobject;
 	AsciiString				m_buttonImageName;
 	AsciiString				m_upgradeCameoUpgradeNames[MAX_UPGRADE_CAMEO_UPGRADES];	///< Use these to find the upgrade images to display on the control bar
 	AsciiString				m_shadowTextureName;					///< name of texture to use for shadow decal
