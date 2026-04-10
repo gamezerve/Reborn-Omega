@@ -789,28 +789,32 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 			SpecialPowerType spType = specialPowerTemplate->getSpecialPowerType();
 			Object* cooldownObject = selectedObject;
-
-			if (!cooldownObject &&
-				(commandType == GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT ||
-					commandType == GUI_COMMAND_SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT))
-			{
-				cooldownObject = player->findBestSpecialPowerSourceObject(specialPowerTemplate);
-			}
+			SpecialPowerModuleInterface* spm = nullptr;
 
 			if (cooldownObject)
 			{
-				SpecialPowerModuleInterface* spm = cooldownObject->findSpecialPowerModuleInterface(spType);
+				spm = cooldownObject->findSpecialPowerModuleInterface(spType);
+			}
 
-				if (spm)
+			if (!spm)
+			{
+				cooldownObject = player->findBestSpecialPowerSourceObject(specialPowerTemplate);
+
+				if (cooldownObject)
 				{
-					UnsignedInt readyFrame = spm->getReadyFrame();
-					UnsignedInt currentFrame = TheGameLogic->getFrame();
+					spm = cooldownObject->findSpecialPowerModuleInterface(spType);
+				}
+			}
 
-					if (readyFrame > currentFrame)
-					{
-						UnsignedInt remainingFrames = readyFrame - currentFrame;
-						remainingTimeValue = remainingFrames / (Real)LOGICFRAMES_PER_SECOND;
-					}
+			if (spm)
+			{
+				UnsignedInt readyFrame = spm->getReadyFrame();
+				UnsignedInt currentFrame = TheGameLogic->getFrame();
+
+				if (readyFrame > currentFrame)
+				{
+					UnsignedInt remainingFrames = readyFrame - currentFrame;
+					remainingTimeValue = remainingFrames / (Real)LOGICFRAMES_PER_SECOND;
 				}
 			}
 
