@@ -75,6 +75,7 @@
 #include "Common/SpecialPower.h"
 #include "Common/ThingTemplate.h"
 #include "Common/Upgrade.h"
+#include "Common/ThingFactory.h"
 #include "GameClient/AnimateWindowManager.h"
 #include "GameClient/DisconnectMenu.h"
 #include "GameClient/GameWindow.h"
@@ -1379,18 +1380,48 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 	}
 
 
+	Player* localPlayer = ThePlayerList->getLocalPlayer();
+	Player* ownerPlayer = obj ? obj->getControllingPlayer() : nullptr;
 
+	BodyModuleInterface* liveBody = obj ? obj->getBodyModule() : nullptr;
 
+	Real currentHealthForTooltip = liveBody ? liveBody->getHealth() : 0.0f;
+	Real maxHealthForTooltip = liveBody ? liveBody->getMaxHealth() : 0.0f;
+	Bool useScaledEnemyHealthLine = FALSE;
+
+	if (localPlayer && ownerPlayer && localPlayer->getRelationship(ownerPlayer->getDefaultTeam()) == ENEMIES)
+	{
+		if (thing && thing->isKindOf(KINDOF_FS_FAKE) && thing->getRebornFakeBaseObject().isNotEmpty())
+		{
+			const ThingTemplate* fakeBaseThing = TheThingFactory->findTemplate(thing->getRebornFakeBaseObject());
+			const ActiveBodyModuleData* fakeBaseBodyData = fakeBaseThing ? fakeBaseThing->friend_getActiveBodyModuleData() : nullptr;
+
+			if (fakeBaseBodyData && liveBody && liveBody->getMaxHealth() > 0.0f)
+			{
+				Real fakeBaseMaxHealth = fakeBaseBodyData->m_maxHealth;
+				Real selectedObjectMaxHealth = liveBody->getMaxHealth();
+
+				if (fakeBaseMaxHealth > 0.0f && selectedObjectMaxHealth > 0.0f)
+				{
+					Real healthScale = fakeBaseMaxHealth / selectedObjectMaxHealth;
+
+					currentHealthForTooltip = liveBody->getHealth() * healthScale;
+					maxHealthForTooltip = liveBody->getMaxHealth() * healthScale;
+					useScaledEnemyHealthLine = TRUE;
+				}
+			}
+		}
+	}
 
 	const ActiveBodyModuleData* bodyData = thing->friend_getActiveBodyModuleData();
 	const MaxHealthUpgradeModuleData* maxHealthUpgradeData = thing->friend_getMaxHealthUpgradeModuleData();
-	BodyModuleInterface* liveBody = obj->getBodyModule();
+	
 
 	if (bodyData && liveBody)
 	{
-		Real currentHealth = liveBody->getHealth();
+		Real currentHealth = currentHealthForTooltip;
 		Real baseMaxHealth = bodyData->m_maxHealth;
-		Real displayMaxHealth = liveBody->getMaxHealth();
+		Real displayMaxHealth = maxHealthForTooltip;
 
 		if (maxHealthUpgradeData && maxHealthUpgradeData->m_addMaxHealth > 0.0f)
 		{

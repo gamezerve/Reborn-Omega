@@ -169,6 +169,7 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "DisplayColor",					INI::parseColorInt,									nullptr,		offsetof( ThingTemplate, m_displayColor ) },
 	{ "EditorSorting",				INI::parseByteSizedIndexList,				EditorSortingNames, offsetof( ThingTemplate, m_editorSorting ) },
 	{ "KindOf",								KindOfMaskType::parseFromINI,				nullptr,		offsetof( ThingTemplate, m_kindof ) },
+	{ "RebornFakeBaseObject",	INI::parseAsciiString,				nullptr,		offsetof( ThingTemplate, m_rebornfakebaseobject ) },
 	{ "CommandSet",						INI::parseAsciiString,							nullptr,		offsetof( ThingTemplate, m_commandSetString ) },
 	{ "BuildVariations",			INI::parseAsciiStringVector,				nullptr,		offsetof( ThingTemplate, m_buildVariations ) },
 
