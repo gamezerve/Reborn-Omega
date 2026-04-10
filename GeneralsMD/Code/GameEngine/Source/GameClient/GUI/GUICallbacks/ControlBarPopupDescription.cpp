@@ -577,10 +577,30 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 		//thingTemplate = commandButton->getThingTemplate();
 		//const UpgradeTemplate *upgradeTemplate = commandButton->getUpgradeTemplate();
 		//const SpecialPowerTemplate* specialPowerTemplate = commandButton->getSpecialPowerTemplate();
+
+
+
+
 		Drawable* draw = TheInGameUI->getFirstSelectedDrawable();
 		Object* selectedObject = draw ? draw->getObject() : nullptr;
 
 		thingTemplate = getTooltipProducedThingTemplate(commandButton, selectedObject);
+
+		const ThingTemplate* buildTemplate = thingTemplate;
+		const ThingTemplate* infoTemplate = thingTemplate;
+
+		if (thingTemplate)
+		{
+			const std::vector<AsciiString>& buildVariations = thingTemplate->getBuildVariations();
+
+			if (!buildVariations.empty())
+			{
+				const ThingTemplate* firstVariationTemplate = TheThingFactory->findTemplate(buildVariations[0]);
+				if (firstVariationTemplate)
+					infoTemplate = firstVariationTemplate;
+			}
+		}
+
 		const UpgradeTemplate* upgradeTemplate = commandButton->getUpgradeTemplate();
 		const SpecialPowerTemplate* specialPowerTemplate = commandButton->getSpecialPowerTemplate();
 
@@ -873,8 +893,8 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			//prerequisites.
 
 			//Format the cost only when we have to pay for it.
-			Int baseCost = thingTemplate->friend_getBuildCost();
-			costToBuild = thingTemplate->calcCostToBuild(player);
+			Int baseCost = buildTemplate->friend_getBuildCost();
+			costToBuild = buildTemplate->calcCostToBuild(player);
 
 			if (costToBuild > 0)
 			{
@@ -900,7 +920,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 
 
-			buildTimeValue = thingTemplate->calcTimeToBuild(player) / (Real)LOGICFRAMES_PER_SECOND;
+			buildTimeValue = buildTemplate->calcTimeToBuild(player) / (Real)LOGICFRAMES_PER_SECOND;
 			if (buildTimeValue > 0.0f)
 			{
 				if (buildTimeValue == (Int)buildTimeValue)
@@ -921,8 +941,8 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				}
 			}
 
-			Real energyValue = thingTemplate->getEnergyProduction();
-			Real energyBonusValue = thingTemplate->getEnergyBonus();
+			Real energyValue = infoTemplate->getEnergyProduction();
+			Real energyBonusValue = infoTemplate->getEnergyBonus();
 
 			if (energyValue != 0.0f)
 			{
@@ -952,7 +972,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 					{
 						const PowerPlantUpgradeModuleData* powerPlantUpgradeData = nullptr;
 
-						const ModuleInfo& behaviorModules = thingTemplate->getBehaviorModuleInfo();
+						const ModuleInfo& behaviorModules = infoTemplate->getBehaviorModuleInfo();
 						for (Int i = 0; i < behaviorModules.getCount(); ++i)
 						{
 							const ModuleData* moduleData = behaviorModules.getNthData(i);
@@ -983,8 +1003,8 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				}
 			}
 
-			const ActiveBodyModuleData* bodyData = thingTemplate->friend_getActiveBodyModuleData();
-			const MaxHealthUpgradeModuleData* maxHealthUpgradeData = thingTemplate->friend_getMaxHealthUpgradeModuleData();
+			const ActiveBodyModuleData* bodyData = infoTemplate->friend_getActiveBodyModuleData();
+			const MaxHealthUpgradeModuleData* maxHealthUpgradeData = infoTemplate->friend_getMaxHealthUpgradeModuleData();
 
 			//DEBUG_LOG(("HealthTooltip template=%s maxHealthUpgradeData=%08X activationCount=%d",
 			//	thingTemplate ? thingTemplate->getName().str() : "null",
@@ -1037,9 +1057,9 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				}
 			}
 
-			if (thingTemplate->getShroudClearingRange() > 0.0f)
+			if (infoTemplate->getShroudClearingRange() > 0.0f)
 			{
-				Real shroudRange = thingTemplate->getShroudClearingRange();
+				Real shroudRange = infoTemplate->getShroudClearingRange();
 				shroudText.format(L"Shroud Clearing Range: %.0f", shroudRange);
 
 				Drawable* draw = TheInGameUI->getFirstSelectedDrawable();
@@ -1066,7 +1086,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				}
 			}
 
-			AIUpdateModuleData* aiData = const_cast<ThingTemplate*>(thingTemplate)->friend_getAIModuleInfo();
+			AIUpdateModuleData* aiData = const_cast<ThingTemplate*>(infoTemplate)->friend_getAIModuleInfo();
 
 			if (aiData && !thingTemplate->isKindOf(KINDOF_STRUCTURE))
 			{
@@ -1098,12 +1118,12 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 			const ThingTemplate* stealthSourceThing = nullptr;
 			const StealthDetectorUpdateModuleData* stealthDetectorData =
-				getTooltipStealthDetectorData(thingTemplate, &stealthSourceThing);
+				getTooltipStealthDetectorData(infoTemplate, &stealthSourceThing);
 
 			Bool allowSpawnProvidedStealthTooltip =
 				(stealthSourceThing == nullptr) ||
-				(stealthSourceThing == thingTemplate) ||
-				thingTemplate->isKindOf(KINDOF_SPAWNS_ARE_THE_WEAPONS);
+				(stealthSourceThing == infoTemplate) ||
+				infoTemplate->isKindOf(KINDOF_SPAWNS_ARE_THE_WEAPONS);
 
 			if (stealthDetectorData && allowSpawnProvidedStealthTooltip)
 			{
@@ -1111,12 +1131,12 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 				if (stealthDetectRange <= 0.0f)
 				{
-					stealthDetectRange = thingTemplate->getVisionRangeForTooltip();
+					stealthDetectRange = infoTemplate->getVisionRangeForTooltip();
 				}
 
 				if (stealthDetectRange > 0.0f)
 				{
-					if (stealthSourceThing && stealthSourceThing != thingTemplate)
+					if (stealthSourceThing && stealthSourceThing != infoTemplate)
 					{
 						UnicodeString sourceName;
 
