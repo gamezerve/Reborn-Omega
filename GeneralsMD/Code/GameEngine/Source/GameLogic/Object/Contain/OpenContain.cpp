@@ -1625,6 +1625,12 @@ void OpenContain::setRallyPoint( const Coord3D *pos )
 	m_rallyPointExists = true;
 }
 
+void OpenContain::resetRallyPoint()
+{
+	m_rallyPoint.zero();
+	m_rallyPointExists = false;
+}
+
 //-------------------------------------------------------------------------------------------------
 const Coord3D *OpenContain::getRallyPoint() const
 {

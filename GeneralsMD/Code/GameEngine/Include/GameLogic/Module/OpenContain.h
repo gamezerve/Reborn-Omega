@@ -191,6 +191,7 @@ public:
 	virtual void exitObjectByBudding( Object *newObj, Object *budHost ) override { return; };
 
 	virtual void setRallyPoint( const Coord3D *pos ) override;				///< define a "rally point" for units to move towards
+	virtual void resetRallyPoint() override;
 	virtual const Coord3D *getRallyPoint() const override;			///< define a "rally point" for units to move towards
 	virtual Bool getExitPosition(Coord3D& exitPosition ) const override { return FALSE; };					///< access to the "Door" position of the production object
 	virtual Bool getNaturalRallyPoint( Coord3D& rallyPoint, Bool offset = TRUE ) const override;			///< get the natural "rally point" for units to move towards
