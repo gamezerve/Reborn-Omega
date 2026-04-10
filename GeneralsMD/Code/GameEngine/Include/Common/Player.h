@@ -224,6 +224,7 @@ public:
 	void deletePlayerAI();
 
 	Object* findMostReadyShortcutSpecialPower(const SpecialPowerTemplate* spTemplate);
+	Object* findBestSpecialPowerSourceObject(const SpecialPowerTemplate* spTemplate);
 
 	UnicodeString getPlayerDisplayName() { return m_playerDisplayName; }
 	NameKeyType getPlayerNameKey() const { return m_playerNameKey; }
@@ -286,6 +287,7 @@ public:
 	Object* findNaturalCommandCenter();
 
 	Object* findAnyExistingObjectWithThingTemplate( const ThingTemplate *thing );
+
 
 	// Finds a short-cut firing special power of specified type returning the first ready power or
 	// the most ready if none ready.

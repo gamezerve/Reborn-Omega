@@ -152,6 +152,7 @@ static void findClosestKindOf( Object *obj, void *userData )
 	}
 }
 
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1495,6 +1496,14 @@ Object* Player::findMostReadyShortcutSpecialPowerOfType( SpecialPowerType spType
 }
 
 static void doFindSpecialPowerSourceObjectByTemplate(Object* obj, void* userData);
+
+Object* Player::findBestSpecialPowerSourceObject(const SpecialPowerTemplate* spTemplate)
+{
+	if (!spTemplate)
+		return nullptr;
+
+	return findMostReadyShortcutSpecialPower(spTemplate);
+}
 
 Object* Player::findMostReadyShortcutSpecialPower(const SpecialPowerTemplate* spTemplate)
 {
