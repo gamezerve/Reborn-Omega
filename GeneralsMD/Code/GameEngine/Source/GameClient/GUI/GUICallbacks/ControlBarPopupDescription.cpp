@@ -567,10 +567,19 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			Drawable* draw = TheInGameUI->getFirstSelectedDrawable();
 			Object* selectedObject = draw ? draw->getObject() : nullptr;
 
-			if (selectedObject)
+			SpecialPowerType spType = specialPowerTemplate->getSpecialPowerType();
+			Object* cooldownObject = selectedObject;
+
+			if (!cooldownObject &&
+				(commandType == GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT ||
+					commandType == GUI_COMMAND_SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT))
 			{
-				SpecialPowerType spType = specialPowerTemplate->getSpecialPowerType();
-				SpecialPowerModuleInterface* spm = selectedObject->findSpecialPowerModuleInterface(spType);
+				cooldownObject = player->findBestSpecialPowerSourceObject(specialPowerTemplate);
+			}
+
+			if (cooldownObject)
+			{
+				SpecialPowerModuleInterface* spm = cooldownObject->findSpecialPowerModuleInterface(spType);
 
 				if (spm)
 				{
