@@ -102,6 +102,8 @@
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/LocomotorSet.h"
 #include "GameLogic/Locomotor.h"
+#include "GameLogic/Module/LocomotorSetUpgrade.h"
+#include "GameLogic/Module/PhysicsUpdate.h"
 #include "GameLogic/Module/PowerPlantUpgrade.h"
 #include "GameLogic/Module/SpecialPowerModule.h"
 #include "GameLogic/Module/StealthDetectorUpdate.h"
@@ -637,6 +639,124 @@ static UnicodeString getPowerPlantTriggerUpgradeDisplay(const PowerPlantUpgradeM
 	UnicodeString result;
 	result.format(L"%S", triggerUpgradeName.str());
 	return result;
+}
+
+static const LocomotorSetUpgradeModuleData* getLocomotorSetUpgradeModuleData(const ThingTemplate* thingTemplate)
+{
+	if (!thingTemplate)
+		return nullptr;
+
+	const ModuleInfo& behaviorModules = thingTemplate->getBehaviorModuleInfo();
+
+	for (Int i = 0; i < behaviorModules.getCount(); ++i)
+	{
+		const ModuleData* moduleData = behaviorModules.getNthData(i);
+		if (!moduleData)
+			continue;
+
+		AsciiString moduleName = behaviorModules.getNthName(i);
+		if (moduleName.compareNoCase("LocomotorSetUpgrade") != 0)
+			continue;
+
+		return static_cast<const LocomotorSetUpgradeModuleData*>(moduleData);
+	}
+
+	return nullptr;
+}
+
+static const LocomotorTemplate* getFirstLocomotorTemplateForSet(const ThingTemplate* thingTemplate, LocomotorSetType setType)
+{
+	if (!thingTemplate)
+		return nullptr;
+
+	AIUpdateModuleData* aiData = const_cast<ThingTemplate*>(thingTemplate)->friend_getAIModuleInfo();
+	if (!aiData)
+		return nullptr;
+
+	const LocomotorTemplateVector* locoVector = aiData->findLocomotorTemplateVector(setType);
+	if (!locoVector || locoVector->empty())
+		return nullptr;
+
+	return (*locoVector)[0];
+}
+
+static Bool getDisplaySpeedForLocomotorSet(const ThingTemplate* thingTemplate, LocomotorSetType setType, Int& outDisplaySpeed)
+{
+	outDisplaySpeed = 0;
+
+	const LocomotorTemplate* locoTemplate = getFirstLocomotorTemplateForSet(thingTemplate, setType);
+	if (!locoTemplate)
+		return FALSE;
+
+	Locomotor* tempLocomotor = TheLocomotorStore->newLocomotor(locoTemplate);
+	if (!tempLocomotor)
+		return FALSE;
+
+	Real speed = tempLocomotor->getMaxSpeedForCondition(BODY_PRISTINE);
+	Real displaySpeed = speed * LOGICFRAMES_PER_SECOND;
+
+	deleteInstance(tempLocomotor);
+
+	if (displaySpeed <= 0.0f)
+		return FALSE;
+
+	outDisplaySpeed = REAL_TO_INT_FLOOR(displaySpeed + 0.5f);
+	return TRUE;
+}
+
+static UnicodeString getLocomotorTriggerUpgradeDisplay(const LocomotorSetUpgradeModuleData* locomotorSetUpgradeData)
+{
+	if (!locomotorSetUpgradeData)
+		return L"an upgrade";
+
+	AsciiString triggerUpgradeName = locomotorSetUpgradeData->m_tooltipTriggerUpgradeName;
+
+	if (triggerUpgradeName.isEmpty() && !locomotorSetUpgradeData->m_upgradeMuxData.m_activationUpgradeNames.empty())
+	{
+		triggerUpgradeName = locomotorSetUpgradeData->m_upgradeMuxData.m_activationUpgradeNames[0];
+	}
+
+	if (triggerUpgradeName.isEmpty())
+		return L"an upgrade";
+
+	const UpgradeTemplate* triggerUpgradeTemplate = TheUpgradeCenter->findUpgrade(triggerUpgradeName);
+
+	if (triggerUpgradeTemplate && triggerUpgradeTemplate->getDisplayNameLabel().isNotEmpty())
+	{
+		return TheGameText->fetch(triggerUpgradeTemplate->getDisplayNameLabel().str());
+	}
+
+	UnicodeString result;
+	result.format(L"%S", triggerUpgradeName.str());
+	return result;
+}
+
+static Bool getDisplaySpeedForLocomotorSetAndCondition(
+	const ThingTemplate* thingTemplate,
+	LocomotorSetType setType,
+	BodyDamageType damageType,
+	Int& outDisplaySpeed)
+{
+	outDisplaySpeed = 0;
+
+	const LocomotorTemplate* locoTemplate = getFirstLocomotorTemplateForSet(thingTemplate, setType);
+	if (!locoTemplate)
+		return FALSE;
+
+	Locomotor* tempLocomotor = TheLocomotorStore->newLocomotor(locoTemplate);
+	if (!tempLocomotor)
+		return FALSE;
+
+	Real speed = tempLocomotor->getMaxSpeedForCondition(damageType);
+	Real displaySpeed = speed * LOGICFRAMES_PER_SECOND;
+
+	deleteInstance(tempLocomotor);
+
+	if (displaySpeed <= 0.0f)
+		return FALSE;
+
+	outDisplaySpeed = REAL_TO_INT_FLOOR(displaySpeed + 0.5f);
+	return TRUE;
 }
 
 void ControlBar::repopulateBuildTooltipLayout()
@@ -1264,32 +1384,33 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				}
 			}
 
-			AIUpdateModuleData* aiData = const_cast<ThingTemplate*>(infoTemplate)->friend_getAIModuleInfo();
-
-			if (aiData && !thingTemplate->isKindOf(KINDOF_STRUCTURE))
+			if (!infoTemplate->isKindOf(KINDOF_STRUCTURE))
 			{
-				const LocomotorTemplateVector* locoVector = aiData->findLocomotorTemplateVector(LOCOMOTORSET_NORMAL);
+				Int normalDisplaySpeed = 0;
+				Int upgradedDisplaySpeed = 0;
 
-				if (locoVector && !locoVector->empty())
+				Bool hasNormalSpeed = getDisplaySpeedForLocomotorSet(infoTemplate, LOCOMOTORSET_NORMAL, normalDisplaySpeed);
+				Bool hasUpgradedSpeed = getDisplaySpeedForLocomotorSet(infoTemplate, LOCOMOTORSET_NORMAL_UPGRADED, upgradedDisplaySpeed);
+
+				const LocomotorSetUpgradeModuleData* locomotorSetUpgradeData =
+					getLocomotorSetUpgradeModuleData(infoTemplate);
+
+				if (hasNormalSpeed)
 				{
-					const LocomotorTemplate* locoTemplate = (*locoVector)[0];
-
-					if (locoTemplate)
+					if (hasUpgradedSpeed && locomotorSetUpgradeData && upgradedDisplaySpeed != normalDisplaySpeed)
 					{
-						Locomotor* tempLocomotor = TheLocomotorStore->newLocomotor(locoTemplate);
+						UnicodeString triggerUpgradeDisplay =
+							getLocomotorTriggerUpgradeDisplay(locomotorSetUpgradeData);
 
-						if (tempLocomotor)
-						{
-							Real speed = tempLocomotor->getMaxSpeedForCondition(BODY_PRISTINE);
-							Real displaySpeed = speed * LOGICFRAMES_PER_SECOND;
-
-							if (displaySpeed > 0.0f)
-							{
-								locomotorText.format(L"Movement Speed: %d", REAL_TO_INT_FLOOR(displaySpeed + 0.5f));
-							}
-
-							deleteInstance(tempLocomotor);
-						}
+						locomotorText.format(
+							L"Movement Speed: %d (%d with %ls)",
+							normalDisplaySpeed,
+							upgradedDisplaySpeed,
+							triggerUpgradeDisplay.str());
+					}
+					else
+					{
+						locomotorText.format(L"Movement Speed: %d", normalDisplaySpeed);
 					}
 				}
 			}
@@ -2137,28 +2258,136 @@ if (stealthDetectorData)
 	}
 }
 
-			AIUpdateModuleData* aiData = const_cast<ThingTemplate*>(thing)->friend_getAIModuleInfo();
-			if (aiData && !thing->isKindOf(KINDOF_STRUCTURE))
-			{
-				const LocomotorTemplateVector* locoVector = aiData->findLocomotorTemplateVector(LOCOMOTORSET_NORMAL);
-				if (locoVector && !locoVector->empty())
-				{
-					const LocomotorTemplate* locoTemplate = (*locoVector)[0];
-					if (locoTemplate)
-					{
-						Locomotor* tempLocomotor = TheLocomotorStore->newLocomotor(locoTemplate);
-						if (tempLocomotor)
-						{
-							Real speed = tempLocomotor->getMaxSpeedForCondition(BODY_PRISTINE);
-							Real displaySpeed = speed * LOGICFRAMES_PER_SECOND;
-							if (displaySpeed > 0.0f)
-								locomotorText.format(L"Movement Speed: %d", REAL_TO_INT_FLOOR(displaySpeed + 0.5f));
 
-							deleteInstance(tempLocomotor);
-						}
-					}
+
+
+if (obj && !thing->isKindOf(KINDOF_STRUCTURE))
+{
+	Int baseMaxDisplaySpeed = 0;
+	Int upgradedMaxDisplaySpeed = 0;
+	Int activeMaxDisplaySpeed = 0;
+	Int damagedMaxDisplaySpeed = 0;
+
+	Bool hasBaseMax =
+		getDisplaySpeedForLocomotorSetAndCondition(thing, LOCOMOTORSET_NORMAL, BODY_PRISTINE, baseMaxDisplaySpeed);
+
+	Bool hasUpgradedMax =
+		getDisplaySpeedForLocomotorSetAndCondition(thing, LOCOMOTORSET_NORMAL_UPGRADED, BODY_PRISTINE, upgradedMaxDisplaySpeed);
+
+	const LocomotorSetUpgradeModuleData* locomotorSetUpgradeData =
+		getLocomotorSetUpgradeModuleData(thing);
+
+	Bool hasLocomotorUpgrade = FALSE;
+	UnicodeString triggerUpgradeDisplay = L"an upgrade";
+
+	if (locomotorSetUpgradeData)
+	{
+		triggerUpgradeDisplay = getLocomotorTriggerUpgradeDisplay(locomotorSetUpgradeData);
+
+		AsciiString triggerUpgradeName = locomotorSetUpgradeData->m_tooltipTriggerUpgradeName;
+		if (triggerUpgradeName.isEmpty() && !locomotorSetUpgradeData->m_upgradeMuxData.m_activationUpgradeNames.empty())
+		{
+			triggerUpgradeName = locomotorSetUpgradeData->m_upgradeMuxData.m_activationUpgradeNames[0];
+		}
+
+		if (!triggerUpgradeName.isEmpty())
+		{
+			const UpgradeTemplate* triggerUpgrade = TheUpgradeCenter->findUpgrade(triggerUpgradeName);
+			Player* controllingPlayer = obj->getControllingPlayer();
+			if (triggerUpgrade)
+			{
+				if (obj->hasUpgrade(triggerUpgrade) ||
+					(controllingPlayer && controllingPlayer->hasUpgradeComplete(triggerUpgrade)))
+				{
+					hasLocomotorUpgrade = TRUE;
 				}
 			}
+		}
+	}
+
+	LocomotorSetType activeSet =
+		(hasLocomotorUpgrade && hasUpgradedMax) ? LOCOMOTORSET_NORMAL_UPGRADED : LOCOMOTORSET_NORMAL;
+
+	BodyDamageType currentDamageType = BODY_PRISTINE;
+	const BodyModuleInterface* body = obj->getBodyModule();
+	if (body)
+	{
+		currentDamageType = body->getDamageState();
+	}
+
+	Bool hasActiveMax =
+		getDisplaySpeedForLocomotorSetAndCondition(thing, activeSet, BODY_PRISTINE, activeMaxDisplaySpeed);
+
+	Bool hasDamagedMax = FALSE;
+	if (currentDamageType != BODY_PRISTINE)
+	{
+		hasDamagedMax =
+			getDisplaySpeedForLocomotorSetAndCondition(thing, activeSet, currentDamageType, damagedMaxDisplaySpeed);
+	}
+
+	PhysicsBehavior* physics = obj->getPhysics();
+	Int currentDisplaySpeed = 0;
+	Bool hasCurrentSpeed = FALSE;
+
+	if (physics)
+	{
+		const Coord3D* vel = physics->getVelocity();
+		if (vel)
+		{
+			Real currentSpeed = sqrt((vel->x * vel->x) + (vel->y * vel->y));
+			currentDisplaySpeed = REAL_TO_INT_FLOOR((currentSpeed * LOGICFRAMES_PER_SECOND) + 0.5f);
+			hasCurrentSpeed = TRUE;
+		}
+	}
+
+	if (hasCurrentSpeed && hasActiveMax)
+	{
+		if (hasLocomotorUpgrade && hasBaseMax && hasUpgradedMax && upgradedMaxDisplaySpeed != baseMaxDisplaySpeed)
+		{
+			if (hasDamagedMax && damagedMaxDisplaySpeed != activeMaxDisplaySpeed)
+			{
+				locomotorText.format(
+					L"Movement Speed: %d / %d (Base: %d, Upgraded Max: %d with %ls, Damaged Max: %d)",
+					currentDisplaySpeed,
+					activeMaxDisplaySpeed,
+					baseMaxDisplaySpeed,
+					upgradedMaxDisplaySpeed,
+					triggerUpgradeDisplay.str(),
+					damagedMaxDisplaySpeed);
+			}
+			else
+			{
+				locomotorText.format(
+					L"Movement Speed: %d / %d (Base: %d, Upgraded Max: %d with %ls)",
+					currentDisplaySpeed,
+					activeMaxDisplaySpeed,
+					baseMaxDisplaySpeed,
+					upgradedMaxDisplaySpeed,
+					triggerUpgradeDisplay.str());
+			}
+		}
+		else
+		{
+			if (hasDamagedMax && damagedMaxDisplaySpeed != activeMaxDisplaySpeed)
+			{
+				locomotorText.format(
+					L"Movement Speed: %d / %d (Damaged Max: %d)",
+					currentDisplaySpeed,
+					activeMaxDisplaySpeed,
+					damagedMaxDisplaySpeed);
+			}
+			else
+			{
+				locomotorText.format(
+					L"Movement Speed: %d / %d",
+					currentDisplaySpeed,
+					activeMaxDisplaySpeed);
+			}
+		}
+	}
+}
+
+
 
 			UnsignedInt buildLimit = thing->getMaxSimultaneousOfType();
 			if (buildLimit > 0)

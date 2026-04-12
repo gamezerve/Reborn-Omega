@@ -56,6 +56,44 @@ void LocomotorSetUpgrade::upgradeImplementation()
 		ai->setLocomotorUpgrade(true);
 }
 
+static void parseLocomotorSetUpgradeTriggeredBy(INI* ini, void* instance, void* store, const void* /*userData*/)
+{
+	LocomotorSetUpgradeModuleData* data = static_cast<LocomotorSetUpgradeModuleData*>(store);
+
+	INI::parseAsciiStringVector(
+		ini,
+		instance,
+		&data->m_upgradeMuxData.m_activationUpgradeNames,
+		nullptr);
+
+	if (data->m_tooltipTriggerUpgradeName.isEmpty() && !data->m_upgradeMuxData.m_activationUpgradeNames.empty())
+	{
+		data->m_tooltipTriggerUpgradeName = data->m_upgradeMuxData.m_activationUpgradeNames[0];
+	}
+}
+
+LocomotorSetUpgradeModuleData::LocomotorSetUpgradeModuleData()
+{
+	m_tooltipTriggerUpgradeName.clear();
+}
+
+void LocomotorSetUpgradeModuleData::buildFieldParse(MultiIniFieldParse& p)
+{
+	ModuleData::buildFieldParse(p);
+
+	static const FieldParse dataFieldParse[] =
+	{
+		{ "TriggeredBy", parseLocomotorSetUpgradeTriggeredBy, nullptr, 0 },
+		{ "ConflictsWith", INI::parseAsciiStringVector, nullptr, offsetof(LocomotorSetUpgradeModuleData, m_upgradeMuxData.m_conflictingUpgradeNames) },
+		{ "RemovesUpgrades", INI::parseAsciiStringVector, nullptr, offsetof(LocomotorSetUpgradeModuleData, m_upgradeMuxData.m_removalUpgradeNames) },
+		{ "FXListUpgrade", INI::parseFXList, nullptr, offsetof(LocomotorSetUpgradeModuleData, m_upgradeMuxData.m_fxListUpgrade) },
+		{ "RequiresAllTriggers", INI::parseBool, nullptr, offsetof(LocomotorSetUpgradeModuleData, m_upgradeMuxData.m_requiresAllTriggers) },
+		{ nullptr, nullptr, nullptr, 0 }
+	};
+
+	p.add(dataFieldParse);
+}
+
 // ------------------------------------------------------------------------------------------------
 /** CRC */
 // ------------------------------------------------------------------------------------------------
