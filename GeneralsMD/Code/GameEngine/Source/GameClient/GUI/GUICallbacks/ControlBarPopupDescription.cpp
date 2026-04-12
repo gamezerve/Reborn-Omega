@@ -1106,13 +1106,30 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			Drawable* draw = TheInGameUI->getFirstSelectedDrawable();
 			Object* selectedObject = draw ? draw->getObject() : nullptr;
 
-			SpecialPowerType spType = specialPowerTemplate->getSpecialPowerType();
+			//SpecialPowerType spType = specialPowerTemplate->getSpecialPowerType();
+			//Object* cooldownObject = selectedObject;
+			//SpecialPowerModuleInterface* spm = nullptr;
+
+			//if (cooldownObject)
+			//{
+			//	spm = cooldownObject->findSpecialPowerModuleInterface(spType);
+			//}
+
+			//if (!spm)
+			//{
+			//	cooldownObject = player->findBestSpecialPowerSourceObject(specialPowerTemplate);
+
+			//	if (cooldownObject)
+			//	{
+			//		spm = cooldownObject->findSpecialPowerModuleInterface(spType);
+			//	}
+			//}
 			Object* cooldownObject = selectedObject;
 			SpecialPowerModuleInterface* spm = nullptr;
 
 			if (cooldownObject)
 			{
-				spm = cooldownObject->findSpecialPowerModuleInterface(spType);
+				spm = cooldownObject->getSpecialPowerModule(specialPowerTemplate);
 			}
 
 			if (!spm)
@@ -1121,7 +1138,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 				if (cooldownObject)
 				{
-					spm = cooldownObject->findSpecialPowerModuleInterface(spType);
+					spm = cooldownObject->getSpecialPowerModule(specialPowerTemplate);
 				}
 			}
 
