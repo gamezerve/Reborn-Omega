@@ -545,7 +545,7 @@ void SinglePlayerLoadScreen::init( GameInfo *game )
 		{
 			backgroundWin->winSetEnabledImage( 0, image );
 		}
-		if (const Image *image = TheMappedImageCollection->findImageByName("LoadingBar_ProgressCenter3"))
+		if (const Image *image = TheMappedImageCollection->findImageByName("LoadingBar_ProgressCenter4"))
 		{
 			m_progressBar->winSetEnabledImage( 6, image );
 		}
