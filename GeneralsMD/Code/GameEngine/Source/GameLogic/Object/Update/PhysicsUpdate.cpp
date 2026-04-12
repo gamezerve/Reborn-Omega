@@ -952,24 +952,33 @@ Real PhysicsBehavior::getVelocityMagnitude() const
  * Return the current velocity magnitude in the forward direction.
  * If velocity is opposite facing vector, the returned value will be negative.
  */
+//Real PhysicsBehavior::getForwardSpeed2D() const
+//{
+//	const Coord3D *dir = getObject()->getUnitDirectionVector2D();
+//
+//	Real vx = m_vel.x * dir->x;
+//	Real vy = m_vel.y * dir->y;
+//
+//	Real dot = vx + vy;
+//
+//	Real speedSquared = vx*vx + vy*vy;
+////	DEBUG_ASSERTCRASH( speedSquared != 0, ("zero speedSquared will overflow sqrtf()!") );// lorenzen... sanity check
+//
+//	Real speed = (Real)sqrtf( speedSquared );
+//
+//	if (dot >= 0.0f)
+//		return speed;
+//
+//	return -speed;
+//}
+
+// Reborn: Potantial fix for units moving faster diagonally 4/13/2026
 Real PhysicsBehavior::getForwardSpeed2D() const
 {
-	const Coord3D *dir = getObject()->getUnitDirectionVector2D();
+	const Coord3D* dir = getObject()->getUnitDirectionVector2D();
 
-	Real vx = m_vel.x * dir->x;
-	Real vy = m_vel.y * dir->y;
-
-	Real dot = vx + vy;
-
-	Real speedSquared = vx*vx + vy*vy;
-//	DEBUG_ASSERTCRASH( speedSquared != 0, ("zero speedSquared will overflow sqrtf()!") );// lorenzen... sanity check
-
-	Real speed = (Real)sqrtf( speedSquared );
-
-	if (dot >= 0.0f)
-		return speed;
-
-	return -speed;
+	Real dot = (m_vel.x * dir->x) + (m_vel.y * dir->y);
+	return dot;
 }
 
 //-------------------------------------------------------------------------------------------------
