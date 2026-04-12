@@ -35,6 +35,16 @@
 // FORWARD REFERENCES /////////////////////////////////////////////////////////////////////////////
 class Thing;
 
+
+class LocomotorSetUpgradeModuleData : public UpgradeModuleData
+{
+public:
+	LocomotorSetUpgradeModuleData();
+	static void buildFieldParse(MultiIniFieldParse& p);
+
+	AsciiString m_tooltipTriggerUpgradeName;
+};
+
 //-------------------------------------------------------------------------------------------------
 /** The default	die module */
 //-------------------------------------------------------------------------------------------------
@@ -42,7 +52,8 @@ class LocomotorSetUpgrade : public UpgradeModule
 {
 
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE( LocomotorSetUpgrade, "LocomotorSetUpgrade" )
-	MAKE_STANDARD_MODULE_MACRO( LocomotorSetUpgrade );
+	//MAKE_STANDARD_MODULE_MACRO( LocomotorSetUpgrade );
+	MAKE_STANDARD_MODULE_MACRO_WITH_MODULE_DATA(LocomotorSetUpgrade, LocomotorSetUpgradeModuleData);
 
 public:
 
@@ -54,3 +65,4 @@ protected:
 	virtual Bool isSubObjectsUpgrade() override { return false; }
 
 };
+
