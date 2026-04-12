@@ -258,6 +258,14 @@ void ControlBar::showBuildTooltipLayout( GameWindow *cmdButton )
 
 }
 
+static Bool shouldUseUpgradeEconomyForTooltipObject(const ThingTemplate* tt)
+{
+	if (!tt)
+		return FALSE;
+
+	return tt->isKindOf(KINDOF_IGNORED_IN_GUI);
+}
+
 static void resetBuildTooltipLayoutToDefaults(WindowLayout* layout)
 {
 	if (!layout)
@@ -364,6 +372,101 @@ static const StealthDetectorUpdateModuleData* getTooltipStealthDetectorData(
 					*sourceThing = spawnedThing;
 				return spawnedDetectorData;
 			}
+		}
+	}
+
+	return nullptr;
+}
+
+static const StealthDetectorUpdateModuleData* getSelectedUnitCameoStealthDetectorData(
+	const ThingTemplate* tt,
+	Object* selectedObject,
+	const ThingTemplate** sourceThing)
+{
+
+	//DEBUG_LOG(("ENTER getSelectedUnitCameoStealthDetectorData tt=%s selectedObject=%p",
+	//	tt ? tt->getName().str() : "<null>",
+	//	selectedObject));
+
+	if (sourceThing)
+		*sourceThing = nullptr;
+
+	if (!tt)
+		return nullptr;
+
+	const StealthDetectorUpdateModuleData* directData =
+		getTooltipStealthDetectorData(tt, sourceThing);
+
+	if (directData)
+		return directData;
+
+	if (!selectedObject)
+		return nullptr;
+
+	const ModuleInfo& behaviorModules = tt->getBehaviorModuleInfo();
+
+	for (Int i = 0; i < behaviorModules.getCount(); ++i)
+	{
+		const ModuleData* moduleData = behaviorModules.getNthData(i);
+		if (!moduleData)
+			continue;
+
+		AsciiString moduleName = behaviorModules.getNthName(i);
+		if (moduleName.compareNoCase("ObjectCreationUpgrade") != 0)
+			continue;
+
+		const ObjectCreationUpgradeModuleData* ocuData =
+			static_cast<const ObjectCreationUpgradeModuleData*>(moduleData);
+
+		if (!ocuData || !ocuData->m_ocl)
+			continue;
+
+		//DEBUG_LOG(("SUC found ObjectCreationUpgrade on %s moduleTagName=%s activationCount=%d",
+		//	tt->getName().str(),
+		//	moduleName.str(),
+		//	(Int)ocuData->m_upgradeMuxData.m_activationUpgradeNames.size()));
+
+		const ThingTemplate* producedThing =
+			ocuData->m_ocl->getFirstCreatedThingTemplate();
+
+		//DEBUG_LOG(("SUC producedThing=%s",
+		//	producedThing ? producedThing->getName().str() : "<null>"));
+
+		//DEBUG_LOG(("SUC tooltipTrigger=%s",
+		//	ocuData->m_tooltipTriggerUpgradeName.isEmpty() ? "<empty>" : ocuData->m_tooltipTriggerUpgradeName.str()));
+
+		if (ocuData->m_tooltipTriggerUpgradeName.isEmpty())
+			continue;
+
+		const UpgradeTemplate* triggerUpgrade =
+			TheUpgradeCenter->findUpgrade(ocuData->m_tooltipTriggerUpgradeName);
+
+		//DEBUG_LOG(("SUC trigger=%s triggerUpgrade=%p",
+		//	ocuData->m_tooltipTriggerUpgradeName.str(),
+		//	triggerUpgrade));
+
+		if (!triggerUpgrade)
+			continue;
+
+		//DEBUG_LOG(("SUC selectedObject=%s hasUpgrade=%d",
+		//	selectedObject->getTemplate()->getName().str(),
+		//	selectedObject->hasUpgrade(triggerUpgrade) ? 1 : 0));
+
+		if (!selectedObject->hasUpgrade(triggerUpgrade))
+			continue;
+
+
+		if (!producedThing)
+			continue;
+
+		const StealthDetectorUpdateModuleData* producedDetectorData =
+			getTooltipStealthDetectorData(producedThing, sourceThing);
+
+		if (producedDetectorData)
+		{
+			if (sourceThing && *sourceThing == nullptr)
+				*sourceThing = producedThing;
+			return producedDetectorData;
 		}
 	}
 
@@ -570,6 +673,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	Real buildTimeValue = 0.0f;
 	Int costDiffSize = 0;
 
+	Bool useUpgradeEconomyForIgnoredGuiObject = FALSE;
 
 	if(commandButton)
 	{
@@ -589,7 +693,20 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 		const ThingTemplate* buildTemplate = thingTemplate;
 		const ThingTemplate* infoTemplate = thingTemplate;
 
-		if (thingTemplate)
+
+
+		const UpgradeTemplate* upgradeTemplate = commandButton->getUpgradeTemplate();
+		const SpecialPowerTemplate* specialPowerTemplate = commandButton->getSpecialPowerTemplate();
+
+		if (commandButton->getCommandType() == GUI_COMMAND_OBJECT_UPGRADE &&
+			upgradeTemplate &&
+			thingTemplate &&
+			shouldUseUpgradeEconomyForTooltipObject(thingTemplate))
+		{
+			useUpgradeEconomyForIgnoredGuiObject = TRUE;
+		}
+
+		if (thingTemplate && !useUpgradeEconomyForIgnoredGuiObject)
 		{
 			const std::vector<AsciiString>& buildVariations = thingTemplate->getBuildVariations();
 
@@ -601,8 +718,6 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			}
 		}
 
-		const UpgradeTemplate* upgradeTemplate = commandButton->getUpgradeTemplate();
-		const SpecialPowerTemplate* specialPowerTemplate = commandButton->getSpecialPowerTemplate();
 
 		ScienceType	st = SCIENCE_INVALID;
 		if( commandButton->getCommandType() != GUI_COMMAND_PLAYER_UPGRADE &&
@@ -681,7 +796,9 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 				//Special case: When building units & buildings, the CanMakeType determines reasons for not being able to buy stuff.
 				//else if( thingTemplate )
-				else if (thingTemplate && commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE)
+				else if (thingTemplate &&
+					commandButton->getCommandType() != GUI_COMMAND_PURCHASE_SCIENCE &&
+					!useUpgradeEconomyForIgnoredGuiObject)
 				{
 					CanMakeType makeType = TheBuildAssistant->canMakeUnit( selectedObject, commandButton->getThingTemplate() );
 					switch( makeType )
@@ -751,7 +868,17 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 							descrip.concat(TheGameText->fetch("TOOLTIP:TooltipNotEnoughMoneyToBuild"));
 						}
 					}
+
+
+
+
 				}
+
+
+
+				
+
+
 				//Special case: When building upgrades
 				else if( upgradeTemplate && !player->hasUpgradeInProduction( upgradeTemplate ) )
 				{
@@ -768,6 +895,55 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 						{
 							descrip.concat( L"\n\n" );
 							descrip.concat( TheGameText->fetch( "TOOLTIP:TooltipNotEnoughMoneyToBuild" ) );
+						}
+					}
+				}
+
+
+				if (thingTemplate)
+				{
+					const ThingTemplate* stealthTemplate =
+						useUpgradeEconomyForIgnoredGuiObject ? thingTemplate : infoTemplate;
+
+					const ThingTemplate* stealthSourceThing = nullptr;
+					const StealthDetectorUpdateModuleData* stealthDetectorData =
+						getTooltipStealthDetectorData(stealthTemplate, &stealthSourceThing);
+
+					Bool allowSpawnProvidedStealthTooltip =
+						(stealthSourceThing == nullptr) ||
+						(stealthSourceThing == stealthTemplate) ||
+						stealthTemplate->isKindOf(KINDOF_SPAWNS_ARE_THE_WEAPONS) ||
+						useUpgradeEconomyForIgnoredGuiObject;
+
+					if (stealthDetectorData && allowSpawnProvidedStealthTooltip)
+					{
+						Real stealthDetectRange = stealthDetectorData->m_detectionRange;
+
+						if (stealthDetectRange <= 0.0f)
+						{
+							stealthDetectRange = stealthTemplate->getVisionRangeForTooltip();
+						}
+
+						if (stealthDetectRange > 0.0f)
+						{
+							if (stealthSourceThing && stealthSourceThing != stealthTemplate)
+							{
+								UnicodeString sourceName;
+
+								if (!stealthSourceThing->getDisplayName().isEmpty())
+									sourceName = stealthSourceThing->getDisplayName();
+								else
+									sourceName.translate(stealthSourceThing->getName());
+
+								stealthDetectText.format(
+									L"Stealth Detection Range: %.0f (via %ls)",
+									stealthDetectRange,
+									sourceName.str());
+							}
+							else
+							{
+								stealthDetectText.format(L"Stealth Detection Range: %.0f", stealthDetectRange);
+							}
 						}
 					}
 				}
@@ -886,7 +1062,9 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				}
 			}
 		}
-		else if (thingTemplate && commandButton->getCommandType() != GUI_COMMAND_PURCHASE_SCIENCE)
+		else if (thingTemplate &&
+			commandButton->getCommandType() != GUI_COMMAND_PURCHASE_SCIENCE &&
+			!useUpgradeEconomyForIgnoredGuiObject)
 		{
 
 			//We are either looking at building a unit or a structure that may or may not have any
@@ -1116,46 +1294,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				}
 			}
 
-			const ThingTemplate* stealthSourceThing = nullptr;
-			const StealthDetectorUpdateModuleData* stealthDetectorData =
-				getTooltipStealthDetectorData(infoTemplate, &stealthSourceThing);
-
-			Bool allowSpawnProvidedStealthTooltip =
-				(stealthSourceThing == nullptr) ||
-				(stealthSourceThing == infoTemplate) ||
-				infoTemplate->isKindOf(KINDOF_SPAWNS_ARE_THE_WEAPONS);
-
-			if (stealthDetectorData && allowSpawnProvidedStealthTooltip)
-			{
-				Real stealthDetectRange = stealthDetectorData->m_detectionRange;
-
-				if (stealthDetectRange <= 0.0f)
-				{
-					stealthDetectRange = infoTemplate->getVisionRangeForTooltip();
-				}
-
-				if (stealthDetectRange > 0.0f)
-				{
-					if (stealthSourceThing && stealthSourceThing != infoTemplate)
-					{
-						UnicodeString sourceName;
-
-						if (!stealthSourceThing->getDisplayName().isEmpty())
-							sourceName = stealthSourceThing->getDisplayName();
-						else
-							sourceName.translate(stealthSourceThing->getName());
-
-						stealthDetectText.format(
-							L"Stealth Detection Range: %.0f (via %ls)",
-							stealthDetectRange,
-							sourceName.str());
-					}
-					else
-					{
-						stealthDetectText.format(L"Stealth Detection Range: %.0f", stealthDetectRange);
-					}
-				}
-			}
+			
 
 UnsignedInt buildLimit = thingTemplate->getMaxSimultaneousOfType();
 if (buildLimit > 0)
@@ -1515,21 +1654,21 @@ if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE)
 				costAndTime.concat(reloadtext);
 			}
 
-			if (!healthText.isEmpty())
+			if (!useUpgradeEconomyForIgnoredGuiObject && !healthText.isEmpty())
 			{
 				if (!costAndTime.isEmpty())
 					costAndTime.concat(L"\n");
 				costAndTime.concat(healthText);
 			}
 
-			if (!powertext.isEmpty())
+			if (!useUpgradeEconomyForIgnoredGuiObject && !powertext.isEmpty())
 			{
 				if (!costAndTime.isEmpty())
 					costAndTime.concat(L"\n");
 				costAndTime.concat(powertext);
 			}
 
-			if (!shroudText.isEmpty())
+			if (!useUpgradeEconomyForIgnoredGuiObject && !shroudText.isEmpty())
 			{
 				if (!costAndTime.isEmpty())
 					costAndTime.concat(L"\n");
@@ -1543,14 +1682,14 @@ if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE)
 				costAndTime.concat(stealthDetectText);
 			}
 
-			if (!locomotorText.isEmpty())
+			if (!useUpgradeEconomyForIgnoredGuiObject && !locomotorText.isEmpty())
 			{
 				if (!costAndTime.isEmpty())
 					costAndTime.concat(L"\n");
 				costAndTime.concat(locomotorText);
 			}
 
-			if (!limittext.isEmpty())
+			if (!useUpgradeEconomyForIgnoredGuiObject && !limittext.isEmpty())
 			{
 				if (!costAndTime.isEmpty())
 					costAndTime.concat(L"\n");
@@ -1962,15 +2101,17 @@ if (thing->getShroudClearingRange() > 0.0f)
 
 const ThingTemplate* stealthSourceThing = nullptr;
 const StealthDetectorUpdateModuleData* stealthDetectorData =
-	getTooltipStealthDetectorData(thing, &stealthSourceThing);
+getSelectedUnitCameoStealthDetectorData(thing, obj, &stealthSourceThing);
 
 if (stealthDetectorData)
 {
 	Real stealthDetectRange = stealthDetectorData->m_detectionRange;
 
-	if (stealthDetectRange <= 0.0f && thing)
+	if (stealthDetectRange <= 0.0f)
 	{
-		stealthDetectRange = thing->getVisionRangeForTooltip();
+		const ThingTemplate* rangeThing = stealthSourceThing ? stealthSourceThing : thing;
+		if (rangeThing)
+			stealthDetectRange = rangeThing->getVisionRangeForTooltip();
 	}
 
 	if (stealthDetectRange > 0.0f)
