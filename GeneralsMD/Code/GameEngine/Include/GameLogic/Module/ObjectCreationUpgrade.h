@@ -49,6 +49,7 @@ public:
 	static void buildFieldParse(MultiIniFieldParse& p);
 
 	const ObjectCreationList *m_ocl;			///< the object creation list to make
+	AsciiString m_tooltipTriggerUpgradeName;
 
 };
 
