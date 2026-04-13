@@ -314,6 +314,7 @@ extern void IMECandidateTextAreaDraw( GameWindow *window, WinInstanceData *instD
 
 // Control Bar ------------------------------------------------------------------------------------
 extern WindowMsgHandledType ControlBarSystem( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
+extern void HandleSelectedUnitCameoClick(); // Reborn: This is a callback for when the player clicks on the selected unit cameo in the control bar
 extern WindowMsgHandledType ControlBarObserverSystem( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
 extern WindowMsgHandledType ControlBarInput( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
 extern WindowMsgHandledType LeftHUDInput( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );

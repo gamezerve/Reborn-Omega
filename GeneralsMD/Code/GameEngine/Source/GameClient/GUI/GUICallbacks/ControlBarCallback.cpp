@@ -330,6 +330,36 @@ WindowMsgHandledType LeftHUDInput( GameWindow *window, UnsignedInt msg,
 
 }
 
+
+void HandleSelectedUnitCameoClick()
+{
+	DEBUG_LOG(("HandleSelectedUnitCameoClick entered"));
+
+	Drawable* draw = TheControlBar->getCurrentSelectedDrawable();
+	Object* obj = draw ? draw->getObject() : nullptr;
+
+	if (obj && obj->getTemplate())
+	{
+		DEBUG_LOG(("SelectedUnitCameo click: internalName=%s obj=%p template=%p",
+			obj->getTemplate()->getName().str(),
+			obj,
+			obj->getTemplate()));
+
+		DEBUG_ASSERTCRASH(false, (
+			"SelectedUnitCameo click: internalName=%s obj=%p template=%p",
+			obj->getTemplate()->getName().str(),
+			obj,
+			obj->getTemplate()));
+	}
+	else
+	{
+		DEBUG_LOG(("SelectedUnitCameo click: obj/template null"));
+
+		DEBUG_ASSERTCRASH(false, (
+			"SelectedUnitCameo click: obj/template null"));
+	}
+}
+
 //-------------------------------------------------------------------------------------------------
 /** Input procedure for the control bar */
 //-------------------------------------------------------------------------------------------------
