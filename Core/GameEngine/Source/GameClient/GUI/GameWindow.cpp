@@ -51,6 +51,7 @@
 #include "Common/AudioEventRTS.h"
 #include "Common/Language.h"
 #include "GameClient/WindowLayout.h"
+#include "GameClient/GUICallbacks.h"
 #include "GameClient/GameWindow.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/Gadget.h"
@@ -1541,6 +1542,18 @@ WindowMsgHandledType GameWinDefaultInput( GameWindow *window, UnsignedInt msg,
 WindowMsgHandledType GameWinBlockInput( GameWindow *window, UnsignedInt msg,
 													WindowMsgData mData1, WindowMsgData mData2 )
 {
+
+	if (msg == GWM_LEFT_UP)
+	{
+		const Int cameoClickWindowId = TheNameKeyGenerator->nameToKey("ControlBar.wnd:CameoWindow");
+		const Int currentId = window ? window->winGetWindowId() : 0;
+
+		if (currentId == cameoClickWindowId)
+		{
+			HandleSelectedUnitCameoClick();
+		}
+	}
+
 	if (msg == GWM_CHAR || msg == GWM_MOUSE_POS)
 		return MSG_IGNORED;
 
