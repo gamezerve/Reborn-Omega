@@ -97,6 +97,8 @@ public:
 
 	const RGBColor* getPreferredColor() const { return &m_preferredColor; }
 
+	AsciiString getRebornSkirmishColor() const { return m_rebornSkirmishColor; }
+
 	AsciiString getStartingBuilding() const { return m_startingBuilding; }
 	AsciiString getStartingUnit( Int i ) const;
 
@@ -166,6 +168,7 @@ private:
 	Handicap				m_handicap;						///< initial baseline for Player capabilities
 	Money						m_money;							///< starting credits, if any
 	RGBColor				m_preferredColor;			///< our preferred starting color
+	AsciiString			m_rebornSkirmishColor;	///< preferred multiplayer/skirmish color name from Multiplayer.ini
 	AsciiString			m_startingBuilding;		///< template name of our multiplayer start building (con yard, i'd expect)
 	AsciiString			m_startingUnits[MAX_MP_STARTING_UNITS];		///< template names of our multiplayer start units
 	ProductionChangeMap			m_productionCostChanges;
