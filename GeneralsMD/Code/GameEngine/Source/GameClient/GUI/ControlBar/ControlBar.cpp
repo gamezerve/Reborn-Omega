@@ -1908,6 +1908,7 @@ void ControlBar::update()
 			}
 
 		Object* obj = drawToEvaluateFor ? drawToEvaluateFor->getObject() : nullptr;
+		m_currentSelectedDrawable = drawToEvaluateFor;
 		setPortraitByObject(obj);
 
 		const Coord3D* exitPosition = nullptr;
