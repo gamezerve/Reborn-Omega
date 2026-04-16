@@ -2506,12 +2506,22 @@ const CommandButton *ControlBar::findCommandButton( const AsciiString& name )
 //-------------------------------------------------------------------------------------------------
 /** Find existing command set by name */
 //-------------------------------------------------------------------------------------------------
-const CommandSet *ControlBar::findCommandSet( const AsciiString& name )
+const CommandSet* ControlBar::findCommandSet(const AsciiString& name) const
 {
-	CommandSet *set = findNonConstCommandSet(name);
-	if (set)
-		set = (CommandSet*)set->friend_getFinalOverride();
-	return set;
+	const CommandSet* set = m_commandSets;
+
+	while (set)
+	{
+		if (set->getName() == name)
+		{
+			set = (const CommandSet*)set->friend_getFinalOverride();
+			return set;
+		}
+
+		set = set->friend_getNext();
+	}
+
+	return nullptr;
 }
 
 //-------------------------------------------------------------------------------------------------

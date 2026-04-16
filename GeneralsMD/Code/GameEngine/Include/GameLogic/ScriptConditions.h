@@ -179,6 +179,8 @@ protected:
 	Bool evaluateSkirmishSupplySourceAttacked(Parameter *pSkirmishPlayerParm );
 	Bool evaluateSkirmishStartPosition(Parameter *pSkirmishPlayerParm, Parameter *startNdx );
 
+	// Reborn: Condition Script
+	Bool evaluateRebornDummy();
 
 	// Stubs
 	Bool evaluateMissionAttempts(Parameter *pPlayerParm, Parameter *pComparisonParm, Parameter *pAttemptsParm);
