@@ -33,7 +33,7 @@ public:
 
 	ListType(void) {m_objType=BOGUS_TYPE;m_playerIndex=0;m_groupIndex = 0; m_scriptIndex=0;}
 
-	Int ListToInt(void) { return((m_objType<<28)+(m_playerIndex<<24)+(m_groupIndex<<12)+m_scriptIndex);}
+	Int ListToInt(void) const { return((m_objType<<28)+(m_playerIndex<<24)+(m_groupIndex<<12)+m_scriptIndex);}
 
 	void IntToList(int i) {m_objType = ((i)>>28)&0x0F; m_playerIndex = ((i)>>24)&0x0F; m_groupIndex = ((i)>>12)&0x0FFF; m_scriptIndex = (i)&0x0FFF;}
 };
@@ -42,6 +42,7 @@ class ScriptList;
 class ScriptGroup;
 class Script;
 class Parameter;
+class SearchResultsDialog;
 
 /** Class Definition for overridden Tree control that
     supports Right-click context sensitive menu.*/
@@ -86,6 +87,11 @@ public:
 	static void patchScriptParametersForGC(Script *pScript);
 	static void checkParametersForGC(void);
 
+	void GoToSearchResult(const ListType& sel);
+	void CollectSearchResults(const CString& text, SearchResultsDialog& dlg);
+
+	void NotifySearchDialogDestroyed();
+	void OpenSearchResultsDialog();
 
 	/// To allow CSDTreeCtrl access to these member functions of ScriptDialog
 	Script *friend_getCurScript(void);
@@ -101,6 +107,8 @@ protected:
 	Bool m_autoUpdateWarnings;	///< flag whether we should updateWarnings on script editor actions.
 
 	HTREEITEM m_dragItem;
+
+	SearchResultsDialog* m_searchResultsDialog;
 
 	MapObject *m_firstReadObject;
 	PolygonTrigger *m_firstTrigger;
@@ -126,6 +134,13 @@ protected:
 	Bool updateIcons(HTREEITEM hItem);
 	void markWaypoint(MapObject *pObj);
 
+	void BuildSelectionsForItem(HTREEITEM hItem, ListType& playerSel, ListType& folderSel, ListType& itemSel);
+	void BuildSearchableTextForItem(HTREEITEM hItem, CString& searchableText, CString& playerText, CString& folderText, CString& scriptText);
+
+	void FindTreeItemsContains(HTREEITEM hItem, const CString& text, CString& results, int& matchCount);
+	void CollectTreeItemsContains(HTREEITEM hItem, const CString& text, SearchResultsDialog& dlg);
+	void GetItemDisplayParts(HTREEITEM hItem, CString& playerText, CString& folderText, CString& scriptText);
+
 	static Bool ParseObjectsDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData);
 	static Bool ParseObjectDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData);
 	static Bool ParsePolygonTriggersDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData);
@@ -146,6 +161,7 @@ protected:
 	afx_msg void OnDelete();
 	afx_msg void OnVerify();
 	afx_msg void OnPatchGC();
+	afx_msg void OnSearch();
 	afx_msg void OnAutoVerify();
 	afx_msg void OnSave();
 	afx_msg void OnLoad();

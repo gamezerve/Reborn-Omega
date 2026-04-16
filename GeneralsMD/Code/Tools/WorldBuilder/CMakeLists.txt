@@ -69,6 +69,7 @@ set(WORLDBUILDER_SRC
     "src/ScriptActionsTrue.cpp"
     "src/ScriptConditions.cpp"
     "src/ScriptDialog.cpp"
+    "src/SearchResultsDialog.cpp"
     "src/ScriptProperties.cpp"
     "src/SelectMacrotexture.cpp"
     "src/ShadowOptions.cpp"
