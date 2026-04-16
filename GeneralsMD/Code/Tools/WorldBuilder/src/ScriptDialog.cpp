@@ -24,6 +24,7 @@
 #include "WorldBuilderDoc.h"
 #include "CUndoable.h"
 #include "ScriptDialog.h"
+#include "SearchResultsDialog.h"
 #include "GameLogic/ScriptEngine.h"
 #include "ScriptProperties.h"
 #include "ScriptConditions.h"
@@ -155,6 +156,9 @@ ScriptDialog::ScriptDialog(CWnd* pParent /*=nullptr*/)
 {
 	m_draggingTreeView = false;
 	m_autoUpdateWarnings = true;
+
+	m_searchResultsDialog = nullptr;
+
 	//{{AFX_DATA_INIT(ScriptDialog)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
@@ -162,8 +166,17 @@ ScriptDialog::ScriptDialog(CWnd* pParent /*=nullptr*/)
 
 ScriptDialog::~ScriptDialog()
 {
+	if (m_searchResultsDialog != nullptr)
+	{
+		if (::IsWindow(m_searchResultsDialog->GetSafeHwnd()))
+		{
+			m_searchResultsDialog->DestroyWindow();
+		}
+		m_searchResultsDialog = nullptr;
+	}
+
 	EditParameter::setCurSidesList(nullptr);
-	m_staticThis=nullptr;
+	m_staticThis = nullptr;
 }
 
 
@@ -186,6 +199,7 @@ BEGIN_MESSAGE_MAP(ScriptDialog, CDialog)
 	ON_BN_CLICKED(IDC_DELETE, OnDelete)
 	ON_BN_CLICKED(IDC_VERIFY, OnVerify)
 	ON_BN_CLICKED(IDC_PATCH_GC, OnPatchGC)
+	ON_BN_CLICKED(IDC_SEARCH, OnSearch)
 	ON_BN_CLICKED(IDC_AUTO_VERIFY, OnAutoVerify)
 	ON_BN_CLICKED(IDC_SAVE, OnSave)
 	ON_BN_CLICKED(IDC_LOAD, OnLoad)
@@ -352,6 +366,215 @@ void ScriptDialog::OnPatchGC()
 	{
 
 	}*/
+}
+
+void ScriptDialog::OnSearch()
+{
+	OpenSearchResultsDialog();
+}
+
+void ScriptDialog::CollectTreeItemsContains(HTREEITEM hItem, const CString& text, SearchResultsDialog& dlg)
+{
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	if (pTree == nullptr)
+		return;
+
+	CString searchableText;
+	CString playerText;
+	CString folderText;
+	CString scriptText;
+
+	BuildSearchableTextForItem(hItem, searchableText, playerText, folderText, scriptText);
+
+	CString lowerSearchable = searchableText;
+	CString lowerSearch = text;
+
+	lowerSearchable.MakeLower();
+	lowerSearch.MakeLower();
+
+	if (lowerSearchable.Find(lowerSearch) != -1)
+	{
+		ListType playerSel;
+		ListType folderSel;
+		ListType itemSel;
+
+		BuildSelectionsForItem(hItem, playerSel, folderSel, itemSel);
+
+		dlg.AddResult(
+			playerText,
+			folderText,
+			scriptText,
+			playerSel,
+			folderSel,
+			itemSel);
+	}
+
+	HTREEITEM hChild = pTree->GetChildItem(hItem);
+	while (hChild != nullptr)
+	{
+		CollectTreeItemsContains(hChild, text, dlg);
+		hChild = pTree->GetNextSiblingItem(hChild);
+	}
+}
+
+void ScriptDialog::BuildSelectionsForItem(HTREEITEM hItem, ListType& playerSel, ListType& folderSel, ListType& itemSel)
+{
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	if (pTree == nullptr || hItem == nullptr)
+		return;
+
+	itemSel.IntToList((int)pTree->GetItemData(hItem));
+
+	playerSel = ListType();
+	folderSel = ListType();
+
+	if (itemSel.m_objType == ListType::PLAYER_TYPE)
+	{
+		playerSel = itemSel;
+		return;
+	}
+
+	playerSel.m_objType = ListType::PLAYER_TYPE;
+	playerSel.m_playerIndex = itemSel.m_playerIndex;
+	playerSel.m_groupIndex = 0;
+	playerSel.m_scriptIndex = 0;
+
+	if (itemSel.m_objType == ListType::GROUP_TYPE)
+	{
+		folderSel = itemSel;
+		return;
+	}
+
+	if (itemSel.m_objType == ListType::SCRIPT_IN_GROUP_TYPE)
+	{
+		folderSel.m_objType = ListType::GROUP_TYPE;
+		folderSel.m_playerIndex = itemSel.m_playerIndex;
+		folderSel.m_groupIndex = itemSel.m_groupIndex;
+		folderSel.m_scriptIndex = 0;
+	}
+}
+
+void ScriptDialog::BuildSearchableTextForItem(HTREEITEM hItem, CString& searchableText, CString& playerText, CString& folderText, CString& scriptText)
+{
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	if (pTree == nullptr || hItem == nullptr)
+		return;
+
+	ListType lt;
+	lt.IntToList((int)pTree->GetItemData(hItem));
+
+	CString itemText = pTree->GetItemText(hItem);
+
+	playerText.Empty();
+	folderText.Empty();
+	scriptText.Empty();
+	searchableText.Empty();
+
+	if (lt.m_objType == ListType::PLAYER_TYPE)
+	{
+		playerText = itemText;
+		searchableText = playerText;
+		return;
+	}
+
+	if (lt.m_objType == ListType::GROUP_TYPE)
+	{
+		folderText = itemText;
+
+		HTREEITEM hParent = pTree->GetParentItem(hItem);
+		if (hParent != nullptr)
+		{
+			playerText = pTree->GetItemText(hParent);
+		}
+
+		searchableText = playerText + " " + folderText;
+		return;
+	}
+
+	if (lt.m_objType == ListType::SCRIPT_IN_PLAYER_TYPE || lt.m_objType == ListType::SCRIPT_IN_GROUP_TYPE)
+	{
+		scriptText = itemText;
+
+		HTREEITEM hParent = pTree->GetParentItem(hItem);
+		if (hParent != nullptr)
+		{
+			ListType parentType;
+			parentType.IntToList((int)pTree->GetItemData(hParent));
+
+			if (parentType.m_objType == ListType::GROUP_TYPE)
+			{
+				folderText = pTree->GetItemText(hParent);
+
+				HTREEITEM hGrandParent = pTree->GetParentItem(hParent);
+				if (hGrandParent != nullptr)
+				{
+					playerText = pTree->GetItemText(hGrandParent);
+				}
+			}
+			else if (parentType.m_objType == ListType::PLAYER_TYPE)
+			{
+				playerText = pTree->GetItemText(hParent);
+			}
+		}
+
+		searchableText = playerText + " " + folderText + " " + scriptText;
+
+		const ListType oldSel = m_curSelection;
+		m_curSelection = lt;
+
+		Script* pScript = getCurScript();
+		if (pScript != nullptr)
+		{
+			AsciiString uiText = pScript->getUiText();
+			AsciiString comment = pScript->getComment();
+
+			if (!uiText.isEmpty())
+			{
+				searchableText += " ";
+				searchableText += uiText.str();
+			}
+
+			if (!comment.isEmpty())
+			{
+				searchableText += " ";
+				searchableText += comment.str();
+			}
+		}
+
+		m_curSelection = oldSel;
+	}
+}
+
+void ScriptDialog::GetItemDisplayParts(HTREEITEM hItem, CString& playerText, CString& folderText, CString& scriptText)
+{
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	if (pTree == nullptr || hItem == nullptr)
+		return;
+
+	scriptText = pTree->GetItemText(hItem);
+
+	HTREEITEM hParent = pTree->GetParentItem(hItem);
+	if (hParent != nullptr)
+	{
+		ListType parentType;
+		parentType.IntToList((int)pTree->GetItemData(hParent));
+
+		if (parentType.m_objType == ListType::GROUP_TYPE)
+		{
+			folderText = pTree->GetItemText(hParent);
+
+			HTREEITEM hGrandParent = pTree->GetParentItem(hParent);
+			if (hGrandParent != nullptr)
+			{
+				playerText = pTree->GetItemText(hGrandParent);
+			}
+		}
+		else if (parentType.m_objType == ListType::PLAYER_TYPE)
+		{
+			playerText = pTree->GetItemText(hParent);
+			folderText = "";
+		}
+	}
 }
 
 /**Force a pass over all the scripts to make sure no warnings.  I moved this
@@ -828,6 +1051,51 @@ void ScriptDialog::updateSelection(ListType sel)
 	if (item) {
 		pTree->SelectItem(item);
 	}
+}
+
+void ScriptDialog::GoToSearchResult(const ListType& sel)
+{
+	updateSelection(sel);
+}
+
+void ScriptDialog::CollectSearchResults(const CString& text, SearchResultsDialog& dlg)
+{
+	CTreeCtrl* pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
+	if (pTree == nullptr)
+		return;
+
+	HTREEITEM hRoot = pTree->GetRootItem();
+	while (hRoot != nullptr)
+	{
+		CollectTreeItemsContains(hRoot, text, dlg);
+		hRoot = pTree->GetNextSiblingItem(hRoot);
+	}
+}
+
+void ScriptDialog::OpenSearchResultsDialog()
+{
+	if (m_searchResultsDialog != nullptr)
+	{
+		HWND hWnd = m_searchResultsDialog->GetSafeHwnd();
+		if (::IsWindow(hWnd))
+		{
+			m_searchResultsDialog->ShowWindow(SW_SHOW);
+			m_searchResultsDialog->SetForegroundWindow();
+			return;
+		}
+
+		m_searchResultsDialog = nullptr;
+	}
+
+	m_searchResultsDialog = new SearchResultsDialog(this);
+	m_searchResultsDialog->SetOwnerDialog(this);
+	m_searchResultsDialog->Create(IDD_SEARCH_RESULTS, this);
+	m_searchResultsDialog->ShowWindow(SW_SHOW);
+}
+
+void ScriptDialog::NotifySearchDialogDestroyed()
+{
+	m_searchResultsDialog = nullptr;
 }
 
 HTREEITEM ScriptDialog::findItem(ListType sel, Bool failSafe)

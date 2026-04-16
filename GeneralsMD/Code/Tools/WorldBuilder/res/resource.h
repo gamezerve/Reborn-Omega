@@ -575,6 +575,8 @@
 #define IDC_STATIC_MAPOBJECT_SOUND      1381
 #define IDC_STATIC_MAPOBJECT_VISUAL     1382
 #define IDC_MAPOBJECT_DISTANCE          1383
+#define IDC_SEARCH                      12345  // Reborn: New search function for World Builder
+#define IDC_SEARCH_TEXT                 12346  // Reborn: New search function for World Builder
 #define ID_BRUSH_TOOL                   32771
 #define IDM_ShowGrid                    32772
 #define ID_FEATHERTOOL                  32791
@@ -718,6 +720,12 @@
 #define ID_SELECTLAYEROBJECT            33344
 #define ID_SELECTACTIVELAYER            33345
 #define ID_VIEW_SHOW_SOUND_CIRCLES      33346
+#define IDD_SEARCH_RESULTS              50000  // Reborn: New search function for World Builder
+#define IDC_RESULTS_LIST                50001  // Reborn: New search function for World Builder
+#define IDC_GO_TO_RESULT                50002  // Reborn: New search function for World Builder
+#define IDC_RESULTS_TREE                50003  // Reborn: New search function for World Builder
+#define IDC_EXPAND_ALL                  50004  // Reborn: New search function for World Builder
+#define IDC_COLLAPSE_ALL                50005  // Reborn: New search function for World Builder
 #define IDS_NEW                         61446
 #define IDS_RESIZE                      61447
 #define IDS_REMOVING_INUSE_TEAM         61448
