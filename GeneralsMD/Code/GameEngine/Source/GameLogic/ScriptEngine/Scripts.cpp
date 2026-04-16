@@ -2356,15 +2356,21 @@ AsciiString ScriptAction::getUiText()
 	Int numStrings = getUiStrings(strings);
 	Int i;
 
+	m_hasWarnings = false;
+
+	if (getCustomWarningText().isNotEmpty()) {
+		m_hasWarnings = true;
+	}
+
 	if (m_hasWarnings) {
 		uiText = "[???]";
 	}
 
-	for (i=0; i<MAX_PARMS; i++) {
-		if (i<numStrings) {
+	for (i = 0; i < MAX_PARMS; i++) {
+		if (i < numStrings) {
 			uiText.concat(strings[i]);
 		}
-		if (i<m_numParms) {
+		if (i < m_numParms) {
 			uiText.concat(m_parms[i]->getUiText());
 		}
 	}
@@ -2678,3 +2684,27 @@ const char* const TheObjectFlagsNames[] =
 	"Player Targetable",
 	nullptr,
 };
+
+AsciiString ScriptAction::getCustomWarningText() const
+{
+	AsciiString warningText;
+
+	if (m_actionType != ACTION_REBORN_RANDOM_OBJECT_USE_BUTTON) {
+		return warningText;
+	}
+
+	const AsciiString& button1 = m_parms[2]->getString();
+	const AsciiString& button2 = m_parms[3]->getString();
+	const AsciiString& button3 = m_parms[4]->getString();
+
+	const Bool hasButton1 = button1.isNotEmpty() && button1.compare("???");
+	const Bool hasButton2 = button2.isNotEmpty() && button2.compare("???");
+	const Bool hasButton3 = button3.isNotEmpty() && button3.compare("???");
+
+	if (!hasButton1 && !hasButton2 && !hasButton3) {
+		warningText = "At least one command button must be specified.";
+		return warningText;
+	}
+
+	return warningText;
+}

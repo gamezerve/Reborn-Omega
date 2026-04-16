@@ -201,6 +201,10 @@ AsciiString EditParameter::getWarningText(Parameter *pParm, Bool isAction)
 			}
 			break;
 		case Parameter::COMMAND_BUTTON:
+			if (uiString.isEmpty() || !uiString.compare("???")) {
+				break;
+			}
+
 			if (!loadCommandButtons(nullptr, uiString)) {
 				warningText.format("Command button '%s' does not exist.", uiString.str());
 			}

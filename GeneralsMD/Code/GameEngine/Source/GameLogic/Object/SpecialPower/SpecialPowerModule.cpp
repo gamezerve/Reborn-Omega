@@ -388,12 +388,12 @@ Bool SpecialPowerModule::isScriptOnly() const
 //-------------------------------------------------------------------------------------------------
 void SpecialPowerModule::startPowerRecharge()
 {
-	DEBUG_LOG(("START RECHARGE: object=%s power=%s currentFrame=%u reloadTime=%u oldReadyFrame=%u",
+	/*DEBUG_LOG(("START RECHARGE: object=%s power=%s currentFrame=%u reloadTime=%u oldReadyFrame=%u",
 		getObject() ? getObject()->getTemplate()->getName().str() : "<null>",
 		getSpecialPowerTemplate() ? getSpecialPowerTemplate()->getName().str() : "<null>",
 		TheGameLogic->getFrame(),
 		getSpecialPowerTemplate() ? getSpecialPowerTemplate()->getReloadTime() : 0,
-		m_availableOnFrame));
+		m_availableOnFrame));*/
 
 #if defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 	// this is a cheat ... remove this for release!
@@ -430,11 +430,11 @@ void SpecialPowerModule::startPowerRecharge()
 		// set the frame we will be 100% available on now
 		m_availableOnFrame = TheGameLogic->getFrame() + getSpecialPowerTemplate()->getReloadTime();
 
-		DEBUG_LOG(("END RECHARGE: object=%s power=%s newReadyFrame=%u currentFrame=%u",
+		/*DEBUG_LOG(("END RECHARGE: object=%s power=%s newReadyFrame=%u currentFrame=%u",
 			getObject() ? getObject()->getTemplate()->getName().str() : "<null>",
 			getSpecialPowerTemplate() ? getSpecialPowerTemplate()->getName().str() : "<null>",
 			m_availableOnFrame,
-			TheGameLogic->getFrame()));
+			TheGameLogic->getFrame()));*/
 	}
 }
 

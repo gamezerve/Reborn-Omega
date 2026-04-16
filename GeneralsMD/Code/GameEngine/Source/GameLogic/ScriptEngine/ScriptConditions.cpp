@@ -2718,6 +2718,11 @@ Bool ScriptConditions::evaluatePlayerLostObjectType(Parameter *pPlayerParm, Para
 	return (sumOfObjs < currentCount);
 }
 
+Bool ScriptConditions::evaluateRebornDummy()
+{
+	return false;
+}
+
 //-------------------------------------------------------------------------------------------------
 /** Evaluate a condition */
 //-------------------------------------------------------------------------------------------------
@@ -2727,6 +2732,9 @@ Bool ScriptConditions::evaluateCondition( Condition *pCondition )
 		default:
 			DEBUG_CRASH(("Unknown ScriptCondition type %d", pCondition->getConditionType()));
 			return false;
+
+		case Condition::CONDITION_REBORN_DUMMY:
+			return evaluateRebornDummy();
 		case Condition::PLAYER_ALL_DESTROYED:
 			return evaluateAllDestroyed(pCondition->getParameter(0));
 		case Condition::PLAYER_ALL_BUILDFACILITIES_DESTROYED:

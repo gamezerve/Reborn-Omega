@@ -4089,6 +4089,22 @@ void ScriptEngine::init()
   curTemplate->m_uiStrings[0] = "Disable ";
   curTemplate->m_uiStrings[1] = "'s ambient sound.";
 
+	curTemplate = &m_actionTemplates[ScriptAction::ACTION_REBORN_RANDOM_OBJECT_USE_BUTTON];
+	curTemplate->m_internalName = "ACTION_REBORN_RANDOM_OBJECT_USE_BUTTON";
+	curTemplate->m_uiName = "Reborn/Random Object Use Command Button";
+	curTemplate->m_numParameters = 5;
+	curTemplate->m_parameters[0] = Parameter::SIDE;
+	curTemplate->m_parameters[1] = Parameter::OBJECT_TYPE;
+	curTemplate->m_parameters[2] = Parameter::COMMAND_BUTTON;
+	curTemplate->m_parameters[3] = Parameter::COMMAND_BUTTON;
+	curTemplate->m_parameters[4] = Parameter::COMMAND_BUTTON;
+	curTemplate->m_numUiStrings = 6;
+	curTemplate->m_uiStrings[0] = "For player ";
+	curTemplate->m_uiStrings[1] = ", find a random usable object of type ";
+	curTemplate->m_uiStrings[2] = " and use command button ";
+	curTemplate->m_uiStrings[3] = ", or ";
+	curTemplate->m_uiStrings[4] = ", or ";
+	curTemplate->m_uiStrings[5] = ".";
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -4101,6 +4117,14 @@ void ScriptEngine::init()
 	*/
 
 	// Set up condition templates.
+
+	curTemplate = &m_conditionTemplates[Condition::CONDITION_REBORN_DUMMY];
+	curTemplate->m_internalName = "CONDITION_REBORN_DUMMY";
+	curTemplate->m_uiName = "Reborn/Dummy Reborn Condition";
+	curTemplate->m_numParameters = 0;
+	curTemplate->m_numUiStrings = 1;
+	curTemplate->m_uiStrings[0] = "Dummy Reborn Condition.";
+
 	curTemplate = &m_conditionTemplates[Condition::CONDITION_FALSE];
 	curTemplate->m_internalName = "CONDITION_FALSE";
 	curTemplate->m_uiName = "Scripting_/ False.";

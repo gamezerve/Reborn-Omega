@@ -543,6 +543,8 @@ public:
 		TEAM_SET_BOOBYTRAPPED,										///< Add boobytrap to all units on team.
 		SHOW_WEATHER,															///< show map defined weather.
 		AI_PLAYER_BUILD_TYPE_NEAREST_TEAM,				///< Tell the ai player to build an object nearest team.
+		ACTION_REBORN_RANDOM_OBJECT_USE_BUTTON,
+
 		// add new items here, please
 		NUM_ITEMS
 	};
@@ -587,6 +589,8 @@ public:
 	static Bool ParseActionDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData);
 	static void WriteActionFalseDataChunk(DataChunkOutput &chunkWriter, ScriptAction *pAct);
 	static Bool ParseActionFalseDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData);
+
+	AsciiString getCustomWarningText() const;
 
 protected:
 	static ScriptAction *ParseAction(DataChunkInput &file, DataChunkInfo *info, void *userData);
@@ -970,6 +974,7 @@ public:
 		SUPPLY_SOURCE_ATTACKED,									// True if our supply depot or dozer near depot was attacked.
 		START_POSITION_IS,											// True if our start position matches.
 		NAMED_HAS_FREE_CONTAINER_SLOTS,					///< Kris -- Checks if any given container has any free slots.
+		CONDITION_REBORN_DUMMY,
 
 		NUM_ITEMS		 // Always the last condition.
 	};

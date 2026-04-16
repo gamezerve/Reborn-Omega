@@ -1198,6 +1198,40 @@ CommandAvailability ControlBar::getCommandAvailability( const CommandButton *com
 
 	Bool queueMaxed = pu ? ( pu->getProductionCount() == MAX_BUILD_QUEUE_BUTTONS ) : FALSE;
 
+	if (pu && BitIsSet(command->getOptions(), EXTENSION_QUEUE_EXCLUSIVE))
+	{
+		const UpgradeTemplate* thisUpgrade = command->getUpgradeTemplate();
+		const CommandSet* commandSet = findCommandSet(obj->getCommandSetString());
+
+		if (thisUpgrade && commandSet)
+		{
+			for (Int i = 0; i < MAX_COMMANDS_PER_SET; i++)
+			{
+				const CommandButton* otherButton = commandSet->getCommandButton(i);
+				if (!otherButton)
+					continue;
+
+				if (otherButton == command)
+					continue;
+
+				if (!BitIsSet(otherButton->getOptions(), EXTENSION_QUEUE_EXCLUSIVE))
+					continue;
+
+				if (otherButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE)
+					continue;
+
+				const UpgradeTemplate* otherUpgrade = otherButton->getUpgradeTemplate();
+				if (!otherUpgrade)
+					continue;
+
+				if (pu->isUpgradeInQueue(otherUpgrade))
+				{
+					return COMMAND_RESTRICTED;
+				}
+			}
+		}
+	}
+
 	switch( command->getCommandType() )
 	{
 		case GUI_COMMAND_DOZER_CONSTRUCT:

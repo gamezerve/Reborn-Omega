@@ -100,6 +100,7 @@ enum CommandOption CPP_11(: Int)
 	USES_MINE_CLEARING_WEAPONSET= 0x00200000,	// uses the special mine-clearing weaponset, even if not current
 	CAN_USE_WAYPOINTS						= 0x00400000, // button has option to use a waypoint path
 	MUST_BE_STOPPED							= 0x00800000, // Unit must be stopped in order to be able to use button.
+	EXTENSION_QUEUE_EXCLUSIVE   = 0x01000000, // Reborn: if one such extension upgrade is in queue, other extension buttons of same group are disabled
 };
 
 #ifdef DEFINE_COMMAND_OPTION_NAMES
@@ -133,6 +134,7 @@ static const char *const TheCommandOptionNames[] =
 	"USES_MINE_CLEARING_WEAPONSET",
 	"CAN_USE_WAYPOINTS",
 	"MUST_BE_STOPPED",
+	"EXTENSION_QUEUE_EXCLUSIVE",
 
 	nullptr
 };
@@ -443,7 +445,10 @@ public:
 	const CommandButton* getCommandButton(Int i) const;
 
 	// only for the control bar.
+	//CommandSet* friend_getNext() { return m_next; }
 	CommandSet* friend_getNext() { return m_next; }
+	const CommandSet* friend_getNext() const { return m_next; }
+
 	const FieldParse* friend_getFieldParse() const { return m_commandSetFieldParseTable; }
 	void friend_addToList(CommandSet** listHead);
 
@@ -709,7 +714,8 @@ public:
 	const CommandButton *findCommandButton( const AsciiString& name );
 
 	/// find existing command set
-	const CommandSet *findCommandSet( const AsciiString& name );
+	//const CommandSet *findCommandSet( const AsciiString& name );
+	const CommandSet* findCommandSet(const AsciiString& name) const;
 
 	void showPurchaseScience();
 	void hidePurchaseScience();

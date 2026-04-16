@@ -75,6 +75,7 @@
 #include "GameLogic/Module/SupplyWarehouseDockUpdate.h"
 #include "GameLogic/Module/TransportContain.h"
 #include "GameLogic/Module/MobNexusContain.h"
+#include "GameLogic/Module/ProductionUpdate.h"
 #include "GameLogic/Module/RailroadGuideAIUpdate.h"
 #include "GameLogic/Module/StickyBombUpdate.h"
 #include "GameLogic/ObjectTypes.h"
@@ -6534,6 +6535,298 @@ void ScriptActions::doNamedSetTrainHeld( const AsciiString &locoName, const Bool
 }
 
 
+void ScriptActions::doRebornRandomObjectUseButton(
+	const AsciiString& playerName,
+	const AsciiString& objectType,
+	const AsciiString& commandButton1,
+	const AsciiString& commandButton2,
+	const AsciiString& commandButton3
+)
+{
+	DEBUG_LOG(("Reborn Rand Obj Use Button Script: player=%s objectType=%s button1=%s button2=%s button3=%s\n",
+		playerName.str(),
+		objectType.str(),
+		commandButton1.str(),
+		commandButton2.str(),
+		commandButton3.str()));
+
+	Player* player = TheScriptEngine->getPlayerFromAsciiString(playerName);
+	if (!player) {
+		DEBUG_LOG(("Reborn Rand Obj Use Button Script: player not found\n"));
+		return;
+	}
+
+	const ThingTemplate* thingTemplate = TheThingFactory->findTemplate(objectType);
+	if (!thingTemplate) {
+		DEBUG_LOG(("Reborn Rand Obj Use Button Script: thing template not found for %s\n", objectType.str()));
+		return;
+	}
+
+	std::vector<Object*> candidateObjects;
+	candidateObjects.reserve(64);
+
+	for (Object* obj = TheGameLogic->getFirstObject(); obj; obj = obj->getNextObject()) {
+		if (obj->getControllingPlayer() != player) {
+			continue;
+		}
+
+		const ThingTemplate* objTemplate = obj->getTemplate();
+		if (!objTemplate) {
+			continue;
+		}
+
+		if (objTemplate == thingTemplate) {
+			if (obj->getStatusBits().test(OBJECT_STATUS_UNDER_CONSTRUCTION) ||
+				obj->getStatusBits().test(OBJECT_STATUS_SOLD)) {
+				DEBUG_LOG(("Reborn Rand Obj Use Button Script: skipping object=%s id=%d because it is under construction or sold\n",
+					objTemplate->getName().str(),
+					obj->getID()));
+				continue;
+			}
+
+			candidateObjects.push_back(obj);
+		}
+	}
+
+	DEBUG_LOG(("Reborn Rand Obj Use Button Script: candidate object count=%d\n", candidateObjects.size()));
+
+	while (!candidateObjects.empty()) {
+		Int objectIndex = GameLogicRandomValue(0, (Int)candidateObjects.size() - 1);
+		Object* obj = candidateObjects[objectIndex];
+		candidateObjects[objectIndex] = candidateObjects.back();
+		candidateObjects.pop_back();
+
+		if (!obj) {
+			continue;
+		}
+
+		const ThingTemplate* objTemplate = obj->getTemplate();
+		if (!objTemplate) {
+			continue;
+		}
+
+		DEBUG_LOG(("Reborn Rand Obj Use Button Script: checking object=%s id=%d\n",
+			objTemplate->getName().str(),
+			obj->getID()));
+
+		const CommandSet* commandSet = TheControlBar->findCommandSet(obj->getCommandSetString());
+		if (!commandSet) {
+			DEBUG_LOG(("Reborn Rand Obj Use Button Script: object=%s has no command set\n",
+				objTemplate->getName().str()));
+			continue;
+		}
+
+		DEBUG_LOG(("Reborn Rand Obj Use Button Script: command set=%s\n", obj->getCommandSetString().str()));
+
+		std::vector<const CommandButton*> usableButtons;
+		usableButtons.reserve(3);
+
+		for (Int i = 0; i < MAX_COMMANDS_PER_SET; i++) {
+			const CommandButton* commandButton = commandSet->getCommandButton(i);
+			if (!commandButton) {
+				continue;
+			}
+
+			const AsciiString& buttonName = commandButton->getName();
+			if (buttonName.isEmpty()) {
+				continue;
+			}
+
+			DEBUG_LOG(("Reborn Rand Obj Use Button Script: found button=%s\n", buttonName.str()));
+
+			if (buttonName != commandButton1 && buttonName != commandButton2 && buttonName != commandButton3) {
+				DEBUG_LOG(("Reborn Rand Obj Use Button Script: button=%s not requested\n", buttonName.str()));
+				continue;
+			}
+
+			auto* pu = obj->getProductionUpdateInterface();
+			if (!pu) {
+				DEBUG_LOG(("Reborn Rand Obj Use Button Script: object=%s has no production update\n",
+					objTemplate->getName().str()));
+				continue;
+			}
+
+			if (pu->getProductionCount() >= MAX_BUILD_QUEUE_BUTTONS) {
+				DEBUG_LOG(("Reborn Rand Obj Use Button Script: object=%s queue is full\n",
+					objTemplate->getName().str()));
+				continue;
+			}
+
+			if (BitIsSet(commandButton->getOptions(), NOT_QUEUEABLE) && pu->firstProduction() != nullptr) {
+				DEBUG_LOG(("Reborn Rand Obj Use Button Script: button=%s is NOT_QUEUEABLE and queue is not empty on object=%s\n",
+					buttonName.str(),
+					objTemplate->getName().str()));
+				continue;
+			}
+
+			switch (commandButton->getCommandType())
+			{
+			case GUI_COMMAND_OBJECT_UPGRADE:
+			case GUI_COMMAND_PLAYER_UPGRADE:
+			{
+				const UpgradeTemplate* upgradeT = commandButton->getUpgradeTemplate();
+				if (!upgradeT) {
+					DEBUG_LOG(("Reborn Rand Obj Use Button Script: button=%s has no upgrade template\n",
+						buttonName.str()));
+					continue;
+				}
+
+				if (upgradeT->getUpgradeType() == UPGRADE_TYPE_OBJECT) {
+					if (obj->hasUpgrade(upgradeT)) {
+						DEBUG_LOG(("Reborn Rand Obj Use Button Script: button=%s skipped because upgrade is already owned by object=%s\n",
+							buttonName.str(),
+							objTemplate->getName().str()));
+						continue;
+					}
+
+					if (pu->isUpgradeInQueue(upgradeT)) {
+						DEBUG_LOG(("Reborn Rand Obj Use Button Script: button=%s skipped because the same upgrade=%s is already in queue on object=%s\n",
+							buttonName.str(),
+							upgradeT->getUpgradeName().str(),
+							objTemplate->getName().str()));
+						continue;
+					}
+
+					if (BitIsSet(commandButton->getOptions(), EXTENSION_QUEUE_EXCLUSIVE)) {
+						Bool anotherExclusiveUpgradeQueued = FALSE;
+
+						for (Int j = 0; j < MAX_COMMANDS_PER_SET; j++) {
+							const CommandButton* otherButton = commandSet->getCommandButton(j);
+							if (!otherButton) {
+								continue;
+							}
+
+							if (otherButton == commandButton) {
+								continue;
+							}
+
+							if (!BitIsSet(otherButton->getOptions(), EXTENSION_QUEUE_EXCLUSIVE)) {
+								continue;
+							}
+
+							if (otherButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE &&
+								otherButton->getCommandType() != GUI_COMMAND_PLAYER_UPGRADE) {
+								continue;
+							}
+
+							const UpgradeTemplate* otherUpgrade = otherButton->getUpgradeTemplate();
+							if (!otherUpgrade) {
+								continue;
+							}
+
+							if (pu->isUpgradeInQueue(otherUpgrade)) {
+								DEBUG_LOG(("Reborn Rand Obj Use Button Script: button=%s skipped because another EXTENSION_QUEUE_EXCLUSIVE upgrade=%s is already in queue on object=%s\n",
+									buttonName.str(),
+									otherUpgrade->getUpgradeName().str(),
+									objTemplate->getName().str()));
+								anotherExclusiveUpgradeQueued = TRUE;
+								break;
+							}
+						}
+
+						if (anotherExclusiveUpgradeQueued) {
+							continue;
+						}
+					}
+
+					if (!obj->affectedByUpgrade(upgradeT)) {
+						DEBUG_LOG(("Reborn Rand Obj Use Button Script: button=%s skipped because upgrade does not affect object=%s\n",
+							buttonName.str(),
+							objTemplate->getName().str()));
+						continue;
+					}
+				}
+
+				if (BitIsSet(commandButton->getOptions(), EXTENSION_QUEUE_EXCLUSIVE)) {
+					Bool anotherExtensionQueued = FALSE;
+
+					for (Int j = 0; j < MAX_COMMANDS_PER_SET; j++) {
+						const CommandButton* otherButton = commandSet->getCommandButton(j);
+						if (!otherButton) {
+							continue;
+						}
+
+						if (otherButton == commandButton) {
+							continue;
+						}
+
+						if (!BitIsSet(otherButton->getOptions(), EXTENSION_QUEUE_EXCLUSIVE)) {
+							continue;
+						}
+
+						if (otherButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE &&
+							otherButton->getCommandType() != GUI_COMMAND_PLAYER_UPGRADE) {
+							continue;
+						}
+
+						const UpgradeTemplate* otherUpgrade = otherButton->getUpgradeTemplate();
+						if (!otherUpgrade) {
+							continue;
+						}
+
+						if (pu->isUpgradeInQueue(otherUpgrade)) {
+
+							break;
+						}
+					}
+
+					if (anotherExtensionQueued) {
+						continue;
+					}
+				}
+
+				DEBUG_LOG(("Reborn Rand Obj Use Button Script: button=%s can be queued as upgrade on object=%s\n",
+					buttonName.str(),
+					objTemplate->getName().str()));
+				usableButtons.push_back(commandButton);
+				break;
+			}
+
+			case GUI_COMMAND_UNIT_BUILD:
+			case GUI_COMMAND_DOZER_CONSTRUCT:
+			{
+				DEBUG_LOG(("Reborn Rand Obj Use Button Script: button=%s can be queued as unit build on object=%s\n",
+					buttonName.str(),
+					objTemplate->getName().str()));
+				usableButtons.push_back(commandButton);
+				break;
+			}
+
+			default:
+				DEBUG_LOG(("Reborn Rand Obj Use Button Script: button=%s skipped because command type is not queue-based\n",
+					buttonName.str()));
+				break;
+			}
+		}
+
+		if (usableButtons.empty()) {
+			DEBUG_LOG(("Reborn Rand Obj Use Button Script: no usable buttons found for object=%s\n",
+				objTemplate->getName().str()));
+			continue;
+		}
+
+		DEBUG_LOG(("Reborn Rand Obj Use Button Script: usable button count=%d for object=%s\n",
+			usableButtons.size(),
+			objTemplate->getName().str()));
+
+		Int buttonIndex = GameLogicRandomValue(0, (Int)usableButtons.size() - 1);
+
+		DEBUG_LOG(("Reborn Rand Obj Use Button Script: selected button=%s for object=%s\n",
+			usableButtons[buttonIndex]->getName().str(),
+			objTemplate->getName().str()));
+
+		DEBUG_LOG(("Reborn Rand Obj Use Button Script: executing button=%s on object=%s id=%d\n",
+			usableButtons[buttonIndex]->getName().str(),
+			objTemplate->getName().str(),
+			obj->getID()));
+
+		obj->doCommandButton(usableButtons[buttonIndex], CMD_FROM_SCRIPT);
+		return;
+	}
+
+	DEBUG_LOG(("Reborn Rand Obj Use Button Script: no valid object/button combination found\n"));
+}
+
 //-------------------------------------------------------------------------------------------------
 /** Execute an action */
 //-------------------------------------------------------------------------------------------------
@@ -6542,6 +6835,16 @@ void ScriptActions::executeAction( ScriptAction *pAction )
 	switch (pAction->getActionType()) {
 		default:
 			DEBUG_CRASH(("Unknown ScriptAction type %d", pAction->getActionType())); return;
+
+		case ScriptAction::ACTION_REBORN_RANDOM_OBJECT_USE_BUTTON:
+			doRebornRandomObjectUseButton(
+				pAction->getParameter(0)->getString(),
+				pAction->getParameter(1)->getString(),
+				pAction->getParameter(2)->getString(),
+				pAction->getParameter(3)->getString(),
+				pAction->getParameter(4)->getString()
+			);
+			return;
 		case ScriptAction::DEBUG_MESSAGE_BOX:
 			doDebugMessage(pAction->getParameter(0)->getString(), true);
 			return;
