@@ -833,8 +833,6 @@ void ScriptDialog::setIconGroup(HTREEITEM item)
 
 	if (getCurGroup()->hasWarnings())
 		pTree->SetItemState(item, INDEXTOSTATEIMAGEMASK(3), TVIS_STATEIMAGEMASK);
-
-	return;
 }
 
 void ScriptDialog::setIconScript(HTREEITEM item)
@@ -849,8 +847,6 @@ void ScriptDialog::setIconScript(HTREEITEM item)
 
 	if (getCurScript()->hasWarnings())
 		pTree->SetItemState(item, INDEXTOSTATEIMAGEMASK(4), TVIS_STATEIMAGEMASK);
-
-	return;
 }
 
 Bool ScriptDialog::updateIcons(HTREEITEM hItem)

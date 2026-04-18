@@ -6060,7 +6060,6 @@ void InGameUI::removeIdleWorker( Object *obj, Int playerNumber )
 		}
 		++it;
 	}
-	return;
 }
 
 void InGameUI::selectNextIdleWorker()
