@@ -6533,7 +6533,126 @@ void ScriptActions::doNamedSetTrainHeld( const AsciiString &locoName, const Bool
 
 	}
 }
+struct RebornGPSScramblerSearchData
+{
+	const SpecialPowerTemplate* power;
+	Real radiusSq;
+	SpecialPowerModuleInterface* readyModule;
+	Coord3D bestLocation;
+	Int bestScore;
+};
 
+static void RebornFindReadyGPSScramblerModule(Object* obj, void* userData)
+{
+	RebornGPSScramblerSearchData* data = static_cast<RebornGPSScramblerSearchData*>(userData);
+	if (!obj || !data || data->readyModule)
+		return;
+
+	SpecialPowerModuleInterface* mod = obj->getSpecialPowerModule(data->power);
+	if (mod && mod->isReady())
+		data->readyModule = mod;
+}
+
+static void RebornScoreGPSScramblerCenter(Object* centerObj, void* userData)
+{
+	RebornGPSScramblerSearchData* data = static_cast<RebornGPSScramblerSearchData*>(userData);
+	if (!centerObj || !data)
+		return;
+
+	if (centerObj->isEffectivelyDead())
+		return;
+
+	if (centerObj->isKindOf(KINDOF_STRUCTURE))
+		return;
+
+	const Coord3D* centerPos = centerObj->getPosition();
+	if (!centerPos)
+		return;
+
+	Player* player = centerObj->getControllingPlayer();
+	if (!player)
+		return;
+
+	struct LocalCountData
+	{
+		const Coord3D* centerPos;
+		Real radiusSq;
+		Int score;
+	} countData = { centerPos, data->radiusSq, 0 };
+
+	auto CountNearbyUsefulObjects = [](Object* otherObj, void* countUserData)
+		{
+			LocalCountData* local = static_cast<LocalCountData*>(countUserData);
+			if (!otherObj || !local)
+				return;
+
+			if (otherObj->isEffectivelyDead())
+				return;
+
+			if (otherObj->isKindOf(KINDOF_STRUCTURE))
+				return;
+
+			if (!otherObj->getStealth())
+				return;
+
+			if (otherObj->testStatus(OBJECT_STATUS_STEALTHED))
+				return;
+
+			const Coord3D* otherPos = otherObj->getPosition();
+			if (!otherPos)
+				return;
+
+			Coord3D delta = *otherPos;
+			delta.sub(local->centerPos);
+
+			const Real distSq = delta.x * delta.x + delta.y * delta.y;
+			if (distSq <= local->radiusSq)
+				++local->score;
+		};
+
+	player->iterateObjects(CountNearbyUsefulObjects, &countData);
+
+	if (countData.score > data->bestScore)
+	{
+		data->bestScore = countData.score;
+		data->bestLocation = *centerPos;
+	}
+}
+
+void ScriptActions::doRebornSkirmishFireGPSScramblerDefensively(const AsciiString& playerName, const AsciiString& specialPower)
+{
+	Player* player = TheScriptEngine->getPlayerFromAsciiString(playerName);
+	if (!player)
+		return;
+
+	const SpecialPowerTemplate* power = TheSpecialPowerStore->findSpecialPowerTemplate(specialPower);
+	if (!power)
+		return;
+
+	Real radius = power->getRadiusCursorRadius();
+	if (radius < 50.0f)
+		radius = 50.0f;
+
+	RebornGPSScramblerSearchData data = {};
+	data.power = power;
+	data.radiusSq = radius * radius;
+	data.readyModule = nullptr;
+	data.bestLocation.x = 0.0f;
+	data.bestLocation.y = 0.0f;
+	data.bestLocation.z = 0.0f;
+	data.bestScore = 0;
+
+	player->iterateObjects(RebornFindReadyGPSScramblerModule, &data);
+	if (!data.readyModule)
+		return;
+
+	player->iterateObjects(RebornScoreGPSScramblerCenter, &data);
+
+	if (data.bestScore > 0 && data.bestLocation.lengthSqr() > 0.0f)
+	{
+		data.readyModule->doSpecialPowerAtLocation(&data.bestLocation, INVALID_ANGLE, COMMAND_FIRED_BY_SCRIPT);
+	}
+}
 
 void ScriptActions::doRebornRandomObjectUseButton(
 	const AsciiString& playerName,
@@ -6836,6 +6955,14 @@ void ScriptActions::executeAction( ScriptAction *pAction )
 		default:
 			DEBUG_CRASH(("Unknown ScriptAction type %d", pAction->getActionType())); return;
 
+		case ScriptAction::SCRIPT_ACTION_REBORN_SKIRMISH_FIRE_GPS_SCRAMBLER_DEFENSIVELY:
+		{
+			doRebornSkirmishFireGPSScramblerDefensively(
+				pAction->getParameter(0)->getString(),
+				pAction->getParameter(1)->getString()
+			);
+			break;
+		}
 		case ScriptAction::ACTION_REBORN_RANDOM_OBJECT_USE_BUTTON:
 			doRebornRandomObjectUseButton(
 				pAction->getParameter(0)->getString(),

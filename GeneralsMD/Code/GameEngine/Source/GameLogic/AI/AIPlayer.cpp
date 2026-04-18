@@ -1254,26 +1254,26 @@ Bool AIPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord
 		return false;
 
 	//Fine tune that position by looking at a even smaller radius.
-	Coord3D veryBestPos;
+	Coord3D veryBestPos = bestPos;
 	xCount = 11;
 	yCount = 11;
-	cash = -1;
+	cash = INT_MIN;
 	Int count = 0;
-	for( x = 0; x < xCount; x++ )
+	for (x = 0; x < xCount; x++)
 	{
-		for( y = 0; y < yCount; y++ )
+		for (y = 0; y < yCount; y++)
 		{
-			pos.x = bestPos.x + (x-5)*(weaponRadius/10);
-			pos.y = bestPos.y + (x-5)*(weaponRadius/10);
+			pos.x = bestPos.x + (x - 5) * (weaponRadius / 10);
+			pos.y = bestPos.y + (y - 5) * (weaponRadius / 10);
 			pos.z = 0;
-			Int curCash = getPlayerSuperweaponValue( &pos, playerNdx, weaponRadius, targetMilitaryUnits );
-			if ( curCash > cash)
+			Int curCash = getPlayerSuperweaponValue(&pos, playerNdx, weaponRadius, targetMilitaryUnits);
+			if (curCash > cash)
 			{
 				cash = curCash;
 				veryBestPos = pos;
 				count = 1;
 			}
-			else if (curCash==cash)
+			else if (curCash == cash)
 			{
 				veryBestPos.x += pos.x;
 				veryBestPos.y += pos.y;
@@ -1281,14 +1281,21 @@ Bool AIPlayer::computeSuperweaponTarget(const SpecialPowerTemplate *power, Coord
 			}
 		}
 	}
-	if (count>1) {
+
+	if (count > 1)
+	{
 		veryBestPos.x /= count;
 		veryBestPos.y /= count;
 	}
+	else if (count <= 0)
+	{
+		veryBestPos = bestPos;
+	}
+
 	veryBestPos.z = TheTerrainLogic->getGroundHeight(veryBestPos.x, veryBestPos.y);
 	*retPos = veryBestPos;
 
-  success = ( cash > -1 );
+	success = (cash > INT_MIN);
 
 
   return success;

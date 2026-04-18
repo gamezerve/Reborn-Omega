@@ -544,6 +544,7 @@ public:
 		SHOW_WEATHER,															///< show map defined weather.
 		AI_PLAYER_BUILD_TYPE_NEAREST_TEAM,				///< Tell the ai player to build an object nearest team.
 		ACTION_REBORN_RANDOM_OBJECT_USE_BUTTON,
+		SCRIPT_ACTION_REBORN_SKIRMISH_FIRE_GPS_SCRAMBLER_DEFENSIVELY,
 
 		// add new items here, please
 		NUM_ITEMS

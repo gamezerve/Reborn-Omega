@@ -387,5 +387,6 @@ protected:
 	void doNamedSetTrainHeld( const AsciiString &locoName, const Bool set );
   void doEnableObjectSound(const AsciiString& objectName, Bool enable);
 	void doRebornRandomObjectUseButton(const AsciiString& playerName, const AsciiString& objectType, const AsciiString& commandButton1, const AsciiString& commandButton2, const AsciiString& commandButton3);
+	void doRebornSkirmishFireGPSScramblerDefensively(const AsciiString& player, const AsciiString& specialPower);
 
 };

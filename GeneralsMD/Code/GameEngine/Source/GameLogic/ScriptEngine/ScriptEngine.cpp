@@ -4106,6 +4106,17 @@ void ScriptEngine::init()
 	curTemplate->m_uiStrings[4] = ", or ";
 	curTemplate->m_uiStrings[5] = ".";
 
+	curTemplate = &m_actionTemplates[ScriptAction::SCRIPT_ACTION_REBORN_SKIRMISH_FIRE_GPS_SCRAMBLER_DEFENSIVELY];
+	curTemplate->m_internalName = "ACTION_REBORN_SKIRMISH_FIRE_GPS_SCRAMBLER_DEFENSIVELY";
+	curTemplate->m_uiName = "Reborn/Skirmish Fire GPS Scrambler Like Special Power";
+	curTemplate->m_numParameters = 2;
+	curTemplate->m_parameters[0] = Parameter::SIDE;
+	curTemplate->m_parameters[1] = Parameter::SPECIAL_POWER;
+	curTemplate->m_numUiStrings = 3;
+	curTemplate->m_uiStrings[0] = "For player ";
+	curTemplate->m_uiStrings[1] = ", use defensive special power ";
+	curTemplate->m_uiStrings[2] = ". (Specially made for GLA GPS Scrambler)";
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/* Recipe for adding a condition:
