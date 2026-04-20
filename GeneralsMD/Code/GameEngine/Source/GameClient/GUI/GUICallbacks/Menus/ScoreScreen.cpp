@@ -688,28 +688,31 @@ WindowMsgHandledType ScoreScreenSystem( GameWindow *window, UnsignedInt msg,
 
 			GameWindow *control = (GameWindow *)mData1;
 			Int controlID = control->winGetWindowId();
-			if( controlID == buttonOkID )
+			if (controlID == buttonOkID)
 			{
-				TheShell->pop();
 				TheCampaignManager->setCampaign(AsciiString::TheEmptyString);
 
-				if ( ReplaySimulation::getReplayCount() > 0 )
+				TheShell->pop(); // ScoreScreen
+				//TheShell->push("Menus/SaveLoad.wnd"); // fresh normal SaveLoad
+
+				if (ReplaySimulation::getReplayCount() > 0)
 				{
 					ReplaySimulation::stop();
 					TheGameEngine->setQuitting(TRUE);
 				}
 			}
-			if( controlID == buttonOkIDGen )
+			if (controlID == buttonOkIDGen)
 			{
-			
 				const Campaign* camp = TheCampaignManager->getCurrentCampaign();
 				if (camp)
 					previousCampaign = camp->m_name;
 
-				TheShell->pop();
 				TheCampaignManager->setCampaign(AsciiString::TheEmptyString);
 
-				if ( ReplaySimulation::getReplayCount() > 0 )
+				TheShell->pop(); // ScoreScreen
+				//TheShell->push("Menus/SaveLoad.wnd"); // fresh normal SaveLoad
+
+				if (ReplaySimulation::getReplayCount() > 0)
 				{
 					ReplaySimulation::stop();
 					TheGameEngine->setQuitting(TRUE);
