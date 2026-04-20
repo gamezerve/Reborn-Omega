@@ -1266,23 +1266,34 @@ void ShellGameLoadScreen::init( GameInfo *game )
 	AsciiString wndFile;
 	AsciiString wndPrefix;
 
-	if (
+	Bool useGenShellLoadScreen = FALSE;
+
+	if (IsRebornCampaign())
+	{
+		useGenShellLoadScreen = TRUE;
+	}
+	else if (
 		previousCampaign.compare("training") == 0 ||
 		previousCampaign.compare("usa_gen") == 0 ||
 		previousCampaign.compare("gla_gen") == 0 ||
 		previousCampaign.compare("china_gen") == 0
 		)
 	{
+		useGenShellLoadScreen = TRUE;
+	}
+
+	if (useGenShellLoadScreen)
+	{
 		wndFile = "Menus/ShellGameLoadScreenGen.wnd";
 		wndPrefix = "ShellGameLoadScreenGen.wnd";
-		previousCampaign = AsciiString::TheEmptyString;
 	}
 	else
 	{
 		wndFile = "Menus/ShellGameLoadScreen.wnd";
 		wndPrefix = "ShellGameLoadScreen.wnd";
-		previousCampaign = AsciiString::TheEmptyString;
 	}
+
+	previousCampaign = AsciiString::TheEmptyString;
 
 	// create the layout of the load screen
 	//m_loadScreen = TheWindowManager->winCreateFromScript( "Menus/ShellGameLoadScreen.wnd" );
