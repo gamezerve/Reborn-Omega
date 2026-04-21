@@ -1542,7 +1542,7 @@ WindowMsgHandledType GameWinDefaultInput( GameWindow *window, UnsignedInt msg,
 WindowMsgHandledType GameWinBlockInput( GameWindow *window, UnsignedInt msg,
 													WindowMsgData mData1, WindowMsgData mData2 )
 {
-
+#if !RTS_GENERALS
 	if (msg == GWM_LEFT_UP)
 	{
 		const Int cameoClickWindowId = TheNameKeyGenerator->nameToKey("ControlBar.wnd:CameoWindow");
@@ -1553,6 +1553,7 @@ WindowMsgHandledType GameWinBlockInput( GameWindow *window, UnsignedInt msg,
 			HandleSelectedUnitCameoClick();
 		}
 	}
+#endif
 
 	if (msg == GWM_CHAR || msg == GWM_MOUSE_POS)
 		return MSG_IGNORED;
