@@ -205,6 +205,8 @@ struct ModelConditionInfo
 	std::vector<ModelConditionFlags>	m_conditionsYesVec;
 	AsciiString												m_modelName;
 	std::vector<HideShowSubObjInfo>		m_hideShowVec;
+	AsciiString												m_replaceTextureSource;
+	AsciiString												m_replaceTextureTarget;
 	mutable std::vector<AsciiString>	m_publicBones;
 	AsciiString												m_weaponFireFXBoneName[WEAPONSLOT_COUNT];
 	AsciiString												m_weaponRecoilBoneName[WEAPONSLOT_COUNT];

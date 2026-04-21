@@ -231,6 +231,7 @@ enum ModelConditionFlagType CPP_11(: Int)
 	MODELCONDITION_USER_1,		///< Wildcard flag to use with upgrade modules or other random little things
 	MODELCONDITION_USER_2,
 
+	MODELCONDITION_STEALTHED,
 	MODELCONDITION_DISGUISED,
 //
 // Note: these values are saved in save files, so you MUST NOT REMOVE OR CHANGE

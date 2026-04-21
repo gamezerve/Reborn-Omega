@@ -210,6 +210,7 @@ void StealthUpdate::receiveGrant( Bool active, UnsignedInt frames )
 	{
 		//On
 		obj->setStatus( MAKE_OBJECT_STATUS_MASK2( OBJECT_STATUS_CAN_STEALTH, OBJECT_STATUS_STEALTHED ) );
+		obj->setModelConditionState(MODELCONDITION_STEALTHED);
 		m_stealthAllowedFrame = TheGameLogic->getFrame();
 	  setWakeFrame( obj, UPDATE_SLEEP_NONE );
 		m_framesGranted = frames;
@@ -218,6 +219,7 @@ void StealthUpdate::receiveGrant( Bool active, UnsignedInt frames )
 	{
 		//Off
 		obj->clearStatus( MAKE_OBJECT_STATUS_MASK2( OBJECT_STATUS_CAN_STEALTH, OBJECT_STATUS_STEALTHED ) );
+		obj->clearModelConditionState(MODELCONDITION_STEALTHED);
 		m_stealthAllowedFrame = FOREVER;
 		m_framesGranted = 0;
 		Drawable *draw = obj->getDrawable();
@@ -752,6 +754,7 @@ UpdateSleepTime StealthUpdate::update()
 
 		// The timer is zero, so if we aren't stealthed, do so now!
 		self->setStatus( MAKE_OBJECT_STATUS_MASK( OBJECT_STATUS_STEALTHED ) );
+		self->setModelConditionState(MODELCONDITION_STEALTHED);
 	}
 	else
 	{
@@ -766,6 +769,7 @@ UpdateSleepTime StealthUpdate::update()
 		}
 
 		self->clearStatus( MAKE_OBJECT_STATUS_MASK( OBJECT_STATUS_STEALTHED ) );
+		self->clearModelConditionState(MODELCONDITION_STEALTHED);
 
 		hintDetectableWhileUnstealthed();
 	}

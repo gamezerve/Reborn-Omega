@@ -170,6 +170,7 @@ const char* const ModelConditionFlags::s_bitNameList[] =
 	"USER_1",
 	"USER_2",
 
+	"STEALTHED",
 	"DISGUISED",
 
 	nullptr
