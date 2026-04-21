@@ -988,6 +988,8 @@ void ModelConditionInfo::clear()
 #endif
 	m_conditionsYesVec.clear();
 	m_modelName.clear();
+	m_replaceTextureSource.clear();
+	m_replaceTextureTarget.clear();
 	for (i = 0; i < MAX_TURRETS; ++i)
 	{
 		m_turrets[i].clear();
@@ -1267,6 +1269,23 @@ static void parseAnimation(INI* ini, void *instance, void * /*store*/, const voi
 	}
 }
 
+static void parseReplaceTexture(INI* ini, void* instance, void* /*store*/, const void* /*userData*/)
+{
+	ModelConditionInfo* self = (ModelConditionInfo*)instance;
+
+	self->m_replaceTextureSource = ini->getNextAsciiString();
+	self->m_replaceTextureTarget = ini->getNextAsciiString();
+
+	self->m_replaceTextureSource.toLower();
+	self->m_replaceTextureTarget.toLower();
+
+	if (self->m_replaceTextureSource.isNone())
+		self->m_replaceTextureSource.clear();
+
+	if (self->m_replaceTextureTarget.isNone())
+		self->m_replaceTextureTarget.clear();
+}
+
 //-------------------------------------------------------------------------------------------------
 static void parseShowHideSubObject(INI* ini, void *instance, void *store, const void* userData)
 {
@@ -1442,6 +1461,7 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 		{ "Flags", INI::parseBitString32, ACBitsNames, offsetof(ModelConditionInfo, m_flags) },
 		{ "ParticleSysBone", parseParticleSysBone, nullptr, 0 },
 		{ "AnimationSpeedFactorRange", parseRealRange, nullptr, 0 },
+		{ "ReplaceTexture", parseReplaceTexture, nullptr, 0 },
 		{ nullptr, nullptr, nullptr, 0 }
 	};
 
@@ -2910,6 +2930,46 @@ static Bool turretNamesDiffer(const ModelConditionInfo* a, const ModelConditionI
 	return false;
 }
 
+static void getTextureSwapForState(
+	const ModelConditionInfo* state,
+	const char*& oldTexture,
+	const char*& newTexture)
+{
+	oldTexture = nullptr;
+	newTexture = nullptr;
+
+	if (state == nullptr)
+		return;
+
+	if (state->m_replaceTextureSource.isNotEmpty() &&
+		state->m_replaceTextureTarget.isNotEmpty())
+	{
+		oldTexture = state->m_replaceTextureSource.str();
+		newTexture = state->m_replaceTextureTarget.str();
+	}
+}
+
+static Bool textureSwapDiffers(
+	const ModelConditionInfo* a,
+	const ModelConditionInfo* b)
+{
+	const char* aOld = nullptr;
+	const char* aNew = nullptr;
+	const char* bOld = nullptr;
+	const char* bNew = nullptr;
+
+	getTextureSwapForState(a, aOld, aNew);
+	getTextureSwapForState(b, bOld, bNew);
+
+	const char* aOldSafe = aOld ? aOld : "";
+	const char* aNewSafe = aNew ? aNew : "";
+	const char* bOldSafe = bOld ? bOld : "";
+	const char* bNewSafe = bNew ? bNew : "";
+
+	return stricmp(aOldSafe, bOldSafe) != 0 ||
+		stricmp(aNewSafe, bNewSafe) != 0;
+}
+
 //-------------------------------------------------------------------------------------------------
 /** Change the model for this drawable. If color is non-zero, it will also apply team color to the
 	model */
@@ -3018,8 +3078,9 @@ void W3DModelDraw::setModelState(const ModelConditionInfo* newState)
 	// expense of creating a new render-object. (exception: if color is changing, or subobjs are changing,
 	// or a few other things...)
 	if (m_curState == nullptr ||
-			newState->m_modelName != m_curState->m_modelName ||
-			turretNamesDiffer(newState, m_curState)
+		newState->m_modelName != m_curState->m_modelName ||
+		turretNamesDiffer(newState, m_curState) ||
+		textureSwapDiffers(newState, m_curState)
 			// srj sez: I'm not sure why we want to do the "hard stuff" if we have projectile bones; I think
 			// it is a holdover from days gone by when bones were handled quite differently, rather than being cached.
 			// but doing this hard stuff is a lot more work, and I think it's unnecessary, so let's remove this.
@@ -3037,7 +3098,17 @@ void W3DModelDraw::setModelState(const ModelConditionInfo* newState)
 		}
 		else
 		{
-			m_renderObject = W3DDisplay::m_assetManager->Create_Render_Obj(newState->m_modelName.str(), draw->getScale(), m_hexColor);
+			//m_renderObject = W3DDisplay::m_assetManager->Create_Render_Obj(newState->m_modelName.str(), draw->getScale(), m_hexColor);
+			const char* oldTexture = nullptr;
+			const char* newTexture = nullptr;
+			getTextureSwapForState(newState, oldTexture, newTexture);
+
+			m_renderObject = W3DDisplay::m_assetManager->Create_Render_Obj(
+				newState->m_modelName.str(),
+				draw->getScale(),
+				m_hexColor,
+				oldTexture,
+				newTexture);
 			DEBUG_ASSERTCRASH(m_renderObject, ("*** ASSET ERROR: Model %s not found!",newState->m_modelName.str()));
 		}
 

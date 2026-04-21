@@ -83,9 +83,9 @@ public:
 	int replacePrototypeTexture(RenderObjClass *robj, const char * oldname, const char * newname);
 
 private:
-	void Make_Mesh_Unique(RenderObjClass *robj,Bool geometry, Bool colors);
-	void Make_HLOD_Unique(RenderObjClass *robj,Bool geometry, Bool colors);
-	void Make_Unique(RenderObjClass *robj,Bool geometry, Bool colors);
+	void Make_Mesh_Unique(RenderObjClass* robj, Bool geometry, Bool colors, Bool textures);
+	void Make_HLOD_Unique(RenderObjClass* robj, Bool geometry, Bool colors, Bool textures);
+	void Make_Unique(RenderObjClass* robj, Bool geometry, Bool colors, Bool textures);
 
 	//'Generals' customizations
 	int Recolor_Asset(RenderObjClass *robj, const int color);
@@ -101,6 +101,9 @@ private:
 	int replaceAssetTexture(RenderObjClass *robj, TextureClass *oldTex, TextureClass *newTex);
 	int replaceHLODTexture(RenderObjClass *robj, TextureClass *oldTex, TextureClass *newTex);
 	int replaceMeshTexture(RenderObjClass *robj, TextureClass *oldTex, TextureClass *newTex);
+	int replaceAssetTextureInstance(RenderObjClass* robj, TextureClass* oldTex, TextureClass* newTex);
+	int replaceHLODTextureInstance(RenderObjClass* robj, TextureClass* oldTex, TextureClass* newTex);
+	int replaceMeshTextureInstance(RenderObjClass* robj, TextureClass* oldTex, TextureClass* newTex);
 
 	//'E&B' customizations
 /*	virtual RenderObjClass * Create_Render_Obj(const char * name, float scale, const Vector3 &hsv_shift);

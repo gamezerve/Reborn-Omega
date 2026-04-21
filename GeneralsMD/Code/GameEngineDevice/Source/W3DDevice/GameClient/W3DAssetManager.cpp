@@ -815,7 +815,8 @@ RenderObjClass * W3DAssetManager::Create_Render_Obj(
 	if (reallyscale)
 		rendobj->Scale(scale);	//this also makes it unique
 
-	Make_Unique(rendobj,reallyscale,reallycolor);
+	//Make_Unique(rendobj,reallyscale,reallycolor);
+	Make_Unique(rendobj, reallyscale, reallycolor, reallytexture);
 
 	if (reallytexture)
 	{
@@ -1054,12 +1055,12 @@ HAnimClass *	W3DAssetManager::Get_HAnim(const char * name)
 //---------------------------------------------------------------------
 /** Generals specific code to generate customized render objects for each team color
 */
-void W3DAssetManager::Make_HLOD_Unique(RenderObjClass *robj, Bool geometry, Bool colors)
+void W3DAssetManager::Make_HLOD_Unique(RenderObjClass* robj, Bool geometry, Bool colors, Bool textures)
 {
 	int num_sub = robj->Get_Num_Sub_Objects();
-	for(int i = 0; i < num_sub; i++) {
-		RenderObjClass *sub_obj = robj->Get_Sub_Object(i);
-		Make_Unique(sub_obj, geometry, colors);
+	for (int i = 0; i < num_sub; i++) {
+		RenderObjClass* sub_obj = robj->Get_Sub_Object(i);
+		Make_Unique(sub_obj, geometry, colors, textures);
 		REF_PTR_RELEASE(sub_obj);
 	}
 }
@@ -1067,14 +1068,14 @@ void W3DAssetManager::Make_HLOD_Unique(RenderObjClass *robj, Bool geometry, Bool
 //---------------------------------------------------------------------
 /** Generals specific code to generate customized render objects for each team color
 */
-void W3DAssetManager::Make_Unique(RenderObjClass *robj, Bool geometry, Bool colors)
+void W3DAssetManager::Make_Unique(RenderObjClass* robj, Bool geometry, Bool colors, Bool textures)
 {
-	switch (robj->Class_ID())	{
+	switch (robj->Class_ID()) {
 	case RenderObjClass::CLASSID_MESH:
-		Make_Mesh_Unique(robj,geometry,colors);
+		Make_Mesh_Unique(robj, geometry, colors, textures);
 		break;
 	case RenderObjClass::CLASSID_HLOD:
-		Make_HLOD_Unique(robj,geometry,colors);
+		Make_HLOD_Unique(robj, geometry, colors, textures);
 		break;
 	}
 }
@@ -1113,26 +1114,26 @@ static Bool getMeshColorMethods(MeshClass *mesh, Bool &vertexColor, Bool &textur
 //---------------------------------------------------------------------
 /** Generals specific code to generate customized render objects for each team color
 */
-void W3DAssetManager::Make_Mesh_Unique(RenderObjClass *robj, Bool geometry, Bool colors)
+void W3DAssetManager::Make_Mesh_Unique(RenderObjClass* robj, Bool geometry, Bool colors, Bool textures)
 {
 	int i;
-	MeshClass *mesh=(MeshClass*) robj;
-	Bool isVertexColor, isTextureColor;
+	MeshClass* mesh = (MeshClass*)robj;
+	Bool isVertexColor = false, isTextureColor = false;
 
-	//figure out what type of coloring this mesh requires (if any)
-	if ((colors && getMeshColorMethods(mesh,isVertexColor,isTextureColor)) || geometry)
-	{	//mesh has some house color applied so make those components unique to mesh.
+	if (colors)
+		getMeshColorMethods(mesh, isVertexColor, isTextureColor);
 
-		//Create unique data for this mesh
-		if (!geometry)	//scaling geometry automatically makes it unique so not needed here.
+	if (geometry || colors || textures)
+	{
+		if (!geometry)
 			mesh->Make_Unique();
 
-		MeshModelClass * model = mesh->Get_Model();
+		MeshModelClass* model = mesh->Get_Model();
 
 		if (colors && isVertexColor)
 		{
-			MaterialInfoClass	*material=mesh->Get_Material_Info();
-			for (i=0; i<material->Vertex_Material_Count(); i++)
+			MaterialInfoClass* material = mesh->Get_Material_Info();
+			for (i = 0; i < material->Vertex_Material_Count(); i++)
 				material->Peek_Vertex_Material(i)->Make_Unique();
 			REF_PTR_RELEASE(material);
 		}
