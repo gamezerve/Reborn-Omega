@@ -344,8 +344,10 @@ void SaveLoadMenuFullScreenInit( WindowLayout *layout, void *userData )
 	//NameKeyType parentID = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:SaveLoadMenu");
 	DEBUG_LOG(("SaveLoadMenuFullScreenInit: looking for hardcoded parent name=SaveLoad.wnd:SaveLoadMenu"));
 
+#if RTS_DEBUG
 	NameKeyType hardcodedParentID = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:SaveLoadMenu");
 	GameWindow* hardcodedParent = TheWindowManager->winGetWindowFromId(nullptr, hardcodedParentID);
+#endif
 
 	DEBUG_LOG(("SaveLoadMenuFullScreenInit: hardcodedParentID=%u", hardcodedParentID));
 	DEBUG_LOG(("SaveLoadMenuFullScreenInit: hardcodedParent=%p", hardcodedParent));

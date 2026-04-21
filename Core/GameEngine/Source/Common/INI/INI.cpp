@@ -1534,6 +1534,7 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 						try {
 
 						//(*parse)( this, what, (char *)what + offset + parseTableList.getNthExtraOffset(ptIdx), userData );
+#ifdef RTS_DEBUG
 							SetCurrentThingTemplateUpgradeField(field);
 							try {
 								(*parse)(this, what, (char*)what + offset + parseTableList.getNthExtraOffset(ptIdx), userData);
@@ -1543,6 +1544,9 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 								ClearCurrentThingTemplateUpgradeField();
 								throw;
 							}
+#else
+						(*parse)(this, what, (char*)what + offset + parseTableList.getNthExtraOffset(ptIdx), userData);
+#endif
 
 						} catch (...) {
 							DEBUG_CRASH( ("[LINE: %d - FILE: '%s'] Error reading field '%s' of block '%s'",
@@ -1597,7 +1601,9 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 	if (!token)
 		throw INI_INVALID_DATA;
 
+#ifdef RTS_DEBUG
 	RecordThingTemplateUpgradeToken(token);
+#endif
 
 	return token;
 }
@@ -1612,7 +1618,9 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 
 	if (token)
 	{
+#ifdef RTS_DEBUG
 		RecordThingTemplateUpgradeToken(token);
+#endif
 	}
 
 	return token;
