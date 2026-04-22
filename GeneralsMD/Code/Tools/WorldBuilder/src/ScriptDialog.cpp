@@ -209,6 +209,7 @@ BEGIN_MESSAGE_MAP(ScriptDialog, CDialog)
 	ON_WM_MOUSEMOVE()
 	ON_WM_LBUTTONUP()
 	ON_WM_MOVE()
+	ON_WM_DESTROY()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -366,6 +367,18 @@ void ScriptDialog::OnPatchGC()
 	{
 
 	}*/
+}
+
+void ScriptDialog::CloseSearchResultsDialog()
+{
+	if (m_searchResultsDialog != nullptr)
+	{
+		if (::IsWindow(m_searchResultsDialog->GetSafeHwnd()))
+		{
+			m_searchResultsDialog->DestroyWindow();
+		}
+		m_searchResultsDialog = nullptr;
+	}
 }
 
 void ScriptDialog::OnSearch()
@@ -2195,6 +2208,7 @@ void ScriptDialog::OnDblclkScriptTree(NMHDR* pNMHDR, LRESULT* pResult)
 
 void ScriptDialog::OnOK()
 {
+	CloseSearchResultsDialog();
 	CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
 	SidesListUndoable *pUndo = new SidesListUndoable(m_sides, pDoc);
 	pDoc->AddAndDoUndoable(pUndo);
@@ -2204,6 +2218,7 @@ void ScriptDialog::OnOK()
 
 void ScriptDialog::OnCancel()
 {
+	CloseSearchResultsDialog();
 
 	CDialog::OnCancel();
 }

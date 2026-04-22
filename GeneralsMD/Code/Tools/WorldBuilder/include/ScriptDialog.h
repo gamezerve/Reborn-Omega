@@ -133,6 +133,7 @@ protected:
 	void setIconGroup(HTREEITEM item);
 	Bool updateIcons(HTREEITEM hItem);
 	void markWaypoint(MapObject *pObj);
+	void CloseSearchResultsDialog();
 
 	void BuildSelectionsForItem(HTREEITEM hItem, ListType& playerSel, ListType& folderSel, ListType& itemSel);
 	void BuildSearchableTextForItem(HTREEITEM hItem, CString& searchableText, CString& playerText, CString& folderText, CString& scriptText);
