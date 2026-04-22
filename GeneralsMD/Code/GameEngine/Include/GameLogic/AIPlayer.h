@@ -249,6 +249,8 @@ protected:
 	void checkForSupplyCenter( BuildListInfo *info, Object *bldg);
  	void queueSupplyTruck();
 	void updateBridgeRepair();
+	Bool canBuildUpgradeNow(const AsciiString& upgrade) const;
+	void updateScriptUpgradeList();
 	Bool dozerInQueue();
 	Object *findSupplyCenter(Int minSupplies);
 	static void getPlayerStructureBounds(Region2D *bounds, Int playerNdx, Bool conservative = FALSE );
@@ -290,4 +292,7 @@ protected:
 	ObjectID m_attackedSupplyCenter;
 
 	ObjectID m_curWarehouseID;
+
+	Int m_scriptUpgradeTimer;
+	Int m_scriptUpgradeIndex;
 };

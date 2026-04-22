@@ -84,6 +84,8 @@ m_dozerQueuedForRepair(false),
 m_supplySourceAttackCheckFrame(0),
 m_attackedSupplyCenter(INVALID_ID),
 m_teamSeconds(10),
+m_scriptUpgradeTimer(60 * LOGICFRAMES_PER_SECOND),
+m_scriptUpgradeIndex(0),
 m_curWarehouseID(INVALID_ID)
 {
 	m_frameLastBuildingBuilt = TheGameLogic->getFrame();
@@ -1860,6 +1862,181 @@ void AIPlayer::buildUpgrade(const AsciiString &upgrade)
 	TheScriptEngine->AppendDebugMessage( msg, false);
 }
 
+Bool AIPlayer::canBuildUpgradeNow(const AsciiString& upgrade) const
+{
+	const UpgradeTemplate* curUpgrade = TheUpgradeCenter->findUpgrade(upgrade);
+	if (curUpgrade == nullptr) {
+		return false;
+	}
+
+	if (curUpgrade->getUpgradeType() == UPGRADE_TYPE_OBJECT) {
+		return false;
+	}
+
+	if (m_player->hasUpgradeInProduction(curUpgrade)) {
+		return false;
+	}
+
+	if (m_player->hasUpgradeComplete(curUpgrade)) {
+		return false;
+	}
+
+	if (TheUpgradeCenter->canAffordUpgrade(m_player, curUpgrade) == FALSE) {
+		return false;
+	}
+
+	for (const BuildListInfo* info = m_player->getBuildList(); info; info = info->getNext())
+	{
+		Object* factory = TheGameLogic->findObjectByID(info->getObjectID());
+		if (!factory) {
+			continue;
+		}
+
+		if (factory->getStatusBits().test(OBJECT_STATUS_UNDER_CONSTRUCTION)) {
+			continue;
+		}
+
+		if (factory->getStatusBits().test(OBJECT_STATUS_SOLD)) {
+			continue;
+		}
+
+		const CommandSet* commandSet = TheControlBar->findCommandSet(factory->getCommandSetString());
+		if (commandSet == nullptr) {
+			continue;
+		}
+
+		Bool canUpgradeHere = false;
+
+		for (Int j = 0; j < MAX_COMMANDS_PER_SET; ++j)
+		{
+			const CommandButton* commandButton = commandSet->getCommandButton(j);
+			if (commandButton == nullptr) {
+				continue;
+			}
+
+			if (commandButton->getName().isEmpty()) {
+				continue;
+			}
+
+			if (commandButton->getUpgradeTemplate() == nullptr) {
+				continue;
+			}
+
+			if (commandButton->getUpgradeTemplate()->getUpgradeName() == curUpgrade->getUpgradeName()) {
+				canUpgradeHere = true;
+				break;
+			}
+		}
+
+		if (!canUpgradeHere) {
+			continue;
+		}
+
+		ProductionUpdateInterface* pu = factory->getProductionUpdateInterface();
+		if (!pu) {
+			continue;
+		}
+
+		if (pu->canQueueUpgrade(curUpgrade) == CANMAKE_OK) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void AIPlayer::updateScriptUpgradeList()
+{
+	static const char* const kUpgradeList[] =
+	{
+			"Upgrade_ChinaBlackNapalm",
+			"Upgrade_ChinaBattleMasterMassProduction",
+			"Upgrade_AmbulanceRepairCrew",
+			"Upgrade_ChinaFusionTanks",
+			"Upgrade_ChinaRifleUpgrade",
+			"Upgrade_AmericaAfterburners",
+			"Upgrade_Nationalism",
+			"Upgrade_Fanaticism",
+			"Upgrade_AmericaSupplyLines",
+			"Upgrade_AmericaRangerFlashBangGrenade",
+			"Upgrade_AmericaTOWMissile",
+			"Upgrade_ComancheRocketPods",
+			"Upgrade_AmericaLaserMissiles",
+			"Upgrade_AmericaCountermeasures",
+			"Upgrade_AmericaBunkerBusters",
+			"Upgrade_AmericaAdvancedTraining",
+			"Upgrade_AmericaDroneArmor",
+			"Upgrade_AmericaCompositeArmor",
+			"Upgrade_InfantryCaptureBuilding",
+			"Upgrade_AmericaMOAB",
+			"Upgrade_AmericaChemicalSuits",
+			"Upgrade_AmericaSentryDroneGun",
+			"Upgrade_ChinaChainGuns",
+			"Upgrade_ChinaAircraftArmor",
+			"Upgrade_ChinaTacticalNukeMig",
+			"Upgrade_ChinaSubliminalMessaging",
+			"Upgrade_ChinaSatelliteHackOne",
+			"Upgrade_ChinaSatelliteHackTwo",
+			"Upgrade_ChinaUraniumShells",
+			"Upgrade_ChinaNeutronShells",
+			"Upgrade_ChinaNuclearTanks",
+			"Upgrade_GLAWorkerShoes",
+			"Upgrade_GLAFortifiedStructure",
+			"Upgrade_GLAInfantryRebelBoobyTrapAttack",
+			"Upgrade_GLAScorpionRocket",
+			"Upgrade_GLARadarVanScan",
+			"Upgrade_GLAAnthraxBeta",
+			"Upgrade_GLAToxinShells",
+			"Upgrade_GLACamouflage",
+			"Upgrade_GLAAPRockets",
+			"Upgrade_GLAJunkRepair",
+			"Upgrade_GLAAPBullets",
+			"Upgrade_GLABuggyAmmo",
+			"Upgrade_GLAArmTheMob",
+			"Chem_Upgrade_GLAAnthraxGamma",
+			"Tank_Upgrade_ChinaTankAutoLoader",
+			"Nuke_Upgrade_ChinaWGUraniumShells",
+			"Upgrade_ChinaIsotopeStability",
+			"Nuke_Upgrade_ChinaFusionReactors",
+			"Demo_Upgrade_SuicideBomb",
+			"AirF_Upgrade_StealthComanche",
+			nullptr
+	};
+
+	if (m_scriptUpgradeTimer > 0) {
+		--m_scriptUpgradeTimer;
+		return;
+	}
+
+	m_scriptUpgradeTimer = 20 * LOGICFRAMES_PER_SECOND;
+
+	std::vector<const char*> availableUpgrades;
+
+	for (Int i = 0; kUpgradeList[i] != nullptr; ++i)
+	{
+		AsciiString upgradeName = kUpgradeList[i];
+		if (canBuildUpgradeNow(upgradeName)) {
+			availableUpgrades.push_back(kUpgradeList[i]);
+		}
+	}
+
+	if (availableUpgrades.empty()) {
+		DEBUG_LOG(("AIPlayer %s script upgrade attempt: no available upgrades\n",
+			TheNameKeyGenerator->keyToName(m_player->getPlayerNameKey()).str()));
+		return;
+	}
+
+	Int choice = GameLogicRandomValue(0, static_cast<Int>(availableUpgrades.size()) - 1);
+	const char* upgradeName = availableUpgrades[choice];
+
+	DEBUG_LOG(("AIPlayer %s script upgrade attempt: %s\n",
+		TheNameKeyGenerator->keyToName(m_player->getPlayerNameKey()).str(),
+		upgradeName));
+
+	buildUpgrade(upgradeName);
+}
+
+
 // ------------------------------------------------------------------------------------------------
 /** Build a supply center near a supply source with minimumCash or more resources. */
 // ------------------------------------------------------------------------------------------------
@@ -3044,6 +3221,8 @@ void AIPlayer::update()
 	doTeamBuilding(); // See if it's time to start another team.
 
 	doUpgradesAndSkills(); // See if it's time to build an upgrade or buy a skill.
+
+	updateScriptUpgradeList();
 
 	updateBridgeRepair(); // Handle any bridge repairs.
 
