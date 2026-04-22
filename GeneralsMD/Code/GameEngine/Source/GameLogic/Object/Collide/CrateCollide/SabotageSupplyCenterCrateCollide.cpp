@@ -141,10 +141,10 @@ Bool SabotageSupplyCenterCrateCollide::executeCrateBehavior( Object *other )
 		UnsignedInt cash = targetMoney->countMoney();
 		UnsignedInt desiredAmount = getSabotageSupplyCenterCrateCollideModuleData()->m_stealCashAmount;
 
-		DEBUG_LOG(("SabotageSupplyCenter base steal = %u, multiplier = %d, target cash = %u",
-			getSabotageSupplyCenterCrateCollideModuleData()->m_stealCashAmount,
-			g_resourceMultiplierPercent,
-			targetMoney->countMoney()));
+		//DEBUG_LOG(("SabotageSupplyCenter base steal = %u, multiplier = %d, target cash = %u",
+		//	getSabotageSupplyCenterCrateCollideModuleData()->m_stealCashAmount,
+		//	g_resourceMultiplierPercent,
+		//	targetMoney->countMoney()));
 
 		if (g_resourceMultiplierPercent != 100)
 		{

@@ -539,14 +539,14 @@ StateReturnType HackInternetState::update()
 						break;
 				}
 
-				DEBUG_LOG(("HackInternet base amount = %u, multiplier = %d", amount, g_resourceMultiplierPercent)); // Reborn
+				//DEBUG_LOG(("HackInternet base amount = %u, multiplier = %d", amount, g_resourceMultiplierPercent)); // Reborn
 
 				if (g_resourceMultiplierPercent != 100)
 				{
 					amount = (amount * g_resourceMultiplierPercent) / 100;
 				}
 
-				DEBUG_LOG(("HackInternet final amount = %u", amount));
+				//DEBUG_LOG(("HackInternet final amount = %u", amount));
 
 				money->deposit( amount );
 				owner->getControllingPlayer()->getScoreKeeper()->addMoneyEarned( amount );

@@ -57,18 +57,18 @@ Bool MoneyCrateCollide::executeCrateBehavior( Object *other )
 {
 	UnsignedInt money = getMoneyCrateCollideModuleData()->m_moneyProvided;
 
-	DEBUG_LOG(("MoneyCrateCollide base money = %u, multiplier = %d", money, g_resourceMultiplierPercent));
+	//DEBUG_LOG(("MoneyCrateCollide base money = %u, multiplier = %d", money, g_resourceMultiplierPercent));
 
 	money += getUpgradedSupplyBoost(other);
 
-	DEBUG_LOG(("MoneyCrateCollide after upgrade boost = %u", money));
+	//DEBUG_LOG(("MoneyCrateCollide after upgrade boost = %u", money));
 
 	if (g_resourceMultiplierPercent != 100)
 	{
 		money = (money * g_resourceMultiplierPercent) / 100;
 	}
 
-	DEBUG_LOG(("MoneyCrateCollide final money = %u", money));
+	//DEBUG_LOG(("MoneyCrateCollide final money = %u", money));
 
 	other->getControllingPlayer()->getMoney()->deposit( money );
 	other->getControllingPlayer()->getScoreKeeper()->addMoneyEarned( money );

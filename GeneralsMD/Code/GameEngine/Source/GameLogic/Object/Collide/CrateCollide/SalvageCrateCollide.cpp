@@ -245,14 +245,14 @@ void SalvageCrateCollide::doMoney( Object *other )
 	else
 		money = md->m_minimumMoney;
 
-	DEBUG_LOG(("Salvage money before multiplier = %d, multiplier = %d", money, g_resourceMultiplierPercent));
+	//DEBUG_LOG(("Salvage money before multiplier = %d, multiplier = %d", money, g_resourceMultiplierPercent));
 
 	if (g_resourceMultiplierPercent != 100)
 	{
 		money = (money * g_resourceMultiplierPercent) / 100;
 	}
 
-	DEBUG_LOG(("Salvage money after multiplier = %d", money));
+	//DEBUG_LOG(("Salvage money after multiplier = %d", money));
 
 	if( money > 0 )
 	{

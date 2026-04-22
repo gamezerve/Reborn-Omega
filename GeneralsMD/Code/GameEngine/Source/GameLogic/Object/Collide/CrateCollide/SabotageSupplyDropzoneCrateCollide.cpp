@@ -151,10 +151,10 @@ Bool SabotageSupplyDropzoneCrateCollide::executeCrateBehavior( Object *other )
 		UnsignedInt cash = targetMoney->countMoney();
 		UnsignedInt desiredAmount = getSabotageSupplyDropzoneCrateCollideModuleData()->m_stealCashAmount;
 
-		DEBUG_LOG(("SabotageSupplyDropzone base steal = %u, multiplier = %d, target cash = %u",
-			getSabotageSupplyDropzoneCrateCollideModuleData()->m_stealCashAmount,
-			g_resourceMultiplierPercent,
-			targetMoney->countMoney()));
+		//DEBUG_LOG(("SabotageSupplyDropzone base steal = %u, multiplier = %d, target cash = %u",
+		//	getSabotageSupplyDropzoneCrateCollideModuleData()->m_stealCashAmount,
+		//	g_resourceMultiplierPercent,
+		//	targetMoney->countMoney()));
 
 		if (g_resourceMultiplierPercent != 100)
 		{

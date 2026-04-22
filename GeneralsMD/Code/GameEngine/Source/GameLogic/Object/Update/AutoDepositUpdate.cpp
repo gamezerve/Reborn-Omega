@@ -123,12 +123,12 @@ void AutoDepositUpdate::awardInitialCaptureBonus( Player *player )
 		return;
 
 	Int initialBonus = getAutoDepositUpdateModuleData()->m_initialCaptureBonus;
-	DEBUG_LOG(("Initial capture bonus before multiplier = %d, multiplier = %d", getAutoDepositUpdateModuleData()->m_initialCaptureBonus, g_resourceMultiplierPercent));
+	//DEBUG_LOG(("Initial capture bonus before multiplier = %d, multiplier = %d", getAutoDepositUpdateModuleData()->m_initialCaptureBonus, g_resourceMultiplierPercent));
 	if (g_resourceMultiplierPercent != 100)
 	{
 		initialBonus = (initialBonus * g_resourceMultiplierPercent) / 100;
 	}
-	DEBUG_LOG(("Initial capture bonus after multiplier = %d", initialBonus));
+	//DEBUG_LOG(("Initial capture bonus after multiplier = %d", initialBonus));
 	player->getMoney()->deposit(initialBonus);
 	player->getScoreKeeper()->addMoneyEarned(initialBonus);
 
