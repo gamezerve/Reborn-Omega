@@ -159,6 +159,18 @@ ScriptDialog::ScriptDialog(CWnd* pParent /*=nullptr*/)
 
 	m_searchResultsDialog = nullptr;
 
+	m_draggingSplitter = false;
+	m_splitterY = 0;
+	m_minTopPaneHeight = 120;
+	m_minBottomPaneHeight = 100;
+
+	m_draggingBottomSplitter = false;
+	m_bottomSplitterX = 0;
+	m_lastClientWidth = 0;
+	m_lastClientHeight = 0;
+	m_minLeftBottomPaneWidth = 120;
+	m_minRightBottomPaneWidth = 120;
+
 	//{{AFX_DATA_INIT(ScriptDialog)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
@@ -210,8 +222,208 @@ BEGIN_MESSAGE_MAP(ScriptDialog, CDialog)
 	ON_WM_LBUTTONUP()
 	ON_WM_MOVE()
 	ON_WM_DESTROY()
+	ON_WM_SIZE()
+	ON_WM_GETMINMAXINFO()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_SETCURSOR()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
+
+void ScriptDialog::OnGetMinMaxInfo(MINMAXINFO* lpMMI)
+{
+	CDialog::OnGetMinMaxInfo(lpMMI);
+
+	lpMMI->ptMinTrackSize.x = 620;
+	lpMMI->ptMinTrackSize.y = 630;
+}
+
+void ScriptDialog::RepositionControls(int cx, int cy)
+{
+	if (m_initialRects.empty())
+		return;
+
+	const int dx = cx - m_initialClientRect.Width();
+	const int dy = cy - m_initialClientRect.Height();
+
+	const CRect& treeBase = m_initialRects[IDC_SCRIPT_TREE];
+	const CRect& commentBase = m_initialRects[IDC_SCRIPT_COMMENT];
+	const CRect& descBase = m_initialRects[IDC_SCRIPT_DESCRIPTION];
+
+	int bottomTop = m_splitterY;
+
+	const int minBottomTop = treeBase.top + m_minTopPaneHeight;
+	const int maxBottomTop = cy - m_minBottomPaneHeight - 28;
+
+	if (bottomTop < minBottomTop)
+		bottomTop = minBottomTop;
+	if (bottomTop > maxBottomTop)
+		bottomTop = maxBottomTop;
+
+	m_splitterY = bottomTop;
+
+	const int treeBottom = bottomTop - 2;
+	const int bottomHeight = cy - bottomTop - (m_initialClientRect.Height() - commentBase.bottom);
+
+	int bottomSplitterX = m_bottomSplitterX;
+
+	const int leftBaseLeft = commentBase.left;
+	const int rightBaseRight = descBase.right + dx;
+
+	const int minBottomSplitterX = leftBaseLeft + m_minLeftBottomPaneWidth;
+	const int maxBottomSplitterX = rightBaseRight - m_minRightBottomPaneWidth;
+
+	if (bottomSplitterX < minBottomSplitterX)
+		bottomSplitterX = minBottomSplitterX;
+	if (bottomSplitterX > maxBottomSplitterX)
+		bottomSplitterX = maxBottomSplitterX;
+
+	m_bottomSplitterX = bottomSplitterX;
+
+	HDWP hdwp = BeginDeferWindowPos((int)m_initialRects.size());
+	if (!hdwp)
+		return;
+
+	for (auto& it : m_initialRects)
+	{
+		const int id = it.first;
+		const CRect r = it.second;
+
+		CWnd* p = GetDlgItem(id);
+		if (!p)
+			continue;
+
+		CRect newR = r;
+
+		if (id == IDC_SCRIPT_TREE)
+		{
+			newR.right += dx;
+			newR.bottom = treeBottom;
+		}
+		else if (id == IDC_SCRIPT_COMMENT)
+		{
+			newR.top = bottomTop;
+			newR.bottom = bottomTop + bottomHeight;
+			newR.right = m_bottomSplitterX - 2;
+		}
+		else if (id == IDC_SCRIPT_DESCRIPTION)
+		{
+			newR.left = m_bottomSplitterX + 2;
+			newR.right = descBase.right + dx;
+			newR.top = bottomTop;
+			newR.bottom = bottomTop + bottomHeight;
+		}
+		else if (
+			id == IDOK ||
+			id == IDC_VERIFY ||
+			id == IDC_NEW_FOLDER ||
+			id == IDC_NEW_SCRIPT ||
+			id == IDC_EDIT_SCRIPT ||
+			id == IDC_COPY_SCRIPT ||
+			id == IDC_DELETE ||
+			id == IDC_PATCH_GC ||
+			id == IDC_SEARCH ||
+			id == IDCANCEL
+			)
+		{
+			newR.left += dx;
+			newR.right += dx;
+		}
+		else if (id == IDC_SAVE || id == IDC_LOAD)
+		{
+			newR.left += dx;
+			newR.right += dx;
+			newR.top += dy;
+			newR.bottom += dy;
+		}
+		else if (id == IDC_AUTO_VERIFY)
+		{
+			const CRect& saveBase = m_initialRects[IDC_SAVE];
+
+			newR.left = saveBase.left + dx - newR.Width() - 10;
+			newR.right = newR.left + r.Width();
+			newR.top += dy;
+			newR.bottom += dy;
+		}
+
+		hdwp = DeferWindowPos(
+			hdwp,
+			p->GetSafeHwnd(),
+			nullptr,
+			newR.left,
+			newR.top,
+			newR.Width(),
+			newR.Height(),
+			SWP_NOZORDER | SWP_NOACTIVATE
+		);
+	}
+
+	EndDeferWindowPos(hdwp);
+}
+
+void ScriptDialog::OnSize(UINT nType, int cx, int cy)
+{
+	CDialog::OnSize(nType, cx, cy);
+
+	if (!::IsWindow(m_hWnd) || m_initialRects.empty())
+		return;
+
+	if (m_lastClientWidth != 0 && cx != m_lastClientWidth && !m_draggingBottomSplitter)
+	{
+		m_bottomSplitterX += (cx - m_lastClientWidth) / 2;
+	}
+
+	if (m_lastClientHeight != 0 && cy != m_lastClientHeight && !m_draggingSplitter)
+	{
+		m_splitterY += (cy - m_lastClientHeight) / 2;
+	}
+
+	m_lastClientWidth = cx;
+	m_lastClientHeight = cy;
+
+	RepositionControls(cx, cy);
+}
+
+void ScriptDialog::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	if (!m_initialRects.empty())
+	{
+		CRect rcClient;
+		GetClientRect(&rcClient);
+
+		CRect treeRect;
+		CRect commentRect;
+		GetDlgItem(IDC_SCRIPT_TREE)->GetWindowRect(&treeRect);
+		GetDlgItem(IDC_SCRIPT_COMMENT)->GetWindowRect(&commentRect);
+		ScreenToClient(&treeRect);
+		ScreenToClient(&commentRect);
+
+		CRect splitterRect(0, treeRect.bottom, rcClient.right, commentRect.top);
+		splitterRect.InflateRect(0, 2);
+
+		if (splitterRect.PtInRect(point))
+		{
+			m_draggingSplitter = true;
+			SetCapture();
+			return;
+		}
+
+		CRect verticalSplitterRect(
+			m_bottomSplitterX - 3,
+			commentRect.top,
+			m_bottomSplitterX + 3,
+			commentRect.bottom
+		);
+
+		if (verticalSplitterRect.PtInRect(point))
+		{
+			m_draggingBottomSplitter = true;
+			SetCapture();
+			return;
+		}
+	}
+
+	CDialog::OnLButtonDown(nFlags, point);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // ScriptDialog message handlers
@@ -796,8 +1008,59 @@ BOOL ScriptDialog::OnInitDialog()
 	top.left =::AfxGetApp()->GetProfileInt(SCRIPT_DIALOG_SECTION, "Left", top.left);
 	SetWindowPos(nullptr, top.left, top.top, 0, 0, SWP_NOZORDER|SWP_NOSIZE);
 
+	GetClientRect(&m_initialClientRect);
+
+	m_lastClientWidth = m_initialClientRect.Width();
+	m_lastClientHeight = m_initialClientRect.Height();
+
+	int ids[] = {
+		IDC_SCRIPT_TREE,
+		IDC_SCRIPT_COMMENT,
+		IDC_SCRIPT_DESCRIPTION,
+		IDOK,
+		IDC_VERIFY,
+		IDC_NEW_FOLDER,
+		IDC_NEW_SCRIPT,
+		IDC_EDIT_SCRIPT,
+		IDC_COPY_SCRIPT,
+		IDC_DELETE,
+		IDC_PATCH_GC,
+		IDC_SEARCH,
+		IDCANCEL,
+		IDC_AUTO_VERIFY,
+		IDC_SAVE,
+		IDC_LOAD
+	};
+
+	for (int id : ids)
+	{
+		CWnd* p = GetDlgItem(id);
+		if (p)
+		{
+			CRect r;
+			p->GetWindowRect(&r);
+			ScreenToClient(&r);
+			m_initialRects[id] = r;
+		}
+	}
+
+	CRect commentRect;
+	GetDlgItem(IDC_SCRIPT_COMMENT)->GetWindowRect(&commentRect);
+	ScreenToClient(&commentRect);
+	m_splitterY = commentRect.top;
+
+	CRect leftRect;
+	CRect rightRect;
+	GetDlgItem(IDC_SCRIPT_COMMENT)->GetWindowRect(&leftRect);
+	GetDlgItem(IDC_SCRIPT_DESCRIPTION)->GetWindowRect(&rightRect);
+	ScreenToClient(&leftRect);
+	ScreenToClient(&rightRect);
+
+	m_bottomSplitterX = rightRect.left;
+
 	return FALSE;  // return TRUE unless you set the focus to a control
-	              // EXCEPTION: OCX Property Pages should return FALSE
+	// EXCEPTION: OCX Property Pages should return FALSE
+
 }
 
 HTREEITEM ScriptDialog::addPlayer(Int playerIndx)
@@ -2240,6 +2503,84 @@ void ScriptDialog::OnBegindragScriptTree(NMHDR* pNMHDR, LRESULT* pResult)
 
 void ScriptDialog::OnMouseMove(UINT nFlags, CPoint point)
 {
+	if (m_draggingSplitter)
+	{
+		CRect rcClient;
+		GetClientRect(&rcClient);
+
+		int minY = m_initialRects[IDC_SCRIPT_TREE].top + m_minTopPaneHeight;
+		int maxY = rcClient.bottom - m_minBottomPaneHeight - 28;
+
+		int newSplitterY = point.y;
+		if (newSplitterY < minY)
+			newSplitterY = minY;
+		if (newSplitterY > maxY)
+			newSplitterY = maxY;
+
+		if (newSplitterY != m_splitterY)
+		{
+			m_splitterY = newSplitterY;
+			RepositionControls(rcClient.Width(), rcClient.Height());
+		}
+		return;
+	}
+
+	if (m_draggingBottomSplitter)
+	{
+		CRect rcClient;
+		GetClientRect(&rcClient);
+
+		CRect commentRect;
+		GetDlgItem(IDC_SCRIPT_COMMENT)->GetWindowRect(&commentRect);
+		ScreenToClient(&commentRect);
+
+		int minX = m_initialRects[IDC_SCRIPT_COMMENT].left + m_minLeftBottomPaneWidth;
+		int maxX = rcClient.right - m_minRightBottomPaneWidth - 10;
+
+		int newBottomSplitterX = point.x;
+		if (newBottomSplitterX < minX)
+			newBottomSplitterX = minX;
+		if (newBottomSplitterX > maxX)
+			newBottomSplitterX = maxX;
+
+		if (newBottomSplitterX != m_bottomSplitterX)
+		{
+			m_bottomSplitterX = newBottomSplitterX;
+			RepositionControls(rcClient.Width(), rcClient.Height());
+		}
+		return;
+	}
+
+	CRect rcClient;
+	GetClientRect(&rcClient);
+
+	CRect treeRect;
+	CRect commentRect;
+	GetDlgItem(IDC_SCRIPT_TREE)->GetWindowRect(&treeRect);
+	GetDlgItem(IDC_SCRIPT_COMMENT)->GetWindowRect(&commentRect);
+	ScreenToClient(&treeRect);
+	ScreenToClient(&commentRect);
+
+	CRect splitterRect(0, treeRect.bottom, rcClient.right, commentRect.top);
+	splitterRect.InflateRect(0, 2);
+	if (splitterRect.PtInRect(point))
+	{
+		::SetCursor(::LoadCursor(nullptr, IDC_SIZENS));
+		return;
+	}
+
+	CRect verticalSplitterRect(
+		m_bottomSplitterX - 3,
+		commentRect.top,
+		m_bottomSplitterX + 3,
+		commentRect.bottom
+	);
+	if (verticalSplitterRect.PtInRect(point))
+	{
+		::SetCursor(::LoadCursor(nullptr, IDC_SIZEWE));
+		return;
+	}
+
 	if (m_draggingTreeView) {
 		CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 
@@ -2259,6 +2600,20 @@ void ScriptDialog::OnMouseMove(UINT nFlags, CPoint point)
 
 void ScriptDialog::OnLButtonUp(UINT nFlags, CPoint point)
 {
+	if (m_draggingSplitter)
+	{
+		m_draggingSplitter = false;
+		ReleaseCapture();
+		return;
+	}
+
+	if (m_draggingBottomSplitter)
+	{
+		m_draggingBottomSplitter = false;
+		ReleaseCapture();
+		return;
+	}
+
 	if (m_draggingTreeView) {
 		CTreeCtrl *pTree = (CTreeCtrl*)GetDlgItem(IDC_SCRIPT_TREE);
 		m_draggingTreeView = false;
@@ -2277,6 +2632,50 @@ void ScriptDialog::OnLButtonUp(UINT nFlags, CPoint point)
     }
 	}
 	CDialog::OnLButtonUp(nFlags, point);
+}
+
+BOOL ScriptDialog::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
+{
+	if (!m_initialRects.empty())
+	{
+		CPoint pt;
+		GetCursorPos(&pt);
+		ScreenToClient(&pt);
+
+		CRect rcClient;
+		GetClientRect(&rcClient);
+
+		CRect treeRect;
+		CRect commentRect;
+		GetDlgItem(IDC_SCRIPT_TREE)->GetWindowRect(&treeRect);
+		GetDlgItem(IDC_SCRIPT_COMMENT)->GetWindowRect(&commentRect);
+		ScreenToClient(&treeRect);
+		ScreenToClient(&commentRect);
+
+		CRect splitterRect(0, treeRect.bottom, rcClient.right, commentRect.top);
+		splitterRect.InflateRect(0, 2);
+
+		if (splitterRect.PtInRect(pt))
+		{
+			::SetCursor(::LoadCursor(nullptr, IDC_SIZENS));
+			return TRUE;
+		}
+
+		CRect verticalSplitterRect(
+			m_bottomSplitterX - 3,
+			commentRect.top,
+			m_bottomSplitterX + 3,
+			commentRect.bottom
+		);
+
+		if (verticalSplitterRect.PtInRect(pt))
+		{
+			::SetCursor(::LoadCursor(nullptr, IDC_SIZEWE));
+			return TRUE;
+		}
+	}
+
+	return CDialog::OnSetCursor(pWnd, nHitTest, message);
 }
 
 void ScriptDialog::doDropOn(HTREEITEM hDrag, HTREEITEM hTarget)

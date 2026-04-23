@@ -22,6 +22,7 @@
 //
 
 #include "GameLogic/SidesList.h"
+#include <map>
 
 class ListType  {
 public:
@@ -117,6 +118,21 @@ protected:
 
 	AsciiString			m_readPlayerNames[MAX_PLAYER_COUNT];
 
+	Int m_splitterY;
+	Bool m_draggingSplitter;
+	Int m_splitterHeight;
+	Int m_minTopPaneHeight;
+	Int m_minBottomPaneHeight;
+
+	Int m_bottomSplitterX;
+	Int m_lastClientWidth;
+	Int m_lastClientHeight;
+	Bool m_draggingBottomSplitter;
+	Int m_minLeftBottomPaneWidth;
+	Int m_minRightBottomPaneWidth;
+
+	void RepositionControls(int cx, int cy);
+
 protected:
 	HTREEITEM addPlayer(Int playerIndx);
 	void addScriptList(HTREEITEM hPlayer, Int playerIndex, ScriptList *pSL);
@@ -149,6 +165,10 @@ protected:
 	static Bool ParseTeamsDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData);
 	static Bool ParsePlayersDataChunk(DataChunkInput &file, DataChunkInfo *info, void *userData);
 
+	CRect m_initialClientRect;
+	std::map<int, CRect> m_initialRects;
+
+
 protected:
 
 	// Generated message map functions
@@ -174,6 +194,10 @@ protected:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMove(int x, int y);
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnGetMinMaxInfo(MINMAXINFO* lpMMI);
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
