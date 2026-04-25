@@ -87,7 +87,6 @@
 #include "GameLogic/VictoryConditions.h"
 #include "GameLogic/AIPathfind.h"
 
-
 // Kind of hacky, but we need to dance on the guts of the terrain.
 extern void oversizeTheTerrain(Int amount);
 
@@ -1071,6 +1070,9 @@ void ScriptActions::doNamedAttack(const AsciiString& attackerName, const AsciiSt
 	Object *attackingObj = TheScriptEngine->getUnitNamed( attackerName );
 	Object *victimObj = TheScriptEngine->getUnitNamed( victimName );
 
+	DEBUG_LOG(("doNamedAttack: attacker='%s' obj=%p victim='%s' obj=%p",
+		attackerName.str(), attackingObj, victimName.str(), victimObj));
+
 	if (!attackingObj || !victimObj) {
 		return;
 	}
@@ -1084,6 +1086,11 @@ void ScriptActions::doNamedAttack(const AsciiString& attackerName, const AsciiSt
 			/// @todo Teams should have a method that returns the number of members in the team (MSB)
 			attackingObj->leaveGroup();
 			aiUpdate->chooseLocomotorSet(LOCOMOTORSET_NORMAL);
+
+			DEBUG_LOG(("doNamedAttack: forcing attacker template='%s' to attack victim template='%s'",
+				attackingObj->getTemplate()->getName().str(),
+				victimObj->getTemplate()->getName().str()));
+
 			aiUpdate->aiForceAttackObject( victimObj, NO_MAX_SHOTS_LIMIT, CMD_FROM_SCRIPT );
 		}
 	}
@@ -6394,6 +6401,24 @@ void ScriptActions::doGuardSupplyCenter(const AsciiString& teamName, Int supplie
 }
 
 //-------------------------------------------------------------------------------------------------
+/** doRebornEnableCutsceneWidescreenFix */
+//-------------------------------------------------------------------------------------------------
+void ScriptActions::doRebornEnableCutsceneWidescreenFix()
+{
+	if (TheTacticalView)
+		TheTacticalView->setRebornCutsceneAspectRatioFix(TRUE);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** doRebornDisableCutsceneWidescreenFix */
+//-------------------------------------------------------------------------------------------------
+void ScriptActions::doRebornDisableCutsceneWidescreenFix()
+{
+	if (TheTacticalView)
+		TheTacticalView->setRebornCutsceneAspectRatioFix(FALSE);
+}
+
+//-------------------------------------------------------------------------------------------------
 void ScriptActions::doTeamGuardInTunnelNetwork(const AsciiString& teamName)
 {
 	Team *team = TheScriptEngine->getTeamNamed(teamName);
@@ -7058,6 +7083,12 @@ void ScriptActions::executeAction( ScriptAction *pAction )
 			return;
 		case ScriptAction::ZOOM_CAMERA:
 			doZoomCamera(pAction->getParameter(0)->getReal(), pAction->getParameter(1)->getReal(), pAction->getParameter(2)->getReal(), pAction->getParameter(3)->getReal());
+			return;
+		case ScriptAction::REBORN_ENABLE_CUTSCENE_WIDESCREEN_FIX:
+			doRebornEnableCutsceneWidescreenFix();
+			return;
+		case ScriptAction::REBORN_DISABLE_CUTSCENE_WIDESCREEN_FIX:
+			doRebornDisableCutsceneWidescreenFix();
 			return;
 		case ScriptAction::PITCH_CAMERA:
 			doPitchCamera(pAction->getParameter(0)->getReal(), pAction->getParameter(1)->getReal(), pAction->getParameter(2)->getReal(), pAction->getParameter(3)->getReal());

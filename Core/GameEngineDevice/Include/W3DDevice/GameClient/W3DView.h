@@ -329,6 +329,16 @@ private:
 	Bool				m_useRealZoomCam;
 	AsciiString		m_cameraSlaveObjectName;
 	AsciiString		m_cameraSlaveObjectBoneName;
+
+
+public:
+	virtual void setRebornCutsceneAspectRatioFix(Bool enabled) override;
+	void applyRebornCutsceneWidescreenFix();
+
+private:
+	Bool m_rebornCutsceneWidescreenFix;
+
+
 };
 
 // EXTERNALS //////////////////////////////////////////////////////////////////////////////////////

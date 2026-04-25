@@ -4117,6 +4117,20 @@ void ScriptEngine::init()
 	curTemplate->m_uiStrings[1] = ", use defensive special power ";
 	curTemplate->m_uiStrings[2] = ". (Specially made for GLA GPS Scrambler)";
 
+	curTemplate = &m_actionTemplates[ScriptAction::REBORN_ENABLE_CUTSCENE_WIDESCREEN_FIX];
+	curTemplate->m_internalName = "ACTION_REBORN_ENABLE_CUTSCENE_WIDESCREEN_FIX";
+	curTemplate->m_uiName = "Reborn/Enable Cutscene Widescreen Fix";
+	curTemplate->m_numParameters = 0;
+	curTemplate->m_numUiStrings = 1;
+	curTemplate->m_uiStrings[0] = "Enable cutscene widescreen fix (auto 4:3 framing) (Made for Training01, MD_USA01";
+
+	curTemplate = &m_actionTemplates[ScriptAction::REBORN_DISABLE_CUTSCENE_WIDESCREEN_FIX];
+	curTemplate->m_internalName = "ACTION_REBORN_DISABLE_CUTSCENE_WIDESCREEN_FIX";
+	curTemplate->m_uiName = "Reborn/Disable Cutscene Widescreen Fix";
+	curTemplate->m_numParameters = 0;
+	curTemplate->m_numUiStrings = 1;
+	curTemplate->m_uiStrings[0] = "Disable cutscene widescreen fix (restore zoom)";
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/* Recipe for adding a condition:
