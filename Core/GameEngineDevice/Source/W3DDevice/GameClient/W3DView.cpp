@@ -170,6 +170,7 @@ W3DView::W3DView()
 	m_cameraAreaConstraints.zero();
 	m_recalcCamera = false;
 
+	m_rebornCutsceneWidescreenFix = FALSE;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -202,6 +203,41 @@ void W3DView::setHeight(Int height)
 	m_recalcCamera = true;
 }
 
+void W3DView::applyRebornCutsceneWidescreenFix()
+{
+	if (!m_3DCamera)
+		return;
+
+	if (m_rebornCutsceneWidescreenFix)
+	{
+		m_FOV = (Real)getWidth() / (Real)TheDisplay->getWidth() * DEG_TO_RADF(50.0f);
+		m_3DCamera->Set_View_Plane(m_FOV, -1);
+	}
+	else
+	{
+		m_FOV = (Real)getWidth() / (Real)TheDisplay->getWidth() * DEG_TO_RADF(50.0f);
+	}
+
+	m_3DCamera->Set_View_Plane(m_FOV, -1);
+}
+
+void W3DView::setRebornCutsceneAspectRatioFix(Bool enabled)
+{
+	if (!m_3DCamera)
+		return;
+
+	if (enabled)
+	{
+		m_3DCamera->Set_Aspect_Ratio(4.0f / 3.0f);
+	}
+	else
+	{
+		m_3DCamera->Set_Aspect_Ratio((Real)getWidth() / (Real)getHeight());
+	}
+
+	m_recalcCamera = true;
+}
+
 //-------------------------------------------------------------------------------------------------
 /** Sets the width of the viewport, while maintaining original camera perspective. */
 //-------------------------------------------------------------------------------------------------
@@ -210,15 +246,15 @@ void W3DView::setWidth(Int width)
 	// extend View functionality
 	View::setWidth(width);
 
-	Vector2 vMin,vMax;
-	m_3DCamera->Set_Aspect_Ratio((Real)width/(Real)getHeight());
- 	m_3DCamera->Get_Viewport(vMin,vMax);
- 	vMax.X=(Real)(m_originX+width)/(Real)TheDisplay->getWidth();
- 	m_3DCamera->Set_Viewport(vMin,vMax);
+	Vector2 vMin, vMax;
+	m_3DCamera->Set_Aspect_Ratio((Real)width / (Real)getHeight());
+	m_3DCamera->Get_Viewport(vMin, vMax);
+	vMax.X = (Real)(m_originX + width) / (Real)TheDisplay->getWidth();
+	m_3DCamera->Set_Viewport(vMin, vMax);
 
 	//we want to maintain the same scale, so we'll need to adjust the fov.
 	//default W3D fov for full-screen is 50 degrees.
-	m_3DCamera->Set_View_Plane((Real)width/(Real)TheDisplay->getWidth()*DEG_TO_RADF(50.0f),-1);
+
 
 	m_cameraAreaConstraintsValid = false;
 	m_recalcCamera = true;
@@ -752,9 +788,15 @@ void W3DView::setCameraTransform(const Matrix3D &transform)
 {
 	m_cameraHasMovedSinceRequest = true;
 
-#if defined(RTS_DEBUG)
-	m_3DCamera->Set_View_Plane( m_FOV, -1 );
-#endif
+	applyRebornCutsceneWidescreenFix();
+
+	if (m_rebornCutsceneWidescreenFix)
+	{
+		m_3DCamera->Set_View_Plane(
+			(Real)800.0f / (Real)TheDisplay->getWidth() * DEG_TO_RADF(50.0f),
+			-1
+		);
+	}
 
 	m_3DCamera->Set_Transform(transform);
 

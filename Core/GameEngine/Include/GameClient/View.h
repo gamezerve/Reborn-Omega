@@ -103,6 +103,8 @@ public:
 	View();
 	virtual ~View();
 
+	virtual void setRebornCutsceneAspectRatioFix(Bool enabled) {}
+
 	virtual void init();
 	virtual void reset();
 	virtual UnsignedInt getID() { return m_id; }
