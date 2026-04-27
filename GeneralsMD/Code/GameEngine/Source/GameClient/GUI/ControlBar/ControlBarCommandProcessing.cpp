@@ -365,8 +365,6 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 		}
 
-
-
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_DOZER_CONSTRUCT_CANCEL:
 		{
@@ -390,7 +388,6 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 		//---------------------------------------------------------------------------------------------
 		case GUI_COMMAND_UNIT_BUILD:
 		{
-			//
 			const ThingTemplate *whatToBuild = commandButton->getThingTemplate();
 
 			// get the "factory" object that is going to make the thing
