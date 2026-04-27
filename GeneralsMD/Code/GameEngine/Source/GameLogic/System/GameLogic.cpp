@@ -111,8 +111,6 @@
 #include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
 
-#include <rts/profile.h>
-
 DECLARE_PERF_TIMER(SleepyMaintenance)
 
 #include "Common/UnitTimings.h" //Contains the DO_UNIT_TIMINGS define jba.
@@ -2406,7 +2404,11 @@ void GameLogic::startNewGame( Bool loadingSaveGame )
 		TheInGameUI->messageNoFormat( TheGameText->FETCH_OR_SUBSTITUTE( "GUI:FastForwardInstructions", L"Press F to toggle Fast Forward" ) );
   }
 
-
+#ifdef PROFILER_ENABLED
+	AsciiString message;
+	message.format("GameStart: %s", TheGlobalData->m_mapName.str());
+	PROFILER_MSG(message.str(), message.getLength());
+#endif
 }
 
 //-----------------------------------------------------------------------------------------
@@ -3652,6 +3654,7 @@ extern __int64 Total_Load_3D_Assets;
 void GameLogic::update()
 {
 	USE_PERF_TIMER(GameLogic_update)
+	PROFILER_SECTION_COLOR(0x4CAF50);
 
 	LatchRestore<Bool> inUpdateLatch(m_isInUpdate, TRUE);
 #ifdef DO_UNIT_TIMINGS
@@ -3670,11 +3673,11 @@ void GameLogic::update()
 		Total_Load_3D_Assets=0;
 	#endif
 
-#ifdef RTS_PROFILE
+#ifdef RTS_PROFILE_LEGACY
     Profile::StartRange("map_load");
 #endif
 		startNewGame( FALSE );
-#ifdef RTS_PROFILE
+#ifdef RTS_PROFILE_LEGACY
     Profile::StopRange("map_load");
 #endif
 		m_startNewGame = FALSE;
@@ -3697,6 +3700,8 @@ void GameLogic::update()
 	// send the current time to the GameClient
 	UnsignedInt now = getFrame();
 	TheGameClient->setFrame(now);
+
+	PROFILER_PLOT("LogicFrame", static_cast<int64_t>(now));
 
 	// update (execute) scripts
 	{
@@ -4215,6 +4220,12 @@ void GameLogic::exitGame()
 	TheScriptEngine->doUnfreezeTime();
 
 	TheMessageStream->appendMessage(GameMessage::MSG_CLEAR_GAME_DATA);
+
+#ifdef PROFILER_ENABLED
+	AsciiString message;
+	message.format("GameEnd: %s", TheGlobalData->m_mapName.str());
+	PROFILER_MSG(message.str(), message.getLength());
+#endif
 }
 
 // ------------------------------------------------------------------------------------------------
