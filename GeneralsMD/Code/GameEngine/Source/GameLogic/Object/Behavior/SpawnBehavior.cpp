@@ -44,6 +44,7 @@
 #include "GameClient/InGameUI.h" // selection logic
 #include "GameLogic/ExperienceTracker.h" //veterancy logic
 #include "GameLogic/Module/StealthUpdate.h"
+#include "GameLogic/Module/ActiveBody.h"
 
 
 #define NONE_SPAWNED_YET (0xffffffff)
@@ -1160,4 +1161,77 @@ void SpawnBehavior::loadPostProcess()
 	// extend base class
 	BehaviorModule::loadPostProcess();
 
+}
+
+Bool SpawnBehavior::getSlavesHealthForTooltip(Real& currentHealth, Real& maxHealth) const
+{
+	currentHealth = 0.0f;
+	maxHealth = 0.0f;
+
+	for (std::list<ObjectID>::const_iterator iter = m_spawnIDs.begin(); iter != m_spawnIDs.end(); ++iter)
+	{
+		Object* currentSpawn = TheGameLogic->findObjectByID(*iter);
+		if (!currentSpawn)
+			continue;
+
+		BodyModuleInterface* body = currentSpawn->getBodyModule();
+		if (!body)
+			continue;
+
+		currentHealth += body->getHealth();
+		maxHealth += body->getMaxHealth();
+	}
+
+	return maxHealth > 0.0f;
+}
+
+Bool SpawnBehavior::getPotentialSpawnHealthForTooltip(const ThingTemplate* thing, Real& minHealth, Real& maxHealth)
+{
+	minHealth = 0.0f;
+	maxHealth = 0.0f;
+
+	if (!thing || !thing->isKindOf(KINDOF_MOB_NEXUS))
+		return FALSE;
+
+	const ModuleInfo& behaviorModules = thing->getBehaviorModuleInfo();
+
+	for (Int i = 0; i < behaviorModules.getCount(); ++i)
+	{
+		const ModuleData* moduleData = behaviorModules.getNthData(i);
+		if (!moduleData)
+			continue;
+
+		const SpawnBehaviorModuleData* spawnData = dynamic_cast<const SpawnBehaviorModuleData*>(moduleData);
+		if (!spawnData)
+			continue;
+
+		if (spawnData->m_spawnNumberData <= 0 || spawnData->m_spawnTemplateNameData.empty())
+			return FALSE;
+
+		Real totalMinHealth = 0.0f;
+		Real totalMaxHealth = 0.0f;
+
+		for (Int spawnIndex = 0; spawnIndex < spawnData->m_spawnNumberData; ++spawnIndex)
+		{
+			const AsciiString& spawnTemplateName =
+				spawnData->m_spawnTemplateNameData[spawnIndex % spawnData->m_spawnTemplateNameData.size()];
+
+			const ThingTemplate* spawnTemplate = TheThingFactory->findTemplate(spawnTemplateName);
+			if (!spawnTemplate)
+				continue;
+
+			const ActiveBodyModuleData* bodyData = spawnTemplate->friend_getActiveBodyModuleData();
+			if (!bodyData)
+				continue;
+
+			totalMinHealth += bodyData->m_initialHealth;
+			totalMaxHealth += bodyData->m_maxHealth;
+		}
+
+		minHealth = totalMinHealth;
+		maxHealth = totalMaxHealth;
+		return maxHealth > 0.0f;
+	}
+
+	return FALSE;
 }

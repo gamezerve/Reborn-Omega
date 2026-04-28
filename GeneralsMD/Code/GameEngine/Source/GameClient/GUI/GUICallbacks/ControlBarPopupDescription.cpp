@@ -1355,7 +1355,24 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				}
 			}
 
-			if (bodyData)
+			if (infoTemplate && infoTemplate->isKindOf(KINDOF_MOB_NEXUS))
+			{
+				Real spawnMinHealth = 0.0f;
+				Real spawnMaxHealth = 0.0f;
+
+				if (SpawnBehavior::getPotentialSpawnHealthForTooltip(infoTemplate, spawnMinHealth, spawnMaxHealth))
+				{
+					if (spawnMinHealth > 0.0f && spawnMinHealth != spawnMaxHealth)
+					{
+						healthText.format(L"Health: %.0f - %.0f", spawnMinHealth, spawnMaxHealth);
+					}
+					else
+					{
+						healthText.format(L"Health: %.0f", spawnMaxHealth);
+					}
+				}
+			}
+			else if (bodyData)
 			{
 				if (maxHealthUpgradeData && maxHealthUpgradeData->m_addMaxHealth > 0.0f)
 				{
@@ -2016,6 +2033,20 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 	Real currentHealthForTooltip = liveBody ? liveBody->getHealth() : 0.0f;
 	Real maxHealthForTooltip = liveBody ? liveBody->getMaxHealth() : 0.0f;
 	Bool useScaledEnemyHealthLine = FALSE;
+
+	SpawnBehaviorInterface* spawnInterface = obj ? obj->getSpawnBehaviorInterface() : nullptr;
+
+	if (spawnInterface && thing->isKindOf(KINDOF_MOB_NEXUS))
+	{
+		Real slaveCurrentHealth = 0.0f;
+		Real slaveMaxHealth = 0.0f;
+
+		if (spawnInterface->getSlavesHealthForTooltip(slaveCurrentHealth, slaveMaxHealth))
+		{
+			currentHealthForTooltip = slaveCurrentHealth;
+			maxHealthForTooltip = slaveMaxHealth;
+		}
+	}
 
 	if (localPlayer && ownerPlayer && localPlayer->getRelationship(ownerPlayer->getDefaultTeam()) == ENEMIES)
 	{
