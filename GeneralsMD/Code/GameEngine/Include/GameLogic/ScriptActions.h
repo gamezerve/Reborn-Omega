@@ -390,5 +390,6 @@ protected:
 	void doRebornSkirmishFireGPSScramblerDefensively(const AsciiString& player, const AsciiString& specialPower);
 	void doRebornEnableCutsceneWidescreenFix();
 	void doRebornDisableCutsceneWidescreenFix();
+	static void doRebornEnableAIScriptUpgrades(const AsciiString& playerName, Bool enabled);
 
 };

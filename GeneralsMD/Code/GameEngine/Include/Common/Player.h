@@ -257,6 +257,7 @@ public:
 	Color getPlayerNightColor() const { return m_nightColor;}
 	/// return the type of controller
 	PlayerType getPlayerType() const { return m_playerType; }
+	AIPlayer* getAIPlayer() { return m_ai; }
 	void setPlayerType(PlayerType t, Bool skirmish);
 
 	PlayerIndex getPlayerIndex() const { return m_playerIndex; }
@@ -691,6 +692,7 @@ private:
 	Bool addScience(ScienceType science);
 
 public:
+
 	Int getSkillPoints() const						{ return m_skillPoints; }
 	Int getSciencePurchasePoints() const	{ return m_sciencePurchasePoints; }
 	Int getRankLevel() const							{ return m_rankLevel; }

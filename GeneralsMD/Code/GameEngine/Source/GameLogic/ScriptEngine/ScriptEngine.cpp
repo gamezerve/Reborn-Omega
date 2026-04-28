@@ -4131,6 +4131,17 @@ void ScriptEngine::init()
 	curTemplate->m_numUiStrings = 1;
 	curTemplate->m_uiStrings[0] = "Disable cutscene widescreen fix (restore zoom)";
 
+	curTemplate = &m_actionTemplates[ScriptAction::ACTION_REBORN_ENABLE_AI_SCRIPT_UPGRADES];
+	curTemplate->m_internalName = "ACTION_REBORN_ENABLE_AI_SCRIPT_UPGRADES";
+	curTemplate->m_uiName = "Reborn/Enable AI Script Upgrade System";
+	curTemplate->m_numParameters = 2;
+	curTemplate->m_parameters[0] = Parameter::SIDE;
+	curTemplate->m_parameters[1] = Parameter::BOOLEAN;
+	curTemplate->m_numUiStrings = 3;
+	curTemplate->m_uiStrings[0] = "For player ";
+	curTemplate->m_uiStrings[1] = ", set AI script upgrade system to ";
+	curTemplate->m_uiStrings[2] = ".";
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/* Recipe for adding a condition:

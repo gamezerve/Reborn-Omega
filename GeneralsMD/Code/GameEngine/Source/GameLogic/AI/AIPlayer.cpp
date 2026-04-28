@@ -84,8 +84,9 @@ m_dozerQueuedForRepair(false),
 m_supplySourceAttackCheckFrame(0),
 m_attackedSupplyCenter(INVALID_ID),
 m_teamSeconds(10),
-m_scriptUpgradeTimer(60 * LOGICFRAMES_PER_SECOND),
+m_scriptUpgradeTimer(180 * LOGICFRAMES_PER_SECOND),
 m_scriptUpgradeIndex(0),
+m_scriptUpgradeListEnabled(false),
 m_curWarehouseID(INVALID_ID)
 {
 	m_frameLastBuildingBuilt = TheGameLogic->getFrame();
@@ -1947,6 +1948,10 @@ Bool AIPlayer::canBuildUpgradeNow(const AsciiString& upgrade) const
 
 void AIPlayer::updateScriptUpgradeList()
 {
+	// Reborn: Only attempt to build script upgrades if we're active and we're a skirmish AI. Also requires to be enabled through WorldBuilder scripts.
+	if (!m_scriptUpgradeListEnabled || !m_player || !m_player->isPlayerActive() || !isSkirmishAI()) {
+		return;
+	}
 	static const char* const kUpgradeList[] =
 	{
 			"Upgrade_ChinaBlackNapalm",
@@ -2008,7 +2013,7 @@ void AIPlayer::updateScriptUpgradeList()
 		return;
 	}
 
-	m_scriptUpgradeTimer = 20 * LOGICFRAMES_PER_SECOND;
+	m_scriptUpgradeTimer = 180 * LOGICFRAMES_PER_SECOND; // Reborn: check for upgrades every 3 minutes (Default LOGICFRAMES_PER_SECOND is 30, so this is every 180 seconds).
 
 	std::vector<const char*> availableUpgrades;
 
