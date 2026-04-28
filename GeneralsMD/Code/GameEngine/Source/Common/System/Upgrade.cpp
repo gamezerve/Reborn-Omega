@@ -465,6 +465,7 @@ const FieldParse UpgradeTemplate::m_upgradeFieldParseTable[] =
 	{ "ResearchSound",			INI::parseAudioEventRTS,	nullptr, offsetof( UpgradeTemplate, m_researchSound ) },
 	{ "UnitSpecificSound",	INI::parseAudioEventRTS,	nullptr, offsetof( UpgradeTemplate, m_unitSpecificSound ) },
 	{ "AcademyClassify",		INI::parseIndexList,			TheAcademyClassificationTypeNames, offsetof( UpgradeTemplate, m_academyClassificationType ) },
+	{ "UseForAutoAIUpgrade", INI::parseBool, nullptr, offsetof(UpgradeTemplate, m_useForAutoAIUpgrade) },
 	{ nullptr,						nullptr,												 nullptr, 0 }
 
 };
@@ -481,6 +482,7 @@ UpgradeTemplate::UpgradeTemplate()
 	m_prev = nullptr;
 	m_buttonImage = nullptr;
 	m_academyClassificationType = ACT_NONE;
+	m_useForAutoAIUpgrade = false;
 
 }
 

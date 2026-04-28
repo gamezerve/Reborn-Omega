@@ -1948,80 +1948,55 @@ Bool AIPlayer::canBuildUpgradeNow(const AsciiString& upgrade) const
 
 void AIPlayer::updateScriptUpgradeList()
 {
+
 	// Reborn: Only attempt to build script upgrades if we're active and we're a skirmish AI. Also requires to be enabled through WorldBuilder scripts.
 	if (!m_scriptUpgradeListEnabled || !m_player || !m_player->isPlayerActive() || !isSkirmishAI()) {
 		return;
 	}
-	static const char* const kUpgradeList[] =
+
+	static Bool s_loggedAutoAIUpgrades = FALSE;
+
+	if (!s_loggedAutoAIUpgrades)
 	{
-			"Upgrade_ChinaBlackNapalm",
-			"Upgrade_ChinaBattleMasterMassProduction",
-			"Upgrade_AmbulanceRepairCrew",
-			"Upgrade_ChinaFusionTanks",
-			"Upgrade_ChinaRifleUpgrade",
-			"Upgrade_AmericaAfterburners",
-			"Upgrade_Nationalism",
-			"Upgrade_Fanaticism",
-			"Upgrade_AmericaSupplyLines",
-			"Upgrade_AmericaRangerFlashBangGrenade",
-			"Upgrade_AmericaTOWMissile",
-			"Upgrade_ComancheRocketPods",
-			"Upgrade_AmericaLaserMissiles",
-			"Upgrade_AmericaCountermeasures",
-			"Upgrade_AmericaBunkerBusters",
-			"Upgrade_AmericaAdvancedTraining",
-			"Upgrade_AmericaDroneArmor",
-			"Upgrade_AmericaCompositeArmor",
-			"Upgrade_InfantryCaptureBuilding",
-			"Upgrade_AmericaMOAB",
-			"Upgrade_AmericaChemicalSuits",
-			"Upgrade_AmericaSentryDroneGun",
-			"Upgrade_ChinaChainGuns",
-			"Upgrade_ChinaAircraftArmor",
-			"Upgrade_ChinaTacticalNukeMig",
-			"Upgrade_ChinaSubliminalMessaging",
-			"Upgrade_ChinaSatelliteHackOne",
-			"Upgrade_ChinaSatelliteHackTwo",
-			"Upgrade_ChinaUraniumShells",
-			"Upgrade_ChinaNeutronShells",
-			"Upgrade_ChinaNuclearTanks",
-			"Upgrade_GLAWorkerShoes",
-			"Upgrade_GLAFortifiedStructure",
-			"Upgrade_GLAInfantryRebelBoobyTrapAttack",
-			"Upgrade_GLAScorpionRocket",
-			"Upgrade_GLARadarVanScan",
-			"Upgrade_GLAAnthraxBeta",
-			"Upgrade_GLAToxinShells",
-			"Upgrade_GLACamouflage",
-			"Upgrade_GLAAPRockets",
-			"Upgrade_GLAJunkRepair",
-			"Upgrade_GLAAPBullets",
-			"Upgrade_GLABuggyAmmo",
-			"Upgrade_GLAArmTheMob",
-			"Chem_Upgrade_GLAAnthraxGamma",
-			"Tank_Upgrade_ChinaTankAutoLoader",
-			"Nuke_Upgrade_ChinaWGUraniumShells",
-			"Upgrade_ChinaIsotopeStability",
-			"Nuke_Upgrade_ChinaFusionReactors",
-			"Demo_Upgrade_SuicideBomb",
-			"AirF_Upgrade_StealthComanche",
-			nullptr
-	};
+		DEBUG_LOG(("==== Auto AI Upgrade List (UseForAutoAIUpgrade=Yes) ====\n"));
+
+		for (const UpgradeTemplate* upgrade = TheUpgradeCenter->firstUpgradeTemplate(); upgrade; upgrade = upgrade->friend_getNext())
+		{
+			if (upgrade->getUpgradeType() != UPGRADE_TYPE_PLAYER)
+				continue;
+
+			if (!upgrade->getUseForAutoAIUpgrade())
+				continue;
+
+			DEBUG_LOG(("AutoAIUpgrade: %s\n", upgrade->getUpgradeName().str()));
+		}
+
+		DEBUG_LOG(("==== End of Auto AI Upgrade List ====\n"));
+
+		s_loggedAutoAIUpgrades = TRUE;
+	}
 
 	if (m_scriptUpgradeTimer > 0) {
 		--m_scriptUpgradeTimer;
 		return;
 	}
 
-	m_scriptUpgradeTimer = 180 * LOGICFRAMES_PER_SECOND; // Reborn: check for upgrades every 3 minutes (Default LOGICFRAMES_PER_SECOND is 30, so this is every 180 seconds).
+	m_scriptUpgradeTimer = 180 * LOGICFRAMES_PER_SECOND; // Reborn: check for upgrades every 3 minutes.
 
-	std::vector<const char*> availableUpgrades;
+	std::vector<const UpgradeTemplate*> availableUpgrades;
 
-	for (Int i = 0; kUpgradeList[i] != nullptr; ++i)
+	for (const UpgradeTemplate* upgrade = TheUpgradeCenter->firstUpgradeTemplate(); upgrade; upgrade = upgrade->friend_getNext())
 	{
-		AsciiString upgradeName = kUpgradeList[i];
-		if (canBuildUpgradeNow(upgradeName)) {
-			availableUpgrades.push_back(kUpgradeList[i]);
+		if (upgrade->getUpgradeType() != UPGRADE_TYPE_PLAYER) {
+			continue;
+		}
+
+		if (!upgrade->getUseForAutoAIUpgrade()) {
+			continue;
+		}
+
+		if (canBuildUpgradeNow(upgrade->getUpgradeName())) {
+			availableUpgrades.push_back(upgrade);
 		}
 	}
 
@@ -2032,11 +2007,12 @@ void AIPlayer::updateScriptUpgradeList()
 	}
 
 	Int choice = GameLogicRandomValue(0, static_cast<Int>(availableUpgrades.size()) - 1);
-	const char* upgradeName = availableUpgrades[choice];
+	const UpgradeTemplate* upgrade = availableUpgrades[choice];
+	const AsciiString& upgradeName = upgrade->getUpgradeName();
 
 	DEBUG_LOG(("AIPlayer %s script upgrade attempt: %s\n",
 		TheNameKeyGenerator->keyToName(m_player->getPlayerNameKey()).str(),
-		upgradeName));
+		upgradeName.str()));
 
 	buildUpgrade(upgradeName);
 }
