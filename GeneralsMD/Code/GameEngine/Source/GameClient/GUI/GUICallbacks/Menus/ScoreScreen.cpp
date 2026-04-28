@@ -129,6 +129,7 @@ static GameWindow *buttonEmote = nullptr;
 static GameWindow *chatBoxBorder = nullptr;
 static GameWindow *buttonBuddies = nullptr;
 static GameWindow *staticTextGameSaved = nullptr;
+static GameWindow *staticTextGameSavedGen = nullptr;
 static GameWindow *backdrop = nullptr;
 static GameWindow *challengePortrait = nullptr;
 static GameWindow *challengeRemarks = nullptr;
@@ -415,6 +416,7 @@ void ScoreScreenInit( WindowLayout *layout, void *userData )
 	buttonContinueGen = TheWindowManager->winGetWindowFromId( parent, buttonContinueIDGen );
 	buttonBuddies = TheWindowManager->winGetWindowFromId( parent, buttonBuddiesID );
 	staticTextGameSaved= TheWindowManager->winGetWindowFromId( parent, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextGameSaveComplete") );
+	staticTextGameSavedGen= TheWindowManager->winGetWindowFromId( parent, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:StaticTextGameSaveCompleteGen") );
 	backdrop = TheWindowManager->winGetWindowFromId( parent, backdropID );
 	challengePortrait = TheWindowManager->winGetWindowFromId( parent, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:BigPortrait") );
 	challengeWinLossText = TheWindowManager->winGetWindowFromId( parent, TheNameKeyGenerator->nameToKey("ScoreScreen.wnd:ChallengeWinLossText") );
@@ -449,6 +451,7 @@ void ScoreScreenInit( WindowLayout *layout, void *userData )
 	// get the replay filename for later (not full path)
 	LastReplayFileName = TheRecorder->getLastReplayFileName().str();
 	staticTextGameSaved->winHide(TRUE);
+	staticTextGameSavedGen->winHide(TRUE);
 	overidePlayerDisplayName = FALSE;
 	WindowLayout *replayLayout = TheShell->getPopupReplayLayout();
 	if (replayLayout != nullptr) {
@@ -1124,8 +1127,16 @@ void finishSinglePlayerInit()
 
 			// auto save game
 			TheGameState->missionSave();
-			if(staticTextGameSaved)
-				staticTextGameSaved->winHide(FALSE);
+			if (IsRebornCampaign())
+			{
+				if (staticTextGameSavedGen)
+					staticTextGameSavedGen->winHide(FALSE);
+			}
+			else
+			{
+				if (staticTextGameSaved)
+					staticTextGameSaved->winHide(FALSE);
+			}
 		}
 	}
 	else
