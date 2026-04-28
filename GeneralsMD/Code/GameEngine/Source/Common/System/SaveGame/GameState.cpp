@@ -637,18 +637,41 @@ SaveCode GameState::missionSave()
 {
 
 	// get campaign
-	Campaign *campaign = TheCampaignManager->getCurrentCampaign();
+	Campaign* campaign = TheCampaignManager->getCurrentCampaign();
 
 	// get mission #
 	Int missionNumber = TheCampaignManager->getCurrentMissionNumber() + 1;
 
+	// get difficulty
+	Int difficulty = TheCampaignManager->getGameDifficulty();
+
+	UnicodeString difficultyStr;
+	switch (difficulty)
+	{
+	case 0:
+		difficultyStr = TheGameText->fetch("GUI:Easy");
+		break;
+	case 1:
+		difficultyStr = TheGameText->fetch("GUI:Medium");
+		break;
+	case 2:
+		difficultyStr = TheGameText->fetch("GUI:Hard");
+		break;
+	default:
+		difficultyStr.set(L"Unknown");
+		break;
+	}
+
 	// format a string for the mission save description
-	UnicodeString format = TheGameText->fetch( "GUI:MissionSave" );
+	UnicodeString format = TheGameText->fetch("GUI:MissionSave");
+	UnicodeString baseDesc;
+	baseDesc.format(format, TheGameText->fetch(campaign->m_campaignNameLabel).str(), missionNumber);
+
 	UnicodeString desc;
-	desc.format( format, TheGameText->fetch( campaign->m_campaignNameLabel ).str(), missionNumber );
+	desc.format(L"%ls (%ls)", baseDesc.str(), difficultyStr.str());
 
 	// do an automatic mission save
-	return saveGame( "", desc, SAVE_FILE_TYPE_MISSION );
+	return saveGame("", desc, SAVE_FILE_TYPE_MISSION);
 
 }
 
