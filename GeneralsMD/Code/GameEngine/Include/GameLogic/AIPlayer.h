@@ -207,6 +207,15 @@ public:
 
 	void setTeamDelaySeconds(Int delay) {m_teamSeconds = delay;}
 
+	void setScriptUpgradeListEnabled(Bool enabled)
+	{
+		m_scriptUpgradeListEnabled = enabled;
+		if (enabled) {
+			m_scriptUpgradeTimer = 0;
+		}
+	}
+	Bool getScriptUpgradeListEnabled() const { return m_scriptUpgradeListEnabled; }
+
 	/// Calculates the closest construction zone location based on a template.
 	Bool calcClosestConstructionZoneLocation( const ThingTemplate *constructTemplate, Coord3D *location );
 
@@ -295,4 +304,5 @@ protected:
 
 	Int m_scriptUpgradeTimer;
 	Int m_scriptUpgradeIndex;
+	Bool m_scriptUpgradeListEnabled;
 };

@@ -6975,6 +6975,27 @@ void ScriptActions::doRebornRandomObjectUseButton(
 	DEBUG_LOG(("Reborn Rand Obj Use Button Script: no valid object/button combination found\n"));
 }
 
+void ScriptActions::doRebornEnableAIScriptUpgrades(const AsciiString& playerName, Bool enabled)
+{
+	Player* player = TheScriptEngine->getPlayerFromAsciiString(playerName);
+	if (!player) {
+		DEBUG_LOG(("Reborn AI script upgrades: player '%s' not found\n", playerName.str()));
+		return;
+	}
+
+	AIPlayer* aiPlayer = player->getAIPlayer();
+	if (!aiPlayer) {
+		DEBUG_LOG(("Reborn AI script upgrades: player '%s' has no AIPlayer\n", playerName.str()));
+		return;
+	}
+
+	aiPlayer->setScriptUpgradeListEnabled(enabled);
+
+	DEBUG_LOG(("Reborn AI script upgrades: player '%s' enabled=%d\n",
+		TheNameKeyGenerator->keyToName(player->getPlayerNameKey()).str(),
+		enabled));
+}
+
 //-------------------------------------------------------------------------------------------------
 /** Execute an action */
 //-------------------------------------------------------------------------------------------------
@@ -6990,6 +7011,14 @@ void ScriptActions::executeAction( ScriptAction *pAction )
 				pAction->getParameter(0)->getString(),
 				pAction->getParameter(1)->getString()
 			);
+			break;
+		}
+		case ScriptAction::ACTION_REBORN_ENABLE_AI_SCRIPT_UPGRADES:
+		{
+			const AsciiString& playerName = pAction->getParameter(0)->getString();
+			Bool enabled = pAction->getParameter(1)->getInt() != 0;
+
+			doRebornEnableAIScriptUpgrades(playerName, enabled);
 			break;
 		}
 		case ScriptAction::ACTION_REBORN_RANDOM_OBJECT_USE_BUTTON:
