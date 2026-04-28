@@ -617,31 +617,53 @@ static void closeSaveMenu( GameWindow *window )
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
-static void setEditDescription( GameWindow *editControl )
+static void setEditDescription(GameWindow* editControl)
 {
 	UnicodeString defaultDesc;
-	Campaign *campaign = TheCampaignManager->getCurrentCampaign();
+	Campaign* campaign = TheCampaignManager->getCurrentCampaign();
 
 	//
 	// if we have a campaign we will use a default description that describes the
 	// location and map in the campaign nicely, otherwise we will default to just
 	// the map name (which is really only used in debug)
 	//
-	if( campaign )
-		defaultDesc.format( L"%s %d",
-												TheGameText->fetch( campaign->m_campaignNameLabel ).str(),
-												TheCampaignManager->getCurrentMissionNumber() + 1 );
+	if (campaign)
+	{
+		Int difficulty = TheCampaignManager->getGameDifficulty();
+
+		UnicodeString difficultyStr;
+		switch (difficulty)
+		{
+		case 0:
+			difficultyStr = TheGameText->fetch("GUI:Easy");
+			break;
+		case 1:
+			difficultyStr = TheGameText->fetch("GUI:Medium");
+			break;
+		case 2:
+			difficultyStr = TheGameText->fetch("GUI:Hard");
+			break;
+		default:
+			difficultyStr.set(L"Unknown");
+			break;
+		}
+
+		defaultDesc.format(L"%s %d (%ls)",
+			TheGameText->fetch(campaign->m_campaignNameLabel).str(),
+			TheCampaignManager->getCurrentMissionNumber() + 1,
+			difficultyStr.str());
+	}
 	else
 	{
-		const char *mapName = TheGlobalData->m_mapName.reverseFind( '\\' );
+		const char* mapName = TheGlobalData->m_mapName.reverseFind('\\');
 
-		if( mapName )
-			defaultDesc.format( L"%S", mapName + 1 );
+		if (mapName)
+			defaultDesc.format(L"%S", mapName + 1);
 		else
-			defaultDesc.format( L"%S", TheGlobalData->m_mapName.str() );
+			defaultDesc.format(L"%S", TheGlobalData->m_mapName.str());
 
 		//Keep the extension out of the descriptive name.
-		if( (defaultDesc.getLength() >= 4)  &&  (defaultDesc.getCharAt(defaultDesc.getLength()-4) == '.') )
+		if ((defaultDesc.getLength() >= 4) && (defaultDesc.getCharAt(defaultDesc.getLength() - 4) == '.'))
 		{
 			defaultDesc.truncateBy(4);
 		}
@@ -649,7 +671,7 @@ static void setEditDescription( GameWindow *editControl )
 	}
 
 	// set into edit control
-	GadgetTextEntrySetText( editControl, defaultDesc );
+	GadgetTextEntrySetText(editControl, defaultDesc);
 
 }
 
