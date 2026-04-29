@@ -68,13 +68,9 @@ struct SelectObjectsInfo
 
 //-------------------------------------------------------------------------------------------------
 
-void selectObjectOfType( Object* obj, void* selectObjectsInfo )
+static void selectObjectOfType( Object* obj, void* selectObjectsInfo )
 {
 	SelectObjectsInfo *soInfo = (SelectObjectsInfo*)selectObjectsInfo;
-	if( !obj || !soInfo )
-	{
-		return;
-	}
 
 	//Do the templates match?
 	if( obj->getTemplate()->isEquivalentTo( soInfo->thingTemplate ) )
@@ -276,11 +272,18 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 		case GUI_COMMAND_SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT:
 		{
 			//Determine the object that would construct it.
+
 			//const SpecialPowerTemplate *spTemplate = commandButton->getSpecialPowerTemplate();
 			//SpecialPowerType spType = spTemplate->getSpecialPowerType();
 			//Object* obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( spType );
 			const SpecialPowerTemplate* spTemplate = commandButton->getSpecialPowerTemplate();
 			Object* obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPower(spTemplate);
+
+			DEBUG_ASSERTCRASH(spTemplate != nullptr, ("Special Power Button is missing Special Power template"));
+
+			SpecialPowerType spType = spTemplate->getSpecialPowerType();
+			Object* obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( spType );
+
 			if( !obj )
 				break;
 			Drawable *draw = obj->getDrawable();
