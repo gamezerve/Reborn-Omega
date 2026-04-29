@@ -281,8 +281,8 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 
 			DEBUG_ASSERTCRASH(spTemplate != nullptr, ("Special Power Button is missing Special Power template"));
 
-			SpecialPowerType spType = spTemplate->getSpecialPowerType();
-			Object* obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( spType );
+			//SpecialPowerType spType = spTemplate->getSpecialPowerType();
+			//Object* obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( spType );
 
 			if( !obj )
 				break;
