@@ -484,6 +484,20 @@ void GameEngine::init()
 		ini.loadFileDirectory( "Data\\INI\\Default\\Weather", INI_LOAD_OVERWRITE, &xferCRC );
 		ini.loadFileDirectory( "Data\\INI\\Weather", INI_LOAD_OVERWRITE, &xferCRC );
 
+		// Reborn: load the RebornCamera INI file, It contains the list of maps that should use the fixed initial camera angle.
+		ini.loadFileDirectory("Data\\INI\\RebornCamera", INI_LOAD_OVERWRITE, nullptr);
+		DEBUG_LOG(("RebornCamera: ===== FULL MAP LIST DUMP ====="));
+
+		const std::vector<AsciiString>& maps = TheGlobalData->m_rebornForceSetupCameraAngleMaps;
+
+		DEBUG_LOG(("RebornCamera: total maps = %d", (int)maps.size()));
+
+		for (size_t i = 0; i < maps.size(); ++i)
+		{
+			DEBUG_LOG(("RebornCamera: map[%d] = %s", (int)i, maps[i].str()));
+		}
+
+		DEBUG_LOG(("RebornCamera: ===== END OF LIST ====="));
 
 
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////

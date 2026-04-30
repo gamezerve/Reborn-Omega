@@ -352,6 +352,7 @@ public:
 	AsciiString m_pendingFile;				///< If this is specified, use this map at the next game start
 
 	std::vector<AsciiString> m_simulateReplays; ///< If not empty, simulate this list of replays and exit.
+	std::vector<AsciiString> m_rebornForceSetupCameraAngleMaps;
 	Int m_simulateReplayJobs; ///< Maximum number of processes to use for simulation, or SIMULATE_REPLAYS_SEQUENTIAL for sequential simulation
 
 	Int m_maxParticleCount;						///< maximum number of particles that can exist

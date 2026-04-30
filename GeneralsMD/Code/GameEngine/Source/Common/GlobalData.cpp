@@ -540,6 +540,7 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	{ "BaseStatsDir",								INI::parseAsciiString,nullptr,			offsetof( GlobalData, m_baseStatsDir ) },
 	{ "LocalMOTDPath",							INI::parseAsciiString,nullptr,			offsetof( GlobalData, m_MOTDPath ) },
 	{ "ExtraLogging",								INI::parseBool,				nullptr,			offsetof( GlobalData, m_extraLogging ) },
+	{ "RebornForceSetupCameraAngleMap", INI::parseAsciiStringVectorAppend, nullptr, offsetof(GlobalData, m_rebornForceSetupCameraAngleMaps) },
 #endif
 
 	{ nullptr,					nullptr,						nullptr,						0 }
@@ -1384,3 +1385,5 @@ AsciiString GlobalData::BuildUserDataPathFromRegistry()
 
 	return myDocumentsDirectory;
 }
+
+

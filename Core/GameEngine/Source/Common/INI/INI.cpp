@@ -112,6 +112,7 @@ static const BlockParse theTypeTable[] =
 	{ "EvaEvent",                       INI::parseEvaEvent },
 	{ "FXList",                         INI::parseFXListDefinition },
 	{ "GameData",                       INI::parseGameDataDefinition },
+	{ "RebornCamera",										INI::parseGameDataDefinition },
 	{ "HeaderTemplate",                 INI::parseHeaderTemplateDefinition },
 	{ "InGameUI",                       INI::parseInGameUIDefinition },
 	{ "LODPreset",                      INI::parseLODPreset },
