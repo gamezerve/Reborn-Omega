@@ -113,6 +113,8 @@
 
 #include <rts/profile.h>
 
+Bool g_useLegacyForwardSpeed2D = FALSE;
+
 struct QuitGameException {};
 
 DECLARE_PERF_TIMER(SleepyMaintenance)

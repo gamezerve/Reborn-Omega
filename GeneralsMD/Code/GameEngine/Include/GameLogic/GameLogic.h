@@ -453,3 +453,5 @@ inline Object* GameLogic::findObjectByID( ObjectID id )
 
 // the singleton
 extern GameLogic *TheGameLogic;
+
+extern Bool g_useLegacyForwardSpeed2D;

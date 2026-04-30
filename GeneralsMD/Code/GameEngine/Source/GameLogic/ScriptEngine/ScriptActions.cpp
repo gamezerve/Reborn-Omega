@@ -7051,6 +7051,15 @@ void ScriptActions::executeAction( ScriptAction *pAction )
 		default:
 			DEBUG_CRASH(("Unknown ScriptAction type %d", pAction->getActionType())); return;
 
+
+		case ScriptAction::ACTION_REBORN_SET_LEGACY_FORWARD_SPEED_2D:
+		{
+			Bool enable = pAction->getParameter(0)->getInt() != 0;
+			g_useLegacyForwardSpeed2D = enable;
+
+			DEBUG_LOG(("Reborn: LegacyForwardSpeed2D = %d", enable));
+			break;
+		}
 		case ScriptAction::SCRIPT_ACTION_REBORN_SKIRMISH_FIRE_GPS_SCRAMBLER_DEFENSIVELY:
 		{
 			doRebornSkirmishFireGPSScramblerDefensively(
