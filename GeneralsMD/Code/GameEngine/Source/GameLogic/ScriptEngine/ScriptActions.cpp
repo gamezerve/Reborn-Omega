@@ -44,6 +44,8 @@
 #include "Common/ThingTemplate.h"
 #include "Common/Team.h"
 #include "Common/Upgrade.h"
+#include "Common/GameState.h"             // Reborn: For ShellMap1 Initial Camera Position Fix
+#include "Common/GlobalData.h"             // Reborn: For ShellMap1 Initial Camera Position Fix
 
 #include "GameClient/Anim2D.h"
 #include "GameClient/CampaignManager.h"
@@ -833,6 +835,26 @@ void ScriptActions::doOversizeTheTerrain(Int amount)
 	TheTacticalView->forceRedraw();
 }
 
+static Bool shouldForceSetupCameraAngleForMap(const AsciiString& mapName)
+{
+	const std::vector<AsciiString>& maps = TheGlobalData->m_rebornForceSetupCameraAngleMaps;
+
+	DEBUG_LOG(("RebornCamera: checking map %s, list size=%d", mapName.str(), (int)maps.size()));
+
+	for (size_t i = 0; i < maps.size(); ++i)
+	{
+		DEBUG_LOG(("RebornCamera: list[%d]=%s", (int)i, maps[i].str()));
+
+		if (!mapName.compareNoCase(maps[i]))
+		{
+			DEBUG_LOG(("RebornCamera: MATCH FOUND for %s", mapName.str()));
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
 //-------------------------------------------------------------------------------------------------
 /** doSetupCamera */
 //-------------------------------------------------------------------------------------------------
@@ -846,6 +868,33 @@ void ScriptActions::doSetupCamera(const AsciiString& waypoint, Real zoom, Real p
 	Coord3D destination = *lookat->getLocation();
 	TheTacticalView->moveCameraTo(&pos, 0, 0, true, 0.0f, 0.0f);
 	TheTacticalView->cameraModLookToward(&destination);
+
+	AsciiString mapName = TheGameState->getMapLeafName(TheGameState->getPristineMapName());
+
+	if (shouldForceSetupCameraAngleForMap(mapName))  // Reborn: Gets the list from RebornCamera.ini
+	{
+		Vector2 dir(destination.x - pos.x, destination.y - pos.y);
+		Real dirLength = dir.Length();
+
+		if (dirLength > 0.1f)
+		{
+			Real angle = WWMath::Acos(dir.X / dirLength);
+
+			if (dir.Y < 0.0f)
+			{
+				angle = -angle;
+			}
+
+			angle -= PI / 2;
+			angle = WWMath::Normalize_Angle(angle);
+
+			TheTacticalView->setAngle(angle);
+
+			DEBUG_LOG(("doSetupCamera (RebornCamera fix): forced camera angle %.4f for map %s from pos=(%.2f, %.2f) to destination=(%.2f, %.2f)",
+				angle, mapName.str(), pos.x, pos.y, destination.x, destination.y));
+		}
+	}
+
 	TheTacticalView->cameraModFinalPitch(pitch, 0.0f, 0.0f);
 	TheTacticalView->cameraModFinalZoom(zoom, 0.0f, 0.0f);
 }
