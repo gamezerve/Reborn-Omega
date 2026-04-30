@@ -183,7 +183,7 @@ private:
 	UnsignedInt						m_temporaryStateFramEnd; ///< Last frame to run m_temporaryState.
 };
 
-class AIAttackMoveStateMachine;
+
 //-----------------------------------------------------------------------------------------------------------
 class AttackStateMachine : public StateMachine
 {
@@ -801,35 +801,39 @@ EMPTY_DTOR(AIPanicState)
 /**
  * Follow simple list of points.
  */
-	class AIFollowPathState : public AIInternalMoveToState
+class AIFollowPathState : public AIInternalMoveToState
 {
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(AIFollowPathState, "AIFollowPathState")
 public:
-	AIFollowPathState(StateMachine* machine, AsciiString name = "AIFollowPathState");
-	//virtual ~AIFollowPathState();
+	AIFollowPathState( StateMachine *machine, AsciiString name = "AIFollowPathState" ) :
+		m_adjustFinal(true),
+		m_adjustFinalOverride(false),
+		m_index(0),
+		m_retryCount(10),
+		AIInternalMoveToState( machine, name ) { }
 	virtual StateReturnType onEnter() override;
-	virtual void onExit(StateExitType status) override;
+	virtual void onExit( StateExitType status ) override;
 	virtual StateReturnType update() override;
 
 protected:
+
 	Int getCurPathIndex() const { return m_index; }
 	void setAdjustFinalDestination(Bool b) { m_adjustFinal = b; }
 	void setAdjustFinalDestinationEvenIfNotDoingGroundMovement(Bool b) { m_adjustFinalOverride = b; }
 
 protected:
-	virtual void crc(Xfer* xfer) override;
-	virtual void xfer(Xfer* xfer) override;
+	// snapshot interface
+	virtual void crc( Xfer *xfer ) override;
+	virtual void xfer( Xfer *xfer ) override;
 	virtual void loadPostProcess() override;
 
 private:
-	Int m_index;
+	Int m_index;																		///< current path index
 	Bool m_adjustFinal;
 	Bool m_adjustFinalOverride;
 	Int m_retryCount;
-	StateMachine* m_attackFollowMachine;
-	Coord3D m_loopAttackAnchor;
-	Bool m_hasLoopAttackAnchor;
 };
+EMPTY_DTOR(AIFollowPathState)
 
 //-----------------------------------------------------------------------------------------------------------
 /**

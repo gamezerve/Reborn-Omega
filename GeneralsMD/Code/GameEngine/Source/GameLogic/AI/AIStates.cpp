@@ -3218,35 +3218,6 @@ StateReturnType AIPickUpCrateState::update()
 //----------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------
 
-
-AIFollowPathState::AIFollowPathState(StateMachine* machine, AsciiString name) :
-	AIInternalMoveToState(machine, name),
-	m_adjustFinal(true),
-	m_adjustFinalOverride(false),
-	m_index(0),
-	m_retryCount(10),
-	m_attackFollowMachine(nullptr),
-	m_hasLoopAttackAnchor(FALSE)
-{
-		m_loopAttackAnchor.zero();
-
-	if (getMachineOwner() && getMachineOwner()->isKindOf(KINDOF_CAN_ATTACK))
-	{
-		m_attackFollowMachine = newInstance(AIAttackMoveStateMachine)(getMachineOwner(), "AIFollowPathAttackMoveMachine");
-		m_attackFollowMachine->initDefaultState();
-	}
-}
-
-AIFollowPathState::~AIFollowPathState()
-{
-	if (m_attackFollowMachine)
-	{
-		deleteInstance(m_attackFollowMachine);
-		m_attackFollowMachine = nullptr;
-	}
-}
-
-
 // ------------------------------------------------------------------------------------------------
 /** CRC */
 // ------------------------------------------------------------------------------------------------
@@ -3280,22 +3251,10 @@ void AIFollowPathState::loadPostProcess()
 	AIInternalMoveToState::loadPostProcess();
 }
 
-
 //----------------------------------------------------------------------------------------------------------
 StateReturnType AIFollowPathState::onEnter()
 {
-
-	m_hasLoopAttackAnchor = FALSE;
-	m_loopAttackAnchor.zero();
-
 	Object *obj = getMachineOwner();
-
-	if (m_attackFollowMachine)
-	{
-		m_attackFollowMachine->clear();
-		m_attackFollowMachine->setState(AI_IDLE);
-	}
-
 	AIUpdateInterface *ai = obj->getAI();
 
 	m_index = 0;
@@ -3357,15 +3316,6 @@ StateReturnType AIFollowPathState::onEnter()
 //----------------------------------------------------------------------------------------------------------
 void AIFollowPathState::onExit( StateExitType status )
 {
-
-	m_hasLoopAttackAnchor = FALSE;
-	m_loopAttackAnchor.zero();
-
-	if (m_attackFollowMachine)
-	{
-		m_attackFollowMachine->setState(AI_IDLE);
-	}
-
 	AIInternalMoveToState::onExit( status );
 
 	// turn off precision-z-pos when we exit, just in case.
@@ -3384,86 +3334,6 @@ void AIFollowPathState::onExit( StateExitType status )
 StateReturnType AIFollowPathState::update()
 {
 	getMachine()->setGoalPosition(&m_goalPosition);
-
-
-	Object* obj = getMachineOwner();
-	AIUpdateInterface* ai = obj->getAI();
-
-	if (ai &&
-		ai->friend_isWaypointLoopEnabled() &&
-		ai->getLastCommandSource() == CMD_FROM_PLAYER &&
-		obj->isKindOf(KINDOF_CAN_ATTACK))
-	{
-		Bool forceRetargetThisFrame = false;
-		Bool shouldRepathThisFrame = false;
-
-		const Real LOOP_CHASE_MAX_DISTANCE = 180.0f;
-
-		if (!m_attackFollowMachine->isInIdleState())
-		{
-			if (m_hasLoopAttackAnchor)
-			{
-				Real dx = obj->getPosition()->x - m_loopAttackAnchor.x;
-				Real dy = obj->getPosition()->y - m_loopAttackAnchor.y;
-				Real distSqr = dx * dx + dy * dy;
-
-				if (distSqr > LOOP_CHASE_MAX_DISTANCE * LOOP_CHASE_MAX_DISTANCE)
-				{
-					m_attackFollowMachine->clear();
-					m_attackFollowMachine->setState(AI_IDLE);
-					m_hasLoopAttackAnchor = FALSE;
-					shouldRepathThisFrame = true;
-				}
-			}
-
-			if (!shouldRepathThisFrame)
-			{
-				ai->setLocomotorGoalNone();
-				obj->clearModelConditionState(MODELCONDITION_MOVING);
-				m_attackFollowMachine->updateStateMachine();
-
-				if (m_attackFollowMachine->isInIdleState())
-				{
-					forceRetargetThisFrame = true;
-					shouldRepathThisFrame = true;
-					m_hasLoopAttackAnchor = FALSE;
-				}
-				else
-				{
-					return STATE_CONTINUE;
-				}
-			}
-		}
-
-		if (m_attackFollowMachine->isInIdleState())
-		{
-			Object* crate = ai->checkForCrateToPickup();
-			if (crate)
-			{
-				m_attackFollowMachine->setGoalObject(crate);
-				m_attackFollowMachine->setState(AI_PICK_UP_CRATE);
-				return STATE_CONTINUE;
-			}
-
-			Object* nextObjectToAttack = ai->getNextMoodTarget(!forceRetargetThisFrame, false);
-			if (nextObjectToAttack != nullptr)
-			{
-				m_loopAttackAnchor = *obj->getPosition();
-				m_hasLoopAttackAnchor = TRUE;
-
-				m_attackFollowMachine->setGoalObject(nextObjectToAttack);
-				m_attackFollowMachine->setState(AI_ATTACK_OBJECT);
-				return STATE_CONTINUE;
-			}
-		}
-
-		if (shouldRepathThisFrame)
-		{
-			computePath();
-		}
-	}
-
-
 	// do movement
 	StateReturnType status = AIInternalMoveToState::update();
 	// if move to has finished, move to next point on path
