@@ -4142,6 +4142,15 @@ void ScriptEngine::init()
 	curTemplate->m_uiStrings[1] = ", set AI script upgrade system to ";
 	curTemplate->m_uiStrings[2] = ".";
 
+	curTemplate = &m_actionTemplates[ScriptAction::ACTION_REBORN_SET_LEGACY_FORWARD_SPEED_2D];
+	curTemplate->m_internalName = "ACTION_REBORN_SET_LEGACY_FORWARD_SPEED_2D";
+	curTemplate->m_uiName = "Reborn/Set Legacy Forward Speed 2D";
+	curTemplate->m_numParameters = 1;
+	curTemplate->m_parameters[0] = Parameter::BOOLEAN;
+	curTemplate->m_numUiStrings = 2;
+	curTemplate->m_uiStrings[0] = "Set legacy forward speed 2D to ";
+	curTemplate->m_uiStrings[1] = ".";
+
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
 	/* Recipe for adding a condition:

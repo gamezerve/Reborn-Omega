@@ -23,6 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 // PhysicsBehavior.cpp
+// PhysicsUpdate.cpp (Corrected by Reborn)
 // Simple rigid body physics
 // Author: Michael S. Booth, November 2001
 
@@ -973,13 +974,35 @@ Real PhysicsBehavior::getVelocityMagnitude() const
 //}
 
 // Reborn: Potantial fix for units moving faster diagonally 4/13/2026
+//Real PhysicsBehavior::getForwardSpeed2D() const
+//{
+//	const Coord3D* dir = getObject()->getUnitDirectionVector2D();
+//
+//	Real dot = (m_vel.x * dir->x) + (m_vel.y * dir->y);
+//	return dot;
+//}
+
+// Reborn: New combined approach to fix diagonal movement speed increase without breaking mission map cinematics 4/30/2026 - Start
+
 Real PhysicsBehavior::getForwardSpeed2D() const
 {
 	const Coord3D* dir = getObject()->getUnitDirectionVector2D();
 
-	Real dot = (m_vel.x * dir->x) + (m_vel.y * dir->y);
-	return dot;
+	if (g_useLegacyForwardSpeed2D)
+	{
+		Real vx = m_vel.x * dir->x;
+		Real vy = m_vel.y * dir->y;
+
+		Real dot = vx + vy;
+		Real speed = (Real)sqrtf(vx * vx + vy * vy);
+
+		return dot >= 0.0f ? speed : -speed;
+	}
+
+	return (m_vel.x * dir->x) + (m_vel.y * dir->y);
 }
+
+// Reborn: New combined approach to fix diagonal movement speed increase without breaking mission map cinematics 4/30/2026 - End
 
 //-------------------------------------------------------------------------------------------------
 /**
