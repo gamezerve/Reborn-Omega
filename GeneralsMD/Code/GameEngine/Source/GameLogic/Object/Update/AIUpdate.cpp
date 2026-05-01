@@ -5195,6 +5195,8 @@ void AIUpdateInterface::xfer( Xfer *xfer )
 		xfer->xferCoord3D(&m_waypointQueue[i]);
 	}
 	xfer->xferInt(&m_waypointIndex);
+	xfer->xferBool(&m_waypointLoopEnabled);
+	xfer->xferInt(&m_waypointLoopStartIndex);
 	xfer->xferBool(&m_executingWaypointQueue);
 
 	UnsignedInt id = INVALID_WAYPOINT_ID;
