@@ -2575,9 +2575,21 @@ StateReturnType AIAttackApproachTargetState::onEnter()
 	m_approachTimestamp = -MIN_RECOMPUTE_TIME;
 
 	// See if we're close enough.
-	Object *victim = getMachineGoalObject();
+	Object* victim = getMachineGoalObject();
+	Coord3D groundPos;
+	groundPos.zero();
+
 	if (victim)
 	{
+		groundPos = *victim->getPosition();
+
+		Bool fromScript = ai->getLastCommandSource() == CMD_FROM_SCRIPT;
+		Bool scriptAirborneTarget = fromScript && victim->isAirborneTarget();
+
+		if (scriptAirborneTarget)
+		{
+			groundPos.z = TheTerrainLogic->getGroundHeight(groundPos.x, groundPos.y);
+		}
 		Weapon* weapon = source->getCurrentWeapon();
 		if (!weapon)
 		{
@@ -2613,13 +2625,13 @@ StateReturnType AIAttackApproachTargetState::onEnter()
 			} else {
 				// Computer player.  Don't chase aircraft, unless we're hunting. jba [8/27/2003]
 				Bool hunt = ai->getCurrentStateID() == AI_HUNT;
-				if (!hunt && victim->isKindOf(KINDOF_AIRCRAFT) && victim->isAirborneTarget())
+				if (!hunt && !fromScript && victim->isKindOf(KINDOF_AIRCRAFT) && victim->isAirborneTarget())
 				{
 					return STATE_FAILURE;
 				}
 			}
 		}
-		if (canPursue(source, weapon, victim))
+		if (!scriptAirborneTarget && canPursue(source, weapon, victim))
 		{
 			return STATE_SUCCESS;  // break out, and do the pursuit state.
 		}
@@ -2643,6 +2655,11 @@ StateReturnType AIAttackApproachTargetState::onEnter()
 
 	// find a good spot to shoot from
 	//CRCDEBUG_LOG(("AIAttackApproachTargetState::onEnter() - calling computePath() for object %d", getMachineOwner()->getID()));
+	if (victim && ai->getLastCommandSource() == CMD_FROM_SCRIPT && victim->isAirborneTarget())
+	{
+		m_goalPosition = groundPos;
+	}
+
 	if (computePath() == false)
 		return STATE_FAILURE;
 
@@ -2674,8 +2691,11 @@ StateReturnType AIAttackApproachTargetState::updateInternal()
  		if (source->getControllingPlayer()->getPlayerType() == PLAYER_COMPUTER)
 		{
 			Bool hunt = ai->getCurrentStateID() == AI_HUNT;
+			Bool fromScript = ai->getLastCommandSource() == CMD_FROM_SCRIPT;
+
 			// Computer player.  Don't chase aircraft unless hunting. jba [8/27/2003]
-			if (!hunt && victim->isKindOf(KINDOF_AIRCRAFT) && victim->isAirborneTarget())
+			// Reborn: Allow script-issued attack commands to chase airborne aircraft.
+			if (!hunt && !fromScript && victim->isKindOf(KINDOF_AIRCRAFT) && victim->isAirborneTarget())
 			{
 				return STATE_FAILURE;
 			}
@@ -2714,8 +2734,11 @@ StateReturnType AIAttackApproachTargetState::updateInternal()
 		}
 		// find a good spot to shoot from
 		//CRCDEBUG_LOG(("AIAttackApproachTargetState::updateInternal() - calling computePath() to victim for object %d", getMachineOwner()->getID()));
-		if (computePath() == false)
-			return STATE_SUCCESS;
+		if (ai->getLastCommandSource() == CMD_FROM_SCRIPT && victim->isAirborneTarget())
+		{
+			m_goalPosition = *victim->getPosition();
+			m_goalPosition.z = TheTerrainLogic->getGroundHeight(m_goalPosition.x, m_goalPosition.y);
+		}
 		code = AIInternalMoveToState::update();
 
 
