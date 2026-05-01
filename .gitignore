@@ -8,7 +8,6 @@
 
 *.user
 *.ncb
-/build*
 nbproject/
 project/
 doxygen/
@@ -67,3 +66,28 @@ build.ninja
 ## Python
 __pycache__/
 *.pyc
+
+# build içindeki HER ŞEYİ ignore et
+/build/**
+
+# shared klasörüne erişim aç
+!/build/shared/
+
+# shared içini tekrar kapat
+/build/shared/**
+
+# SADECE istediğin klasörleri aç
+!/build/shared/Art/
+!/build/shared/Art/**
+
+!/build/shared/Data/
+!/build/shared/Data/**
+
+!/build/shared/MapPreviews/
+!/build/shared/MapPreviews/**
+
+!/build/shared/Maps/
+!/build/shared/Maps/**
+
+!/build/shared/MSS/
+!/build/shared/MSS/**
