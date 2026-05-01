@@ -1,0 +1,87 @@
+﻿***********************************
+** Advanced AI Mod for Zero Hour **
+***********************************
+**   Latest improvements by r42  **
+**      Original mod by Lion     **
+***********************************
+
+- Latest updates available online:
+  http://www.cnclabs.com/mods/generals/advancedaimod/
+
+*********************************************************************************************************************************
+Most significant changes compared to Lion’s original, version 0.95: 
+Known issue: Laser Guided Missiles bug still present, but appears rarely.
+
+21.08.09
+- Supply Priority changes for all USA factions.
+- Medic team for USA works! (repairs the base)
+- Improved script for GLA technical rush. If there is no Tech Center it will surprise you! (The first time, of course.)
+- Fixed tank priorities for "GLA Prior Change Back" scripts.
+- Fixed a battle buses issue.
+- All USA tank/vehicle teams will now attack infantry with hellfire drones.
+
+
+*********************************************************************************************************************************
+31.07.09
+- Behavior changes; mostly USA factions.
+- Particle Cannon now draws its 'S' sign a little wider.
+- General improvements, as usual.
+- Recommended for play.
+
+
+*********************************************************************************************************************************
+21.06.09
+- Vanilla GLA camouflage upgrade
+- Added supply guard teams to Vanilla USA and Airforce for experimental purposes
+- My & EA lame script improvements and tuning.
+- Added more factories to the AI's build list
+- Added a little more base defenses
+
+
+*********************************************************************************************************************************
+14.06.09
+- Reduced lag.
+- Fixed uncrushable (by vehicle) minigunners.
+- Additional Black Market for the Toxin general.
+- Additional Scud Storm and 2 Black Markets for the Stealth general.
+- Changed team state from Aggressive to Normal for all Black Lotus teams for all China factions (helps them hack properly).
+
+
+*********************************************************************************************************************************
+Earlier
+- Normal is the same as Hard but without 50000 additional money. Easy is practically unchanged.
+- All factions are now balanced regarding the amount of cheat money that they have.
+- Removed Aggressive state for dozer team to resolve 0% building progress bug.
+- AI can now re-enable important unfinished upgrades.
+- More base building, attack teams and other general AI improvements.
+- Added scripts that change the attack priority for power-related base defenses to 1 if the AI sees that its enemy has no power.
+
+All USA Factions:
+- Can now attack with abandoned rangers.
+- Now reuse their strategies if the Strategy Center is destroyed and then rebuilt.
+- Use the Drone Armor upgrade.
+- Missile Defenders now properly use the Laser Guided Missiles ability.
+
+Vanilla USA:
+- Now uses the MOAB upgrade.
+
+USA Airforce General:
+- Air Force General now uses the Carpet Bomb from Strategy Center.
+
+All GLA Factions:
+- Now use Bomb Trucks and Battle Buses.
+- Improved behavior for Bunker and Palace teams.
+
+Vanilla GLA:
+- Fixed Vanilla GLA bug where it used GPS Scrambler every 40 seconds never used the Sneak Attack at all.
+
+All China Factions:
+- Now use the Dragon Tank's firewall ability.
+
+China Nuke General:
+- Fixed a problem preventing the China Nuke General from building a barracks.
+
+Stealth General:
+- Stealth General can now manage Hijackers' captured tanks and vehicles -- will merge them into an attack team and 
+  build upgrades (Battle Drones and the Overlord's upgrades).
+
