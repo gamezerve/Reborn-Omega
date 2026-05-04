@@ -508,6 +508,8 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 
 	{ "PlayStats",									INI::parseInt,				nullptr,			offsetof( GlobalData, m_playStats ) },
 
+	{ "RebornForceSetupCameraAngleMap", INI::parseAsciiStringVectorAppend, nullptr, offsetof(GlobalData, m_rebornForceSetupCameraAngleMaps) },
+
 #if defined(RTS_DEBUG)
 	{ "DisableCameraFade",			INI::parseBool,				nullptr,			offsetof( GlobalData, m_disableCameraFade ) },
 	{ "DisableScriptedInputDisabling",			INI::parseBool,		nullptr,			offsetof( GlobalData, m_disableScriptedInputDisabling ) },
@@ -540,7 +542,6 @@ GlobalData* GlobalData::m_theOriginal = nullptr;
 	{ "BaseStatsDir",								INI::parseAsciiString,nullptr,			offsetof( GlobalData, m_baseStatsDir ) },
 	{ "LocalMOTDPath",							INI::parseAsciiString,nullptr,			offsetof( GlobalData, m_MOTDPath ) },
 	{ "ExtraLogging",								INI::parseBool,				nullptr,			offsetof( GlobalData, m_extraLogging ) },
-	{ "RebornForceSetupCameraAngleMap", INI::parseAsciiStringVectorAppend, nullptr, offsetof(GlobalData, m_rebornForceSetupCameraAngleMaps) },
 #endif
 
 	{ nullptr,					nullptr,						nullptr,						0 }
