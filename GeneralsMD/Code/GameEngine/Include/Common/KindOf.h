@@ -169,6 +169,7 @@ enum KindOfType CPP_11(: Int)
 	KINDOF_IGNORE_DOCKING_BONES,		///< Structure will not look up docking bones. Patch 1.03 hack.
 	KINDOF_CAN_ATTACK_RIDER,
 	KINDOF_NAVAL_YARD,
+	KINDOF_TAUNT,
 
 	KINDOF_COUNT,										// total number of kindofs
 	KINDOF_FIRST = 0,

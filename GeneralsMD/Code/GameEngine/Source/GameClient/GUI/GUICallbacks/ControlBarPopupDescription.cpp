@@ -524,6 +524,10 @@ static const ThingTemplate* getTooltipProducedThingTemplate(
 			continue;
 
 		const ThingTemplate* producedThing = ocuData->m_ocl->getFirstCreatedThingTemplate();
+
+		if (producedThing && producedThing->isKindOf(KINDOF_TAUNT))
+			continue;
+
 		if (producedThing)
 			return producedThing;
 	}
