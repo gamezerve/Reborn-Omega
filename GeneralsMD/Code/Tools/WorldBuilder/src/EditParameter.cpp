@@ -1712,6 +1712,24 @@ Bool EditParameter::loadBridges(CComboBox *pCombo, AsciiString match)
 	return didMatch;
 }
 
+static void SetComboSelectionToText(CComboBox* combo, const char* text)
+{
+	if (combo == nullptr || text == nullptr)
+	{
+		return;
+	}
+
+	int index = combo->FindStringExact(-1, text);
+	if (index != CB_ERR)
+	{
+		combo->SetCurSel(index);
+	}
+	else
+	{
+		combo->SetWindowText(text);
+	}
+}
+
 BOOL EditParameter::OnInitDialog()
 {
 	CDialog::OnInitDialog();
@@ -2109,7 +2127,8 @@ BOOL EditParameter::OnInitDialog()
 	}
 	if (showCombo) {
 		pCombo->ShowWindow(SW_SHOW);
-		pCombo->SetWindowText(m_parameter->getString().str());
+		//pCombo->SetWindowText(m_parameter->getString().str());
+		SetComboSelectionToText(pCombo, m_parameter->getString().str());
 		if (m_parameter->getString().isEmpty()) {
 			pCombo->SetCurSel(0);
 		}

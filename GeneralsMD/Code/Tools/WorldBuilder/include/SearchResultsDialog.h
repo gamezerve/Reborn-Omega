@@ -61,6 +61,7 @@ protected:
 
 	virtual void PostNcDestroy() override;
 	virtual void OnCancel() override;
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 
 	void ExpandAllItems(HTREEITEM hItem);
 	void CollapseAllItems(HTREEITEM hItem);

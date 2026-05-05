@@ -1,7 +1,7 @@
 
 
 
-// SearchResultsDialog.cpp : implementation of the Reborn WorldBuildr Search Functionality Dialog
+// SearchResultsDialog.cpp : implementation of the Reborn WorldBuilder Search Functionality Dialog
 //
 
 #include "StdAfx.h"
@@ -249,4 +249,19 @@ void SearchResultsDialog::PostNcDestroy()
 
 	CDialog::PostNcDestroy();
 	delete this;
+}
+
+BOOL SearchResultsDialog::PreTranslateMessage(MSG* pMsg)
+{
+	if (pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN)
+	{
+		CWnd* focus = GetFocus();
+		if (focus && focus->GetDlgCtrlID() == IDC_SEARCH_TEXT)
+		{
+			OnSearch();
+			return TRUE;
+		}
+	}
+
+	return CDialog::PreTranslateMessage(pMsg);
 }
