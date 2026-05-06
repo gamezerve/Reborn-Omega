@@ -273,6 +273,7 @@ void EndThingTemplateUpgradeCapture();
 void RecordThingTemplateUpgradeToken(const char* token);
 void RecordThingTemplateUpgradeCameo(const char* thingName, const char* upgradeName);
 void FlushThingTemplateUpgradeReport();
+std::vector<AsciiString> GetThingTemplateUpgradeRefsForWB(const char* thingName);
 Bool IsKnownUpgradeName(const char* token);
 
 // EXTERNALS //////////////////////////////////////////////////////////////////////////////////////

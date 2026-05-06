@@ -85,6 +85,8 @@ protected:
 	WBPopupSliderButton m_angleSlider;
 	WBPopupSliderButton m_scaleSlider;
 
+	CCheckListBox m_prebuiltUpgradesList;
+
 	Int              m_defaultEntryIndex; //< Index in the sound combobox of the entry labelled "default"
 	Bool             m_defaultIsNone; //< The default for this object is no sound
 	AsciiString      m_defaultEntryName; //< The original name of the default entry

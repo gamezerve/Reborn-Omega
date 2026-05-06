@@ -850,3 +850,27 @@ void UpgradeCenter::parseUpgradeDefinition(INI* ini)
 	ini->initFromINI(upgrade, upgrade->getFieldParse());
 }
 
+//-------------------------------------------------------------------------------------------------
+std::vector<AsciiString> GetThingTemplateUpgradeRefsForWB(const char* thingName)
+{
+	std::vector<AsciiString> result;
+
+	if (thingName == nullptr || thingName[0] == 0)
+	{
+		return result;
+	}
+
+	std::map<AsciiString, ThingTemplateUpgradeReportEntry>::const_iterator it = g_thingTemplateUpgradeReport.find(AsciiString(thingName));
+	if (it == g_thingTemplateUpgradeReport.end())
+	{
+		return result;
+	}
+
+	for (std::set<AsciiString>::const_iterator r = it->second.refs.begin(); r != it->second.refs.end(); ++r)
+	{
+		result.push_back(*r);
+	}
+
+	return result;
+}
+

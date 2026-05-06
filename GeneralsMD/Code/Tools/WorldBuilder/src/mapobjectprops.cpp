@@ -27,11 +27,13 @@
 #include "propedit.h"
 #include "CUndoable.h"
 #include "EditParameter.h"
+#include <afxwin.h>
 
 #include "Common/ThingTemplate.h"
 #include "Common/UnicodeString.h"
 #include "Common/WellKnownKeys.h"
 #include "Common/AudioEventInfo.h"
+#include "Common/Upgrade.h"
 
 #include "GameLogic/Module/UpgradeModule.h"
 #include "GameLogic/Module/GenerateMinefieldBehavior.h"
@@ -94,6 +96,8 @@ void MapObjectProps::DoDataExchange(CDataExchange* pDX)
 	//{{AFX_DATA_MAP(MapObjectProps)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
+
+  DDX_Control(pDX, IDC_MAPOBJECT_BuildWithUpgrades, m_prebuiltUpgradesList);
 }
 
 
@@ -687,7 +691,8 @@ void MapObjectProps::_PrebuiltUpgradesToDict()
 {
   getAllSelectedDicts();
 
-  CListBox *pBox = (CListBox *) GetDlgItem(IDC_MAPOBJECT_BuildWithUpgrades);
+  //CListBox *pBox = (CListBox *) GetDlgItem(IDC_MAPOBJECT_BuildWithUpgrades);
+  CCheckListBox* pBox = &m_prebuiltUpgradesList;
   if (!pBox) {
     return;
   }
@@ -727,7 +732,14 @@ void MapObjectProps::_PrebuiltUpgradesToDict()
   // We've now removed them, so lets add the ones that are selected now.
   Int countOfItems = pBox->GetCount();
   for (Int i = 0; i < countOfItems; ++i) {
-    if (pBox->GetSel(i) > 0) {
+    //if (pBox->GetSel(i) > 0)
+    if (!pBox->IsEnabled(i))
+    {
+      continue;
+    }
+
+    if (pBox->GetCheck(i))
+    {
       CString selTxt;
       // This thing is selected. Get its text, and add it to the dict.
       pBox->GetText(i, selTxt);
@@ -750,79 +762,182 @@ void MapObjectProps::_PrebuiltUpgradesToDict()
 }
 
 /// Move data from object to dialog controls
+//void MapObjectProps::_DictToPrebuiltUpgrades()
+//{
+//  getAllSelectedDicts();
+//
+//  //CListBox *pBox = (CListBox*) GetDlgItem(IDC_MAPOBJECT_BuildWithUpgrades);
+//  CCheckListBox* pBox = &m_prebuiltUpgradesList;
+//  if (!pBox) {
+//    return;
+//  }
+//
+//  // First, clear out the list
+//  pBox->ResetContent();
+//  pBox->EnableWindow(TRUE);
+//  CString cstr;
+//
+//  // Then, if there's multiple units selected, add the Single Selection Only string
+//  if (m_allSelectedDicts.size() > 1) {
+//    //cstr.LoadString(IDS_SINGLE_SELECTION_ONLY);
+//    //pBox->AddString(cstr);
+//    //return;
+//    pBox->EnableWindow(FALSE);
+//    return;
+//  }
+//
+//  if (m_selectedObject == nullptr) {
+//    return;
+//  }
+//
+//  // Otherwise, fill it with the upgrades available for this unit
+//  const ThingTemplate *tt = m_selectedObject->getThingTemplate();
+//  if (tt == nullptr) {
+//    // This is valid. For instance, Scorch marks do not have thing templates.
+//    return;
+//  }
+//
+//  Bool noUpgrades = true;
+//
+//  // Now do any behaviors that are also upgrades.
+//  const ModuleInfo& mi = tt->getBehaviorModuleInfo();
+//  if (mi.getCount() == 0) {
+//    if (noUpgrades) {
+//      //cstr.LoadString(IDS_NO_UPGRADES);
+//      //pBox->AddString(cstr);
+//      //return;
+//      pBox->EnableWindow(FALSE);
+//      return;
+//    }
+//  } else {
+//    Int numBehaviorModules = mi.getCount();
+//
+//    Int numBehaviorsWithUpgrades = 0;
+//
+//    for (int i = 0; i < numBehaviorModules; ++i) {
+//      //if (mi.getNthName(i).compareNoCase("GenerateMinefieldBehavior") == 0) {
+//      //  const GenerateMinefieldBehaviorModuleData *gmbmd = (const GenerateMinefieldBehaviorModuleData *)mi.getNthData(i);
+//      //  if (!gmbmd) {
+//      //    continue;
+//      //  }
+//      //  if (!gmbmd->m_upgradeMuxData.m_activationUpgradeNames.empty()) {
+//      //    cstr = gmbmd->m_upgradeMuxData.m_activationUpgradeNames[0].str();
+//      //    if (pBox->FindString(-1, cstr) == LB_ERR) {
+//      //      pBox->AddString(cstr);
+//      //      ++numBehaviorsWithUpgrades;
+//      //    }
+//      //  }
+//      //}
+//      const ModuleData* moduleData = mi.getNthData(i);
+//      if (!moduleData) {
+//        continue;
+//      }
+//
+//      const UpgradeModuleData* upgradeModuleData = dynamic_cast<const UpgradeModuleData*>(moduleData);
+//      if (!upgradeModuleData) {
+//        continue;
+//      }
+//
+//      for (std::vector<AsciiString>::const_iterator it = upgradeModuleData->m_upgradeMuxData.m_activationUpgradeNames.begin();
+//        it != upgradeModuleData->m_upgradeMuxData.m_activationUpgradeNames.end();
+//        ++it)
+//      {
+//        cstr = it->str();
+//
+//        if (pBox->FindStringExact(-1, cstr) == LB_ERR) {
+//          pBox->AddString(cstr);
+//          ++numBehaviorsWithUpgrades;
+//        }
+//        noUpgrades = false;
+//      }
+//    }
+//
+//    if (numBehaviorsWithUpgrades == 0) {
+//      if (noUpgrades) {
+//        pBox->EnableWindow(FALSE);
+//        return;
+//      }
+//    }
+//  }
+//
+//  // Finally, walk through the upgrades that he already has, and select the appropriate members
+//  // from the list
+//
+//  Bool exists;
+//  int upgradeNum = 0;
+//  AsciiString upgradeString;
+//
+//  do {
+//    AsciiString keyName;
+//    keyName.format("%s%d", TheNameKeyGenerator->keyToName(TheKey_objectGrantUpgrade).str(), upgradeNum);
+//    upgradeString = m_dictToEdit->getAsciiString(NAMEKEY(keyName), &exists);
+//
+//    if (exists) {
+//      Int selNdx = pBox->FindStringExact(-1, upgradeString.str());
+//      if (selNdx == LB_ERR) {
+//        DEBUG_CRASH(("Object claims '%s', but it wasn't found in the list of possible upgrades.", upgradeString.str()));
+//        ++upgradeNum;
+//        continue;
+//      }
+//      //pBox->SetSel(selNdx);
+//      pBox->SetCheck(selNdx, TRUE);
+//
+//    } else {
+//      upgradeString.clear();
+//    }
+//
+//    ++upgradeNum;
+//  } while (!upgradeString.isEmpty());
+//}
+/// Move data from object to dialog controls
 void MapObjectProps::_DictToPrebuiltUpgrades()
 {
   getAllSelectedDicts();
 
-  CListBox *pBox = (CListBox*) GetDlgItem(IDC_MAPOBJECT_BuildWithUpgrades);
+  CCheckListBox* pBox = &m_prebuiltUpgradesList;
   if (!pBox) {
     return;
   }
 
-  // First, clear out the list
   pBox->ResetContent();
-  CString cstr;
+  pBox->EnableWindow(TRUE);
 
-  // Then, if there's multiple units selected, add the Single Selection Only string
   if (m_allSelectedDicts.size() > 1) {
-    cstr.LoadString(IDS_SINGLE_SELECTION_ONLY);
-    pBox->AddString(cstr);
+    pBox->EnableWindow(FALSE);
     return;
   }
 
   if (m_selectedObject == nullptr) {
+    pBox->EnableWindow(FALSE);
     return;
   }
 
-  // Otherwise, fill it with the upgrades available for this unit
-  const ThingTemplate *tt = m_selectedObject->getThingTemplate();
+  const ThingTemplate* tt = m_selectedObject->getThingTemplate();
   if (tt == nullptr) {
-    // This is valid. For instance, Scorch marks do not have thing templates.
+    pBox->EnableWindow(FALSE);
     return;
   }
 
-  Bool noUpgrades = false;
+  Bool noUpgrades = true;
 
-  // Now do any behaviors that are also upgrades.
-  const ModuleInfo& mi = tt->getBehaviorModuleInfo();
-  if (mi.getCount() == 0) {
-    if (noUpgrades) {
-      cstr.LoadString(IDS_NO_UPGRADES);
+  std::vector<AsciiString> upgradeNames = GetThingTemplateUpgradeRefsForWB(tt->getName().str());
+
+  for (std::vector<AsciiString>::const_iterator it = upgradeNames.begin();
+    it != upgradeNames.end();
+    ++it)
+  {
+    CString cstr = it->str();
+
+    if (pBox->FindStringExact(-1, cstr) == LB_ERR) {
       pBox->AddString(cstr);
-      return;
-    }
-  } else {
-    Int numBehaviorModules = mi.getCount();
-
-    Int numBehaviorsWithUpgrades = 0;
-
-    for (int i = 0; i < numBehaviorModules; ++i) {
-      if (mi.getNthName(i).compareNoCase("GenerateMinefieldBehavior") == 0) {
-        const GenerateMinefieldBehaviorModuleData *gmbmd = (const GenerateMinefieldBehaviorModuleData *)mi.getNthData(i);
-        if (!gmbmd) {
-          continue;
-        }
-        if (!gmbmd->m_upgradeMuxData.m_activationUpgradeNames.empty()) {
-          cstr = gmbmd->m_upgradeMuxData.m_activationUpgradeNames[0].str();
-          if (pBox->FindString(-1, cstr) == LB_ERR) {
-            pBox->AddString(cstr);
-            ++numBehaviorsWithUpgrades;
-          }
-        }
-      }
-    }
-
-    if (numBehaviorsWithUpgrades == 0) {
-      if (noUpgrades) {
-        cstr.LoadString(IDS_NO_UPGRADES);
-        pBox->AddString(cstr);
-        return;
-      }
+      noUpgrades = false;
     }
   }
 
-  // Finally, walk through the upgrades that he already has, and select the appropriate members
-  // from the list
+  if (noUpgrades) {
+    pBox->EnableWindow(FALSE);
+    return;
+  }
 
   Bool exists;
   int upgradeNum = 0;
@@ -840,9 +955,10 @@ void MapObjectProps::_DictToPrebuiltUpgrades()
         ++upgradeNum;
         continue;
       }
-      pBox->SetSel(selNdx);
 
-    } else {
+      pBox->SetCheck(selNdx, TRUE);
+    }
+    else {
       upgradeString.clear();
     }
 
