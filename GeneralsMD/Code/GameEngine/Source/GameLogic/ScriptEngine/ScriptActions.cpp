@@ -71,6 +71,7 @@
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/Module/CaveContain.h"
 #include "GameLogic/Module/CommandButtonHuntUpdate.h"
+#include "GameLogic/Module/CommandSetUpgrade.h"
 #include "GameLogic/Module/ContainModule.h"
 #include "GameLogic/Module/DeliverPayloadAIUpdate.h"
 #include "GameLogic/Module/SpecialPowerModule.h"
@@ -6484,30 +6485,110 @@ void ScriptActions::doTeamGuardInTunnelNetwork(const AsciiString& teamName)
 }
 
 //-------------------------------------------------------------------------------------------------
-void ScriptActions::doRemoveCommandBarButton(const AsciiString& buttonName, const AsciiString& objectType)
+//void ScriptActions::doRemoveCommandBarButton(const AsciiString& buttonName, const AsciiString& objectType)
+//{
+//	const ThingTemplate *templ = TheThingFactory->findTemplate(objectType);
+//	if (!templ) {
+//		return;
+//	}
+//	const CommandSet *cs = TheControlBar->findCommandSet(templ->friend_getCommandSetString());
+//	if (!cs) {
+//		return;
+//	}
+//
+//	Int slotNum = -1;
+//	for (Int i = 0; i < MAX_COMMANDS_PER_SET; ++i)
+//	{
+//		if (cs->getCommandButton(i) && (cs->getCommandButton(i)->getName() == buttonName))
+//		{
+//			slotNum = i;
+//			break;
+//		}
+//	}
+//
+//	if (slotNum >= 0)
+//	{
+//		TheGameLogic->setControlBarOverride(templ->friend_getCommandSetString(), slotNum, nullptr);
+//	}
+//}
+//-------------------------------------------------------------------------------------------------
+/** Reborn:
+	* Removes a command button override from a given CommandSet.
+	* This function ensures the button is removed from any UI layout associated with the object.
+	* Used as a helper to support CommandSetUpgrade-aware removal.
+	*/
+	//-------------------------------------------------------------------------------------------------
+static void RemoveButtonFromCommandSet(const AsciiString& buttonName, const AsciiString& commandSetName)
 {
-	const ThingTemplate *templ = TheThingFactory->findTemplate(objectType);
-	if (!templ) {
-		return;
-	}
-	const CommandSet *cs = TheControlBar->findCommandSet(templ->friend_getCommandSetString());
-	if (!cs) {
+	if (commandSetName.isEmpty())
+	{
 		return;
 	}
 
-	Int slotNum = -1;
+	const CommandSet* cs = TheControlBar->findCommandSet(commandSetName);
+	if (!cs)
+	{
+		return;
+	}
+
 	for (Int i = 0; i < MAX_COMMANDS_PER_SET; ++i)
 	{
-		if (cs->getCommandButton(i) && (cs->getCommandButton(i)->getName() == buttonName))
+		if (cs->getCommandButton(i) && cs->getCommandButton(i)->getName() == buttonName)
 		{
-			slotNum = i;
-			break;
+			TheGameLogic->setControlBarOverride(commandSetName, i, nullptr);
 		}
 	}
-
-	if (slotNum >= 0)
+}
+//-------------------------------------------------------------------------------------------------
+/** Reborn:
+	* Removes a command bar button from an object type across ALL possible CommandSets.
+	*
+	* Original behavior:
+	* - Only removed the button from the base CommandSet defined in the ThingTemplate.
+	*
+	* Problem:
+	* - When CommandSetUpgrade is triggered, the object switches to a different CommandSet.
+	* - The removed button reappears because the new CommandSet still contains it.
+	*
+	* Reborn fix:
+	* - Also scans all CommandSetUpgrade modules attached to the object.
+	* - Removes the button from:
+	*     1) Base CommandSet
+	*     2) CommandSetUpgrade::CommandSet
+	*     3) CommandSetUpgrade::CommandSetAlt
+	*
+	* Result:
+	* - Button stays removed permanently, regardless of upgrades.
+	*/
+	//-------------------------------------------------------------------------------------------------
+void ScriptActions::doRemoveCommandBarButton(const AsciiString& buttonName, const AsciiString& objectType)
+{
+	const ThingTemplate* templ = TheThingFactory->findTemplate(objectType);
+	if (!templ)
 	{
-		TheGameLogic->setControlBarOverride(templ->friend_getCommandSetString(), slotNum, nullptr);
+		return;
+	}
+
+	// Reborn: Remove from base CommandSet
+	RemoveButtonFromCommandSet(buttonName, templ->friend_getCommandSetString());
+
+	// Reborn: Also remove from all CommandSetUpgrade variations
+	const ModuleInfo& mi = templ->getBehaviorModuleInfo();
+	for (Int i = 0; i < mi.getCount(); ++i)
+	{
+		if (mi.getNthName(i).compareNoCase("CommandSetUpgrade") != 0)
+		{
+			continue;
+		}
+
+		const CommandSetUpgradeModuleData* data = static_cast<const CommandSetUpgradeModuleData*>(mi.getNthData(i));
+		if (!data)
+		{
+			continue;
+		}
+
+		RemoveButtonFromCommandSet(buttonName, data->m_newCommandSet);
+		RemoveButtonFromCommandSet(buttonName, data->m_newCommandSetAlt);
 	}
 }
 
