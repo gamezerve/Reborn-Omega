@@ -134,6 +134,7 @@ public:
 	void addObjectCreationNugget(ObjectCreationNugget* nugget);
 	const ThingTemplate* getFirstCreatedThingTemplate() const;
 
+	Bool getFirstDeliverPayloadForTooltip(AsciiString& outPayloadName, Int& outPayloadCount) const;
 
 	// Kris: August 23, 2003
 	// All OCLs return the first object that is created (or null if not applicable).

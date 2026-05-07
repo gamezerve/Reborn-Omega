@@ -82,6 +82,11 @@ public:
 	void resetTimer(); ///< added for sabotage purposes.
 	virtual DisabledMaskType getDisabledTypesToProcess() const override { return DISABLEDMASK_ALL; }
 
+	const OCLUpdateModuleData* getOCLUpdateModuleDataForTooltip() const
+	{
+		return getOCLUpdateModuleData();
+	}
+
 protected:
 
 	UnsignedInt			m_nextCreationFrame;

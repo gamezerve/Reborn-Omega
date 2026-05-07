@@ -22,7 +22,7 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-// FILE: InternetHackContain.cpp //////////////////////////////////////////////////////////////////////
+// FILE: InternetHackContain.h //////////////////////////////////////////////////////////////////////
 // Author: Graham Smallwood, June 2003
 // Desc:   Contain module that just gives aiHackInternet command to passengers
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -58,6 +58,12 @@ public:
 	// virtual destructor prototype provided by memory pool declaration
 
 	virtual void onContaining( Object *obj, Bool wasSelected ) override;		///< object now contains 'obj'
+
+	const ContainedItemsList* getContainedItemsListForTooltip() const
+	{
+		return getContainedItemsList();
+	}
+
 
 protected:
 

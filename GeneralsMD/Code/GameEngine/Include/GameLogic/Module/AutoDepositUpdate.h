@@ -119,6 +119,11 @@ public:
 	void awardInitialCaptureBonus( Player *player );	// Test and award the initial capture bonus
 	virtual UpdateSleepTime update() override;
 
+	const AutoDepositUpdateModuleData* getAutoDepositUpdateModuleDataForTooltip() const
+	{
+		return getAutoDepositUpdateModuleData();
+	}
+
 protected:
 
 	Int getUpgradedSupplyBoost() const;

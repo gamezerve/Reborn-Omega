@@ -66,6 +66,11 @@ public:
 
 	Int getBoxesStored() const { return m_boxesStored; }
 
+	const SupplyWarehouseDockUpdateModuleData* getSupplyWarehouseDockUpdateModuleDataForTooltip() const
+	{
+		return getSupplyWarehouseDockUpdateModuleData();
+	}
+
 	void setCashValue( Int cashValue );
 
 	virtual void onObjectCreated() override;

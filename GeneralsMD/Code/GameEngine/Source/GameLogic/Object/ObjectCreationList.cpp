@@ -246,6 +246,8 @@ class DeliverPayloadNugget : public ObjectCreationNugget
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(DeliverPayloadNugget, "DeliverPayloadNugget")
 public:
 
+	
+
 	DeliverPayloadNugget() :
 		m_startAtPreferredHeight(true),
 		m_startAtMaxSpeed(false),
@@ -557,6 +559,16 @@ public:
 		p.add(DeliverPayloadData::getFieldParse(), offsetof( DeliverPayloadNugget, m_data ));
  		ini->initFromINIMulti(nugget, p);
 		((ObjectCreationList*)instance)->addObjectCreationNugget(nugget);
+	}
+
+	Bool getFirstPayloadForTooltip(AsciiString& outPayloadName, Int& outPayloadCount) const
+	{
+		if (m_payload.empty())
+			return FALSE;
+
+		outPayloadName = m_payload[0].m_payloadName;
+		outPayloadCount = m_payload[0].m_payloadCount;
+		return TRUE;
 	}
 
 private:
@@ -1567,6 +1579,26 @@ const ThingTemplate* ObjectCreationList::getFirstCreatedThingTemplate() const
 
 	return nullptr;
 }
+
+
+Bool ObjectCreationList::getFirstDeliverPayloadForTooltip(AsciiString& outPayloadName, Int& outPayloadCount) const
+{
+	outPayloadName.clear();
+	outPayloadCount = 0;
+
+	for (ObjectCreationNuggetVector::const_iterator it = m_nuggets.begin(); it != m_nuggets.end(); ++it)
+	{
+		const DeliverPayloadNugget* nugget = dynamic_cast<const DeliverPayloadNugget*>(*it);
+		if (!nugget)
+			continue;
+
+		if (nugget->getFirstPayloadForTooltip(outPayloadName, outPayloadCount))
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
 
 //-------------------------------------------------------------------------------------------------
 Object* ObjectCreationList::createInternal( const Object* primaryObj, const Coord3D *primary, const Coord3D* secondary, Bool createOwner, UnsignedInt lifetimeFrames ) const

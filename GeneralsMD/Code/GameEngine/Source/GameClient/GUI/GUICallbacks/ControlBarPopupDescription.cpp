@@ -99,16 +99,20 @@
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/Locomotor.h"
 #include "GameLogic/Object.h"
-#include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/LocomotorSet.h"
-#include "GameLogic/Locomotor.h"
+#include "GameLogic/Module/AutoDepositUpdate.h"
+#include "GameLogic/Module/HackInternetAIUpdate.h"
+#include "GameLogic/Module/InternetHackContain.h"
 #include "GameLogic/Module/LocomotorSetUpgrade.h"
+#include "GameLogic/Module/MoneyCrateCollide.h"
+#include "GameLogic/Module/OCLUpdate.h"
 #include "GameLogic/Module/PhysicsUpdate.h"
 #include "GameLogic/Module/PowerPlantUpgrade.h"
 #include "GameLogic/Module/SpecialPowerModule.h"
 #include "GameLogic/Module/StealthDetectorUpdate.h"
 #include "GameLogic/Module/SpawnBehavior.h"
 #include "GameLogic/Module/ObjectCreationUpgrade.h"
+#include "GameLogic/Module/SupplyWarehouseDockUpdate.h"
 #include "GameLogic/ObjectCreationList.h"
 
 
@@ -126,6 +130,9 @@ static ICoord2D s_tooltipCostDefaultSize = { 0, 0 };
 static ICoord2D s_tooltipDescDefaultSize = { 0, 0 };
 static ICoord2D s_tooltipDescDefaultPos = { 0, 0 };
 const ThingTemplate* thingTemplate = nullptr;
+
+extern Int g_resourceMultiplierPercent;
+
 void ControlBarPopupDescriptionUpdateFunc(WindowLayout* layout, void* param)
 {
 	if (TheScriptEngine->isGameEnding())
@@ -378,6 +385,216 @@ static const StealthDetectorUpdateModuleData* getTooltipStealthDetectorData(
 	}
 
 	return nullptr;
+}
+
+static Bool getSupplyDropZoneIncomeForTooltip(
+	const ThingTemplate* infoTemplate,
+	Object* obj,
+	Player* player,
+	UnicodeString& outText)
+{
+	outText = UnicodeString::TheEmptyString;
+
+	if (!infoTemplate || !infoTemplate->isKindOf(KINDOF_FS_SUPPLY_DROPZONE))
+		return FALSE;
+
+	const OCLUpdateModuleData* oclData = nullptr;
+
+	if (obj)
+	{
+		static NameKeyType oclUpdateKey = TheNameKeyGenerator->nameToKey("OCLUpdate");
+		OCLUpdate* oclUpdate = (OCLUpdate*)obj->findUpdateModule(oclUpdateKey);
+
+		if (oclUpdate)
+			oclData = oclUpdate->getOCLUpdateModuleDataForTooltip();
+	}
+
+	if (!oclData)
+	{
+		const ModuleInfo& modules = infoTemplate->getBehaviorModuleInfo();
+
+		for (Int i = 0; i < modules.getCount(); ++i)
+		{
+			const ModuleData* moduleData = modules.getNthData(i);
+			if (!moduleData)
+				continue;
+
+			AsciiString moduleName = modules.getNthName(i);
+			if (moduleName.compareNoCase("OCLUpdate") != 0)
+				continue;
+
+			oclData = static_cast<const OCLUpdateModuleData*>(moduleData);
+			break;
+		}
+	}
+
+	if (!oclData || !oclData->m_ocl)
+		return FALSE;
+
+	AsciiString payloadName;
+	Int payloadCount = 0;
+
+	if (!oclData->m_ocl->getFirstDeliverPayloadForTooltip(payloadName, payloadCount))
+		return FALSE;
+
+	if (payloadName.isEmpty() || payloadCount <= 0)
+		return FALSE;
+
+	const ThingTemplate* crateTemplate = TheThingFactory->findTemplate(payloadName);
+	if (!crateTemplate)
+		return FALSE;
+
+	const MoneyCrateCollideModuleData* moneyData = nullptr;
+
+	const ModuleInfo& crateModules = crateTemplate->getBehaviorModuleInfo();
+	for (Int i = 0; i < crateModules.getCount(); ++i)
+	{
+		const ModuleData* moduleData = crateModules.getNthData(i);
+		if (!moduleData)
+			continue;
+
+		AsciiString moduleName = crateModules.getNthName(i);
+		if (moduleName.compareNoCase("MoneyCrateCollide") != 0)
+			continue;
+
+		moneyData = static_cast<const MoneyCrateCollideModuleData*>(moduleData);
+		break;
+	}
+
+	if (!moneyData)
+		return FALSE;
+
+	Int baseAmount = moneyData->m_moneyProvided * payloadCount;
+	Int boostAmount = 0;
+	UnicodeString boostUpgradeDisplay = UnicodeString::TheEmptyString;
+
+	for (std::list<upgradePair>::const_iterator it = moneyData->m_upgradeBoost.begin(); it != moneyData->m_upgradeBoost.end(); ++it)
+	{
+		const UpgradeTemplate* boostUpgrade = TheUpgradeCenter->findUpgrade(it->type.c_str());
+		if (!boostUpgrade)
+			continue;
+
+		if (boostUpgrade->getDisplayNameLabel().isNotEmpty())
+			boostUpgradeDisplay = TheGameText->fetch(boostUpgrade->getDisplayNameLabel().str());
+		else
+			boostUpgradeDisplay.format(L"%S", it->type.c_str());
+
+		if (player && player->hasUpgradeComplete(boostUpgrade))
+			boostAmount = it->amount * payloadCount;
+
+		break;
+	}
+
+	Int totalAmount = baseAmount + boostAmount;
+
+	if (g_resourceMultiplierPercent != 100)
+	{
+		baseAmount = (baseAmount * g_resourceMultiplierPercent) / 100;
+		boostAmount = (boostAmount * g_resourceMultiplierPercent) / 100;
+		totalAmount = (totalAmount * g_resourceMultiplierPercent) / 100;
+	}
+
+	Int seconds = REAL_TO_INT_FLOOR((Real)oclData->m_minDelay / LOGICFRAMES_PER_SECOND + 0.5f);
+	Real incomePerSecond = (seconds > 0) ? ((Real)totalAmount / (Real)seconds) : 0.0f;
+
+	UnicodeString multiplierText = UnicodeString::TheEmptyString;
+	if (g_resourceMultiplierPercent != 100)
+		multiplierText.format(L" (x%.2f)", (Real)g_resourceMultiplierPercent / 100.0f);
+
+	if (boostAmount > 0 && !boostUpgradeDisplay.isEmpty())
+	{
+		outText.format(L"Supply Drop Income: $%d every %d sec (%.1f/sec)%ls (Base: $%d, +$%d with %ls)",
+			totalAmount,
+			seconds,
+			incomePerSecond,
+			multiplierText.str(),
+			baseAmount,
+			boostAmount,
+			boostUpgradeDisplay.str());
+	}
+	else if (!boostUpgradeDisplay.isEmpty())
+	{
+		Int potentialBoost = moneyData->m_upgradeBoost.empty() ? 0 : moneyData->m_upgradeBoost.front().amount * payloadCount;
+
+		if (g_resourceMultiplierPercent != 100)
+			potentialBoost = (potentialBoost * g_resourceMultiplierPercent) / 100;
+
+		outText.format(L"Supply Drop Income: $%d every %d sec (%.1f/sec)%ls (Base: $%d, +$%d with %ls)",
+			totalAmount,
+			seconds,
+			incomePerSecond,
+			multiplierText.str(),
+			baseAmount,
+			potentialBoost,
+			boostUpgradeDisplay.str());
+	}
+	else
+	{
+		outText.format(L"Supply Drop Income: $%d every %d sec (%.1f/sec)%ls",
+			totalAmount,
+			seconds,
+			incomePerSecond,
+			multiplierText.str());
+	}
+
+	return TRUE;
+}
+
+static Bool getInternetCenterContainedHackIncomeForTooltip(
+	Object* internetCenter,
+	Int& outHackerCount,
+	Int& outTotalAmount,
+	Int& outDelayFrames)
+{
+	outHackerCount = 0;
+	outTotalAmount = 0;
+	outDelayFrames = 0;
+
+	if (!internetCenter || !internetCenter->isKindOf(KINDOF_FS_INTERNET_CENTER))
+		return FALSE;
+
+	static NameKeyType internetHackContainKey = TheNameKeyGenerator->nameToKey("InternetHackContain");
+	InternetHackContain* contain = (InternetHackContain*)internetCenter->findUpdateModule(internetHackContainKey);
+
+	if (!contain)
+		return FALSE;
+
+	const ContainedItemsList* items = contain->getContainedItemsListForTooltip();
+	if (!items)
+		return FALSE;
+
+	for (ContainedItemsList::const_iterator it = items->begin(); it != items->end(); ++it)
+	{
+		Object* passenger = *it;
+		if (!passenger || !passenger->isKindOf(KINDOF_MONEY_HACKER))
+			continue;
+
+		static NameKeyType hackInternetKey = TheNameKeyGenerator->nameToKey("HackInternetAIUpdate");
+		HackInternetAIUpdate* hackInternet = (HackInternetAIUpdate*)passenger->findUpdateModule(hackInternetKey);
+
+		if (!hackInternet)
+			continue;
+
+		Int amount = hackInternet->getRegularCashAmount();
+
+		if (passenger->getVeterancyLevel() == LEVEL_VETERAN)
+			amount = hackInternet->getVeteranCashAmount();
+		else if (passenger->getVeterancyLevel() == LEVEL_ELITE)
+			amount = hackInternet->getEliteCashAmount();
+		else if (passenger->getVeterancyLevel() == LEVEL_HEROIC)
+			amount = hackInternet->getHeroicCashAmount();
+
+		if (g_resourceMultiplierPercent != 100)
+			amount = (amount * g_resourceMultiplierPercent) / 100;
+
+		outTotalAmount += amount;
+		++outHackerCount;
+
+		if (outDelayFrames == 0)
+			outDelayFrames = hackInternet->getCashUpdateDelay();
+	}
+
+	return outHackerCount > 0 && outTotalAmount > 0 && outDelayFrames > 0;
 }
 
 static const StealthDetectorUpdateModuleData* getSelectedUnitCameoStealthDetectorData(
@@ -781,13 +998,16 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	resetBuildTooltipLayoutToDefaults(m_buildToolTipLayout);
 
 	Player* player = ThePlayerList->getLocalPlayer();
-	UnicodeString name, cost, buildtime, powertext, limittext, reloadtext, descrip, healthText, shroudText, locomotorText, stealthDetectText;
+	UnicodeString name, cost, buildtime, powertext, limittext, reloadtext, descrip, healthText, shroudText, locomotorText, stealthDetectText, autoDepositText, hackInternetText, supplyDropText;
 	buildtime = UnicodeString::TheEmptyString;
 	powertext = UnicodeString::TheEmptyString;
 	limittext = UnicodeString::TheEmptyString;
 	reloadtext = UnicodeString::TheEmptyString;
 	healthText = UnicodeString::TheEmptyString;
 	stealthDetectText = UnicodeString::TheEmptyString;
+	autoDepositText = UnicodeString::TheEmptyString;
+	hackInternetText = UnicodeString::TheEmptyString;
+	supplyDropText = UnicodeString::TheEmptyString;
 
 	UnicodeString requiresFormat = UnicodeString::TheEmptyString, requiresList;
 	Bool firstRequirement = true;
@@ -1453,7 +1673,148 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 				}
 			}
 
-			
+
+
+			const AutoDepositUpdateModuleData* autoDepositData = nullptr;
+
+			const ModuleInfo& autoDepositBehaviorModules = infoTemplate->getBehaviorModuleInfo();
+			for (Int i = 0; i < autoDepositBehaviorModules.getCount(); ++i)
+			{
+				const ModuleData* moduleData = autoDepositBehaviorModules.getNthData(i);
+				if (!moduleData)
+					continue;
+
+				AsciiString moduleName = autoDepositBehaviorModules.getNthName(i);
+				if (moduleName.compareNoCase("AutoDepositUpdate") != 0)
+					continue;
+
+				autoDepositData = static_cast<const AutoDepositUpdateModuleData*>(moduleData);
+				break;
+			}
+
+			if (autoDepositData)
+			{
+				Int baseAmount = autoDepositData->m_depositAmount;
+				Int displayAmount = baseAmount;
+				Int potentialBoost = 0;
+				UnicodeString boostUpgradeDisplay = UnicodeString::TheEmptyString;
+
+				for (std::list<upgradePair>::const_iterator it = autoDepositData->m_upgradeBoost.begin(); it != autoDepositData->m_upgradeBoost.end(); ++it)
+				{
+					const UpgradeTemplate* boostUpgrade = TheUpgradeCenter->findUpgrade(it->type.c_str());
+
+					if (!boostUpgrade)
+						continue;
+
+					potentialBoost = it->amount;
+
+					if (boostUpgrade->getDisplayNameLabel().isNotEmpty())
+						boostUpgradeDisplay = TheGameText->fetch(boostUpgrade->getDisplayNameLabel().str());
+					else
+						boostUpgradeDisplay.format(L"%S", it->type.c_str());
+
+					if (player && player->hasUpgradeComplete(boostUpgrade))
+					{
+						displayAmount += it->amount;
+					}
+
+					break;
+				}
+
+				Int displayBaseAmount = baseAmount;
+				Int displayBoostAmount = potentialBoost;
+
+				if (g_resourceMultiplierPercent != 100)
+				{
+					displayAmount = (displayAmount * g_resourceMultiplierPercent) / 100;
+					displayBaseAmount = (displayBaseAmount * g_resourceMultiplierPercent) / 100;
+					displayBoostAmount = (displayBoostAmount * g_resourceMultiplierPercent) / 100;
+				}
+
+				Int seconds = REAL_TO_INT_FLOOR((Real)autoDepositData->m_depositFrame / LOGICFRAMES_PER_SECOND + 0.5f);
+				Real incomePerSecond = (seconds > 0) ? ((Real)displayAmount / (Real)seconds) : 0.0f;
+
+				UnicodeString multiplierText = UnicodeString::TheEmptyString;
+				if (g_resourceMultiplierPercent != 100)
+				{
+					multiplierText.format(L" (x%.2f)", (Real)g_resourceMultiplierPercent / 100.0f);
+				}
+
+				if (displayBoostAmount > 0 && !boostUpgradeDisplay.isEmpty())
+				{
+					autoDepositText.format(L"Auto Income: $%d every %d sec (%.1f/sec)%ls (Base: $%d, +$%d with %ls)",
+						displayAmount,
+						seconds,
+						incomePerSecond,
+						multiplierText.str(),
+						displayBaseAmount,
+						displayBoostAmount,
+						boostUpgradeDisplay.str());
+				}
+				else
+				{
+					autoDepositText.format(L"Auto Income: $%d every %d sec (%.1f/sec)%ls",
+						displayAmount,
+						seconds,
+						incomePerSecond,
+						multiplierText.str());
+				}
+			}
+
+
+			const HackInternetAIUpdateModuleData* hackInternetData = nullptr;
+
+			const ModuleInfo& hackInternetBehaviorModules = infoTemplate->getBehaviorModuleInfo();
+			for (Int i = 0; i < hackInternetBehaviorModules.getCount(); ++i)
+			{
+				const ModuleData* moduleData = hackInternetBehaviorModules.getNthData(i);
+				if (!moduleData)
+					continue;
+
+				AsciiString moduleName = hackInternetBehaviorModules.getNthName(i);
+				if (moduleName.compareNoCase("HackInternetAIUpdate") != 0)
+					continue;
+
+				hackInternetData = static_cast<const HackInternetAIUpdateModuleData*>(moduleData);
+				break;
+			}
+
+			if (hackInternetData)
+			{
+				Int regularAmount = hackInternetData->m_regularCashAmount;
+				Int veteranAmount = hackInternetData->m_veteranCashAmount;
+				Int eliteAmount = hackInternetData->m_eliteCashAmount;
+				Int heroicAmount = hackInternetData->m_heroicCashAmount;
+
+				if (g_resourceMultiplierPercent != 100)
+				{
+					regularAmount = (regularAmount * g_resourceMultiplierPercent) / 100;
+					veteranAmount = (veteranAmount * g_resourceMultiplierPercent) / 100;
+					eliteAmount = (eliteAmount * g_resourceMultiplierPercent) / 100;
+					heroicAmount = (heroicAmount * g_resourceMultiplierPercent) / 100;
+				}
+
+				Int seconds = REAL_TO_INT_FLOOR((Real)hackInternetData->m_cashUpdateDelay / LOGICFRAMES_PER_SECOND + 0.5f);
+				Real incomePerSecond = (seconds > 0) ? ((Real)regularAmount / (Real)seconds) : 0.0f;
+
+				UnicodeString multiplierText = UnicodeString::TheEmptyString;
+				if (g_resourceMultiplierPercent != 100)
+				{
+					multiplierText.format(L" (x%.2f)", (Real)g_resourceMultiplierPercent / 100.0f);
+				}
+
+				hackInternetText.format(L"Hack Income: $%d every %d sec (%.1f/sec)%ls\nRanks: Vet $%d, Elite $%d, Heroic $%d",
+					regularAmount,
+					seconds,
+					incomePerSecond,
+					multiplierText.str(),
+					veteranAmount,
+					eliteAmount,
+					heroicAmount);
+			}
+
+
+			getSupplyDropZoneIncomeForTooltip(infoTemplate, nullptr, player, supplyDropText);
 
 UnsignedInt buildLimit = thingTemplate->getMaxSimultaneousOfType();
 if (buildLimit > 0)
@@ -1788,7 +2149,7 @@ if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE)
 	win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextCost"));
 	if(win)
 	{
-		if (!cost.isEmpty() || !buildtime.isEmpty() || !reloadtext.isEmpty() || !powertext.isEmpty() || !limittext.isEmpty())
+		if (!cost.isEmpty() || !buildtime.isEmpty() || !reloadtext.isEmpty() || !powertext.isEmpty() || !limittext.isEmpty() || !autoDepositText.isEmpty() || !supplyDropText.isEmpty())
 		{
 			win->winHide(FALSE);
 
@@ -1846,6 +2207,27 @@ if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE)
 				if (!costAndTime.isEmpty())
 					costAndTime.concat(L"\n");
 				costAndTime.concat(locomotorText);
+			}
+
+			if (!useUpgradeEconomyForIgnoredGuiObject && !autoDepositText.isEmpty())
+			{
+				if (!costAndTime.isEmpty())
+					costAndTime.concat(L"\n");
+				costAndTime.concat(autoDepositText);
+			}
+
+			if (!useUpgradeEconomyForIgnoredGuiObject && !hackInternetText.isEmpty())
+			{
+				if (!costAndTime.isEmpty())
+					costAndTime.concat(L"\n");
+				costAndTime.concat(hackInternetText);
+			}
+
+			if (!useUpgradeEconomyForIgnoredGuiObject && !supplyDropText.isEmpty())
+			{
+				if (!costAndTime.isEmpty())
+					costAndTime.concat(L"\n");
+				costAndTime.concat(supplyDropText);
 			}
 
 			if (!useUpgradeEconomyForIgnoredGuiObject && !limittext.isEmpty())
@@ -1979,7 +2361,7 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 	if (!player || !thing)
 		return;
 
-	UnicodeString name, cost, buildtime, powertext, limittext, healthText, shroudText, locomotorText, stealthDetectText, infoText, descrip;
+	UnicodeString name, cost, buildtime, powertext, limittext, healthText, shroudText, locomotorText, stealthDetectText, autoDepositText, hackInternetText, internetCenterHackText, supplyDropText, infoText, descrip;
 	descrip = UnicodeString::TheEmptyString;
 	stealthDetectText = UnicodeString::TheEmptyString;
 
@@ -2113,7 +2495,41 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 		}
 	}
 
-	if (bodyData && liveBody)
+	if (thing->isKindOf(KINDOF_SUPPLY_SOURCE))
+	{
+		static NameKeyType warehouseModuleKey = TheNameKeyGenerator->nameToKey("SupplyWarehouseDockUpdate");
+		SupplyWarehouseDockUpdate* warehouseModule = (SupplyWarehouseDockUpdate*)obj->findUpdateModule(warehouseModuleKey);
+
+		if (warehouseModule)
+		{
+			Int boxes = warehouseModule->getBoxesStored();
+			Int value = boxes * TheGlobalData->m_baseValuePerSupplyBox;
+
+			if (g_resourceMultiplierPercent != 100)
+				value = (value * g_resourceMultiplierPercent) / 100;
+
+			const SupplyWarehouseDockUpdateModuleData* warehouseData = warehouseModule->getSupplyWarehouseDockUpdateModuleDataForTooltip();
+
+			Int initialBoxes = warehouseData ? warehouseData->m_startingBoxesData : boxes;
+			Int initialValue = initialBoxes * TheGlobalData->m_baseValuePerSupplyBox;
+
+			if (g_resourceMultiplierPercent != 100)
+				initialValue = (initialValue * g_resourceMultiplierPercent) / 100;
+
+			if (g_resourceMultiplierPercent != 100)
+			{
+				healthText.format(L"Resources: $%d / $%d (with x%.2f Resource Multiplier)",
+					value,
+					initialValue,
+					(Real)g_resourceMultiplierPercent / 100.0f);
+			}
+			else
+			{
+				healthText.format(L"Resources: $%d / $%d", value, initialValue);
+			}
+		}
+	}
+	else if (bodyData && liveBody)
 	{
 		Real currentHealth = currentHealthForTooltip;
 		Real baseMaxHealth = bodyData->m_maxHealth;
@@ -2137,7 +2553,6 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 				displayMaxHealth);
 		}
 	}
-
 
 	UnicodeString powerText = UnicodeString::TheEmptyString;
 
@@ -2451,12 +2866,199 @@ if (obj && !thing->isKindOf(KINDOF_STRUCTURE))
 			}
 
 
+			static NameKeyType autoDepositKey = TheNameKeyGenerator->nameToKey("AutoDepositUpdate");
+			AutoDepositUpdate* autoDeposit = (AutoDepositUpdate*)obj->findUpdateModule(autoDepositKey);
+
+			if (autoDeposit)
+			{
+				const AutoDepositUpdateModuleData* autoData = autoDeposit->getAutoDepositUpdateModuleDataForTooltip();
+
+				if (autoData)
+				{
+					Int baseAmount = autoData->m_depositAmount;
+					Int activeBoost = 0;
+					Int displayAmount = baseAmount;
+					UnicodeString boostUpgradeDisplay = UnicodeString::TheEmptyString;
+
+					Player* controllingPlayer = obj->getControllingPlayer();
+
+					for (std::list<upgradePair>::const_iterator it = autoData->m_upgradeBoost.begin(); it != autoData->m_upgradeBoost.end(); ++it)
+					{
+						const UpgradeTemplate* boostUpgrade = TheUpgradeCenter->findUpgrade(it->type.c_str());
+
+						if (!boostUpgrade)
+							continue;
+
+						if (boostUpgradeDisplay.isEmpty())
+						{
+							if (boostUpgrade->getDisplayNameLabel().isNotEmpty())
+								boostUpgradeDisplay = TheGameText->fetch(boostUpgrade->getDisplayNameLabel().str());
+							else
+								boostUpgradeDisplay.format(L"%S", it->type.c_str());
+						}
+
+						if (controllingPlayer && controllingPlayer->hasUpgradeComplete(boostUpgrade))
+						{
+							activeBoost = it->amount;
+							displayAmount += activeBoost;
+							break;
+						}
+					}
+
+					Int displayBaseAmount = baseAmount;
+					Int displayBoostAmount = activeBoost;
+
+					if (g_resourceMultiplierPercent != 100)
+					{
+						displayAmount = (displayAmount * g_resourceMultiplierPercent) / 100;
+						displayBaseAmount = (displayBaseAmount * g_resourceMultiplierPercent) / 100;
+						displayBoostAmount = (displayBoostAmount * g_resourceMultiplierPercent) / 100;
+					}
+
+					Int seconds = REAL_TO_INT_FLOOR((Real)autoData->m_depositFrame / LOGICFRAMES_PER_SECOND + 0.5f);
+
+					Real incomePerSecond = (seconds > 0) ? ((Real)displayAmount / (Real)seconds) : 0.0f;
+
+					UnicodeString multiplierText = UnicodeString::TheEmptyString;
+
+					if (g_resourceMultiplierPercent != 100)
+					{
+						multiplierText.format(L" (x%.2f)", (Real)g_resourceMultiplierPercent / 100.0f);
+					}
+
+					if (displayBoostAmount > 0 && !boostUpgradeDisplay.isEmpty())
+					{
+						autoDepositText.format(L"Auto Income: $%d every %d sec (%.1f/sec)%ls (Base: $%d, +$%d with %ls)",
+							displayAmount,
+							seconds,
+							incomePerSecond,
+							multiplierText.str(),
+							displayBaseAmount,
+							displayBoostAmount,
+							boostUpgradeDisplay.str());
+					}
+					else if (!boostUpgradeDisplay.isEmpty() && !autoData->m_upgradeBoost.empty())
+					{
+						Int potentialBoost = autoData->m_upgradeBoost.front().amount;
+
+						if (g_resourceMultiplierPercent != 100)
+							potentialBoost = (potentialBoost * g_resourceMultiplierPercent) / 100;
+
+						autoDepositText.format(L"Auto Income: $%d every %d sec (%.1f/sec)%ls (Base: $%d, +$%d with %ls)",
+							displayAmount,
+							seconds,
+							incomePerSecond,
+							multiplierText.str(),
+							displayBaseAmount,
+							potentialBoost,
+							boostUpgradeDisplay.str());
+					}
+					else
+					{
+						autoDepositText.format(L"Auto Income: $%d every %d sec (%.1f/sec)%ls",
+							displayAmount,
+							seconds,
+							incomePerSecond,
+							multiplierText.str());
+					}
+				}
+			}
+
+
+
+			static NameKeyType hackInternetKey = TheNameKeyGenerator->nameToKey("HackInternetAIUpdate");
+			HackInternetAIUpdate* hackInternet = (HackInternetAIUpdate*)obj->findUpdateModule(hackInternetKey);
+
+			if (hackInternet)
+			{
+				Int amount = hackInternet->getRegularCashAmount();
+				UnicodeString rankText = L"Regular";
+
+				if (obj->getVeterancyLevel() == LEVEL_VETERAN)
+				{
+					amount = hackInternet->getVeteranCashAmount();
+					rankText = L"Veteran";
+				}
+				else if (obj->getVeterancyLevel() == LEVEL_ELITE)
+				{
+					amount = hackInternet->getEliteCashAmount();
+					rankText = L"Elite";
+				}
+				else if (obj->getVeterancyLevel() == LEVEL_HEROIC)
+				{
+					amount = hackInternet->getHeroicCashAmount();
+					rankText = L"Heroic";
+				}
+
+				if (g_resourceMultiplierPercent != 100)
+					amount = (amount * g_resourceMultiplierPercent) / 100;
+
+				Int seconds = REAL_TO_INT_FLOOR((Real)hackInternet->getCashUpdateDelay() / LOGICFRAMES_PER_SECOND + 0.5f);
+				Real incomePerSecond = (seconds > 0) ? ((Real)amount / (Real)seconds) : 0.0f;
+
+				UnicodeString multiplierText = UnicodeString::TheEmptyString;
+				if (g_resourceMultiplierPercent != 100)
+					multiplierText.format(L" (x%.2f)", (Real)g_resourceMultiplierPercent / 100.0f);
+
+				hackInternetText.format(L"Hack Income: $%d every %d sec (%.1f/sec) (%ls)%ls",
+					amount,
+					seconds,
+					incomePerSecond,
+					rankText.str(),
+					multiplierText.str());
+			}
+
+
+			if (obj && thing->isKindOf(KINDOF_FS_INTERNET_CENTER))
+			{
+				Int hackerCount = 0;
+				Int totalAmount = 0;
+				Int delayFrames = 0;
+
+				if (getInternetCenterContainedHackIncomeForTooltip(obj, hackerCount, totalAmount, delayFrames))
+				{
+					Int seconds = REAL_TO_INT_FLOOR((Real)delayFrames / LOGICFRAMES_PER_SECOND + 0.5f);
+					Real incomePerSecond = (seconds > 0) ? ((Real)totalAmount / (Real)seconds) : 0.0f;
+
+					UnicodeString multiplierText = UnicodeString::TheEmptyString;
+					if (g_resourceMultiplierPercent != 100)
+						multiplierText.format(L" (x%.2f)", (Real)g_resourceMultiplierPercent / 100.0f);
+
+					if (hackerCount == 1)
+					{
+						internetCenterHackText.format(L"Contained Hack Income: $%d every %d sec (%.1f/sec)%ls (%d Hacker)",
+							totalAmount,
+							seconds,
+							incomePerSecond,
+							multiplierText.str(),
+							hackerCount);
+					}
+					else
+					{
+						internetCenterHackText.format(L"Contained Hack Income: $%d every %d sec (%.1f/sec)%ls (%d Hackers)",
+							totalAmount,
+							seconds,
+							incomePerSecond,
+							multiplierText.str(),
+							hackerCount);
+					}
+				}
+			}
+
+			if (getSupplyDropZoneIncomeForTooltip(thing, obj, player, supplyDropText))
+			{
+			}
+
 	if (!healthText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(healthText); }
 	if (!powerText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(powerText); }
 	if (!shroudText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(shroudText); }
 	if (!stealthDetectText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(stealthDetectText); }
 	if (!locomotorText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(locomotorText); }
 	if (!limittext.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(limittext); }
+	if (!autoDepositText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(autoDepositText); }
+	if (!hackInternetText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(hackInternetText); }
+	if (!internetCenterHackText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(internetCenterHackText); }
+	if (!supplyDropText.isEmpty()) { if (!infoText.isEmpty()) infoText.concat(L"\n"); infoText.concat(supplyDropText); }
 
 	GameWindow* root = m_buildToolTipLayout->getFirstWindow();
 
