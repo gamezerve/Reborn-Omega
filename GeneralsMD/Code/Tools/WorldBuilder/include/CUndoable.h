@@ -223,6 +223,9 @@ protected:
 	Bool m_inval;
 	NameKeyType m_key;
 
+	Bool m_replacePrefix;
+	AsciiString m_prefix;
+
 public:
 
 	static Dict buildSingleItemDict(AsciiString k, Dict::DataType t, AsciiString v);
@@ -235,6 +238,8 @@ public:
 
 	virtual void Do() override;
 	virtual void Undo() override;
+
+	DictItemUndoable(Dict** d, Dict data, AsciiString prefix, Int dictsToModify = 1, CWorldBuilderDoc* pDoc = nullptr, Bool inval = false);
 
 };
 

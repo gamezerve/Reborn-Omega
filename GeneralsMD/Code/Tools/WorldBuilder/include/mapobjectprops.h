@@ -205,6 +205,8 @@ private:
   MapObjectProps & operator=( const MapObjectProps & other ); // Deliberately undefined
 	void updateTheUI(MapObject *pMapObj);
 	void InitSound();
+
+	Bool m_updatingPrebuiltUpgradesList;
 };
 
 //{{AFX_INSERT_LOCATION}}

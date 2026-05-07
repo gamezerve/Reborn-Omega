@@ -67,7 +67,8 @@ MapObjectProps::MapObjectProps(Dict* dictToEdit, const char* title, CWnd* pParen
   m_posUndoable( nullptr ),
   m_angle( 0 ),
   m_defaultEntryIndex(0),
-  m_defaultIsNone(true)
+  m_defaultIsNone(true),
+  m_updatingPrebuiltUpgradesList(false)
 {
 
 
@@ -225,18 +226,28 @@ void MapObjectProps::_DictToTeam()
 /// Move data from object to dialog controls
 void MapObjectProps::_DictToName()
 {
+  getAllSelectedDicts();
+
+  CWnd* pItem = GetDlgItem(IDC_MAPOBJECT_Name);
+  if (!pItem) {
+    return;
+  }
+
+  if (m_allSelectedDicts.size() != 1) {
+    pItem->SetWindowText("");
+    pItem->EnableWindow(FALSE);
+    return;
+  }
+
+  pItem->EnableWindow(TRUE);
+
   AsciiString name;
   Bool exists;
-  if (m_dictToEdit)
-  {
+  if (m_dictToEdit) {
     name = m_dictToEdit->getAsciiString(TheKey_objectName, &exists);
   }
 
-  CWnd* pItem = GetDlgItem(IDC_MAPOBJECT_Name);
-  if (pItem)
-  {
-    pItem->SetWindowText(name.str());
-  }
+  pItem->SetWindowText(name.str());
 }
 
 /// Move data from object to dialog controls
@@ -288,6 +299,10 @@ void MapObjectProps::_TeamToDict()
 void MapObjectProps::_NameToDict()
 {
   getAllSelectedDicts();
+
+  if (m_allSelectedDicts.size() != 1) {
+    return;
+  }
 
   CWnd *owner = GetDlgItem(IDC_MAPOBJECT_Name);
   CString cstr;
@@ -687,78 +702,174 @@ void MapObjectProps::PopSliderFinished(const long sliderID, long theVal)
 }
 
 /// Move data from dialog controls to object
+//void MapObjectProps::_PrebuiltUpgradesToDict()
+//{
+//  getAllSelectedDicts();
+//
+//  //CListBox *pBox = (CListBox *) GetDlgItem(IDC_MAPOBJECT_BuildWithUpgrades);
+//  CCheckListBox* pBox = &m_prebuiltUpgradesList;
+//  if (!pBox) {
+//    return;
+//  }
+//
+//  // We only work for single selections
+//  if (m_allSelectedDicts.size() != 1) {
+//    return;
+//  }
+//
+//  if (m_selectedObject)	{
+//    if ( !m_selectedObject->getThingTemplate() ) {
+//      return;
+//    }
+//  }
+//
+//  Bool exists;
+//  int upgradeNum = 0;
+//  AsciiString upgradeString;
+//
+//  // We're going to sub this entire dict for the existing entire dict.
+//  Dict newDict = *m_allSelectedDicts[0];
+//
+//  // First, clear out any existing notions of what we should upgrade.
+//  do {
+//    AsciiString keyName;
+//    keyName.format("%s%d", TheNameKeyGenerator->keyToName(TheKey_objectGrantUpgrade).str(), upgradeNum);
+//    upgradeString = newDict.getAsciiString(NAMEKEY(keyName), &exists);
+//
+//    if (exists) {
+//      newDict.remove(NAMEKEY(keyName));
+//    }
+//
+//    ++upgradeNum;
+//  } while (!upgradeString.isEmpty());
+//
+//  upgradeNum = 0;
+//  // We've now removed them, so lets add the ones that are selected now.
+//  Int countOfItems = pBox->GetCount();
+//  for (Int i = 0; i < countOfItems; ++i) {
+//    //if (pBox->GetSel(i) > 0)
+//    if (!pBox->IsEnabled(i))
+//    {
+//      continue;
+//    }
+//
+//    if (pBox->GetCheck(i))
+//    {
+//      CString selTxt;
+//      // This thing is selected. Get its text, and add it to the dict.
+//      pBox->GetText(i, selTxt);
+//
+//      AsciiString keyName;
+//      keyName.format("%s%d", TheNameKeyGenerator->keyToName(TheKey_objectGrantUpgrade).str(), upgradeNum);
+//      newDict.setAsciiString(NAMEKEY(keyName), AsciiString(selTxt.GetBuffer(0)));
+//      ++upgradeNum;
+//    }
+//  }
+//
+//  // Now, do the Undoable
+//  CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
+//  if ( pDoc != nullptr )
+//  {
+//    DictItemUndoable *pUndo = new DictItemUndoable(getAllSelectedDictsData(), newDict, NAMEKEY_INVALID, m_allSelectedDicts.size(), pDoc, true);
+//    pDoc->AddAndDoUndoable(pUndo);
+//    REF_PTR_RELEASE(pUndo); // belongs to pDoc now.
+//  }
+//}
+
 void MapObjectProps::_PrebuiltUpgradesToDict()
 {
+  if (m_updatingPrebuiltUpgradesList) {
+    return;
+  }
+
   getAllSelectedDicts();
 
-  //CListBox *pBox = (CListBox *) GetDlgItem(IDC_MAPOBJECT_BuildWithUpgrades);
   CCheckListBox* pBox = &m_prebuiltUpgradesList;
-  if (!pBox) {
+  if (!pBox || m_allSelectedDicts.empty()) {
     return;
   }
 
-  // We only work for single selections
-  if (m_allSelectedDicts.size() != 1) {
+  Int sel = pBox->GetCurSel();
+  if (sel == LB_ERR || !pBox->IsEnabled(sel)) {
     return;
   }
 
-  if (m_selectedObject)	{
-    if ( !m_selectedObject->getThingTemplate() ) {
-      return;
-    }
+  CString selTxt;
+  pBox->GetText(sel, selTxt);
+  AsciiString clickedUpgrade(selTxt.GetBuffer(0));
+
+  Int checkState = pBox->GetCheck(sel);
+  Bool shouldGrant = checkState == 1 || checkState == 2;
+
+  if (checkState == 2) {
+    pBox->SetCheck(sel, 1);
+    shouldGrant = true;
   }
 
-  Bool exists;
-  int upgradeNum = 0;
-  AsciiString upgradeString;
+  CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
+  if (pDoc == nullptr) {
+    return;
+  }
 
-  // We're going to sub this entire dict for the existing entire dict.
-  Dict newDict = *m_allSelectedDicts[0];
+  MultipleUndoable* pMultiUndo = new MultipleUndoable;
 
-  // First, clear out any existing notions of what we should upgrade.
-  do {
-    AsciiString keyName;
-    keyName.format("%s%d", TheNameKeyGenerator->keyToName(TheKey_objectGrantUpgrade).str(), upgradeNum);
-    upgradeString = newDict.getAsciiString(NAMEKEY(keyName), &exists);
+  for (UnsignedInt dictIndex = 0; dictIndex < m_allSelectedDicts.size(); ++dictIndex) {
+    Dict* sourceDict = m_allSelectedDicts[dictIndex];
+    std::vector<AsciiString> existingUpgrades;
+    std::vector<NameKeyType> oldUpgradeKeys;
 
-    if (exists) {
-      newDict.remove(NAMEKEY(keyName));
-    }
+    Bool exists;
+    Int upgradeNum = 0;
+    AsciiString upgradeString;
 
-    ++upgradeNum;
-  } while (!upgradeString.isEmpty());
-
-  upgradeNum = 0;
-  // We've now removed them, so lets add the ones that are selected now.
-  Int countOfItems = pBox->GetCount();
-  for (Int i = 0; i < countOfItems; ++i) {
-    //if (pBox->GetSel(i) > 0)
-    if (!pBox->IsEnabled(i))
-    {
-      continue;
-    }
-
-    if (pBox->GetCheck(i))
-    {
-      CString selTxt;
-      // This thing is selected. Get its text, and add it to the dict.
-      pBox->GetText(i, selTxt);
-
+    do {
       AsciiString keyName;
       keyName.format("%s%d", TheNameKeyGenerator->keyToName(TheKey_objectGrantUpgrade).str(), upgradeNum);
-      newDict.setAsciiString(NAMEKEY(keyName), AsciiString(selTxt.GetBuffer(0)));
+      NameKeyType key = NAMEKEY(keyName);
+      upgradeString = sourceDict->getAsciiString(key, &exists);
+
+      if (exists) {
+        oldUpgradeKeys.push_back(key);
+
+        if (!upgradeString.isEmpty() && upgradeString.compareNoCase(clickedUpgrade) != 0) {
+          existingUpgrades.push_back(upgradeString);
+        }
+      }
+      else {
+        upgradeString.clear();
+      }
+
       ++upgradeNum;
+    } while (!upgradeString.isEmpty());
+
+    if (shouldGrant) {
+      existingUpgrades.push_back(clickedUpgrade);
+    }
+
+    Dict* dictToApply = sourceDict;
+
+    for (UnsignedInt i = 0; i < oldUpgradeKeys.size(); ++i) {
+      Dict emptyDict;
+      DictItemUndoable* pUndo = new DictItemUndoable(&dictToApply, emptyDict, oldUpgradeKeys[i], 1, pDoc, false);
+      pMultiUndo->addUndoable(pUndo);
+      REF_PTR_RELEASE(pUndo);
+    }
+
+    for (UnsignedInt i = 0; i < existingUpgrades.size(); ++i) {
+      Dict newDict;
+      AsciiString keyName;
+      keyName.format("%s%d", TheNameKeyGenerator->keyToName(TheKey_objectGrantUpgrade).str(), i);
+      NameKeyType key = NAMEKEY(keyName);
+      newDict.setAsciiString(key, existingUpgrades[i]);
+
+      DictItemUndoable* pUndo = new DictItemUndoable(&dictToApply, newDict, key, 1, pDoc, false);
+      pMultiUndo->addUndoable(pUndo);
+      REF_PTR_RELEASE(pUndo);
     }
   }
 
-  // Now, do the Undoable
-  CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
-  if ( pDoc != nullptr )
-  {
-    DictItemUndoable *pUndo = new DictItemUndoable(getAllSelectedDictsData(), newDict, NAMEKEY_INVALID, m_allSelectedDicts.size(), pDoc, true);
-    pDoc->AddAndDoUndoable(pUndo);
-    REF_PTR_RELEASE(pUndo); // belongs to pDoc now.
-  }
+  pDoc->AddAndDoUndoable(pMultiUndo);
+  REF_PTR_RELEASE(pMultiUndo);
 }
 
 /// Move data from object to dialog controls
@@ -899,71 +1010,139 @@ void MapObjectProps::_DictToPrebuiltUpgrades()
     return;
   }
 
+  m_updatingPrebuiltUpgradesList = true;
+
   pBox->ResetContent();
   pBox->EnableWindow(TRUE);
 
-  if (m_allSelectedDicts.size() > 1) {
+  if (m_allSelectedDicts.empty()) {
     pBox->EnableWindow(FALSE);
+    m_updatingPrebuiltUpgradesList = false;
     return;
   }
 
-  if (m_selectedObject == nullptr) {
+  std::vector<AsciiString> commonUpgradeNames;
+  Bool firstObject = true;
+  Int validObjectCount = 0;
+
+  for (MapObject* pMapObj = MapObject::getFirstMapObject(); pMapObj; pMapObj = pMapObj->getNext()) {
+    if (!pMapObj->isSelected() || pMapObj->isWaypoint() || pMapObj->isLight()) {
+      continue;
+    }
+
+    const ThingTemplate* tt = pMapObj->getThingTemplate();
+    if (tt == nullptr) {
+      continue;
+    }
+
+    std::vector<AsciiString> upgradeNames = GetThingTemplateUpgradeRefsForWB(tt->getName().str());
+    std::vector<AsciiString> uniqueUpgradeNames;
+
+    for (std::vector<AsciiString>::const_iterator it = upgradeNames.begin(); it != upgradeNames.end(); ++it) {
+      Bool alreadyAdded = false;
+
+      for (std::vector<AsciiString>::const_iterator uniqueIt = uniqueUpgradeNames.begin(); uniqueIt != uniqueUpgradeNames.end(); ++uniqueIt) {
+        if (uniqueIt->compareNoCase(*it) == 0) {
+          alreadyAdded = true;
+          break;
+        }
+      }
+
+      if (!alreadyAdded) {
+        uniqueUpgradeNames.push_back(*it);
+      }
+    }
+
+    if (firstObject) {
+      commonUpgradeNames = uniqueUpgradeNames;
+      firstObject = false;
+    }
+    else {
+      std::vector<AsciiString> filteredUpgradeNames;
+
+      for (std::vector<AsciiString>::const_iterator commonIt = commonUpgradeNames.begin(); commonIt != commonUpgradeNames.end(); ++commonIt) {
+        Bool found = false;
+
+        for (std::vector<AsciiString>::const_iterator objectIt = uniqueUpgradeNames.begin(); objectIt != uniqueUpgradeNames.end(); ++objectIt) {
+          if (commonIt->compareNoCase(*objectIt) == 0) {
+            found = true;
+            break;
+          }
+        }
+
+        if (found) {
+          filteredUpgradeNames.push_back(*commonIt);
+        }
+      }
+
+      commonUpgradeNames = filteredUpgradeNames;
+    }
+
+    ++validObjectCount;
+  }
+
+  if (validObjectCount == 0 || commonUpgradeNames.empty()) {
     pBox->EnableWindow(FALSE);
+    m_updatingPrebuiltUpgradesList = false;
     return;
   }
 
-  const ThingTemplate* tt = m_selectedObject->getThingTemplate();
-  if (tt == nullptr) {
-    pBox->EnableWindow(FALSE);
-    return;
-  }
-
-  Bool noUpgrades = true;
-
-  std::vector<AsciiString> upgradeNames = GetThingTemplateUpgradeRefsForWB(tt->getName().str());
-
-  for (std::vector<AsciiString>::const_iterator it = upgradeNames.begin();
-    it != upgradeNames.end();
-    ++it)
-  {
+  for (std::vector<AsciiString>::const_iterator it = commonUpgradeNames.begin(); it != commonUpgradeNames.end(); ++it) {
     CString cstr = it->str();
 
     if (pBox->FindStringExact(-1, cstr) == LB_ERR) {
       pBox->AddString(cstr);
-      noUpgrades = false;
     }
   }
 
-  if (noUpgrades) {
-    pBox->EnableWindow(FALSE);
-    return;
-  }
+  Int countOfItems = pBox->GetCount();
 
-  Bool exists;
-  int upgradeNum = 0;
-  AsciiString upgradeString;
+  for (Int i = 0; i < countOfItems; ++i) {
+    CString itemText;
+    pBox->GetText(i, itemText);
 
-  do {
-    AsciiString keyName;
-    keyName.format("%s%d", TheNameKeyGenerator->keyToName(TheKey_objectGrantUpgrade).str(), upgradeNum);
-    upgradeString = m_dictToEdit->getAsciiString(NAMEKEY(keyName), &exists);
+    Int grantedCount = 0;
 
-    if (exists) {
-      Int selNdx = pBox->FindStringExact(-1, upgradeString.str());
-      if (selNdx == LB_ERR) {
-        DEBUG_CRASH(("Object claims '%s', but it wasn't found in the list of possible upgrades.", upgradeString.str()));
+    for (UnsignedInt dictIndex = 0; dictIndex < m_allSelectedDicts.size(); ++dictIndex) {
+      Bool exists;
+      int upgradeNum = 0;
+      AsciiString upgradeString;
+      Bool found = false;
+
+      do {
+        AsciiString keyName;
+        keyName.format("%s%d", TheNameKeyGenerator->keyToName(TheKey_objectGrantUpgrade).str(), upgradeNum);
+        upgradeString = m_allSelectedDicts[dictIndex]->getAsciiString(NAMEKEY(keyName), &exists);
+
+        if (exists && upgradeString.compareNoCase(AsciiString(itemText.GetBuffer(0))) == 0) {
+          found = true;
+          break;
+        }
+
+        if (!exists) {
+          upgradeString.clear();
+        }
+
         ++upgradeNum;
-        continue;
-      }
+      } while (!upgradeString.isEmpty());
 
-      pBox->SetCheck(selNdx, TRUE);
+      if (found) {
+        ++grantedCount;
+      }
+    }
+
+    if (grantedCount == 0) {
+      pBox->SetCheck(i, 0);
+    }
+    else if (grantedCount == (Int)m_allSelectedDicts.size()) {
+      pBox->SetCheck(i, 1);
     }
     else {
-      upgradeString.clear();
+      pBox->SetCheck(i, 2);
     }
+  }
 
-    ++upgradeNum;
-  } while (!upgradeString.isEmpty());
+  m_updatingPrebuiltUpgradesList = false;
 }
 
 /// Move data from object to dialog controls

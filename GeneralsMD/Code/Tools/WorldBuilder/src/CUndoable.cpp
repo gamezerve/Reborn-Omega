@@ -763,7 +763,10 @@ DictItemUndoable::DictItemUndoable(Dict **d, Dict data, NameKeyType key, Int dic
 	m_key(key),
 	m_numDictsToModify(dictsToModify),
 	m_pDoc(pDoc),
-	m_inval(inval)
+	m_inval(inval),
+
+	m_replacePrefix(false),
+	m_prefix("")
 {
 	m_dictToModify.resize(m_numDictsToModify);
 	m_oldDictData.resize(m_numDictsToModify);
@@ -780,6 +783,24 @@ DictItemUndoable::DictItemUndoable(Dict **d, Dict data, NameKeyType key, Int dic
 	}
 }
 
+DictItemUndoable::DictItemUndoable(Dict** d, Dict data, AsciiString prefix, Int dictsToModify, CWorldBuilderDoc* pDoc, Bool inval) :
+	m_newDictData(data),
+	m_key(NAMEKEY_INVALID),
+	m_numDictsToModify(dictsToModify),
+	m_pDoc(pDoc),
+	m_inval(inval),
+	m_replacePrefix(true),
+	m_prefix(prefix)
+{
+	m_dictToModify.resize(m_numDictsToModify);
+	m_oldDictData.resize(m_numDictsToModify);
+
+	for (int i = 0; i < m_numDictsToModify; ++i) {
+		m_dictToModify[i] = d[i];
+		m_oldDictData[i] = *d[i];
+	}
+}
+
 DictItemUndoable::~DictItemUndoable()
 {
 }
@@ -788,10 +809,30 @@ DictItemUndoable::~DictItemUndoable()
 void DictItemUndoable::Do()
 {
 	for (int i = 0; i < m_numDictsToModify; ++i) {
-		if (m_key == NAMEKEY_INVALID)
+		//if (m_key == NAMEKEY_INVALID)
+		//	*m_dictToModify[i] = m_newDictData;
+		//else
+		//	m_dictToModify[i]->copyPairFrom(m_newDictData, m_key);
+		if (m_replacePrefix) {
+			for (int j = m_dictToModify[i]->getPairCount() - 1; j >= 0; --j) {
+				NameKeyType key = m_dictToModify[i]->getNthKey(j);
+				AsciiString keyName = TheNameKeyGenerator->keyToName(key);
+
+				if (strncmp(keyName.str(), m_prefix.str(), m_prefix.getLength()) == 0) {
+					m_dictToModify[i]->remove(key);
+				}
+			}
+
+			for (int j = 0; j < m_newDictData.getPairCount(); ++j) {
+				m_dictToModify[i]->copyPairFrom(m_newDictData, m_newDictData.getNthKey(j));
+			}
+		}
+		else if (m_key == NAMEKEY_INVALID) {
 			*m_dictToModify[i] = m_newDictData;
-		else
+		}
+		else {
 			m_dictToModify[i]->copyPairFrom(m_newDictData, m_key);
+		}
 	}
 	MapObjectProps::update();	// ugh, hack to update panel
   ObjectOptions::update();	// ditto
