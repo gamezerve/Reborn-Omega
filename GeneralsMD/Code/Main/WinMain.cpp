@@ -38,6 +38,7 @@
 #include <eh.h>
 #include <ole2.h>
 #include <dbt.h>
+#include <shellapi.h>
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "WinMain.h"
@@ -833,7 +834,6 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		}
 		::SetCurrentDirectory(buffer);
 
-
 		#ifdef RTS_DEBUG
 			// Turn on Memory heap tracking
 			int tmpFlag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
@@ -873,6 +873,25 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #endif
 
 		CommandLine::parseCommandLineForStartup();
+
+		if (!TheGlobalData->m_windowed)
+		{
+			int result = MessageBox(
+				nullptr,
+				"Start the game in Windowed mode?\n\nYes = Windowed\nNo = Fullscreen",
+				"Display Mode",
+				MB_YESNOCANCEL | MB_ICONQUESTION
+			);
+
+			if (result == IDCANCEL)
+				return 0;
+
+			if (result == IDYES)
+			{
+				TheWritableGlobalData->m_windowed = TRUE;
+			}
+		}
+
 #ifdef RTS_ENABLE_CRASHDUMP
 		// Initialize minidump facilities - requires TheGlobalData so performed after parseCommandLineForStartup
 		MiniDumper::initMiniDumper(TheGlobalData->getPath_UserData());
