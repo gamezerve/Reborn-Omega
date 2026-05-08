@@ -2354,6 +2354,8 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 	if (TheDisconnectMenu && TheDisconnectMenu->isScreenVisible())
 		return;
 
+	resetBuildTooltipLayoutToDefaults(m_buildToolTipLayout);
+
 	m_showBuildToolTipLayout = TRUE;
 
 	Player* player = ThePlayerList->getLocalPlayer();
