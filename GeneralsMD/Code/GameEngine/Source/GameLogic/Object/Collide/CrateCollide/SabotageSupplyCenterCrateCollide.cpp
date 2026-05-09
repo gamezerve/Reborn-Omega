@@ -60,6 +60,8 @@
 #include "GameLogic/Module/OCLUpdate.h"
 #include "GameLogic/Module/SabotageSupplyCenterCrateCollide.h"
 
+#include "GameNetwork/GameInfo.h"
+
 extern Int g_resourceMultiplierPercent;
 
 //-------------------------------------------------------------------------------------------------
@@ -146,9 +148,24 @@ Bool SabotageSupplyCenterCrateCollide::executeCrateBehavior( Object *other )
 		//	g_resourceMultiplierPercent,
 		//	targetMoney->countMoney()));
 
-		if (g_resourceMultiplierPercent != 100)
+		Int resourceMultiplierPercent = 100;
+
+		if (TheGameInfo)
 		{
-			desiredAmount = (desiredAmount * g_resourceMultiplierPercent) / 100;
+			resourceMultiplierPercent = TheGameInfo->getResourceMultiplierPercent();
+		}
+		else if (TheSkirmishGameInfo)
+		{
+			resourceMultiplierPercent = TheSkirmishGameInfo->getResourceMultiplierPercent();
+		}
+		else
+		{
+			resourceMultiplierPercent = g_resourceMultiplierPercent;
+		}
+
+		if (resourceMultiplierPercent != 100)
+		{
+			desiredAmount = (desiredAmount * resourceMultiplierPercent) / 100;
 		}
 
 		//Check to see if they have the cash, otherwise, take the remainder!

@@ -1267,18 +1267,21 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
   // On a NEW game, we need to copy the superweapon restrictions from the game info to here
   // (because TheGameInfo is not always saved and doesn't carry over to replays). On a save
   // game, we save the superweapon restrictions in GameLogic::xfer()
-  if ( !loadingSaveGame )
-  {
-    if ( TheGameInfo )
-    {
-      m_superweaponRestriction = TheGameInfo->getSuperweaponRestriction();
-    }
-    else
-    {
-      // ??? Apparently this is legit? Oh well, use defaults
-      m_superweaponRestriction = 0;
-    }
-  }
+	if (!loadingSaveGame)
+	{
+		if (TheGameInfo)
+		{
+			m_superweaponRestriction = TheGameInfo->getSuperweaponRestriction();
+		}
+		else if (TheSkirmishGameInfo)
+		{
+			m_superweaponRestriction = TheSkirmishGameInfo->getSuperweaponRestriction();
+		}
+		else
+		{
+			m_superweaponRestriction = 0;
+		}
+	}
 
 	checkForDuplicateColors( TheGameInfo );
 

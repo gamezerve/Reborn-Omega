@@ -84,9 +84,11 @@
 #include "GameClient/Module/BeaconClientUpdate.h"
 #include "GameClient/LookAtXlat.h"
 
+#include "GameNetwork/GameInfo.h"
 #include "GameNetwork/NetworkInterface.h"
 
-
+extern Int g_resourceMultiplierPercent; // Reborn
+extern SkirmishGameInfo* TheSkirmishGameInfo; // Reborn
 
 
 #define MAX_PATH_SUBJECTS 64
@@ -380,6 +382,20 @@ void GameLogic::prepareNewGame( GameMode gameMode, GameDifficulty diff, Int rank
 	}
 	m_background->getFirstWindow()->winClearStatus(WIN_STATUS_IMAGE);
 	setGameMode( gameMode );
+	if (TheGameInfo)
+	{
+		
+		DEBUG_LOG(("Reborn: Resource multiplier set to %d from TheGameInfo during prepareNewGame", g_resourceMultiplierPercent));
+	}
+	else if (TheSkirmishGameInfo)
+	{
+		
+		DEBUG_LOG(("Reborn: Resource multiplier set to %d from TheSkirmishGameInfo during prepareNewGame", g_resourceMultiplierPercent));
+	}
+	else
+	{
+		DEBUG_LOG(("Reborn: Resource multiplier kept as %d during prepareNewGame", g_resourceMultiplierPercent));
+	}
 	if (!TheGlobalData->m_pendingFile.isEmpty())
 	{
 		TheWritableGlobalData->m_mapName = TheGlobalData->m_pendingFile;

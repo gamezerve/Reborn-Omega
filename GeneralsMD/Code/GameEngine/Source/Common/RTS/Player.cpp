@@ -2594,9 +2594,24 @@ void Player::doBountyForKill(const Object* killer, const Object* victim)
 	//DEBUG_LOG(("Cash bounty base = %d, multiplier = %d, victim cost = %d, percent = %g",
 	//	bounty, g_resourceMultiplierPercent, costToBuild, m_cashBountyPercent));
 
-	if (bounty > 0 && g_resourceMultiplierPercent != 100)
+	Int resourceMultiplierPercent = 100;
+
+	if (TheGameInfo)
 	{
-		bounty = (bounty * g_resourceMultiplierPercent) / 100;
+		resourceMultiplierPercent = TheGameInfo->getResourceMultiplierPercent();
+	}
+	else if (TheSkirmishGameInfo)
+	{
+		resourceMultiplierPercent = TheSkirmishGameInfo->getResourceMultiplierPercent();
+	}
+	else
+	{
+		resourceMultiplierPercent = g_resourceMultiplierPercent;
+	}
+
+	if (bounty > 0 && resourceMultiplierPercent != 100)
+	{
+		bounty = (bounty * resourceMultiplierPercent) / 100;
 	}
 
 	//DEBUG_LOG(("Cash bounty final = %d", bounty));

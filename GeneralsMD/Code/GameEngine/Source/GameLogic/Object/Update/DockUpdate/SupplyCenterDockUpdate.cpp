@@ -38,6 +38,8 @@
 #include "GameClient/InGameUI.h"
 #include "GameClient/GameText.h"
 
+#include "GameNetwork/GameInfo.h"
+
 extern Int g_resourceMultiplierPercent;
 
 
@@ -121,9 +123,24 @@ Bool SupplyCenterDockUpdate::action( Object* docker, Object *drone )
 	while( supplyTruckAI->loseOneBox() )
 		value += ownerPlayer->getSupplyBoxValue();
 
-	if (g_resourceMultiplierPercent != 100) // Reborn: if the resource multiplier is not 100%, scale the value of the delivered boxes accordingly
+	Int resourceMultiplierPercent = 100;
+
+	if (TheGameInfo)
 	{
-		value = (value * g_resourceMultiplierPercent) / 100;
+		resourceMultiplierPercent = TheGameInfo->getResourceMultiplierPercent();
+	}
+	else if (TheSkirmishGameInfo)
+	{
+		resourceMultiplierPercent = TheSkirmishGameInfo->getResourceMultiplierPercent();
+	}
+	else
+	{
+		resourceMultiplierPercent = g_resourceMultiplierPercent;
+	}
+
+	if (resourceMultiplierPercent != 100)
+	{
+		value = (value * resourceMultiplierPercent) / 100;
 	}
 
 	if( value > 0)
