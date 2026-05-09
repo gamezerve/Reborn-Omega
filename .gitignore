@@ -92,4 +92,7 @@ __pycache__/
 !/build/shared/MSS/
 !/build/shared/MSS/**
 
+!/build/shared/Window/
+!/build/shared/Window/**
+
 /build/shared/Maps/MapCache.ini
