@@ -45,7 +45,7 @@
 #include "GameNetwork/LANAPICallbacks.h"	// for testing packet size
 #include "strtok_r.h"
 
-
+extern Int g_resourceMultiplierPercent; // Reborn
 
 GameInfo *TheGameInfo = nullptr;
 
@@ -316,6 +316,7 @@ void GameInfo::reset()
 	m_mapSize = 0;
   m_superweaponRestriction = 0;
   m_startingCash = TheGlobalData->m_defaultStartingCash;
+	m_resourceMultiplierPercent = 100; // Reborn
 
 	for (Int i=0; i<MAX_SLOTS; ++i)
 	{
@@ -925,9 +926,9 @@ AsciiString GameInfoToAsciiString( const GameInfo *game )
 	optionsString.format("M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;", game->getMapContentsMask(), newMapName.str(),
 		game->getMapCRC(), game->getMapSize(), game->getSeed(), game->getCRCInterval());
 #else
-	optionsString.format("US=%d;M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;SR=%u;SC=%u;O=%c;", game->getUseStats(), game->getMapContentsMask(), newMapName.str(),
+	optionsString.format("US=%d;M=%2.2x%s;MC=%X;MS=%d;SD=%d;C=%d;SR=%u;SC=%u;RM=%d;O=%c;", game->getUseStats(), game->getMapContentsMask(), newMapName.str(),
 		game->getMapCRC(), game->getMapSize(), game->getSeed(), game->getCRCInterval(), game->getSuperweaponRestriction(),
-		game->getStartingCash().countMoney(), game->oldFactionsOnly() ? 'Y' : 'N' );
+		game->getStartingCash().countMoney(), game->getResourceMultiplierPercent(), game->oldFactionsOnly() ? 'Y' : 'N');
 #endif
 
 	//add player info for each slot
@@ -992,6 +993,8 @@ AsciiString GameInfoToAsciiString( const GameInfo *game )
 		("WARNING: options string is longer than expected!  Length is %d, but max is %d!",
 		optionsString.getLength(), m_lanMaxOptionsLength));
 
+	DEBUG_LOG(("GameInfoToAsciiString: %s", optionsString.str()));
+
 	return optionsString;
 }
 
@@ -1021,6 +1024,7 @@ Bool ParseAsciiStringToGameInfo(GameInfo *game, AsciiString options)
 	Int useStats = TRUE;
   Money startingCash = TheGlobalData->m_defaultStartingCash;
   UnsignedShort restriction = 0; // Always the default
+	Int resourceMultiplierPercent = 100; // Reborn
 
 	Bool sawMap = FALSE;
 	Bool sawMapCRC = FALSE;
@@ -1030,6 +1034,7 @@ Bool ParseAsciiStringToGameInfo(GameInfo *game, AsciiString options)
 	Bool sawUseStats = FALSE;
 	Bool sawSuperweaponRestriction = FALSE;
 	Bool sawStartingCash = FALSE;
+	Bool sawResourceMultiplier = FALSE; // Reborn
 	Bool sawOldFactions = FALSE;
 
 	//DEBUG_LOG(("Saw options of %s", options.str()));
@@ -1135,6 +1140,11 @@ Bool ParseAsciiStringToGameInfo(GameInfo *game, AsciiString options)
       startingCash.deposit( startingCashAmount, FALSE, FALSE );
       sawStartingCash = TRUE;
     }
+		else if (key.compare("RM") == 0)
+		{
+			resourceMultiplierPercent = atoi(val.str());
+			sawResourceMultiplier = TRUE;
+		}
     else if (key.compare("O") == 0 )
     {
       oldFactionsOnly = ( val.compareNoCase( "Y" ) == 0 );
@@ -1507,6 +1517,7 @@ Bool ParseAsciiStringToGameInfo(GameInfo *game, AsciiString options)
 		game->setUseStats(useStats);
 		game->setSuperweaponRestriction(restriction);
 		game->setStartingCash(startingCash);
+		game->setResourceMultiplierPercent(resourceMultiplierPercent); // Reborn
 		game->setOldFactionsOnly(oldFactionsOnly);
 
 		return true;
@@ -1537,7 +1548,7 @@ void SkirmishGameInfo::xfer( Xfer *xfer )
 #if RTS_GENERALS
 	const XferVersion currentVersion = 2;
 #else
-	const XferVersion currentVersion = 4;
+	const XferVersion currentVersion = 5;
 #endif
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
@@ -1617,24 +1628,32 @@ void SkirmishGameInfo::xfer( Xfer *xfer )
 	xfer->xferInt(&m_mapMask);
 	xfer->xferInt(&m_seed);
 
-  if ( version >= 3 )
-  {
-    xfer->xferUnsignedShort( &m_superweaponRestriction );
+	if (version >= 3)
+	{
+		xfer->xferUnsignedShort(&m_superweaponRestriction);
 
-    if ( version == 3 )
-    {
-      // Version 3 had a bool which is now gone
-      Bool obsoleteBool;
-      xfer->xferBool( &obsoleteBool );
-    }
+		if (version >= 5)
+		{
+			xfer->xferInt(&m_resourceMultiplierPercent);
+		}
 
-    xfer->xferSnapshot( &m_startingCash );
-  }
-  else if ( xfer->getXferMode() == XFER_LOAD )
-  {
-    m_superweaponRestriction = 0;
-    m_startingCash = TheGlobalData->m_defaultStartingCash;
-  }
+		if (version == 3)
+		{
+			// Version 3 had a bool which is now gone
+			Bool obsoleteBool;
+			xfer->xferBool(&obsoleteBool);
+		}
+
+		xfer->xferSnapshot(&m_startingCash);
+	}
+	else if (xfer->getXferMode() == XFER_LOAD)
+	{
+		m_superweaponRestriction = 0;
+		m_resourceMultiplierPercent = 100;
+		m_startingCash = TheGlobalData->m_defaultStartingCash;
+	}
+
+
 
 }
 

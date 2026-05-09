@@ -473,8 +473,12 @@ void reallyDoStart()
 	if (maxFPS < 15)
 		maxFPS = 15;
 
-  TheWritableGlobalData->m_mapName = TheSkirmishGameInfo->getMap();
-  TheSkirmishGameInfo->startGame(0);
+	TheWritableGlobalData->m_mapName = TheSkirmishGameInfo->getMap();
+
+	TheSkirmishGameInfo->setResourceMultiplierPercent(g_resourceMultiplierPercent); // Reborn
+	DEBUG_LOG(("Reborn: Resource multiplier committed before startGame = %d", g_resourceMultiplierPercent));
+
+	TheSkirmishGameInfo->startGame(0);
 
 		Bool isSkirmish = TRUE;
 	const MapMetaData *md = TheMapCache->findMap(TheSkirmishGameInfo->getMap());
@@ -1078,6 +1082,8 @@ static void handleResourceMultiplierSelection()
 	Int selIndex;
 	GadgetComboBoxGetSelectedPos(comboBoxResourceMultiplier, &selIndex);
 	g_resourceMultiplierPercent = (Int)GadgetComboBoxGetItemData(comboBoxResourceMultiplier, selIndex);
+	if (TheSkirmishGameInfo)
+		TheSkirmishGameInfo->setResourceMultiplierPercent(g_resourceMultiplierPercent);
 }
 
 static void handleLimitSuperweaponsClick()

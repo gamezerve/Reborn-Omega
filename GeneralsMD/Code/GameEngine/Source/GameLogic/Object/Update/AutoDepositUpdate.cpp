@@ -68,6 +68,8 @@
 #include "GameClient/Color.h"
 #include "GameClient/GameText.h"
 
+#include "GameNetwork/GameInfo.h"
+
 extern Int g_resourceMultiplierPercent;
 
 //-------------------------------------------------------------------------------------------------
@@ -124,9 +126,24 @@ void AutoDepositUpdate::awardInitialCaptureBonus( Player *player )
 
 	Int initialBonus = getAutoDepositUpdateModuleData()->m_initialCaptureBonus;
 	//DEBUG_LOG(("Initial capture bonus before multiplier = %d, multiplier = %d", getAutoDepositUpdateModuleData()->m_initialCaptureBonus, g_resourceMultiplierPercent));
-	if (g_resourceMultiplierPercent != 100)
+	Int resourceMultiplierPercent = 100;
+
+	if (TheGameInfo)
 	{
-		initialBonus = (initialBonus * g_resourceMultiplierPercent) / 100;
+		resourceMultiplierPercent = TheGameInfo->getResourceMultiplierPercent();
+	}
+	else if (TheSkirmishGameInfo)
+	{
+		resourceMultiplierPercent = TheSkirmishGameInfo->getResourceMultiplierPercent();
+	}
+	else
+	{
+		resourceMultiplierPercent = g_resourceMultiplierPercent;
+	}
+
+	if (resourceMultiplierPercent != 100)
+	{
+		initialBonus = (initialBonus * resourceMultiplierPercent) / 100;
 	}
 	//DEBUG_LOG(("Initial capture bonus after multiplier = %d", initialBonus));
 	player->getMoney()->deposit(initialBonus);
@@ -172,9 +189,24 @@ UpdateSleepTime AutoDepositUpdate::update()
 
 		int moneyAmount = modData->m_depositAmount + getUpgradedSupplyBoost();
 
-		if (g_resourceMultiplierPercent != 100) // Reborn: if the resource multiplier is not 100%, scale the value of the deposit accordingly
+		Int resourceMultiplierPercent = 100;
+
+		if (TheGameInfo)
 		{
-			moneyAmount = (moneyAmount * g_resourceMultiplierPercent) / 100;
+			resourceMultiplierPercent = TheGameInfo->getResourceMultiplierPercent();
+		}
+		else if (TheSkirmishGameInfo)
+		{
+			resourceMultiplierPercent = TheSkirmishGameInfo->getResourceMultiplierPercent();
+		}
+		else
+		{
+			resourceMultiplierPercent = g_resourceMultiplierPercent;
+		}
+
+		if (resourceMultiplierPercent != 100)
+		{
+			moneyAmount = (moneyAmount * resourceMultiplierPercent) / 100;
 		}
 
 		if( modData->m_isActualMoney )

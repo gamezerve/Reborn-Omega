@@ -232,6 +232,9 @@ public:
   inline Bool oldFactionsOnly() const;
   inline void setOldFactionsOnly( Bool oldFactionsOnly );
 
+	inline Int getResourceMultiplierPercent() const;
+	inline void setResourceMultiplierPercent(Int value);
+
 protected:
 	Int m_preorderMask;
 	Int m_crcInterval;
@@ -252,6 +255,7 @@ protected:
 	Int m_useStats;
   Money         m_startingCash;
   UnsignedShort m_superweaponRestriction;
+	Int m_resourceMultiplierPercent; // Reborn
   Bool m_oldFactionsOnly; // Only USA, China, GLA -- not USA Air Force General, GLA Toxic General, et al
 };
 
@@ -272,6 +276,8 @@ Int					GameInfo::getUseStats() const             { return m_useStats; }
 void				GameInfo::setUseStats( Int useStats )           { m_useStats = useStats; }
 const Money&GameInfo::getStartingCash() const         { return m_startingCash; }
 UnsignedShort GameInfo::getSuperweaponRestriction() const { return m_superweaponRestriction; }
+Int GameInfo::getResourceMultiplierPercent() const { return m_resourceMultiplierPercent; } // Reborn
+void GameInfo::setResourceMultiplierPercent(Int value) { m_resourceMultiplierPercent = value; } // Reborn
 Bool        GameInfo::oldFactionsOnly() const           { return m_oldFactionsOnly; }
 void        GameInfo::setOldFactionsOnly( Bool oldFactionsOnly ) { m_oldFactionsOnly = oldFactionsOnly; }
 

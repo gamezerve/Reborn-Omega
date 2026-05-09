@@ -40,6 +40,9 @@
 #include "GameLogic/Module/HackInternetAIUpdate.h"
 #include "GameLogic/Module/PhysicsUpdate.h"
 #include "GameLogic/Object.h"
+
+#include "GameNetwork/GameInfo.h"
+
 //#include "GameLogic/PartitionManager.h"
 
 extern Int g_resourceMultiplierPercent;
@@ -541,9 +544,24 @@ StateReturnType HackInternetState::update()
 
 				//DEBUG_LOG(("HackInternet base amount = %u, multiplier = %d", amount, g_resourceMultiplierPercent)); // Reborn
 
-				if (g_resourceMultiplierPercent != 100)
+				Int resourceMultiplierPercent = 100;
+
+				if (TheGameInfo)
 				{
-					amount = (amount * g_resourceMultiplierPercent) / 100;
+					resourceMultiplierPercent = TheGameInfo->getResourceMultiplierPercent();
+				}
+				else if (TheSkirmishGameInfo)
+				{
+					resourceMultiplierPercent = TheSkirmishGameInfo->getResourceMultiplierPercent();
+				}
+				else
+				{
+					resourceMultiplierPercent = g_resourceMultiplierPercent;
+				}
+
+				if (resourceMultiplierPercent != 100)
+				{
+					amount = (amount * resourceMultiplierPercent) / 100;
 				}
 
 				//DEBUG_LOG(("HackInternet final amount = %u", amount));

@@ -36,6 +36,8 @@
 #include "GameLogic/Object.h"
 #include "GameLogic/Module/MoneyCrateCollide.h"
 
+#include "GameNetwork/GameInfo.h"
+
 extern Int g_resourceMultiplierPercent; // Reborn
 
 //-------------------------------------------------------------------------------------------------
@@ -63,9 +65,24 @@ Bool MoneyCrateCollide::executeCrateBehavior( Object *other )
 
 	//DEBUG_LOG(("MoneyCrateCollide after upgrade boost = %u", money));
 
-	if (g_resourceMultiplierPercent != 100)
+	Int resourceMultiplierPercent = 100;
+
+	if (TheGameInfo)
 	{
-		money = (money * g_resourceMultiplierPercent) / 100;
+		resourceMultiplierPercent = TheGameInfo->getResourceMultiplierPercent();
+	}
+	else if (TheSkirmishGameInfo)
+	{
+		resourceMultiplierPercent = TheSkirmishGameInfo->getResourceMultiplierPercent();
+	}
+	else
+	{
+		resourceMultiplierPercent = g_resourceMultiplierPercent;
+	}
+
+	if (resourceMultiplierPercent != 100)
+	{
+		money = (money * resourceMultiplierPercent) / 100;
 	}
 
 	//DEBUG_LOG(("MoneyCrateCollide final money = %u", money));

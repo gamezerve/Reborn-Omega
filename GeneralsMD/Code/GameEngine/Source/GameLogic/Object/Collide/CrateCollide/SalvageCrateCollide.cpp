@@ -44,6 +44,8 @@
 #include "GameLogic/ExperienceTracker.h"
 #include "GameLogic/Object.h"
 
+#include "GameNetwork/GameInfo.h"
+
 extern Int g_resourceMultiplierPercent;
 
 //-------------------------------------------------------------------------------------------------
@@ -247,9 +249,24 @@ void SalvageCrateCollide::doMoney( Object *other )
 
 	//DEBUG_LOG(("Salvage money before multiplier = %d, multiplier = %d", money, g_resourceMultiplierPercent));
 
-	if (g_resourceMultiplierPercent != 100)
+	Int resourceMultiplierPercent = 100;
+
+	if (TheGameInfo)
 	{
-		money = (money * g_resourceMultiplierPercent) / 100;
+		resourceMultiplierPercent = TheGameInfo->getResourceMultiplierPercent();
+	}
+	else if (TheSkirmishGameInfo)
+	{
+		resourceMultiplierPercent = TheSkirmishGameInfo->getResourceMultiplierPercent();
+	}
+	else
+	{
+		resourceMultiplierPercent = g_resourceMultiplierPercent;
+	}
+
+	if (resourceMultiplierPercent != 100)
+	{
+		money = (money * resourceMultiplierPercent) / 100;
 	}
 
 	//DEBUG_LOG(("Salvage money after multiplier = %d", money));
