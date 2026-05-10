@@ -133,7 +133,11 @@ UnicodeString Version::getUnicodeVersion() const
 	}
 	else
 	{
+#ifdef REBORN_BUILD
+		version.format(L"Version %d.%02d Reborn Omega 1.00 by Gamezerve", m_major, m_minor);
+#else
 		version.format(TheGameText->fetch("Version:Format2").str(), m_major, m_minor);
+#endif
 	}
 
 #ifdef RTS_DEBUG
@@ -336,6 +340,9 @@ UnicodeString Version::getUnicodeProductAuthor() const
 
 UnicodeString Version::getUnicodeProductString() const
 {
+#ifdef REBORN_BUILD
+	return UnicodeString::TheEmptyString;
+#else
 	UnicodeString str;
 	UnicodeString productTitle = TheGameText->FETCH_OR_SUBSTITUTE("Version:ProductTitle", getUnicodeProductTitle().str());
 
@@ -360,10 +367,14 @@ UnicodeString Version::getUnicodeProductString() const
 	}
 
 	return str;
+#endif
 }
 
 UnicodeString Version::getUnicodeProductVersionHashString() const
 {
+#ifdef REBORN_BUILD
+	return getUnicodeVersion();
+#else
 	UnicodeString str;
 	UnicodeString productString = getUnicodeProductString();
 	UnicodeString gameVersion = getUnicodeVersion();
@@ -380,6 +391,7 @@ UnicodeString Version::getUnicodeProductVersionHashString() const
 	str.concat(gameVersion);
 
 	return str;
+#endif
 }
 
 AsciiString Version::buildAsciiGitCommitCount()

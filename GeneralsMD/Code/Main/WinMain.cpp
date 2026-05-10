@@ -874,11 +874,12 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		CommandLine::parseCommandLineForStartup();
 
+		
 		if (!TheGlobalData->m_windowed)
 		{
 			int result = MessageBox(
 				nullptr,
-				"Start the game in Windowed mode?\n\nYes = Windowed\nNo = Fullscreen",
+				"Start the game in Borderless Windowed mode?\n\nYes = Borderless Windowed\nNo = Fullscreen",
 				"Display Mode",
 				MB_YESNOCANCEL | MB_ICONQUESTION
 			);
