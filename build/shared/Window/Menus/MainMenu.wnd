@@ -3351,7 +3351,7 @@ WINDOW
   WINDOW
     WINDOWTYPE = USER;
     SCREENRECT = UPPERLEFT: 270 0,
-                 BOTTOMRIGHT: 542 80,
+                 BOTTOMRIGHT: 542 98,
                  CREATIONRESOLUTION: 800 600;
     NAME = "MainMenu.wnd:Logo";
     STATUS = ENABLED+IMAGE;

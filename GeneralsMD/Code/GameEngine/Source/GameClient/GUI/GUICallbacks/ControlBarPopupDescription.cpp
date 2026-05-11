@@ -2345,8 +2345,9 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 	if (TheInGameUI->areTooltipsDisabled() || TheScriptEngine->isGameEnding())
 		return;
 
-	if (TheGameLogic->isInReplayGame())
-		return;
+	// Reborn: We want to allow tooltips in replay
+	//if (TheGameLogic->isInReplayGame())
+	//	return;
 
 	if (TheInGameUI->isQuitMenuVisible())
 		return;

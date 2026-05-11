@@ -435,6 +435,9 @@ GameWindow *win = nullptr;
 	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionChinaMedium"));
 	if(win)
 		win->winHide(TRUE);
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:StaticTextSelectDifficulty"));
+	if (win)
+		win->winHide(TRUE);
 
 }
 

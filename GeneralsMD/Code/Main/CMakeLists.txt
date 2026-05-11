@@ -1,8 +1,19 @@
 add_executable(z_generals WIN32)
 
+# Reborn Version number setter
+set(REBORN_OMEGA_VERSION_MAJOR 1)
+set(REBORN_OMEGA_VERSION_MINOR 0)
+set(REBORN_OMEGA_VERSION_PATCH 0)
+set(REBORN_OMEGA_VERSION_STRING "${REBORN_OMEGA_VERSION_MAJOR}.${REBORN_OMEGA_VERSION_MINOR}${REBORN_OMEGA_VERSION_PATCH}")
+set(REBORN_OMEGA_DISPLAY_NAME "Reborn Omega ${REBORN_OMEGA_VERSION_STRING}")
+
 # Use a binary name that doesn't conflict with original game.
 if("${CMAKE_SYSTEM}" MATCHES "Windows")
-    set_target_properties(z_generals PROPERTIES OUTPUT_NAME "generalszh${RTS_BUILD_OUTPUT_SUFFIX}")
+    if(RTS_BUILD_OPTION_REBORN)
+        set_target_properties(z_generals PROPERTIES OUTPUT_NAME "${REBORN_OMEGA_DISPLAY_NAME}${RTS_BUILD_OUTPUT_SUFFIX}")
+    else()
+        set_target_properties(z_generals PROPERTIES OUTPUT_NAME "generalszh${RTS_BUILD_OUTPUT_SUFFIX}")
+    endif()
 else()
     set_target_properties(z_generals PROPERTIES OUTPUT_NAME "generalszh${RTS_BUILD_OUTPUT_SUFFIX}")
 endif()
@@ -42,6 +53,7 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/BuildVersion.h
 #define VERSION_MAJOR 1
 #define VERSION_MINOR 4
 #define VERSION_BUILDNUM 601
+#define REBORN_OMEGA_VERSION_TEXT L\"${REBORN_OMEGA_DISPLAY_NAME}\"
 "
 )
 

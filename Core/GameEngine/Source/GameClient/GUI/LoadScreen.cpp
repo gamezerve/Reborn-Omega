@@ -1315,7 +1315,7 @@ void ShellGameLoadScreen::init( GameInfo *game )
 
 	if(m_loadScreen && firstLoad && TheGameLODManager && TheGameLODManager->didMemPass())
 	{
-		m_loadScreen->winSetEnabledImage(0, TheMappedImageCollection->findImageByName("TitleScreen"));
+		m_loadScreen->winSetEnabledImage(0, TheMappedImageCollection->findImageByName("TitleScreenReborn"));
 		TheWritableGlobalData->m_breakTheMovie = FALSE;
 
 		//GameWindow *win = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "ShellGameLoadScreen.wnd:StaticTextLegal" ));

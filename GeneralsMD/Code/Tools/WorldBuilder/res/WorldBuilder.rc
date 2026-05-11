@@ -84,7 +84,8 @@ IDB_DownArrow           BITMAP  DISCARDABLE     "IDB_DownArrow.bmp"
 IDB_FOLDER              BITMAP  DISCARDABLE     "folder.bmp"
 IDB_ROAD_CORNERS        BITMAP  DISCARDABLE     "IDB_ROAD_CORNERS.bmp"
 IDB_FOLDERSCRIPT        BITMAP  DISCARDABLE     "foldersc.bmp"
-IDB_WORLDBUILDERSPLASH  BITMAP  DISCARDABLE     "WorldBuilder.bmp"
+//IDB_WORLDBUILDERSPLASH  BITMAP  DISCARDABLE     "WorldBuilder.bmp"
+IDB_WORLDBUILDERSPLASH  BITMAP  DISCARDABLE     "WorldBuilderReborn.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -434,9 +435,16 @@ CAPTION "About Generals World Builder"
 FONT 8, "MS Sans Serif"
 BEGIN
     CONTROL         228,IDC_STATIC,"Static",SS_BITMAP,0,0,167,215
-    LTEXT           "WorldBuilder Version 0.8 Reborn 1.0",IDC_STATIC,179,31,79,8,
-                    SS_NOPREFIX
-    LTEXT           "Copyright (C) 2003",IDC_STATIC,179,41,71,8
+        LTEXT "WorldBuilder Version 0.8", IDC_STATIC, 179, 31, 90, 8,
+        SS_NOPREFIX
+
+        LTEXT "Reborn Omega 1.00", IDC_STATIC, 179, 41, 90, 8,
+        SS_NOPREFIX
+
+        LTEXT "by Gamezerve", IDC_STATIC, 179, 51, 90, 8,
+        SS_NOPREFIX
+
+        LTEXT "Copyright (C) 2003", IDC_STATIC, 179, 63, 90, 8
     DEFPUSHBUTTON   "OK",IDOK,189,7,50,14,WS_GROUP
 END
 
