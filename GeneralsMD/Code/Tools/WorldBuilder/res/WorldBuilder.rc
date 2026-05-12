@@ -84,8 +84,12 @@ IDB_DownArrow           BITMAP  DISCARDABLE     "IDB_DownArrow.bmp"
 IDB_FOLDER              BITMAP  DISCARDABLE     "folder.bmp"
 IDB_ROAD_CORNERS        BITMAP  DISCARDABLE     "IDB_ROAD_CORNERS.bmp"
 IDB_FOLDERSCRIPT        BITMAP  DISCARDABLE     "foldersc.bmp"
-//IDB_WORLDBUILDERSPLASH  BITMAP  DISCARDABLE     "WorldBuilder.bmp"
+
+#ifdef REBORN_BUILD
 IDB_WORLDBUILDERSPLASH  BITMAP  DISCARDABLE     "WorldBuilderReborn.bmp"
+#else
+IDB_WORLDBUILDERSPLASH  BITMAP  DISCARDABLE     "WorldBuilder.bmp"
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -438,7 +442,7 @@ BEGIN
         LTEXT "WorldBuilder Version 0.8", IDC_STATIC, 179, 31, 90, 8,
         SS_NOPREFIX
 
-        LTEXT "Reborn Omega 1.00", IDC_STATIC, 179, 41, 90, 8,
+        LTEXT "Reborn Omega 1.01", IDC_STATIC, 179, 41, 90, 8,
         SS_NOPREFIX
 
         LTEXT "by Gamezerve", IDC_STATIC, 179, 51, 90, 8,

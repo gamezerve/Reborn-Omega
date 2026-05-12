@@ -134,7 +134,7 @@ UnicodeString Version::getUnicodeVersion() const
 	else
 	{
 #ifdef REBORN_BUILD
-		version.format(L"Version %d.%02d Reborn Omega 1.00 by Gamezerve", m_major, m_minor);
+		version.format(L"Version %d.%02d Reborn Omega 1.01 by Gamezerve", m_major, m_minor);
 #else
 		version.format(TheGameText->fetch("Version:Format2").str(), m_major, m_minor);
 #endif
