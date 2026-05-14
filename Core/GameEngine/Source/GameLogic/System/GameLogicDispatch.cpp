@@ -1,5 +1,5 @@
 /*
-**	Command & Conquer Generals(tm)
+**	Command & Conquer Generals Zero Hour(tm)
 **	Copyright 2025 Electronic Arts Inc.
 **
 **	This program is free software: you can redistribute it and/or modify
@@ -73,6 +73,7 @@
 #include "GameClient/Drawable.h"
 #include "GameClient/Eva.h"
 #include "GameClient/GameText.h"
+#include "GameClient/GameWindowTransitions.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GUICallbacks.h"
 #include "GameClient/InGameUI.h"
@@ -83,9 +84,11 @@
 #include "GameClient/Module/BeaconClientUpdate.h"
 #include "GameClient/LookAtXlat.h"
 
+#include "GameNetwork/GameInfo.h"
 #include "GameNetwork/NetworkInterface.h"
 
-
+extern Int g_resourceMultiplierPercent; // Reborn
+extern SkirmishGameInfo* TheSkirmishGameInfo; // Reborn
 
 
 #define MAX_PATH_SUBJECTS 64
@@ -146,9 +149,36 @@ static void doSetRallyPoint( Object *obj, const Coord3D& pos )
 	// for now, just use the basic human locomotor ... and enable the above code when Steven
 	// tells me how to get the locomotor sets based on a thing template (CBD)
 	//
-	NameKeyType key = NAMEKEY( "BasicHumanLocomotor" );
+
+
+
+	//NameKeyType key = NAMEKEY( "BasicHumanLocomotor" );
+	//LocomotorSet locomotorSet;
+	//locomotorSet.addLocomotor( TheLocomotorStore->findLocomotorTemplate( key ) );
+
+	NameKeyType key;
+	if (obj->isKindOf(KINDOF_NAVAL_YARD))
+		key = NAMEKEY("BasicAmphibiousLocomotor");
+	else
+		key = NAMEKEY("BasicHumanLocomotor");
+
 	LocomotorSet locomotorSet;
-	locomotorSet.addLocomotor( TheLocomotorStore->findLocomotorTemplate( key ) );
+	locomotorSet.addLocomotor(TheLocomotorStore->findLocomotorTemplate(key));
+	if (TheAI->pathfinder()->clientSafeQuickDoesPathExist(locomotorSet, obj->getPosition(), &pos) == FALSE)
+	{
+		if (isLocalPlayer)
+		{
+			TheInGameUI->message(TheGameText->fetch("GUI:RallyPointNoPath"));
+
+			static AudioEventRTS rallyNotSet("UnableToSetRallyPoint");
+			rallyNotSet.setPosition(&pos);
+			rallyNotSet.setPlayerIndex(obj->getControllingPlayer()->getPlayerIndex());
+			TheAudio->addAudioEvent(&rallyNotSet);
+		}
+
+		return;
+	}
+
 	if( TheAI->pathfinder()->clientSafeQuickDoesPathExist( locomotorSet, obj->getPosition(), &pos ) == FALSE )
 	{
 
@@ -203,6 +233,37 @@ static void doSetRallyPoint( Object *obj, const Coord3D& pos )
 
 	}
 
+}
+
+static void doResetRallyPoint(Object* obj)
+{
+	Bool isLocalPlayer = obj->isLocallyControlled();
+	ExitInterface* exitInterface = obj->getObjectExitInterface();
+	if (!exitInterface)
+		return;
+
+	exitInterface->resetRallyPoint();
+
+	if (isLocalPlayer)
+	{
+		UnicodeString info;
+		info.format(TheGameText->fetch("GUI:RallyPointReset"),
+			obj->getTemplate()->getDisplayName().str());
+		TheInGameUI->message(info);
+
+		static AudioEventRTS rallyPointSet("RallyPointSet");
+		rallyPointSet.setPosition(obj->getPosition());
+		rallyPointSet.setPlayerIndex(obj->getControllingPlayer()->getPlayerIndex());
+		TheAudio->addAudioEvent(&rallyPointSet);
+
+		Drawable* draw = obj->getDrawable();
+		if (draw && draw->isSelected())
+			TheControlBar->markUIDirty();
+	}
+
+	DEBUG_LOG(("Reset rally point requested for object '%s' (id=%d)",
+		obj->getTemplate()->getName().str(),
+		obj->getID()));
 }
 
 static Object * getSingleObjectFromSelection(const AIGroup *currentlySelectedGroup)
@@ -264,8 +325,10 @@ void GameLogic::clearGameData( Bool showScoreScreen )
 	if ((!isInShellGame() || !isInGame()) && showScoreScreen && !TheGlobalData->m_headless)
 	{
 		shellGame = TRUE;
+		TheTransitionHandler->setGroup("FadeWholeScreen");
 		TheShell->push("Menus/ScoreScreen.wnd");
 		TheShell->showShell(FALSE); // by passing in false, we don't want to run the Init on the shell screen we just pushed on
+		TheTransitionHandler->reverse("FadeWholeScreen");
 
 		void FixupScoreScreenMovieWindow();
 		FixupScoreScreenMovieWindow();
@@ -319,6 +382,20 @@ void GameLogic::prepareNewGame( GameMode gameMode, GameDifficulty diff, Int rank
 	}
 	m_background->getFirstWindow()->winClearStatus(WIN_STATUS_IMAGE);
 	setGameMode( gameMode );
+	if (TheGameInfo)
+	{
+		
+		DEBUG_LOG(("Reborn: Resource multiplier set to %d from TheGameInfo during prepareNewGame", g_resourceMultiplierPercent));
+	}
+	else if (TheSkirmishGameInfo)
+	{
+		
+		DEBUG_LOG(("Reborn: Resource multiplier set to %d from TheSkirmishGameInfo during prepareNewGame", g_resourceMultiplierPercent));
+	}
+	else
+	{
+		DEBUG_LOG(("Reborn: Resource multiplier kept as %d during prepareNewGame", g_resourceMultiplierPercent));
+	}
 	if (!TheGlobalData->m_pendingFile.isEmpty())
 	{
 		TheWritableGlobalData->m_mapName = TheGlobalData->m_pendingFile;
@@ -546,6 +623,30 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 
 		}
 
+		case GameMessage::MSG_RESET_RALLY_POINT: // Reborn
+		{
+			Object* obj = findObjectByID(msg->getArgument(0)->objectID);
+
+			if (obj)
+			{
+#if !RETAIL_COMPATIBLE_CRC
+				if (obj->getControllingPlayer() != thisPlayer)
+				{
+					DEBUG_CRASH(("MSG_RESET_RALLY_POINT: Player '%ls' attempted to reset the rally point of object '%s' owned by player '%ls'.",
+						thisPlayer->getPlayerDisplayName().str(),
+						obj->getTemplate()->getName().str(),
+						obj->getControllingPlayer()->getPlayerDisplayName().str()));
+					break;
+				}
+#endif
+				
+				doResetRallyPoint(obj);
+			}
+
+			break;
+		}
+
+
 		//---------------------------------------------------------------------------------------------
 		case GameMessage::MSG_DO_WEAPON:
 		{
@@ -656,6 +757,31 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 			break;
 		}
 
+		case GameMessage::MSG_ENABLE_RETALIATION_MODE:
+		{
+#if RETAIL_COMPATIBLE_CRC
+			//Logically turns on or off retaliation mode for a specified player.
+			const Int playerIndex = msg->getArgument( 0 )->integer;
+			const Bool enableRetaliation = msg->getArgument( 1 )->boolean;
+
+			Player *player = ThePlayerList->getNthPlayer( playerIndex );
+			if( player )
+			{
+				DEBUG_ASSERTCRASH(player == msgPlayer,
+					("Retaliation mode of player '%ls' was illegally set by player '%ls'. Before: '%d', after: '%d'.",
+						player->getPlayerDisplayName().str(), msgPlayer->getPlayerDisplayName().str(),
+						player->isLogicalRetaliationModeEnabled(), enableRetaliation) );
+
+				player->setLogicalRetaliationModeEnabled( enableRetaliation );
+			}
+#else
+			// TheSuperHackers @fix stephanmeesters 08/03/2026 Ensure that players can only set their own retaliation mode.
+			const Bool enableRetaliation = msg->getArgument( 0 )->boolean;
+			msgPlayer->setLogicalRetaliationModeEnabled( enableRetaliation );
+#endif
+			break;
+		}
+
 		//---------------------------------------------------------------------------------------------
 		case GameMessage::MSG_DO_WEAPON_AT_LOCATION:
 		{
@@ -728,22 +854,28 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 		//---------------------------------------------------------------------------------------------
 		case GameMessage::MSG_DO_SPECIAL_POWER_AT_LOCATION:
 		{
+			const Bool hasAngle = msg->getArgumentCount() >= 6;
+			Int argumentIndex = 0;
+
 			// first argument is the special power ID
-			UnsignedInt specialPowerID = msg->getArgument( 0 )->integer;
+			UnsignedInt specialPowerID = msg->getArgument( argumentIndex++ )->integer;
 
 			// Location argument 2 is destination
-			Coord3D targetCoord = msg->getArgument(1)->location;
+			Coord3D targetCoord = msg->getArgument( argumentIndex++ )->location;
+
+			// Angle argument 3 is the orientation of the special power (if applicable)
+			Real angle = hasAngle ? msg->getArgument( argumentIndex++ )->real : INVALID_ANGLE;
 
 			// Object in way -- if applicable (some specials care, others don't)
-			ObjectID objectID = msg->getArgument( 2 )->objectID;
+			ObjectID objectID = msg->getArgument( argumentIndex++ )->objectID;
 			Object *objectInWay = findObjectByID( objectID );
 
 			// Command button options -- special power may care about variance options
-			UnsignedInt options = msg->getArgument( 3 )->integer;
+			UnsignedInt options = msg->getArgument( argumentIndex++ )->integer;
 
 			// check for possible specific source, ignoring selection.
-			ObjectID sourceID = msg->getArgument(4)->objectID;
-			Object* source = findObjectByID(sourceID);
+			ObjectID sourceID = msg->getArgument( argumentIndex++ )->objectID;
+			Object* source = findObjectByID( sourceID );
 			if (source != nullptr)
 			{
 #if !RETAIL_COMPATIBLE_CRC
@@ -760,7 +892,7 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 
 				AIGroupPtr theGroup = TheAI->createGroup();
 				theGroup->add(source);
-				theGroup->groupDoSpecialPowerAtLocation( specialPowerID, &targetCoord, INVALID_ANGLE, objectInWay, options );
+				theGroup->groupDoSpecialPowerAtLocation( specialPowerID, &targetCoord, angle, objectInWay, options );
 #if RETAIL_COMPATIBLE_AIGROUP
 				TheAI->destroyGroup(theGroup);
 #else
@@ -772,7 +904,7 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 				//Use the selected group!
 				if( currentlySelectedGroup )
 				{
-					currentlySelectedGroup->groupDoSpecialPowerAtLocation( specialPowerID, &targetCoord, INVALID_ANGLE, objectInWay, options );
+					currentlySelectedGroup->groupDoSpecialPowerAtLocation( specialPowerID, &targetCoord, angle, objectInWay, options );
 				}
 			}
 			break;
@@ -977,7 +1109,7 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 			break;
 		}
 
-#if defined(RTS_DEBUG)
+#if defined(RTS_DEBUG) || defined (_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 		//---------------------------------------------------------------------------------------------
 		case GameMessage::MSG_DEBUG_KILL_SELECTION:
 		{
@@ -1985,10 +2117,7 @@ void GameLogic::logicMessageDispatcher( GameMessage *msg, void *userData )
 		case GameMessage::MSG_CREATE_TEAM8:
 		case GameMessage::MSG_CREATE_TEAM9:
 		{
-			// TheSuperHackers @tweak Stubbjax 17/08/2025 The local player processes this message in CommandXlat for immediate assignment.
-			if (!msgPlayer->isLocalPlayer())
-				msgPlayer->processCreateTeamGameMessage(msg->getType() - GameMessage::MSG_CREATE_TEAM0, msg);
-
+			msgPlayer->processCreateTeamGameMessage(msg->getType() - GameMessage::MSG_CREATE_TEAM0, msg);
 			break;
 		}
 
