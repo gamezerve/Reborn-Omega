@@ -162,10 +162,11 @@ void ControlBarPopupDescriptionUpdateFunc(WindowLayout* layout, void* param)
 }
 
 // ---------------------------------------------------------------------------------------
-void ControlBar::showBuildTooltipLayout( GameWindow *cmdButton )
+void ControlBar::showBuildTooltipLayout(GameWindow* cmdButton)
 {
-	if (TheInGameUI->areTooltipsDisabled() 	|| TheScriptEngine->isGameEnding())
+	if ((TheGameLogic && TheGameLogic->isGamePaused()) || TheInGameUI->areTooltipsDisabled() || TheScriptEngine->isGameEnding())
 	{
+		hideBuildTooltipLayout();
 		return;
 	}
 
@@ -1298,7 +1299,8 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 		GUICommandType commandType = commandButton->getCommandType();
 
-		if (commandType == GUI_COMMAND_RESET_RALLY_POINT) // Reborn: This is a special case because the button is only disabled when the rally point is already at default, so we want to show that in the tooltip.
+		// Reborn: This is a special case because the button is only disabled when the rally point is already at default, so we want to show that in the tooltip.
+		if (commandType == GUI_COMMAND_RESET_RALLY_POINT)
 		{
 			Drawable* draw = TheInGameUI->getFirstSelectedDrawable();
 			Object* selectedObject = draw ? draw->getObject() : nullptr;
