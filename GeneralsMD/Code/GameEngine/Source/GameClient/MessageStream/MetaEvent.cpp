@@ -729,50 +729,7 @@ void MetaMap::generateMetaMap()
 	// TheSuperHackers @info A default mapping for MSG_META_SELECT_ALL_AIRCRAFT would be useful for Generals
 	// but is not recommended, because it will cause key mapping conflicts with original game languages.
 
-	{
-		// Is useful for Generals and Zero Hour.
-		MetaMapRec *map = getMetaMapRec(GameMessage::MSG_META_INCREASE_MAX_RENDER_FPS);
-		if (map->m_key == MK_NONE)
-		{
-			map->m_key = MK_KPPLUS;
-			map->m_transition = DOWN;
-			map->m_modState = CTRL;
-			map->m_usableIn = COMMANDUSABLE_EVERYWHERE;
-		}
-	}
-	{
-		// Is useful for Generals and Zero Hour.
-		MetaMapRec *map = getMetaMapRec(GameMessage::MSG_META_DECREASE_MAX_RENDER_FPS);
-		if (map->m_key == MK_NONE)
-		{
-			map->m_key = MK_KPMINUS;
-			map->m_transition = DOWN;
-			map->m_modState = CTRL;
-			map->m_usableIn = COMMANDUSABLE_EVERYWHERE;
-		}
-	}
-	{
-		// Is useful for Generals and Zero Hour.
-		MetaMapRec *map = getMetaMapRec(GameMessage::MSG_META_INCREASE_LOGIC_TIME_SCALE);
-		if (map->m_key == MK_NONE)
-		{
-			map->m_key = MK_KPPLUS;
-			map->m_transition = DOWN;
-			map->m_modState = SHIFT_CTRL;
-			map->m_usableIn = COMMANDUSABLE_EVERYWHERE;
-		}
-	}
-	{
-		// Is useful for Generals and Zero Hour.
-		MetaMapRec *map = getMetaMapRec(GameMessage::MSG_META_DECREASE_LOGIC_TIME_SCALE);
-		if (map->m_key == MK_NONE)
-		{
-			map->m_key = MK_KPMINUS;
-			map->m_transition = DOWN;
-			map->m_modState = SHIFT_CTRL;
-			map->m_usableIn = COMMANDUSABLE_EVERYWHERE;
-		}
-	}
+
 	{
 		// Is useful for Generals and Zero Hour.
 		MetaMapRec *map = getMetaMapRec(GameMessage::MSG_META_TOGGLE_PLAYER_OBSERVER);
@@ -872,6 +829,52 @@ void MetaMap::generateMetaMap()
 	}
 
 #if defined(RTS_DEBUG)
+
+	{
+		// Is useful for Generals and Zero Hour.
+		MetaMapRec* map = getMetaMapRec(GameMessage::MSG_META_INCREASE_MAX_RENDER_FPS);
+		if (map->m_key == MK_NONE)
+		{
+			map->m_key = MK_KPPLUS;
+			map->m_transition = DOWN;
+			map->m_modState = CTRL;
+			map->m_usableIn = COMMANDUSABLE_EVERYWHERE;
+		}
+	}
+	{
+		// Is useful for Generals and Zero Hour.
+		MetaMapRec* map = getMetaMapRec(GameMessage::MSG_META_DECREASE_MAX_RENDER_FPS);
+		if (map->m_key == MK_NONE)
+		{
+			map->m_key = MK_KPMINUS;
+			map->m_transition = DOWN;
+			map->m_modState = CTRL;
+			map->m_usableIn = COMMANDUSABLE_EVERYWHERE;
+		}
+	}
+	{
+		// Is useful for Generals and Zero Hour.
+		MetaMapRec* map = getMetaMapRec(GameMessage::MSG_META_INCREASE_LOGIC_TIME_SCALE);
+		if (map->m_key == MK_NONE)
+		{
+			map->m_key = MK_KPPLUS;
+			map->m_transition = DOWN;
+			map->m_modState = SHIFT_CTRL;
+			map->m_usableIn = COMMANDUSABLE_EVERYWHERE;
+		}
+	}
+	{
+		// Is useful for Generals and Zero Hour.
+		MetaMapRec* map = getMetaMapRec(GameMessage::MSG_META_DECREASE_LOGIC_TIME_SCALE);
+		if (map->m_key == MK_NONE)
+		{
+			map->m_key = MK_KPMINUS;
+			map->m_transition = DOWN;
+			map->m_modState = SHIFT_CTRL;
+			map->m_usableIn = COMMANDUSABLE_EVERYWHERE;
+		}
+	}
+
 	{
 		// Is useful for Generals and Zero Hour.
 		MetaMapRec *map = getMetaMapRec(GameMessage::MSG_META_DEMO_REMOVE_PREREQ);
