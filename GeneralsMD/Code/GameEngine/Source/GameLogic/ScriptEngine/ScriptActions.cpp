@@ -217,10 +217,12 @@ void ScriptActions::doVictory()
 		const Player *localPlayer = ThePlayerList->getLocalPlayer();
 		Bool showObserverWindow = localPlayer->isPlayerObserver() || TheScriptEngine->hasShownMPLocalDefeatWindow();
 		if(showObserverWindow)
-			m_messageWindow = TheWindowManager->winCreateFromScript("Menus/ObserverQuit.wnd");
+			m_messageWindow = TheWindowManager->winCreateFromScript(
+				IsRebornCampaign() ? "Menus/ObserverQuitGen.wnd" : "Menus/ObserverQuit.wnd");
 		else
 		{
-			m_messageWindow = TheWindowManager->winCreateFromScript("Menus/Victorious.wnd");
+			m_messageWindow = TheWindowManager->winCreateFromScript(
+				IsRebornCampaign() ? "Menus/VictoriousGen.wnd" : "Menus/Victorious.wnd");
 		}
 	}
 	if(TheCampaignManager)
@@ -241,10 +243,12 @@ void ScriptActions::doDefeat()
 		const Player *localPlayer = ThePlayerList->getLocalPlayer();
 		Bool showObserverWindow = localPlayer->isPlayerObserver() || TheScriptEngine->hasShownMPLocalDefeatWindow();
 		if(showObserverWindow)
-			m_messageWindow = TheWindowManager->winCreateFromScript("Menus/ObserverQuit.wnd");
+			m_messageWindow = TheWindowManager->winCreateFromScript(
+				IsRebornCampaign() ? "Menus/ObserverQuitGen.wnd" : "Menus/ObserverQuit.wnd");
 		else
 		{
-			m_messageWindow = TheWindowManager->winCreateFromScript("Menus/Defeat.wnd");
+			m_messageWindow = TheWindowManager->winCreateFromScript(
+				IsRebornCampaign() ? "Menus/DefeatGen.wnd" : "Menus/Defeat.wnd");
 		}
 	}
 	if(TheCampaignManager)
