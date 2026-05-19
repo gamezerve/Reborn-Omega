@@ -1,3 +1,11 @@
+GUI:RequestMoney
+"Request Money"
+END
+
+GUI:Defeated
+"Defeated"
+END
+
 Color:LightGreen
 "Lime"
 END
