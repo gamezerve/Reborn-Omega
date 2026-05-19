@@ -67,6 +67,7 @@
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/LocomotorSet.h"
 #include "GameLogic/Locomotor.h"
+#include "GameLogic/VictoryConditions.h"
 
 #include "GameClient/AnimateWindowManager.h"
 #include "GameClient/ControlBar.h"
@@ -163,7 +164,204 @@ static void unitUpgradeTooltip(GameWindow* window,
 	TheControlBar->showUpgradeCameoTooltip(window, upgrade);
 }
 
+static WindowLayout* s_moneyPopupLayout = nullptr;
 
+static Int getMoneyPopupFontSize()
+{
+	Int width = TheDisplay ? TheDisplay->getWidth() : 800;
+
+	Real scale = width / 1920.0f;
+
+	Int fontSize = (Int)(13.0f * scale);
+
+	if (fontSize < 8)
+		fontSize = 8;
+
+	return fontSize;
+}
+
+static void setMoneyPopupFont(GameWindow* window)
+{
+	if (!window || !TheFontLibrary)
+		return;
+
+	Int fontSize = getMoneyPopupFontSize();
+	GameFont* font = TheFontLibrary->getFont(AsciiString("Arial"), fontSize, 0);
+
+	if (font)
+		window->winSetFont(font);
+}
+
+static void populateMoneyPopupAllies()
+{
+	if (!s_moneyPopupLayout || !TheGameInfo || !ThePlayerList)
+		return;
+
+	GameWindow* root = s_moneyPopupLayout->getFirstWindow();
+	if (!root)
+		return;
+
+	Player* localPlayer = ThePlayerList->getLocalPlayer();
+	if (!localPlayer)
+		return;
+
+	Int rowNum = 0;
+
+	for (Int slotNum = 0; slotNum < MAX_SLOTS; ++slotNum)
+	{
+		const GameSlot* slot = TheGameInfo->getConstSlot(slotNum);
+		if (!slot || !slot->isOccupied())
+			continue;
+
+		AsciiString playerName;
+		playerName.format("player%d", slotNum);
+
+		Player* player = ThePlayerList->findPlayerWithNameKey(NAMEKEY(playerName));
+		if (!player || player == localPlayer || player->isPlayerObserver())
+			continue;
+
+		if (localPlayer->getRelationship(player->getDefaultTeam()) != ALLIES)
+			continue;
+
+		AsciiString windowName;
+		windowName.format("MoneyPopup.wnd:StaticTextPlayer%d", rowNum);
+
+		GameWindow* textWin = TheWindowManager->winGetWindowFromId(root, NAMEKEY(windowName));
+		if (textWin)
+		{
+			Color playerColor = TheMultiplayerSettings->getColor(slot->getApparentColor())->getColor();
+			Color backColor = GameMakeColor(0, 0, 0, 255);
+
+			UnicodeString playerText;
+			playerText = slot->getName();
+			playerText.concat(L" - ");
+			playerText.concat(slot->getApparentPlayerTemplateDisplayName());
+
+			textWin->winHide(FALSE);
+			if (TheDisplay && TheDisplay->getWidth() < 1280)
+				setMoneyPopupFont(textWin);
+			textWin->winSetEnabledTextColors(playerColor, backColor);
+			GadgetStaticTextSetText(textWin, playerText);
+		}
+
+		AsciiString buttonName;
+		buttonName.format("MoneyPopup.wnd:ButtonPlayer%d", rowNum);
+
+		GameWindow* buttonWin = TheWindowManager->winGetWindowFromId(root, NAMEKEY(buttonName));
+		if (buttonWin)
+		{
+			buttonWin->winHide(FALSE);
+
+			Bool isDefeated = FALSE;
+
+			if (TheVictoryConditions)
+				isDefeated = TheVictoryConditions->hasSinglePlayerBeenDefeated(player);
+
+			buttonWin->winEnable(!isDefeated);
+
+			if (isDefeated)
+				GadgetButtonSetText(buttonWin, TheGameText->fetch("GUI:Defeated"));
+
+		}
+
+		++rowNum;
+
+		if (rowNum >= MAX_SLOTS)
+			break;
+	}
+
+	while (rowNum < MAX_SLOTS)
+	{
+		AsciiString windowName;
+		windowName.format("MoneyPopup.wnd:StaticTextPlayer%d", rowNum);
+
+		GameWindow* textWin = TheWindowManager->winGetWindowFromId(root, NAMEKEY(windowName));
+		if (textWin)
+			textWin->winHide(TRUE);
+
+		AsciiString buttonName;
+		buttonName.format("MoneyPopup.wnd:ButtonPlayer%d", rowNum);
+
+		GameWindow* buttonWin = TheWindowManager->winGetWindowFromId(root, NAMEKEY(buttonName));
+		if (buttonWin)
+			buttonWin->winHide(TRUE);
+
+		++rowNum;
+	}
+}
+
+static void closeMoneyPopup()
+{
+	if (s_moneyPopupLayout)
+	{
+		s_moneyPopupLayout->destroyWindows();
+		deleteInstance(s_moneyPopupLayout);
+		s_moneyPopupLayout = nullptr;
+	}
+}
+
+static Bool canUseMoneyPopup()
+{
+	if (!ThePlayerList || !TheVictoryConditions)
+		return FALSE;
+
+	Player* localPlayer = ThePlayerList->getLocalPlayer();
+	if (!localPlayer)
+		return FALSE;
+
+	if (localPlayer->isPlayerObserver())
+		return FALSE;
+
+	if (TheVictoryConditions->hasSinglePlayerBeenDefeated(localPlayer))
+		return FALSE;
+
+	return TRUE;
+}
+
+static Bool isMoneyPopupBlockedByModalUI()
+{
+	if (TheInGameUI && TheInGameUI->isQuitMenuVisible())
+		return TRUE;
+
+	GameWindow* scienceWindow = TheWindowManager->winGetWindowFromId(
+		nullptr,
+		TheNameKeyGenerator->nameToKey("GeneralsExpPoints.wnd:GenExpParent"));
+
+	if (scienceWindow && !scienceWindow->winIsHidden())
+		return TRUE;
+
+	return FALSE;
+}
+
+static WindowMsgHandledType moneyDisplayInput(
+	GameWindow* window,
+	UnsignedInt msg,
+	WindowMsgData data1,
+	WindowMsgData data2)
+{
+	if (msg == GWM_LEFT_UP)
+	{
+		if (!canUseMoneyPopup() || isMoneyPopupBlockedByModalUI())
+		{
+			closeMoneyPopup();
+			return MSG_HANDLED;
+		}
+
+		if (s_moneyPopupLayout)
+		{
+			closeMoneyPopup();
+		}
+		else
+		{
+			s_moneyPopupLayout = TheWindowManager->winCreateLayout("MoneyPopup.wnd");
+			populateMoneyPopupAllies();
+		}
+
+		return MSG_HANDLED;
+	}
+
+	return MSG_IGNORED;
+}
 
 const UpgradeTemplate* ControlBar::getUpgradeTemplateForCameoWindow(GameWindow* window) const
 {
@@ -1437,6 +1635,13 @@ ControlBar::ControlBar()
 ControlBar::~ControlBar()
 {
 
+	if (s_moneyPopupLayout)
+	{
+		s_moneyPopupLayout->destroyWindows();
+		deleteInstance(s_moneyPopupLayout);
+		s_moneyPopupLayout = nullptr;
+	}
+
 	if(m_scienceLayout)
 	{
 		m_scienceLayout->destroyWindows();
@@ -1695,10 +1900,11 @@ void ControlBar::init()
 		{
 			win->winSetTooltipFunc(commandButtonTooltip);
 		}
-		win = TheWindowManager->winGetWindowFromId(nullptr,TheNameKeyGenerator->nameToKey("ControlBar.wnd:MoneyDisplay"));
-		if(win)
+		win = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ControlBar.wnd:MoneyDisplay"));
+		if (win)
 		{
 			win->winSetTooltipFunc(commandButtonTooltip);
+			win->winSetInputFunc(moneyDisplayInput);
 		}
 		win = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ControlBar.wnd:GeneralsExp"));
 		if(win)
@@ -1759,6 +1965,13 @@ void ControlBar::init()
 //-------------------------------------------------------------------------------------------------
 void ControlBar::reset()
 {
+	if (s_moneyPopupLayout)
+	{
+		s_moneyPopupLayout->destroyWindows();
+		deleteInstance(s_moneyPopupLayout);
+		s_moneyPopupLayout = nullptr;
+	}
+
 	hideSpecialPowerShortcut();
 	// do not destroy the rally drawable, it will get destroyed with everything else during a reset
 	m_rallyPointDrawableID = INVALID_DRAWABLE_ID;
@@ -1851,6 +2064,36 @@ void ControlBar::update()
 {
 	if (TheGlobalData->m_headless)
 		return;
+	if (s_moneyPopupLayout)
+	{
+		Bool shouldClose = FALSE;
+
+		if (!canUseMoneyPopup())
+			shouldClose = TRUE;
+
+		if (TheInGameUI && TheInGameUI->isQuitMenuVisible())
+			shouldClose = TRUE;
+
+		if (isMoneyPopupBlockedByModalUI())
+			shouldClose = TRUE;
+
+		GameWindow* scienceWindow =
+			TheWindowManager->winGetWindowFromId(
+				nullptr,
+				TheNameKeyGenerator->nameToKey("GeneralsExpPoints.wnd:GenExpParent"));
+
+		if (scienceWindow && !scienceWindow->winIsHidden())
+			shouldClose = TRUE;
+
+		if (shouldClose)
+		{
+			closeMoneyPopup();
+		}
+		else
+		{
+			populateMoneyPopupAllies();
+		}
+	}
 	getStarImage();
 	updateRadarAttackGlow();
 	if(m_controlBarSchemeManager)
