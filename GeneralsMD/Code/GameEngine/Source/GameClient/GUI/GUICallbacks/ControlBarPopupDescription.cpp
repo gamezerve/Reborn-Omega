@@ -295,7 +295,15 @@ static void resetBuildTooltipLayoutToDefaults(WindowLayout* layout)
 		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextDescription")
 	);
 
-	if (!s_tooltipSizesInitialized)
+	static Int s_tooltipDefaultDisplayWidth = 0;
+	static Int s_tooltipDefaultDisplayHeight = 0;
+
+	Int currentWidth = TheGlobalData ? TheGlobalData->m_xResolution : 0;
+	Int currentHeight = TheGlobalData ? TheGlobalData->m_yResolution : 0;
+
+	if (!s_tooltipSizesInitialized ||
+		s_tooltipDefaultDisplayWidth != currentWidth ||
+		s_tooltipDefaultDisplayHeight != currentHeight)
 	{
 		root->winGetSize(&s_tooltipRootDefaultSize.x, &s_tooltipRootDefaultSize.y);
 		root->winGetPosition(&s_tooltipRootDefaultPos.x, &s_tooltipRootDefaultPos.y);
@@ -310,6 +318,8 @@ static void resetBuildTooltipLayoutToDefaults(WindowLayout* layout)
 		}
 
 		s_tooltipSizesInitialized = TRUE;
+		s_tooltipDefaultDisplayWidth = currentWidth;
+		s_tooltipDefaultDisplayHeight = currentHeight;
 	}
 
 	root->winSetSize(s_tooltipRootDefaultSize.x, s_tooltipRootDefaultSize.y);
