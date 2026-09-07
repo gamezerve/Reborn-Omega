@@ -2477,7 +2477,19 @@ UpdateSleepTime JetAIUpdate::update()
 	if (draw != nullptr)
 	{
 
-		if (friend_isParkedOnMovingCarrierDeck())
+		Object* producer =
+			TheGameLogic->findObjectByID(
+				jet->getProducerID());
+
+		const Bool attachedToMovingCarrierDeck =
+			producer &&
+			producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO) &&
+			(
+				friend_isParkedOnMovingCarrierDeck() ||
+				!jet->isAirborneTarget()
+				);
+
+		if (attachedToMovingCarrierDeck)
 		{
 			Matrix3D tmp(1);
 			tmp.Set_Z_Translation(friend_getMinHeight());

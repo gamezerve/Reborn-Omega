@@ -1375,10 +1375,16 @@ void Drawable::applyPhysicsXform(Matrix3D* mtx)
 
 			if (producer &&
 				producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO) &&
-				jetAI &&
-				jetAI->friend_isParkedOnMovingCarrierDeck())
+				jetAI)
 			{
-				return;
+				const Bool attachedToCarrierDeck =
+					jetAI->friend_isParkedOnMovingCarrierDeck() ||
+					!obj->isAirborneTarget();
+
+				if (attachedToCarrierDeck)
+				{
+					return;
+				}
 			}
 		}
 
