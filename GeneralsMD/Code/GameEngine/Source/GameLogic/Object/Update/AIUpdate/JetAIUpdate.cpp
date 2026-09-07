@@ -2476,27 +2476,37 @@ UpdateSleepTime JetAIUpdate::update()
 	Drawable* draw = jet->getDrawable();
 	if (draw != nullptr)
 	{
-		StateID id = getStateMachine()->getCurrentStateID();
-		Bool needToCheckMinHeight = (id >= JETAISTATETYPE_FIRST && id <= JETAISTATETYPE_LAST) ||
-																	!jet->isAboveTerrain() ||
-																	!getFlag(ALLOW_AIR_LOCO);
-		if( needToCheckMinHeight || jet->getStatusBits().test( OBJECT_STATUS_DECK_HEIGHT_OFFSET ) )
+
+		if (friend_isParkedOnMovingCarrierDeck())
 		{
-			Real ht = jet->isAboveTerrain() ? jet->getHeightAboveTerrain() : 0;
-			if (ht < minHeight)
+			Matrix3D tmp(1);
+			tmp.Set_Z_Translation(friend_getMinHeight());
+			draw->setInstanceMatrix(&tmp);
+		}
+		else
+		{
+			StateID id = getStateMachine()->getCurrentStateID();
+			Bool needToCheckMinHeight = (id >= JETAISTATETYPE_FIRST && id <= JETAISTATETYPE_LAST) ||
+																		!jet->isAboveTerrain() ||
+																		!getFlag(ALLOW_AIR_LOCO);
+			if( needToCheckMinHeight || jet->getStatusBits().test( OBJECT_STATUS_DECK_HEIGHT_OFFSET ) )
 			{
-				Matrix3D tmp(1);
-				tmp.Set_Z_Translation(minHeight - ht);
-				draw->setInstanceMatrix(&tmp);
+				Real ht = jet->isAboveTerrain() ? jet->getHeightAboveTerrain() : 0;
+				if (ht < minHeight)
+				{
+					Matrix3D tmp(1);
+					tmp.Set_Z_Translation(minHeight - ht);
+					draw->setInstanceMatrix(&tmp);
+				}
+				else
+				{
+					draw->setInstanceMatrix(nullptr);
+				}
 			}
 			else
 			{
 				draw->setInstanceMatrix(nullptr);
 			}
-		}
-		else
-		{
-			draw->setInstanceMatrix(nullptr);
 		}
 	}
 

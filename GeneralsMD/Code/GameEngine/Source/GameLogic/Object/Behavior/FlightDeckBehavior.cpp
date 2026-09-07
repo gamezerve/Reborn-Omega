@@ -460,6 +460,22 @@ void FlightDeckBehavior::updateMovingCarrierDeckAircraft()
 		if (!jetAI)
 			continue;
 
+		const Real dx =
+			jet->getPosition()->x - it->m_prep.x;
+
+		const Real dy =
+			jet->getPosition()->y - it->m_prep.y;
+
+		const Real parkingDistSq =
+			dx * dx + dy * dy;
+
+		const Bool parkedOnCarrier =
+			parkingDistSq <= 1.0f &&
+			!jetAI->friend_isTakeoffOrLandingInProgress();
+
+		jetAI->friend_setParkedOnMovingCarrierDeck(
+			parkedOnCarrier);
+
 		//
 		// Keep aircraft attached to the carrier while they are
 		// on the deck, taxiing, landing or taking off.
