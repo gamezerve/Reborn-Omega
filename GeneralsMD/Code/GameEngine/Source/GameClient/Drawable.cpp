@@ -57,6 +57,7 @@
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/Module/BodyModule.h"
 #include "GameLogic/Module/ContainModule.h"
+#include "GameLogic/Module/JetAIUpdate.h"
 #include "GameLogic/Module/PhysicsUpdate.h"
 #include "GameLogic/Module/StealthUpdate.h"
 #include "GameLogic/Module/StickyBombUpdate.h"
@@ -1358,6 +1359,27 @@ void Drawable::applyPhysicsXform(Matrix3D* mtx)
 		if (WW3D::Get_Sync_Frame_Time() != 0)
 		{
 			calcPhysicsXform(*m_physicsXform);
+		}
+
+		Object* obj = getObject();
+
+		if (obj)
+		{
+			Object* producer =
+				TheGameLogic->findObjectByID(
+					obj->getProducerID());
+
+			JetAIUpdate* jetAI =
+				static_cast<JetAIUpdate*>(
+					obj->getAIUpdateInterface());
+
+			if (producer &&
+				producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO) &&
+				jetAI &&
+				jetAI->friend_isParkedOnMovingCarrierDeck())
+			{
+				return;
+			}
 		}
 
 		mtx->Translate(0.0f, 0.0f, m_physicsXform->m_totalZ);
