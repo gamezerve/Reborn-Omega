@@ -1609,6 +1609,14 @@ Bool AIUpdateInterface::processCollision(PhysicsBehavior *physics, Object *other
 		getObject()->isKindOf(KINDOF_BOAT) &&
 		other->isKindOf(KINDOF_BOAT);
 
+	PhysicsBehavior* otherPhysics = other->getPhysics();
+
+	const Real BOAT_STOPPED_SPEED = 0.05f;
+
+	Bool otherBoatPhysicallyMoving =
+		otherPhysics &&
+		otherPhysics->getVelocityMagnitude() > BOAT_STOPPED_SPEED;
+
 	Bool selfMoving = isMoving();
 	Bool otherMoving = ( aiOther && aiOther->isMoving() );
 	//if (!isDoingGroundMovement()) return FALSE;
@@ -1634,6 +1642,172 @@ Bool AIUpdateInterface::processCollision(PhysicsBehavior *physics, Object *other
 				if (maxSpeed < m_curMaxBlockedSpeed)
 				{
 					m_curMaxBlockedSpeed = maxSpeed;
+				}
+
+
+				//
+				// Reborn: If a moving boat is blocked by a physically stationary boat,
+				// try both lateral directions and let the stationary vessel move toward
+				// whichever valid destination actually gives it room to get out of the way.
+				//
+				if (!otherBoatPhysicallyMoving &&
+					!m_waitingForPath &&
+					!aiOther->isWaitingForPath() &&
+					TheGameLogic->getFrame() >= m_rebornBoatRepathCooldownUntil &&
+					TheGameLogic->getFrame() >= aiOther->m_rebornBoatRepathCooldownUntil)
+				{
+#if defined(RTS_DEBUG)
+					DEBUG_LOG((
+						"ROBoatStationaryYield CHECK "
+						"frame=%u self=%u other=%u "
+						"selfMoving=%d otherMoving=%d "
+						"otherPhysicalSpeed=%.3f "
+						"selfWaiting=%d otherWaiting=%d "
+						"selfCooldown=%u otherCooldown=%u\n",
+						TheGameLogic->getFrame(),
+						getObject()->getID(),
+						other->getID(),
+						selfMoving,
+						otherMoving,
+						otherPhysics ? otherPhysics->getVelocityMagnitude() : -1.0f,
+						m_waitingForPath,
+						aiOther->isWaitingForPath(),
+						m_rebornBoatRepathCooldownUntil,
+						aiOther->m_rebornBoatRepathCooldownUntil
+						));
+#endif
+					const Coord3D* velocity = physics->getVelocity();
+
+					Real moveLength =
+						(Real)sqrt(
+							velocity->x * velocity->x +
+							velocity->y * velocity->y);
+
+					if (moveLength > 0.01f)
+					{
+						Coord2D moveDir;
+						moveDir.x = velocity->x / moveLength;
+						moveDir.y = velocity->y / moveLength;
+
+						Coord2D lateral;
+						lateral.x = -moveDir.y;
+						lateral.y = moveDir.x;
+
+						const Coord3D* otherPos = other->getPosition();
+
+						const Real BOAT_YIELD_DISTANCE =
+							MAX(
+								60.0f,
+								getObject()->getGeometryInfo().getMinorRadius() +
+								other->getGeometryInfo().getMinorRadius());
+
+						Coord3D yieldDestA = *otherPos;
+						yieldDestA.x += lateral.x * BOAT_YIELD_DISTANCE;
+						yieldDestA.y += lateral.y * BOAT_YIELD_DISTANCE;
+
+						Coord3D yieldDestB = *otherPos;
+						yieldDestB.x -= lateral.x * BOAT_YIELD_DISTANCE;
+						yieldDestB.y -= lateral.y * BOAT_YIELD_DISTANCE;
+
+						Bool validA =
+							TheAI->pathfinder()->adjustDestination(
+								other,
+								aiOther->getLocomotorSet(),
+								&yieldDestA,
+								nullptr);
+
+						Bool validB =
+							TheAI->pathfinder()->adjustDestination(
+								other,
+								aiOther->getLocomotorSet(),
+								&yieldDestB,
+								nullptr);
+
+#if defined(RTS_DEBUG)
+						DEBUG_LOG((
+							"ROBoatStationaryYield DEST "
+							"frame=%u self=%u other=%u "
+							"validA=%d validB=%d "
+							"A=(%.2f, %.2f) B=(%.2f, %.2f) "
+							"otherPos=(%.2f, %.2f)\n",
+							TheGameLogic->getFrame(),
+							getObject()->getID(),
+							other->getID(),
+							validA,
+							validB,
+							yieldDestA.x,
+							yieldDestA.y,
+							yieldDestB.x,
+							yieldDestB.y,
+							otherPos->x,
+							otherPos->y
+							));
+#endif
+
+						Real distASqr = 0.0f;
+						Real distBSqr = 0.0f;
+
+						if (validA)
+						{
+							Real dx = yieldDestA.x - otherPos->x;
+							Real dy = yieldDestA.y - otherPos->y;
+							distASqr = dx * dx + dy * dy;
+						}
+
+						if (validB)
+						{
+							Real dx = yieldDestB.x - otherPos->x;
+							Real dy = yieldDestB.y - otherPos->y;
+							distBSqr = dx * dx + dy * dy;
+						}
+
+						const Real MIN_YIELD_DISTANCE = 20.0f;
+						const Real minYieldDistanceSqr =
+							MIN_YIELD_DISTANCE * MIN_YIELD_DISTANCE;
+
+						Coord3D* chosenYieldDest = nullptr;
+
+						if (validA &&
+							distASqr >= minYieldDistanceSqr &&
+							(!validB || distASqr >= distBSqr))
+						{
+							chosenYieldDest = &yieldDestA;
+						}
+						else if (validB &&
+							distBSqr >= minYieldDistanceSqr)
+						{
+							chosenYieldDest = &yieldDestB;
+						}
+
+						if (chosenYieldDest)
+						{
+#if defined(RTS_DEBUG)
+							DEBUG_LOG((
+								"ROBoatStationaryYield MOVE "
+								"frame=%u yielding=%u blockerFor=%u "
+								"dest=(%.2f, %.2f)\n",
+								TheGameLogic->getFrame(),
+								other->getID(),
+								getObject()->getID(),
+								chosenYieldDest->x,
+								chosenYieldDest->y
+								));
+#endif
+
+							aiOther->aiMoveToPosition(
+								chosenYieldDest,
+								CMD_FROM_AI);
+
+							const UnsignedInt cooldown =
+								TheGameLogic->getFrame() +
+								2 * LOGICFRAMES_PER_SECOND;
+
+							m_rebornBoatRepathCooldownUntil = cooldown;
+							aiOther->m_rebornBoatRepathCooldownUntil = cooldown;
+
+							return TRUE;
+						}
+					}
 				}
 
 				//

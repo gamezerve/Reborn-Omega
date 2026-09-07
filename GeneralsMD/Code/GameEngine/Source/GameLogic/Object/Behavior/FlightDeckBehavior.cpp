@@ -1760,6 +1760,24 @@ void FlightDeckBehavior::aiDoCommand(const AICommandParms* parms)
 		parms->m_cmdSource,
 		getFlightDeckBehaviorModuleData()->m_movingCarrier));
 
+	if (parms->m_cmdSource == CMD_FROM_AI &&
+		moduleData->m_movingCarrier)
+	{
+		switch (parms->m_cmd)
+		{
+		case AICMD_MOVE_TO_POSITION:
+		case AICMD_MOVE_TO_POSITION_EVEN_IF_SLEEPING:
+		case AICMD_IDLE:
+			AIUpdateInterface::aiDoCommand(parms);
+			break;
+
+		default:
+			break;
+		}
+
+		return;
+	}
+
 	//Inspect the command and reset everything when necessary.
 	if( parms->m_cmdSource != CMD_FROM_AI )
 	{
