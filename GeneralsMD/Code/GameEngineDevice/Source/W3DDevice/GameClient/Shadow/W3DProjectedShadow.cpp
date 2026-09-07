@@ -23,6 +23,7 @@
 ;////////////////////////////////////////////////////////////////////////////////
 
 // FILE: W3DTextureShadow.cpp ///////////////////////////////////////////////////////////
+// FILE: W3DProjectedShadow.cpp ///////////////////////////////////////////////////////////
 //
 // Texture based shadow representation.
 //
@@ -1057,7 +1058,8 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 				for (i=startX; i <= endX; i++)
 				{
 					hmapVertex.X=(float)(i-borderSize)*MAP_XY_FACTOR;
-					hmapVertex.Z=(float)hmap->getHeight(i,j)*MAP_HEIGHT_SCALE+0.01f * MAP_XY_FACTOR;
+					//hmapVertex.Z=(float)hmap->getHeight(i,j)*MAP_HEIGHT_SCALE+0.01f * MAP_XY_FACTOR;
+					hmapVertex.Z = shadow->m_z;
 					pvVertices->x=hmapVertex.X;
 					pvVertices->y=hmapVertex.Y;
 					pvVertices->z=hmapVertex.Z;

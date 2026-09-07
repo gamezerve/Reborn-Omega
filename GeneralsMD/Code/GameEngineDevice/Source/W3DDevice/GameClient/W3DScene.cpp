@@ -941,6 +941,9 @@ void RTS3DScene::Flush(RenderInfoClass & rinfo)
 
 	WW3D::Render_And_Clear_Static_Sort_Lists(rinfo);	//draws things like water
 
+	TheW3DShadowManager->queueShadows(TRUE);
+	DoShadows(rinfo, false);
+
 	if (!m_rebornUnderwaterRenderObjects.empty())
 	{
 		g_rebornRenderUnderwaterPass = true;

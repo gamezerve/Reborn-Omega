@@ -1662,6 +1662,10 @@ void InGameUI::handleRadiusCursor()
 
 			if( hasPos )
 			{
+				Real waterHeight = 0.0f;
+				if (TheTerrainLogic->isUnderwater(pos.x, pos.y, &waterHeight))
+					pos.z = waterHeight + 1.5f;
+
 				m_curRadiusCursor.setPosition(pos);	//world space position of center of decal
 				m_curRadiusCursor.update();
 			}
