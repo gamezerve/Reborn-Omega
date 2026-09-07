@@ -1733,7 +1733,62 @@ void AIGroup::groupMoveToPosition( const Coord3D *p_posIn, Bool addWaypoint, Com
 		iter->insert((*i), adjust + dx*dx+dy*dy);
 	}
 
+	//
+	// Reborn: Multiple naval units should not all try to occupy the same
+	// destination. Spread boats laterally around the requested group goal.
+	//
+	Int boatCount = 0;
+	Real boatSpacing = 0.0f;
+
+	if (cmdSource == CMD_FROM_PLAYER)
+	{
+		for (i = m_memberList.begin(); i != m_memberList.end(); ++i)
+		{
+			Object* member = *i;
+
+			if (!member || !member->isKindOf(KINDOF_BOAT))
+				continue;
+
+			++boatCount;
+
+			const Real requiredSpacing =
+				member->getGeometryInfo().getBoundingCircleRadius() * 2.0f;
+
+			boatSpacing = MAX(
+				boatSpacing,
+				requiredSpacing);
+		}
+
+		if (boatCount > 1)
+		{
+			boatSpacing += 30.0f;
+		}
+	}
+
 	Coord3D goalPos = *pos;
+
+	Coord2D boatLateral;
+	boatLateral.x = 1.0f;
+	boatLateral.y = 0.0f;
+
+	if (boatCount > 1)
+	{
+		Coord2D moveDirection;
+		moveDirection.x = goalPos.x - center.x;
+		moveDirection.y = goalPos.y - center.y;
+
+		if (moveDirection.length() > 0.01f)
+		{
+			moveDirection.normalize();
+
+			// Perpendicular to the movement direction.
+			boatLateral.x = -moveDirection.y;
+			boatLateral.y = moveDirection.x;
+		}
+	}
+
+	Int boatIndex = 0;
+
 	iter->sort(ITER_SORTED_NEAR_TO_FAR);
 	// Works better if you let the near units get the first paths... jba.
 	// Move the ones nearest the goal first.  Reduces collision problems later.
@@ -1754,7 +1809,61 @@ void AIGroup::groupMoveToPosition( const Coord3D *p_posIn, Bool addWaypoint, Com
 			}
 			firstUnit = false;
 		}
-		computeIndividualDestination( &dest, &goalPos, theUnit, &center, isFormation );
+		//computeIndividualDestination( &dest, &goalPos, theUnit, &center, isFormation );
+		if (boatCount > 1 &&
+			theUnit->isKindOf(KINDOF_BOAT) &&
+			cmdSource == CMD_FROM_PLAYER)
+		{
+			const Real centeredIndex =
+				(Real)boatIndex -
+				((Real)(boatCount - 1) * 0.5f);
+
+			dest = goalPos;
+
+			dest.x +=
+				boatLateral.x *
+				centeredIndex *
+				boatSpacing;
+
+			dest.y +=
+				boatLateral.y *
+				centeredIndex *
+				boatSpacing;
+
+			PathfindLayerEnum layer =
+				TheTerrainLogic->getLayerForDestination(&dest);
+
+			dest.z =
+				TheTerrainLogic->getLayerHeight(
+					dest.x,
+					dest.y,
+					layer);
+
+			if (ai && ai->isDoingGroundMovement())
+			{
+				TheAI->pathfinder()->adjustDestination(
+					theUnit,
+					ai->getLocomotorSet(),
+					&dest,
+					nullptr);
+
+				TheAI->pathfinder()->updateGoal(
+					theUnit,
+					&dest,
+					LAYER_GROUND);
+			}
+
+			++boatIndex;
+		}
+		else
+		{
+			computeIndividualDestination(
+				&dest,
+				&goalPos,
+				theUnit,
+				&center,
+				isFormation);
+		}
 
 		if( cmdSource == CMD_FROM_PLAYER && theUnit->getStatusBits().test( OBJECT_STATUS_CAN_STEALTH ) && ai->canAutoAcquire() )
 		{
@@ -1782,6 +1891,27 @@ void AIGroup::groupMoveToPosition( const Coord3D *p_posIn, Bool addWaypoint, Com
 
 		if( !addWaypoint )
 		{
+#if defined(RTS_DEBUG)
+			if (theUnit->isKindOf(KINDOF_BOAT))
+			{
+				DEBUG_LOG((
+					"ROBoatGroupMove "
+					"id=%u boatCount=%d boatIndex=%d "
+					"groupGoal=(%.2f, %.2f) "
+					"dest=(%.2f, %.2f) "
+					"position=(%.2f, %.2f)\n",
+					theUnit->getID(),
+					boatCount,
+					boatIndex,
+					goalPos.x,
+					goalPos.y,
+					dest.x,
+					dest.y,
+					theUnit->getPosition()->x,
+					theUnit->getPosition()->y
+					));
+			}
+#endif
 			ai->aiMoveToPosition( &dest, cmdSource );
 		}
 		else
