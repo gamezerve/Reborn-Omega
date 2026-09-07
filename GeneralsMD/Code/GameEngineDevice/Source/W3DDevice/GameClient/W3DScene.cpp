@@ -55,6 +55,7 @@
 #include "W3DDevice/GameClient/W3DShadow.h"
 #include "W3DDevice/GameClient/W3DStatusCircle.h"
 #include "W3DDevice/GameClient/W3DCustomScene.h"
+#include "W3DDevice/GameClient/W3DProjectedShadow.h"
 #include "W3DDevice/GameClient/W3DShroud.h"
 #include "WW3D2/camera.h"
 #include "WW3D2/dx8renderer.h"
@@ -941,8 +942,12 @@ void RTS3DScene::Flush(RenderInfoClass & rinfo)
 
 	WW3D::Render_And_Clear_Static_Sort_Lists(rinfo);	//draws things like water
 
-	TheW3DShadowManager->queueShadows(TRUE);
-	DoShadows(rinfo, false);
+	if (m_customPassMode == SCENE_PASS_DEFAULT &&
+		Get_Extra_Pass_Polygon_Mode() == EXTRA_PASS_DISABLE &&
+		TheW3DProjectedShadowManager)
+	{
+		TheW3DProjectedShadowManager->renderAfterWaterDecals(rinfo);
+	}
 
 	if (!m_rebornUnderwaterRenderObjects.empty())
 	{

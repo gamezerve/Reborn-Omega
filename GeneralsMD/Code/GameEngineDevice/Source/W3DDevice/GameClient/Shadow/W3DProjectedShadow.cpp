@@ -1059,7 +1059,15 @@ void W3DProjectedShadowManager::queueDecal(W3DProjectedShadow *shadow)
 				{
 					hmapVertex.X=(float)(i-borderSize)*MAP_XY_FACTOR;
 					//hmapVertex.Z=(float)hmap->getHeight(i,j)*MAP_HEIGHT_SCALE+0.01f * MAP_XY_FACTOR;
-					hmapVertex.Z = shadow->m_z;
+					hmapVertex.Z = (float)hmap->getHeight(i, j) * MAP_HEIGHT_SCALE + 0.01f * MAP_XY_FACTOR;
+
+					if (shadow->m_renderAfterWater)
+					{
+						Real waterHeight = 0.0f;
+
+						if (TheTerrainLogic->isUnderwater(hmapVertex.X, hmapVertex.Y, &waterHeight))
+							hmapVertex.Z = waterHeight + 1.5f;
+					}
 					pvVertices->x=hmapVertex.X;
 					pvVertices->y=hmapVertex.Y;
 					pvVertices->z=hmapVertex.Z;
@@ -1324,8 +1332,11 @@ Int W3DProjectedShadowManager::renderShadows(RenderInfoClass & rinfo)
 		W3DShadowTexture *lastShadowDecalTexture=nullptr;
 		ShadowType lastShadowType = SHADOW_NONE;
 
-		for( shadow = m_shadowList; shadow; shadow = shadow->m_next )
+		for (shadow = m_decalList; shadow; shadow = shadow->m_next)
 		{
+			if (shadow->m_renderAfterWater)
+				continue;
+
 			if (shadow->m_isEnabled && !shadow->m_isInvisibleEnabled)
 			{
 				if (shadow->m_type & SHADOW_DECAL)
@@ -1467,6 +1478,52 @@ Int W3DProjectedShadowManager::renderShadows(RenderInfoClass & rinfo)
 	return projectionCount;
 }
 
+Int W3DProjectedShadowManager::renderAfterWaterDecals(RenderInfoClass& rinfo)
+{
+	Int projectionCount = 0;
+
+	if (!m_decalList)
+		return 0;
+
+	W3DShadowTexture* lastShadowDecalTexture = nullptr;
+	ShadowType lastShadowType = SHADOW_NONE;
+
+	for (W3DProjectedShadow* shadow = m_decalList; shadow; shadow = shadow->m_next)
+	{
+		if (!shadow->m_renderAfterWater)
+			continue;
+
+		if (!shadow->m_isEnabled || shadow->m_isInvisibleEnabled)
+			continue;
+
+		if (lastShadowDecalTexture == nullptr)
+			lastShadowDecalTexture = shadow->m_shadowTexture[0];
+
+		if (lastShadowType == SHADOW_NONE)
+			lastShadowType = shadow->m_type;
+
+		if (shadow->m_shadowTexture[0] != lastShadowDecalTexture ||
+			shadow->m_type != lastShadowType)
+		{
+			flushDecals(lastShadowDecalTexture, lastShadowType);
+
+			lastShadowDecalTexture = shadow->m_shadowTexture[0];
+			lastShadowType = shadow->m_type;
+		}
+
+		if (!(shadow->m_robj && !shadow->m_robj->Is_Really_Visible()))
+		{
+			queueDecal(shadow);
+			projectionCount++;
+		}
+	}
+
+	if (lastShadowDecalTexture)
+		flushDecals(lastShadowDecalTexture, lastShadowType);
+
+	return projectionCount;
+}
+
 /** Generic function which can be used to create arbitrary decals that don't have to be used for shadows.
 Some examples: Scorch marks, blood, stains, selection/status indicators, etc.*/
 Shadow* W3DProjectedShadowManager::addDecal(Shadow::ShadowTypeInfo *shadowInfo)
@@ -1528,6 +1585,7 @@ Shadow* W3DProjectedShadowManager::addDecal(Shadow::ShadowTypeInfo *shadowInfo)
 	shadow->setTexture(0,st);	///@todo: Fix projected shadows to allow multiple lights
 	shadow->m_type = shadowType;		/// type of projection
 	shadow->m_allowWorldAlign=allowWorldAlign;	/// wrap shadow around world geometry - else align perpendicular to local z-axis.
+	shadow->m_renderAfterWater = shadowInfo->renderAfterWater;
 
 	shadow->m_oowDecalSizeX = 1.0f/decalSizeX;	//one over width
 	shadow->m_oowDecalSizeY = 1.0f/decalSizeY;	//one over height
@@ -1635,6 +1693,7 @@ Shadow* W3DProjectedShadowManager::addDecal(RenderObjClass *robj, Shadow::Shadow
 	shadow->setTexture(0,st);	///@todo: Fix projected shadows to allow multiple lights
 	shadow->m_type = shadowType;		/// type of projection
 	shadow->m_allowWorldAlign=allowWorldAlign;	/// wrap shadow around world geometry - else align perpendicular to local z-axis.
+	shadow->m_renderAfterWater = shadowInfo->renderAfterWater;
 
 	AABoxClass box;
 
@@ -2084,6 +2143,7 @@ W3DProjectedShadow::W3DProjectedShadow()
 	m_lastObjPosition.Set(0,0,0);
 	m_type = SHADOW_NONE;		/// type of projection
 	m_allowWorldAlign = FALSE;	/// wrap shadow around world geometry - else align perpendicular to local z-axis.
+	m_renderAfterWater = FALSE;
 	m_isEnabled = TRUE;
 	m_isInvisibleEnabled = FALSE;
 	for (Int i=0; i<MAX_SHADOW_LIGHTS; i++)

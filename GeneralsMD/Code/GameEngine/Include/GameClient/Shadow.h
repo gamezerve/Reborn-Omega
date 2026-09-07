@@ -79,6 +79,7 @@ public:
 						m_type = SHADOW_NONE;
 						allowUpdates = false;
 						allowWorldAlign = false;
+						renderAfterWater = false;
 						m_sizeX = 0.0f;
 						m_sizeY = 0.0f;
 						m_offsetX = 0.0f;
@@ -89,6 +90,7 @@ public:
 				ShadowType m_type;			//type of shadow
 				Bool	allowUpdates;			//whether to update the shadow image when object/light moves.
 				Bool	allowWorldAlign;	//whether to align shadow to world geometry or draw as horizontal decal.
+				Bool  renderAfterWater;
 				Real	m_sizeX;			//world size of decal projection
 				Real	m_sizeY;			//world size of decal projection
 				Real	m_offsetX;			//world shift along x axis

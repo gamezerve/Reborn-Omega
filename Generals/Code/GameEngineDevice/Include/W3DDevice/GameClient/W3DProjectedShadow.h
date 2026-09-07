@@ -129,6 +129,7 @@ class W3DProjectedShadow	: public Shadow
 		Vector3		m_lastObjPosition;	///<position of  object at time of projection matrix update.
 		W3DProjectedShadow *m_next;	/// for the shadow manager list
 		Bool	m_allowWorldAlign;	/// wrap shadow around world geometry - else align perpendicular to local z-axis.
+		Bool  m_renderAfterWater;
 		Real	m_decalOffsetU;		/// texture coordinate offset so not centered at object origin.
 		Real	m_decalOffsetV;		/// texture coordinate offset so not centered at object origin.
 		Int		m_flags;			/// custom rendering flags

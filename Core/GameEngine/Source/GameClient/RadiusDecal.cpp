@@ -72,6 +72,7 @@ void RadiusDecalTemplate::createRadiusDecal(const Coord3D& pos, Real radius, con
 		Shadow::ShadowTypeInfo decalInfo;
 		decalInfo.allowUpdates = FALSE;										// shadow texture will never update
 		decalInfo.allowWorldAlign = TRUE;									// shadow image will wrap around world objects
+		decalInfo.renderAfterWater = TRUE;
 		decalInfo.m_type = m_shadowType;
 		strlcpy(decalInfo.m_ShadowName, m_name.str(), ARRAY_SIZE(decalInfo.m_ShadowName));		// name of your texture
 		decalInfo.m_sizeX = radius*2;									// world space dimensions

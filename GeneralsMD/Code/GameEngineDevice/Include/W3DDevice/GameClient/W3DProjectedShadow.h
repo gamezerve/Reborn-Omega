@@ -57,6 +57,7 @@ class W3DProjectedShadowManager	: public ProjectedShadowManager
 		void shutdown();			///<free all assets prior to shutdown of entire game.
 		void prepareShadows();
 		Int	 renderShadows(RenderInfoClass & rinfo);	///<iterate over each object and render its shadow onto affected objects.
+		Int	 renderAfterWaterDecals(RenderInfoClass& rinfo);
 		void ReleaseResources();	///<release device dependent D3D resources.
 		Bool ReAcquireResources();	///<allocate device dependent D3D resources.
 		void invalidateCachedLightPositions();	///<forces shadows to update regardless of last lightposition
@@ -129,6 +130,7 @@ class W3DProjectedShadow	: public Shadow
 		Vector3		m_lastObjPosition;	///<position of  object at time of projection matrix update.
 		W3DProjectedShadow *m_next;	/// for the shadow manager list
 		Bool	m_allowWorldAlign;	/// wrap shadow around world geometry - else align perpendicular to local z-axis.
+		Bool	m_renderAfterWater;	/// render this decal in a dedicated pass after water.
 		Real	m_decalOffsetU;		/// texture coordinate offset so not centered at object origin.
 		Real	m_decalOffsetV;		/// texture coordinate offset so not centered at object origin.
 		Int		m_flags;			/// custom rendering flags
