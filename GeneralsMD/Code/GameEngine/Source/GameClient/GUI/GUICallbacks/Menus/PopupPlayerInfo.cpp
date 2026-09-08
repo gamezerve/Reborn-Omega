@@ -820,13 +820,32 @@ static GameWindow* findWindow(GameWindow *parent, AsciiString baseWindow, AsciiS
 
 void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 {
-	Int lookupID = TheGameSpyInfo->getLocalProfileID();
-	if(parentWindowName == "PopupPlayerInfo.wnd")
+	//Int lookupID = TheGameSpyInfo->getLocalProfileID();
+	//if(parentWindowName == "PopupPlayerInfo.wnd")
+	//{
+	//	lookupID = lookAtPlayerID;
+	//	if (lookAtPlayerID <= 0 || !parent)
+	//		return;
+	//}
+	Int lookupID = 0;
+
+	if (parentWindowName == "PopupPlayerInfo.wnd")
 	{
 		lookupID = lookAtPlayerID;
 		if (lookAtPlayerID <= 0 || !parent)
 			return;
 	}
+	else
+	{
+		if (!TheGameSpyInfo)
+			return;
+
+		lookupID = TheGameSpyInfo->getLocalProfileID();
+	}
+
+	if (!TheGameSpyPSMessageQueue)
+		return;
+
 
 	PSPlayerStats stats = TheGameSpyPSMessageQueue->findPlayerStatsByID(lookupID);
 

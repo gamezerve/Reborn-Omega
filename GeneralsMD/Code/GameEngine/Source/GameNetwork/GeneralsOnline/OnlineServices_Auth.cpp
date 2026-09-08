@@ -399,6 +399,12 @@ void NGMP_OnlineServices_AuthInterface::DoFullLoginFlow()
     std::map<std::string, std::string> mapHeaders;
 	NGMP_OnlineServicesManager::GetInstance()->GetHTTPManager()->SendGETRequest(strGetLoginCodeURI.c_str(), EIPProtocolVersion::DONT_CARE, mapHeaders, [=](bool bSuccess, int statusCode, std::string strBody, HTTPRequest* pReq)
 		{
+
+			DEBUG_LOG(("LOGIN CODE RESPONSE: success=%d status=%d body=%s",
+				bSuccess ? 1 : 0,
+				statusCode,
+				strBody.c_str()));
+
 			std::function<void(void)> fnGetLoginCodeFailed = [this]()
 				{
 					// stop checking

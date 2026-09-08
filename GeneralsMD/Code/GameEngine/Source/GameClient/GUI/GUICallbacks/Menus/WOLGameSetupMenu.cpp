@@ -2147,31 +2147,7 @@ void WOLGameSetupMenuInit( WindowLayout *layout, void *userData )
 	TheWindowManager->winSetFocus(textEntryChat);
 
 #if defined(GENERALS_ONLINE)
-// NGMP: Did we just enter a lobby with modified camera height?
-	// if (pLobbyInterface->IsInLobby())
-	{
-		LobbyEntry& theLobby = pLobbyInterface->GetCurrentLobby();
-
-		if (theLobby.max_cam_height != GENERALS_ONLINE_DEFAULT_LOBBY_CAMERA_ZOOM)
-		{
-
-
-			if (!pLobbyInterface->IsHost())
-			{
-				UnicodeString strInform;
-				strInform.format(L"Camera height: The host set the limit to %lu.", theLobby.max_cam_height);
-				GadgetListBoxAddEntryText(listboxGameSetupChat, strInform, GameMakeColor(192, 192, 192, 255), -1, -1);
-			}
-			else
-			{
-				UnicodeString strInform;
-				strInform.format(L"Camera height: Your limit is %lu. Use /maxcameraheight <value> to change it. Default: 310.", theLobby.max_cam_height);
-				GadgetListBoxAddEntryText(listboxGameSetupChat, strInform, GameMakeColor(192, 192, 192, 255), -1, -1);
-			}
-
-		}
-	}
-
+	// Reborn: GO lobby setup intentionally leaves Reborn Omega camera settings untouched.
     if (pLobbyInterface != nullptr)
     {
         if (pLobbyInterface->IsHost())
@@ -3514,7 +3490,6 @@ Bool handleGameSetupSlashCommands(UnicodeString uText)
 		GadgetListBoxAddEntryText(listboxGameSetupChat, UnicodeString(L"/public - Let anyone join (host only)."), helpColor, -1, -1);
 		GadgetListBoxAddEntryText(listboxGameSetupChat, UnicodeString(L"/setpassword <password> - Set a lobby password (host only)."), helpColor, -1, -1);
 		GadgetListBoxAddEntryText(listboxGameSetupChat, UnicodeString(L"/removepassword - Remove the lobby password (host only)."), helpColor, -1, -1);
-		GadgetListBoxAddEntryText(listboxGameSetupChat, UnicodeString(L"/maxcameraheight <value> - Set the camera height limit (host only)."), helpColor, -1, -1);
 		// GadgetListBoxAddEntryText(listboxGameSetupChat, UnicodeString(L"/leave - Return to the main lobby."), helpColor, -1, -1);
 		// GadgetListBoxAddEntryText(listboxGameSetupChat, UnicodeString(L"/quit - Exit the game."), helpColor, -1, -1);
 		GadgetListBoxAddEntryText(listboxGameSetupChat, UnicodeString(L"/support - Open the GeneralsOnline Discord."), helpColor, -1, -1);
@@ -3568,74 +3543,6 @@ Bool handleGameSetupSlashCommands(UnicodeString uText)
         }
 		return TRUE; // was a slash command
     }
-	else if (token == "maxcameraheight" && uText.getLength() > 17)
-	{
-		NGMP_OnlineServicesManager* pOnlineServicesMgr = NGMP_OnlineServicesManager::GetInstance();
-		if (pOnlineServicesMgr != nullptr)
-		{
-			NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
-
-			if (pLobbyInterface != nullptr)
-			{
-				if (pLobbyInterface->IsInLobby())
-				{
-					if (pLobbyInterface->IsHost())
-					{
-						UnicodeString val = UnicodeString(uText.str() + 17); // skip the command
-						
-						AsciiString asciiVal;
-						asciiVal.translate(val);
-
-						bool bIsNumber = true;
-
-						for (int i = 0; i < asciiVal.getLength(); ++i)
-						{
-							char thisChar = asciiVal.getCharAt(i);
-							if (!std::isdigit((unsigned char)thisChar))
-							{
-								bIsNumber = false;
-								break;
-							}
-						}
-
-						if (bIsNumber)
-						{
-							int newCameraHeight = atoi(asciiVal.str());
-
-							if (newCameraHeight < GENERALS_ONLINE_MIN_LOBBY_CAMERA_ZOOM || newCameraHeight > GENERALS_ONLINE_MAX_LOBBY_CAMERA_ZOOM)
-							{
-								UnicodeString msg;
-								msg.format(L"Camera height: Enter a value from %d to %d.", GENERALS_ONLINE_MIN_LOBBY_CAMERA_ZOOM, GENERALS_ONLINE_MAX_LOBBY_CAMERA_ZOOM);
-								GadgetListBoxAddEntryText(listboxGameSetupChat, msg, GameMakeColor(255, 0, 0, 255), -1, -1);
-								return TRUE; // was a slash command
-							}
-							else
-							{
-								// save locally
-								NGMP_OnlineServicesManager::Settings.Save_Camera_MaxHeight_WhenLobbyHost((float)newCameraHeight);
-
-								// update lobby
-								pLobbyInterface->UpdateCurrentLobbyMaxCameraHeight((uint16_t)newCameraHeight);
-							}
-						}
-						else
-						{
-							GadgetListBoxAddEntryText(listboxGameSetupChat, UnicodeString(L"Camera height: Enter a number."), GameMakeColor(255, 0, 0, 255), -1, -1);
-							return TRUE; // was a slash command
-						}
-						
-					}
-					else
-					{
-						GadgetListBoxAddEntryText(listboxGameSetupChat, UnicodeString(L"Camera height: Only the host can change it."), GameMakeColor(255, 0, 0, 255), -1, -1);
-						return TRUE; // was a slash command
-					}
-				}
-			}
-		}
-
-		return TRUE; // was a slash command
-	}
 #endif
 	// else if (token == "leave")
 	// {

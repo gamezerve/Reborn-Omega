@@ -69,8 +69,8 @@ void showNotificationBox(AsciiString nick, UnicodeString message, bool bPlaySoun
 #define GENERALS_ONLINE_MIN_LOBBY_CAMERA_ZOOM 210
 #define GENERALS_ONLINE_MAX_LOBBY_CAMERA_ZOOM 1000
 
-// Reborn: Keep the established 30 Hz network simulation for initial Generals Online compatibility.
-//#define GENERALS_ONLINE_HIGH_FPS_SERVER 1
+// Reborn: Use GO's 60 Hz simulation for Generals Online matches.
+#define GENERALS_ONLINE_HIGH_FPS_SERVER 1
 
 #if defined(REBORN_BUILD)
 #define GENERALS_ONLINE_CLIENT_ID "custom_third_party_client"
@@ -106,7 +106,8 @@ static int FRAME_GROUPING_CAP = 64;
 //#define GENERALS_ONLINE_USE_SENTRY 1
 #endif
 
-#define GENERALS_ONLINE_WIDESCREEN 1
+// Reborn: Keep the existing Reborn Omega camera and widescreen implementation.
+//#define GENERALS_ONLINE_WIDESCREEN 1
 
 #if defined(GENERALS_ONLINE_WIDESCREEN)
 #define DEFAULT_DISPLAY_WIDTH      800

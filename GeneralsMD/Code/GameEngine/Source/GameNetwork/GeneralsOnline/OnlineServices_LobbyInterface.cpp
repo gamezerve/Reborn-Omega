@@ -1411,7 +1411,8 @@ void NGMP_OnlineServices_LobbyInterface::CreateLobby(UnicodeString strLobbyName,
 			j["allow_observers"] = bAllowObservers;
 			j["exe_crc"] = TheGlobalData->m_exeCRC;
 			j["ini_crc"] = TheGlobalData->m_iniCRC;
-			j["max_cam_height"] = NGMP_OnlineServicesManager::Settings.Camera_GetMaxHeight_WhenLobbyHost();
+			// Reborn: Keep the protocol field but advertise Reborn Omega's existing camera limit.
+			j["max_cam_height"] = TheGlobalData->m_maxCameraHeight;
 			j["anticheat_id"] = AnticheatPlugInterface::GetAnticheatIdentifier();
 
 			std::string strPostData = j.dump();

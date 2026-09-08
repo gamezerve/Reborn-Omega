@@ -896,11 +896,11 @@ void StartPatchCheck()
 	}
 
 
-#if defined(REBORN_BUILD)
+//#if defined(REBORN_BUILD)
 	// Reborn: The official GO updater only recognizes official Generals Online executables.
 	startOnline();
 	return;
-#endif
+//#endif
 
 	onlineCancelWindow = MessageBoxCancel(TheGameText->fetch("GUI:CheckingForPatches"),
         TheGameText->fetch("GUI:CheckingForPatches"), CancelPatchCheckCallbackAndReopenDropdown);

@@ -11,6 +11,7 @@
 #include "GameNetwork/NetworkInterface.h"
 #include "Common/MultiplayerSettings.h"
 #include "GameNetwork/GameSpyOverlay.h"
+#include "GameNetwork/GameSpy/GSConfig.h"
 #include "GameClient/Display.h"
 #include "WW3D2/surfaceclass.h"
 #include "WW3D2/dx8wrapper.h"
@@ -853,6 +854,9 @@ void NGMP_OnlineServicesManager::OnLogin(ELoginResult loginResult, const char* s
 void NGMP_OnlineServicesManager::Init()
 {
 	g_MainThreadID = std::this_thread::get_id();
+
+	if (TheGameSpyConfig == nullptr)
+		TheGameSpyConfig = GameSpyConfigInterface::create("");
 
 	// initialize child classes, these need the platform handle
 	m_pAuthInterface = new NGMP_OnlineServices_AuthInterface();

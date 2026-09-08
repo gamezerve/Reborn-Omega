@@ -902,11 +902,12 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		
 		if (!TheGlobalData->m_windowed)
 		{
+			// Reborn: Keep the display-mode prompt visible above fullscreen compatibility surfaces.
 			int result = MessageBox(
 				nullptr,
 				"Start the game in Borderless Windowed mode?\n\nYes = Borderless Windowed\nNo = Fullscreen",
 				"Display Mode",
-				MB_YESNOCANCEL | MB_ICONQUESTION
+				MB_YESNOCANCEL | MB_ICONQUESTION | MB_SETFOREGROUND | MB_TOPMOST | MB_TASKMODAL
 			);
 
 			if (result == IDCANCEL)

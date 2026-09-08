@@ -987,16 +987,36 @@ void GameEngine::update()
 			VERIFY_CRC
 
 #if defined(GENERALS_ONLINE_HIGH_FPS_RENDER)
-			// NGMP_NOTE: Lock the shellmap to 30fps until we fix everything
-			if (TheNGMPGame != nullptr && TheGameLogic->isInGame() && !TheShell->isShellActive())
+			static Bool wasGeneralsOnlineMatch = FALSE;
+			static Bool savedUseFpsLimit = FALSE;
+			static Int savedFpsLimit = 0;
+			const Bool isGeneralsOnlineMatch = TheNGMPGame != nullptr
+				&& TheNGMPGame->isGameInProgress()
+				&& TheGameLogic->isInGame()
+				&& !TheShell->isShellActive();
+
+			if (isGeneralsOnlineMatch)
 			{
-				TheFramePacer->setFramesPerSecondLimit(NGMP_OnlineServicesManager::Settings.Graphics_GetFPSLimit());
-				TheWritableGlobalData->m_useFpsLimit = NGMP_OnlineServicesManager::Settings.Graphics_GetFPSLimit();
-			}
-			else
-			{
+				if (!wasGeneralsOnlineMatch)
+				{
+					savedUseFpsLimit = TheGlobalData->m_useFpsLimit;
+					savedFpsLimit = TheGlobalData->m_framesPerSecondLimit;
+				}
+
+				// Reborn: Enable GO's 60 Hz pacing only while an online match is active.
+				TheWritableGlobalData->m_useFpsLimit = TRUE;
+				TheWritableGlobalData->m_framesPerSecondLimit = GENERALS_ONLINE_HIGH_FPS_LIMIT;
 				TheFramePacer->setFramesPerSecondLimit(GENERALS_ONLINE_HIGH_FPS_LIMIT);
 			}
+			else if (wasGeneralsOnlineMatch)
+			{
+				// Reborn: Restore the user's original Reborn Omega frame pacing outside online matches.
+				TheWritableGlobalData->m_useFpsLimit = savedUseFpsLimit;
+				TheWritableGlobalData->m_framesPerSecondLimit = savedFpsLimit;
+				TheFramePacer->setFramesPerSecondLimit(savedFpsLimit);
+			}
+
+			wasGeneralsOnlineMatch = isGeneralsOnlineMatch;
 #endif
 			
 				TheRadar->UPDATE();

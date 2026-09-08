@@ -57,10 +57,7 @@ NGMPGame::NGMPGame()
 
 NGMPGame::~NGMPGame()
 {
-	// Reborn: Use the existing three-argument camera interface.
-    TheTacticalView->setDefaultView(DEG_TO_RADF(TheGlobalData->m_cameraPitch),
-        DEG_TO_RADF(TheGlobalData->m_cameraYaw),
-        1.0f);
+	// Reborn: GO must not alter the Reborn Omega camera when leaving an online game.
 }
 
 void NGMPGame::SyncWithLobby(LobbyEntry& lobby)
@@ -425,11 +422,6 @@ void NGMPGame::launchGame(void)
 	}
 	
 
-#if defined(GENERALS_ONLINE_HIGH_FPS_RENDER)
-	TheWritableGlobalData->m_horizontalScrollSpeedFactor = NGMP_OnlineServicesManager::Settings.Camera_MoveSpeedRatio();
-	TheWritableGlobalData->m_verticalScrollSpeedFactor = NGMP_OnlineServicesManager::Settings.Camera_MoveSpeedRatio();
-#endif
-
 	setGameInProgress(TRUE);
 
 	for (Int i = 0; i < MAX_SLOTS; ++i)
@@ -496,12 +488,6 @@ void NGMPGame::launchGame(void)
 		return;
 	}
 
-	// Reborn: Use the existing three-argument camera interface.
-    TheTacticalView->setDefaultView(DEG_TO_RADF(TheGlobalData->m_cameraPitch),
-        DEG_TO_RADF(TheGlobalData->m_cameraYaw),
-        1.0f);
-
-
 	// shutdown the top, but do not pop it off the stack
 //		TheShell->hideShell();
 	// setup the Global Data with the Map and Seed
@@ -510,22 +496,6 @@ void NGMPGame::launchGame(void)
 	// send a message to the logic for a new game
 	GameMessage* msg = TheMessageStream->appendMessage(GameMessage::MSG_NEW_GAME);
 	msg->appendIntegerArgument(GAME_INTERNET);
-
-#if defined(GENERALS_ONLINE_HIGH_FPS_RENDER)
-
-	if (NGMP_OnlineServicesManager::Settings.Graphics_LimitFramerate())
-	{
-		TheWritableGlobalData->m_framesPerSecondLimit = NGMP_OnlineServicesManager::Settings.Graphics_GetFPSLimit();
-		TheWritableGlobalData->m_useFpsLimit = true;
-	}
-	else
-	{
-		TheWritableGlobalData->m_framesPerSecondLimit = 30000; // game does this... it's not great
-		TheWritableGlobalData->m_useFpsLimit = false;
-	}
-	
-#endif
-	//TheWritableGlobalData->m_useFpsLimit = false;
 
 	// Set the random seed
 	InitRandom(getSeed());
