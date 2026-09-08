@@ -65,6 +65,7 @@ SlowDeathBehaviorModuleData::SlowDeathBehaviorModuleData()
 	m_sinkDelayVariance = 0;
 	m_destructionDelay = 0;
 	m_destructionDelayVariance = 0;
+	m_visionRetentionDuration = 0; // Reborn: Disabled by default to preserve existing object behavior.
 	m_destructionAltitude = -10;
 	m_maskOfLoadedEffects = 0; //assume no ocl, fx, or weapons.
 	m_flingForce = 0;
@@ -133,6 +134,7 @@ static void parseWeapon( INI* ini, void *instance, void * /*store*/, const void*
 		{ "SinkDelayVariance",								INI::parseDurationUnsignedInt,		nullptr, offsetof( SlowDeathBehaviorModuleData, m_sinkDelayVariance ) },
 		{ "DestructionDelay",									INI::parseDurationUnsignedInt,		nullptr, offsetof( SlowDeathBehaviorModuleData, m_destructionDelay ) },
 		{ "DestructionDelayVariance",					INI::parseDurationUnsignedInt,		nullptr, offsetof( SlowDeathBehaviorModuleData, m_destructionDelayVariance ) },
+		{ "VisionRetentionDuration",					INI::parseDurationUnsignedInt,		nullptr, offsetof( SlowDeathBehaviorModuleData, m_visionRetentionDuration ) }, // Reborn: Keep shroud vision for a configured portion of slow death.
 		{ "DestructionAltitude",							INI::parseReal,										nullptr, offsetof( SlowDeathBehaviorModuleData, m_destructionAltitude ) },
 		{ "FX",																parseFX,													nullptr, 0 },
 		{ "OCL",															parseOCL,													nullptr, 0 },
@@ -155,6 +157,7 @@ SlowDeathBehavior::SlowDeathBehavior( Thing *thing, const ModuleData* moduleData
 	m_sinkFrame = 0;
 	m_midpointFrame = 0;
 	m_destructionFrame = 0;
+	m_visionRetentionEndFrame = 0; // Reborn: No retained vision unless configured in INI.
 	m_acceleratedTimeScale = 1.0f;
 
 	if (getSlowDeathBehaviorModuleData()->m_probabilityModifier < 1)
@@ -269,6 +272,7 @@ void SlowDeathBehavior::beginSlowDeath(const DamageInfo *damageInfo)
 		}
 
 		UnsignedInt now = TheGameLogic->getFrame();
+		m_visionRetentionEndFrame = d->m_visionRetentionDuration;
 
 		if (d->m_flingForce > 0)
 		{
@@ -323,17 +327,30 @@ void SlowDeathBehavior::beginSlowDeath(const DamageInfo *damageInfo)
 				whenToWakeTime = m_destructionFrame;
 			if (whenToWakeTime > m_midpointFrame)
 				whenToWakeTime = m_midpointFrame;
+			if (m_visionRetentionEndFrame > 0 && whenToWakeTime > m_visionRetentionEndFrame)
+				whenToWakeTime = m_visionRetentionEndFrame; // Reborn: Wake when retained vision must be removed.
 			setWakeFrame(obj, UPDATE_SLEEP(whenToWakeTime));
 		}
 		m_sinkFrame += now;
 		m_destructionFrame += now;
 		m_midpointFrame += now;
+		if (m_visionRetentionEndFrame > 0)
+			m_visionRetentionEndFrame += now; // Reborn: Convert the configured duration to an absolute frame.
 
 		m_flags |= (1<<SLOW_DEATH_ACTIVATED);
 
 		doPhaseStuff(SDPHASE_INITIAL);
 
 	}
+}
+
+//-------------------------------------------------------------------------------------------------
+Bool SlowDeathBehavior::shouldRetainVisionWhileDying() const
+{
+	// Reborn: Retain vision only for the selected slow-death module and only until its configured deadline.
+	return isSlowDeathActivated()
+		&& m_visionRetentionEndFrame > 0
+		&& TheGameLogic->getFrame() < m_visionRetentionEndFrame;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -411,6 +428,14 @@ UpdateSleepTime SlowDeathBehavior::update()
 	};
 
 	UnsignedInt now = TheGameLogic->getFrame();
+
+	if (m_visionRetentionEndFrame > 0
+		&& now >= m_visionRetentionEndFrame
+		&& (m_flags & (1<<VISION_RETENTION_EXPIRED)) == 0)
+	{
+		m_flags |= (1<<VISION_RETENTION_EXPIRED);
+		obj->handlePartitionCellMaintenance(); // Reborn: Remove the retained shroud reveal exactly when its duration expires.
+	}
 
 
 	if ((m_flags & (1<<FLUNG_INTO_AIR)) != 0)
@@ -551,7 +576,7 @@ void SlowDeathBehavior::xfer( Xfer *xfer )
 {
 
 	// version
-	XferVersion currentVersion = 1;
+	XferVersion currentVersion = 2; // Reborn: Version 2 stores the vision-retention deadline.
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
@@ -572,6 +597,11 @@ void SlowDeathBehavior::xfer( Xfer *xfer )
 
 	// flags
 	xfer->xferUnsignedInt( &m_flags );
+
+	if (version >= 2)
+		xfer->xferUnsignedInt( &m_visionRetentionEndFrame );
+	else
+		m_visionRetentionEndFrame = 0; // Reborn: Old save games have no retained-vision state.
 
 }
 

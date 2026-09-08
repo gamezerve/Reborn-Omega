@@ -80,6 +80,7 @@ public:
 	Real							m_destructionAltitude;
 	UnsignedInt				m_destructionDelay;
 	UnsignedInt				m_destructionDelayVariance;
+	UnsignedInt				m_visionRetentionDuration;	///< Reborn: Duration that this dying object continues to reveal shroud.
 	FXListVec					m_fx[SD_PHASE_COUNT];
 	OCLVec						m_ocls[SD_PHASE_COUNT];
 	WeaponTemplateVec	m_weapons[SD_PHASE_COUNT];
@@ -117,6 +118,7 @@ public:
 	virtual void beginSlowDeath( const DamageInfo *damageInfo ) = 0;
 	virtual Int getProbabilityModifier( const DamageInfo *damageInfo ) const = 0;
 	virtual Bool isDieApplicable(const DamageInfo *damageInfo) const = 0;
+	virtual Bool shouldRetainVisionWhileDying() const = 0; // Reborn: Allow configured slow deaths to keep revealing shroud temporarily.
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -152,6 +154,7 @@ public:
 	virtual void beginSlowDeath( const DamageInfo *damageInfo ) override;
 	virtual Int getProbabilityModifier( const DamageInfo *damageInfo ) const override;
 	virtual Bool isDieApplicable(const DamageInfo *damageInfo) const override { return getSlowDeathBehaviorModuleData()->m_dieMuxData.isDieApplicable(getObject(), damageInfo); }
+	virtual Bool shouldRetainVisionWhileDying() const override; // Reborn: Report whether the configured vision retention period is still active.
 
 protected:
 
@@ -166,12 +169,14 @@ private:
 		SLOW_DEATH_ACTIVATED,
 		MIDPOINT_EXECUTED,
 		FLUNG_INTO_AIR,
-		BOUNCED
+		BOUNCED,
+		VISION_RETENTION_EXPIRED // Reborn: Ensure shroud maintenance runs only once when retained vision expires.
 	};
 
 	UnsignedInt m_sinkFrame;							///< Frame to be sunken into the ground on
 	UnsignedInt m_midpointFrame;					///< The midpoint is between .25 through life and .75 through life (eg)
 	UnsignedInt m_destructionFrame;
+	UnsignedInt m_visionRetentionEndFrame;	///< Reborn: Absolute frame at which this slow death stops revealing shroud.
 	Real				m_acceleratedTimeScale;		///<used to speedup deaths when needed to improve game performance.
 	UnsignedInt	m_flags;
 };

@@ -88,6 +88,7 @@
 #include "GameLogic/Module/RadarUpgrade.h"
 #include "GameLogic/Module/RebuildHoleBehavior.h"
 #include "GameLogic/Module/SpawnBehavior.h"
+#include "GameLogic/Module/SlowDeathBehavior.h" // Reborn: Query temporary vision retention during slow death.
 #include "GameLogic/Module/SpecialPowerModule.h"
 #include "GameLogic/Module/SpecialAbilityUpdate.h"
 #include "GameLogic/Module/StatusDamageHelper.h"
@@ -5058,8 +5059,23 @@ void Object::look()
 
 
 
+		Bool retainVisionWhileDying = FALSE;
+		if (isEffectivelyDead() && !isDestroyed())
+		{
+			// Reborn: A selected SlowDeathBehavior may continue revealing shroud for a configured duration.
+			for (BehaviorModule** behavior = m_behaviors; *behavior; ++behavior)
+			{
+				SlowDeathBehaviorInterface* slowDeath = (*behavior)->getSlowDeathBehaviorInterface();
+				if (slowDeath && slowDeath->shouldRetainVisionWhileDying())
+				{
+					retainVisionWhileDying = TRUE;
+					break;
+				}
+			}
+		}
+
 		// Some things get Destroyed directly without hitting Death.
-		if( !isDestroyed() && !isEffectivelyDead() )
+		if( !isDestroyed() && (!isEffectivelyDead() || retainVisionWhileDying) )
 		{
 
       ContainModuleInterface * contain = (getContainedBy() ? getContainedBy()->getContain() : nullptr);
