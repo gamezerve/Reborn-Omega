@@ -855,9 +855,6 @@ void NGMP_OnlineServicesManager::Init()
 {
 	g_MainThreadID = std::this_thread::get_id();
 
-	if (TheGameSpyConfig == nullptr)
-		TheGameSpyConfig = GameSpyConfigInterface::create("");
-
 	// initialize child classes, these need the platform handle
 	m_pAuthInterface = new NGMP_OnlineServices_AuthInterface();
 	m_pLobbyInterface = new NGMP_OnlineServices_LobbyInterface();

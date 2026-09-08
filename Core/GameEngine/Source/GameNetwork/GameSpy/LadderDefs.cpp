@@ -252,7 +252,13 @@ LadderList::LadderList()
 {
 	//Int profile = TheGameSpyInfo->getLocalProfileID();
 
-	AsciiString rawMotd = TheGameSpyConfig->getLeftoverConfig();
+	//AsciiString rawMotd = TheGameSpyConfig->getLeftoverConfig();
+
+	AsciiString rawMotd;
+
+	if (TheGameSpyConfig)
+		rawMotd = TheGameSpyConfig->getLeftoverConfig();
+
 	AsciiString line;
 	Bool inLadders = FALSE;
 	Bool inSpecialLadders = FALSE;

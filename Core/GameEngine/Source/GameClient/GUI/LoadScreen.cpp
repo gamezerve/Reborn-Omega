@@ -86,6 +86,8 @@
 #include "GameLogic/GameLogic.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_Init.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_StatsInterface.h"
 #include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/RankPointValue.h"
 
@@ -1770,11 +1772,37 @@ GameSlot *lSlot = game->getSlot(game->getLocalSlotNum());
 		m_playerNames[netSlot]->winSetEnabledTextColors(houseColor, m_playerNames[netSlot]->winGetEnabledTextBorderColor());
 
 		// Get the stats for the player
+		//PSPlayerStats stats = TheGameSpyPSMessageQueue->findPlayerStatsByID(slot->getProfileID());
+#if defined(GENERALS_ONLINE)
+		PSPlayerStats stats;
+		NGMP_OnlineServices_StatsInterface* pStatsInterface =
+			NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_StatsInterface>();
+
+		if (pStatsInterface)
+		{
+			pStatsInterface->findPlayerStatsByID(
+				slot->getProfileID(),
+				[&stats](bool bSuccess, PSPlayerStats result)
+				{
+					if (bSuccess)
+						stats = result;
+				},
+				EStatsRequestPolicy::CACHED_ONLY);
+		}
+#else
 		PSPlayerStats stats = TheGameSpyPSMessageQueue->findPlayerStatsByID(slot->getProfileID());
+#endif
+
 		DEBUG_LOG(("LoadScreen - populating info for %ls(%d) - stats returned id %d",
 			slot->getName().str(), slot->getProfileID(), stats.id));
 
+		//Bool isPreorder = TheGameSpyInfo->didPlayerPreorder(stats.id);
+#if defined(GENERALS_ONLINE)
+		Bool isPreorder = FALSE;
+#else
 		Bool isPreorder = TheGameSpyInfo->didPlayerPreorder(stats.id);
+#endif
+
 		Int rankPoints = CalculateRank(stats);
 		Int favSide = GetFavoriteSide(stats);
 		const Image *preorderImg = TheMappedImageCollection->findImageByName("OfficersClubsmall");

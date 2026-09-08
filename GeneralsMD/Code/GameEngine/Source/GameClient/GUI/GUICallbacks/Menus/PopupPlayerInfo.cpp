@@ -61,7 +61,11 @@
 #include "WWDownload/Registry.h"
 
 #if defined(GENERALS_ONLINE)
+class ScoreKeeper;
 #include "GameNetwork/GeneralsOnline/NGMP_include.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_Auth.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_Init.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_StatsInterface.h"
 #endif
 
 
@@ -178,10 +182,11 @@ Int GetAdditionalDisconnectsFromUserFile(Int playerID)
 {
 	Int retval = getTotalDisconnectsFromFile(playerID);
 
-	if (playerID == 0) {
+	if (playerID == 0)
 		return 0;
-	}
 
+	// Reborn: Generals Online stores disconnect data in its stats service; do not consult legacy GameSpy state.
+#if !defined(GENERALS_ONLINE)
 	if (TheGameSpyInfo->getAdditionalDisconnects() > 0 && !retval)
 	{
 		DEBUG_LOG(("Clearing additional disconnects"));
@@ -189,9 +194,8 @@ Int GetAdditionalDisconnectsFromUserFile(Int playerID)
 	}
 
 	if (TheGameSpyInfo->getAdditionalDisconnects() != -1)
-	{
 		return TheGameSpyInfo->getAdditionalDisconnects();
-	}
+#endif
 
 	return retval;
 }
@@ -243,16 +247,17 @@ void GetAdditionalDisconnectsFromUserFile(PSPlayerStats *stats)
 // default values
 RankPoints::RankPoints()
 {
-	m_ranks[RANK_PRIVATE]							= 0;
-	m_ranks[RANK_CORPORAL]						= TheGameSpyConfig->getPointsForRank(RANK_CORPORAL); // 5
-	m_ranks[RANK_SERGEANT]						= TheGameSpyConfig->getPointsForRank(RANK_SERGEANT); // 10
-	m_ranks[RANK_LIEUTENANT]					= TheGameSpyConfig->getPointsForRank(RANK_LIEUTENANT); // 20
-	m_ranks[RANK_CAPTAIN]							= TheGameSpyConfig->getPointsForRank(RANK_CAPTAIN); // 50
-	m_ranks[RANK_MAJOR]								= TheGameSpyConfig->getPointsForRank(RANK_MAJOR); // 100
-	m_ranks[RANK_COLONEL]							= TheGameSpyConfig->getPointsForRank(RANK_COLONEL); // 200
-	m_ranks[RANK_BRIGADIER_GENERAL]		= TheGameSpyConfig->getPointsForRank(RANK_BRIGADIER_GENERAL); // 500
-	m_ranks[RANK_GENERAL]							= TheGameSpyConfig->getPointsForRank(RANK_GENERAL); // 1000
-	m_ranks[RANK_COMMANDER_IN_CHIEF]	= TheGameSpyConfig->getPointsForRank(RANK_COMMANDER_IN_CHIEF); // 2000
+	// Reborn: GO overwrites these defaults from the stats service after initialization.
+	m_ranks[RANK_PRIVATE] = 0;
+	m_ranks[RANK_CORPORAL] = 5;
+	m_ranks[RANK_SERGEANT] = 10;
+	m_ranks[RANK_LIEUTENANT] = 20;
+	m_ranks[RANK_CAPTAIN] = 50;
+	m_ranks[RANK_MAJOR] = 100;
+	m_ranks[RANK_COLONEL] = 200;
+	m_ranks[RANK_BRIGADIER_GENERAL] = 500;
+	m_ranks[RANK_GENERAL] = 1000;
+	m_ranks[RANK_COMMANDER_IN_CHIEF] = 2000;
 
 	m_winMultiplier = 3.0f;
 	m_lostMultiplier = 0.0f;
@@ -730,7 +735,13 @@ static void populateBattleHonors(const PSPlayerStats& stats, Int battleHonors, I
 	}
 	*/
 
-	if (TheGameSpyInfo->didPlayerPreorder(stats.id))
+	// Reborn: GO currently treats the legacy preorder honor as enabled for service-backed profiles.
+#if defined(GENERALS_ONLINE)
+	Bool didPreorder = TRUE;
+#else
+	Bool didPreorder = TheGameSpyInfo->didPlayerPreorder(stats.id);
+#endif
+	if (didPreorder)
 	{
 		InsertBattleHonor(list, TheMappedImageCollection->findImageByName("OfficersClub"), TRUE,
 			BATTLE_HONOR_OFFICERSCLUB, row, column);
@@ -820,14 +831,17 @@ static GameWindow* findWindow(GameWindow *parent, AsciiString baseWindow, AsciiS
 
 void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 {
-	//Int lookupID = TheGameSpyInfo->getLocalProfileID();
-	//if(parentWindowName == "PopupPlayerInfo.wnd")
-	//{
-	//	lookupID = lookAtPlayerID;
-	//	if (lookAtPlayerID <= 0 || !parent)
-	//		return;
-	//}
+#if defined(GENERALS_ONLINE)
+	NGMP_OnlineServices_AuthInterface *authInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+	NGMP_OnlineServices_StatsInterface *statsInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_StatsInterface>();
+	if (authInterface == nullptr || statsInterface == nullptr)
+		return;
+
+	int64_t localID = authInterface->GetUserID();
+	int64_t lookupID = localID;
+#else
 	Int lookupID = 0;
+#endif
 
 	if (parentWindowName == "PopupPlayerInfo.wnd")
 	{
@@ -835,6 +849,7 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 		if (lookAtPlayerID <= 0 || !parent)
 			return;
 	}
+#if !defined(GENERALS_ONLINE)
 	else
 	{
 		if (!TheGameSpyInfo)
@@ -845,7 +860,6 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 
 	if (!TheGameSpyPSMessageQueue)
 		return;
-
 
 	PSPlayerStats stats = TheGameSpyPSMessageQueue->findPlayerStatsByID(lookupID);
 
@@ -858,6 +872,13 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 
 		weHaveStats = TRUE;
 	}
+#else
+	// Reborn: Fetch player information through the same asynchronous GO stats path used by the official client.
+	statsInterface->findPlayerStatsByID(lookupID, [=](Bool weHaveStats, PSPlayerStats stats)
+	{
+		if (!weHaveStats)
+			return;
+#endif
 
 	Int currentRank = 0;
 	Int rankPoints = CalculateRank(stats);
@@ -1130,6 +1151,9 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 	{
 		populateBattleHonors(stats, stats.battleHonors,stats.gamesInRowWithLastGeneral,stats.lastGeneral,stats.challengeMedals, win);
 	}
+#if defined(GENERALS_ONLINE)
+	}, EStatsRequestPolicy::BYPASS_CACHE_FORCE_REQUEST);
+#endif
 }
 
 
@@ -1296,6 +1320,12 @@ void HandlePersistentStorageResponses()
 //-------------------------------------------------------------------------------------------------
 void GameSpyPlayerInfoOverlayInit( WindowLayout *layout, void *userData )
 {
+#if defined(GENERALS_ONLINE)
+	NGMP_OnlineServices_AuthInterface *authInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+	if (authInterface == nullptr)
+		return;
+#endif
+
 	parentID = TheNameKeyGenerator->nameToKey( "PopupPlayerInfo.wnd:PopupParent" );
 	buttonCloseID = TheNameKeyGenerator->nameToKey( "PopupPlayerInfo.wnd:ButtonClose" );
 	buttonBuddiesID = TheNameKeyGenerator->nameToKey( "PopupPlayerInfo.wnd:ButtonCommunicator" );
@@ -1331,13 +1361,25 @@ void GameSpyPlayerInfoOverlayInit( WindowLayout *layout, void *userData )
 	PopulatePlayerInfoWindows("PopupPlayerInfo.wnd");
 
 	// we're on the myinfo screen
-	if(lookAtPlayerID == TheGameSpyInfo->getLocalProfileID())
+#if defined(GENERALS_ONLINE)
+	if (lookAtPlayerID == authInterface->GetUserID())
+#else
+	if (lookAtPlayerID == TheGameSpyInfo->getLocalProfileID())
+#endif
 	{
 		//buttonbuttonOptions->winHide(FALSE);
+#if defined(GENERALS_ONLINE)
+		buttonSetLocale->winHide(TRUE);
+		buttonDeleteAccount->winHide(FALSE);
+		buttonDeleteAccount->winSetText(UnicodeString(L"LOGOUT"));
+		checkBoxAsianFont->winHide(TRUE);
+		checkBoxNonAsianFont->winHide(TRUE);
+#else
 		buttonSetLocale->winHide(FALSE);
 		buttonDeleteAccount->winHide(TRUE); // set back to false when we have this worked out.
 		checkBoxAsianFont->winHide(FALSE);
 		checkBoxNonAsianFont->winHide(FALSE);
+#endif
 	}
 	else
 	{
@@ -1506,7 +1548,11 @@ WindowMsgHandledType GameSpyPlayerInfoOverlaySystem( GameWindow *window, Unsigne
 				{
 					RefreshGameListBoxes();
 					GameSpyCloseOverlay( GSOVERLAY_PLAYERINFO );
+#if defined(GENERALS_ONLINE)
+					MessageBoxYesNo(UnicodeString(L"Log Out"), UnicodeString(L"Are you sure you want to log out?"), messageBoxYes, nullptr);
+#else
 					MessageBoxYesNo(TheGameText->fetch("GUI:DeleteAccount"), TheGameText->fetch("GUI:AreYouSureDeleteAccount"),messageBoxYes, nullptr);
+#endif
 				}
 				else if (controlID == checkBoxAsianFontID)
 				{
@@ -1559,9 +1605,21 @@ WindowMsgHandledType GameSpyPlayerInfoOverlaySystem( GameWindow *window, Unsigne
 
 static void messageBoxYes()
 {
+#if defined(GENERALS_ONLINE)
+	// Reborn: Use GO account logout and its normal full-teardown flow.
+	NGMP_OnlineServices_AuthInterface *authInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+	if (authInterface != nullptr)
+	{
+		authInterface->LogoutOfMyAccount();
+		if (NGMP_OnlineServicesManager::GetInstance() != nullptr)
+			NGMP_OnlineServicesManager::GetInstance()->SetPendingFullTeardown(EGOTearDownReason::USER_LOGOUT);
+	}
+	RefreshGameListBoxes();
+	GameSpyCloseOverlay(GSOVERLAY_PLAYERINFO);
+#else
 	BuddyRequest breq;
 	breq.buddyRequestType = BuddyRequest::BUDDYREQUEST_DELETEACCT;
 	TheGameSpyBuddyMessageQueue->addRequest( breq );
 	TheGameSpyInfo->setLocalProfileID(0);
-
+#endif
 }

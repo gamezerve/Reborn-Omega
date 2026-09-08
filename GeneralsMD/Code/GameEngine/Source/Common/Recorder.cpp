@@ -43,6 +43,7 @@
 #include "GameNetwork/LANAPICallbacks.h"
 #include "GameNetwork/GameMessageParser.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.h"
 #include "GameNetwork/networkutil.h"
 #include "GameLogic/GameLogic.h"
 #include "Common/RandomValue.h"
@@ -612,8 +613,13 @@ void RecorderClass::startRecording(GameDifficulty diff, Int originalGameMode, In
 		}
 		else
 		{
+#if defined(GENERALS_ONLINE)
+			theSlotList = GameInfoToAsciiString(TheNGMPGame);
+			localIndex = TheNGMPGame->getLocalSlotNum();
+#else
 			theSlotList = GameInfoToAsciiString(TheGameSpyGame);
 			localIndex = TheGameSpyGame->getLocalSlotNum();
+#endif
 		}
 	}
 	else
@@ -1604,7 +1610,11 @@ AsciiString RecorderClass::getLastReplayFileName()
 		if (TheLAN)
 			game = TheLAN->GetMyGame();
 		else if (TheGameSpyInfo)
+#if defined(GENERALS_ONLINE)
+			game = TheNGMPGame;
+#else
 			game = TheGameSpyGame;
+#endif
 		if (game)
 		{
 			AsciiString players;

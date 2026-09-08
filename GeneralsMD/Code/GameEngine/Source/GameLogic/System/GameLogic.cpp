@@ -110,6 +110,7 @@
 #include "GameNetwork/LANAPICallbacks.h"
 #include "GameNetwork/NetworkInterface.h"
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
+#include "GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.h"
 
 #include <rts/profile.h>
 
@@ -1244,8 +1245,13 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 		}
 		else
 		{
+#if defined(GENERALS_ONLINE)
+			DEBUG_LOG(("Starting Generals Online game"));
+			TheGameInfo = TheNGMPGame;
+#else
 			DEBUG_LOG(("Starting gamespy game"));
-			TheGameInfo = TheGameSpyGame;	/// @todo: MDC add back in after demo
+			TheGameInfo = TheGameSpyGame;
+#endif
 		}
 	}
 	else
