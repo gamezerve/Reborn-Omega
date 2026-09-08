@@ -110,6 +110,32 @@ target_sources(z_generals PRIVATE
     WinMain.h
 )
 
+if(WIN32 AND RTS_BUILD_OPTION_REBORN)
+    set(GENERALS_ONLINE_VENDOR_DIR
+        "${CMAKE_CURRENT_SOURCE_DIR}/../GameEngine/Source/GameNetwork/GeneralsOnline/Vendor")
+
+    # Reborn: Deploy the 32-bit GO transport and HTTP runtime beside the game executable.
+    foreach(GENERALS_ONLINE_RUNTIME IN ITEMS
+        "DiscordRPC/discord-rpc.dll"
+        "libcurl/libcurl.dll"
+        "libcurl/zlib1.dll"
+        "ValveNetworkingSockets/GameNetworkingSockets.dll"
+        "ValveNetworkingSockets/abseil_dll.dll"
+        "ValveNetworkingSockets/libprotobuf.dll"
+        "ValveNetworkingSockets/libcrypto-3.dll"
+        "ValveNetworkingSockets/libssl-3.dll")
+        add_custom_command(TARGET z_generals POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                "${GENERALS_ONLINE_VENDOR_DIR}/${GENERALS_ONLINE_RUNTIME}"
+                "$<TARGET_FILE_DIR:z_generals>")
+    endforeach()
+
+    add_custom_command(TARGET z_generals POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${GENERALS_ONLINE_VENDOR_DIR}/DiscordRPC/LICENSE.txt"
+            "$<TARGET_FILE_DIR:z_generals>/discord-rpc-LICENSE.txt")
+endif()
+
 # RC files optional for MinGW builds
 # Icon: LoadIcon() handles missing resource gracefully (uses default system icon)
 # Manifest: DPI awareness metadata (nice to have but not essential)

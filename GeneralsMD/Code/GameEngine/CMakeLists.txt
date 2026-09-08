@@ -1139,6 +1139,52 @@ set(GAMEENGINE_SRC
 #    Source/GameNetwork/User.cpp
 #    Source/GameNetwork/WOLBrowser/WebBrowser.cpp
 #    Source/Precompiled/PreRTS.cpp
+
+    # Reborn: Generals Online service, lobby and peer-to-peer transport layer.
+    Include/GameNetwork/GeneralsOnline/json.hpp
+    Include/GameNetwork/GeneralsOnline/DiscordRichPresence.h
+    Include/GameNetwork/GeneralsOnline/Vendor/DiscordRPC/discord_rpc.h
+    Include/GameNetwork/GeneralsOnline/NetworkBitstream.h
+    Include/GameNetwork/GeneralsOnline/NetworkMesh.h
+    Include/GameNetwork/GeneralsOnline/NetworkPacket.h
+    Include/GameNetwork/GeneralsOnline/NextGenMP_defines.h
+    Include/GameNetwork/GeneralsOnline/NGMPGame.h
+    Include/GameNetwork/GeneralsOnline/NGMP_include.h
+    Include/GameNetwork/GeneralsOnline/NGMP_interfaces.h
+    Include/GameNetwork/GeneralsOnline/NGMP_types.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_Auth.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_Init.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_Moderation.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_RoomsInterface.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_StatsInterface.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_SocialInterface.h
+    Include/GameNetwork/GeneralsOnline/OnlineServices_MatchmakingInterface.h
+    Include/GameNetwork/GeneralsOnline/GeneralsOnline_Settings.h
+    Include/GameNetwork/GeneralsOnline/HTTP/HTTPManager.h
+    Include/GameNetwork/GeneralsOnline/HTTP/HTTPRequest.h
+    Include/GameNetwork/GeneralsOnline/NextGenTransport.h
+    Include/GameNetwork/GeneralsOnline/PluginInterfaces.h
+    Source/GameNetwork/GeneralsOnline/DiscordRichPresence.cpp
+    Source/GameNetwork/GeneralsOnline/NGMP_Helpers.cpp
+    Source/GameNetwork/GeneralsOnline/NGMPGame.cpp
+    Source/GameNetwork/GeneralsOnline/GeneralsOnline_Settings.cpp
+    Source/GameNetwork/GeneralsOnline/HTTP/HTTPManager.cpp
+    Source/GameNetwork/GeneralsOnline/HTTP/HTTPRequest.cpp
+    Source/GameNetwork/GeneralsOnline/NetworkMesh.cpp
+    Source/GameNetwork/GeneralsOnline/OnlineServices_Init.cpp
+    Source/GameNetwork/GeneralsOnline/OnlineServices_Auth.cpp
+    Source/GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.cpp
+    Source/GameNetwork/GeneralsOnline/OnlineServices_Moderation.cpp
+    Source/GameNetwork/GeneralsOnline/OnlineServices_RoomsInterface.cpp
+    Source/GameNetwork/GeneralsOnline/OnlineServices_StatsInterface.cpp
+    Source/GameNetwork/GeneralsOnline/OnlineServices_SocialInterface.cpp
+    Source/GameNetwork/GeneralsOnline/OnlineServices_MatchmakingInterface.cpp
+    Source/GameNetwork/GeneralsOnline/NextGenTransport.cpp
+    Source/GameNetwork/GeneralsOnline/NetworkBitstream.cpp
+    Source/GameNetwork/GeneralsOnline/PluginInterfaces.cpp
+    Include/GameNetwork/UDPTransport.h
+    Source/GameNetwork/UDPTransport.cpp
 )
 
 if(RTS_GAMEMEMORY_ENABLE)
@@ -1164,6 +1210,11 @@ target_sources(z_gameengine PRIVATE ${GAMEENGINE_SRC})
 
 target_include_directories(z_gameengine PUBLIC
     Include
+    Include/GameNetwork/GeneralsOnline/Vendor
+)
+
+target_link_directories(z_gameengine PUBLIC
+    Source/GameNetwork/GeneralsOnline/Vendor
 )
 
 target_include_directories(z_gameengine PRIVATE
@@ -1186,3 +1237,8 @@ target_precompile_headers(z_gameengine PRIVATE
     [["Utility/CppMacros.h"]] # Must be first, to be removed when abandoning VC6
 #    Include/Precompiled/PreRTS.h
 )
+
+# Reborn: Enable the Generals Online replacement only for Reborn builds.
+if(RTS_BUILD_OPTION_REBORN)
+    target_compile_definitions(z_gameengine PUBLIC GENERALS_ONLINE _DISABLE_CONSTEXPR_MUTEX_CONSTRUCTOR)
+endif()

@@ -236,6 +236,11 @@ public:
 	void initTimeOutValues();
 	UnsignedInt getObjectCount();
 
+#if defined(GENERALS_ONLINE)
+	// Reborn: Let the GO lobby defer in-match actions while the load screen is active.
+	bool IsLoadScreenActive() const { return m_loadScreen != nullptr; }
+#endif
+
 	Int getRankLevelLimit() const { return m_rankLevelLimit; }
 	void setRankLevelLimit(Int limit)
 	{

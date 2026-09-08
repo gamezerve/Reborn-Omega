@@ -74,7 +74,7 @@ struct ConnectionMessage
 {
 	Int id;
 	NetMessageFlags flags;
-	UnsignedByte data[MAX_NETWORK_MESSAGE_LEN];
+	UnsignedByte data[MAX_MESSAGE_LEN];
 	time_t lastSendTime;
 	Int retries;
 	Int length;
@@ -161,10 +161,20 @@ public:
 	virtual Int getAverageFPS() override { return m_conMgr->getAverageFPS(); }
 	virtual Int getSlotAverageFPS(Int slot) override;
 
+#if defined(GENERALS_ONLINE)
+	// Reborn: Expose the latency and connection state required by the GO peer mesh.
+	virtual void SeedLatencyData(int highestLatency) override;
+	virtual bool IsSlugging() override { return m_didSelfSlug; }
+	virtual ConnectionManager* GetConnectionManager() override { return m_conMgr; }
+#endif
+
 	virtual void attachTransport(Transport *transport) override;
 	virtual void initTransport() override;
 
 	virtual void setSawCRCMismatch() override;
+#if defined(GENERALS_ONLINE)
+	virtual void setSawCRCMismatch(UnicodeString& strMismatchDetails) override;
+#endif
 	virtual Bool sawCRCMismatch() override { return m_sawCRCMismatch; }
 	virtual Bool isPlayerConnected( Int playerID ) override;
 
@@ -393,6 +403,20 @@ void Network::setSawCRCMismatch()
 		DEBUG_LOG(("------ End Dump ------"));
 	}
 }
+
+#if defined(GENERALS_ONLINE)
+void Network::SeedLatencyData(int highestLatency)
+{
+	// Reborn: Seed the original connection metrics from GO's measured peer latency.
+	m_conMgr->SeedLatencyData(highestLatency);
+}
+
+void Network::setSawCRCMismatch(UnicodeString& strMismatchDetails)
+{
+	// Reborn: Preserve the existing CRC mismatch shutdown path for custom clients.
+	setSawCRCMismatch();
+}
+#endif
 
 /**
  * Take a user list and build the connection queues and player lists and stuff like that.

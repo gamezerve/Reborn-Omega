@@ -30,6 +30,7 @@
 #include "Common/GameState.h"
 #include "Common/Registry.h"
 #include "GameNetwork/LANAPI.h"
+#include "GameNetwork/UDPTransport.h"
 #include "GameNetwork/networkutil.h"
 #include "Common/GlobalData.h"
 #include "Common/RandomValue.h"
@@ -85,7 +86,8 @@ LANAPI::LANAPI() : m_transport(nullptr)
 	m_directConnectRemoteIP = 0;
 	m_actionTimeout = 5000; // ms
 	m_lastUpdate = 0;
-	m_transport = new Transport;
+	// Reborn: LAN keeps the legacy UDP transport while GO uses its peer transport online.
+	m_transport = new UDPTransport;
 	m_isActive = TRUE;
 }
 

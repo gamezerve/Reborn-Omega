@@ -87,6 +87,12 @@ GameWindow *QuitMessageBoxYesNo(UnicodeString titleString,UnicodeString bodyStri
 	return TheWindowManager->gogoMessageBox(-1,-1,-1,-1,MSG_BOX_NO | MSG_BOX_YES , titleString, bodyString, yesCallback, noCallback, nullptr, nullptr, TRUE);
 }
 
+GameWindow* MessageBoxNoButtons(UnicodeString titleString, UnicodeString bodyString, bool bShowLogo)
+{
+	// Reborn: Zero means no message-box buttons in the existing window manager API.
+	return TheWindowManager->gogoMessageBox(-1, -1, -1, -1, 0, titleString, bodyString, nullptr, nullptr, nullptr, nullptr, bShowLogo);
+}
+
 
 GameWindow *MessageBoxYesNoCancel(UnicodeString titleString,UnicodeString bodyString, GameWinMsgBoxFunc yesCallback, GameWinMsgBoxFunc noCallback, GameWinMsgBoxFunc cancelCallback)///< convenience function for displaying a Message box with Yes,No and Cancel buttons
 {

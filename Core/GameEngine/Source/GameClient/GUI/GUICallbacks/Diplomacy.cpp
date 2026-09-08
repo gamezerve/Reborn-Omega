@@ -92,7 +92,12 @@ static AnimateWindowManager *theAnimateWindowManager = nullptr;
 WindowMsgHandledType BuddyControlSystem( GameWindow *window, UnsignedInt msg,
 														 WindowMsgData mData1, WindowMsgData mData2);
 void InitBuddyControls(Int type);
+#if defined(GENERALS_ONLINE)
+// Reborn: Match the GO social overlay refresh callback signature.
+void updateBuddyInfo(bool bIsAutoRefresh = false, bool bUseCache = false);
+#else
 void updateBuddyInfo();
+#endif
 
 static AsciiString s_diplomacyWndPrefix = "Diplomacy.wnd"; // Reborn
 
