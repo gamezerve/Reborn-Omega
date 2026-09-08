@@ -341,6 +341,15 @@ $RebornOmegaDataDir = "$Target\RebornOmegaData"
 
 New-Item -ItemType Directory -Force -Path $RebornOmegaDataDir | Out-Null
 
+# Reborn: Copy the private GO runtime from the build output into RebornOmegaData.
+$GeneralsOnlineRuntimeDir = Join-Path $ReleaseDir "RebornOmegaData"
+if (!(Test-Path $GeneralsOnlineRuntimeDir))
+{
+    throw "Generals Online runtime directory not found: $GeneralsOnlineRuntimeDir"
+}
+
+Copy-Item "$GeneralsOnlineRuntimeDir\*.dll" $RebornOmegaDataDir -Force
+
 Write-Host "Moving files into RebornOmegaData..."
 
 Get-ChildItem $Target | Where-Object {

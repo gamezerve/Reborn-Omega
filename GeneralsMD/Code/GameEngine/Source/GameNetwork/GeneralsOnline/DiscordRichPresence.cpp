@@ -115,7 +115,9 @@ bool GeneralsOnlineDiscordRPC::Initialize() {
   }
 
   std::filesystem::path libraryPath(executablePath);
-  libraryPath.replace_filename("discord-rpc.dll");
+  // Reborn: Keep Discord RPC isolated from the retail Generals Online runtime beside the executable.
+  libraryPath.replace_filename("RebornOmegaData");
+  libraryPath /= "discord-rpc.dll";
 
   HMODULE module = LoadLibraryA(libraryPath.string().c_str());
   if (module == nullptr) {

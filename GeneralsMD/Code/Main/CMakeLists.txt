@@ -97,6 +97,15 @@ file(WRITE ${CMAKE_BINARY_DIR}/BuildVersion.h
 
 if(MSVC)
     target_link_options(z_generals PRIVATE "/NODEFAULTLIB:libci.lib")
+
+    if(RTS_BUILD_OPTION_REBORN)
+        # Reborn: Load the direct GO imports through the isolated RebornOmegaData delay-load hook.
+        target_link_options(z_generals PRIVATE
+            "/DELAYLOAD:GameNetworkingSockets.dll"
+            "/DELAYLOAD:libcurl.dll")
+        target_link_libraries(z_generals PRIVATE delayimp)
+        target_sources(z_generals PRIVATE RebornOmegaDllLoad.cpp)
+    endif()
 endif()
 
 target_include_directories(z_generals PRIVATE
@@ -114,7 +123,11 @@ if(WIN32 AND RTS_BUILD_OPTION_REBORN)
     set(GENERALS_ONLINE_VENDOR_DIR
         "${CMAKE_CURRENT_SOURCE_DIR}/../GameEngine/Source/GameNetwork/GeneralsOnline/Vendor")
 
-    # Reborn: Deploy the 32-bit GO transport and HTTP runtime beside the game executable.
+    # Reborn: Keep the private GO transport and HTTP runtime under RebornOmegaData.
+    add_custom_command(TARGET z_generals POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory
+            "$<TARGET_FILE_DIR:z_generals>/RebornOmegaData")
+
     foreach(GENERALS_ONLINE_RUNTIME IN ITEMS
         "DiscordRPC/discord-rpc.dll"
         "libcurl/libcurl.dll"
@@ -127,13 +140,14 @@ if(WIN32 AND RTS_BUILD_OPTION_REBORN)
         add_custom_command(TARGET z_generals POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 "${GENERALS_ONLINE_VENDOR_DIR}/${GENERALS_ONLINE_RUNTIME}"
-                "$<TARGET_FILE_DIR:z_generals>")
+                "$<TARGET_FILE_DIR:z_generals>/RebornOmegaData")
+
     endforeach()
 
     add_custom_command(TARGET z_generals POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${GENERALS_ONLINE_VENDOR_DIR}/DiscordRPC/LICENSE.txt"
-            "$<TARGET_FILE_DIR:z_generals>/discord-rpc-LICENSE.txt")
+            "$<TARGET_FILE_DIR:z_generals>/RebornOmegaData/discord-rpc-LICENSE.txt")
 endif()
 
 # RC files optional for MinGW builds

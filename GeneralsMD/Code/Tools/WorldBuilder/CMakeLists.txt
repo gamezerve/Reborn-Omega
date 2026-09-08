@@ -233,6 +233,16 @@ if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
     target_compile_definitions(z_worldbuilder PRIVATE _AFXDLL)
     target_sources(z_worldbuilder PRIVATE res/WorldBuilder.rc)
 
+if(MSVC AND RTS_BUILD_OPTION_REBORN)
+    # Reborn: Use the same isolated GO runtime loader as the game executable.
+    target_link_options(z_worldbuilder PRIVATE
+        "/DELAYLOAD:GameNetworkingSockets.dll"
+        "/DELAYLOAD:libcurl.dll")
+    target_link_libraries(z_worldbuilder PRIVATE delayimp)
+    target_sources(z_worldbuilder PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../Main/RebornOmegaDllLoad.cpp")
+endif()
+
 if(RTS_BUILD_OPTION_REBORN)
     set_target_properties(z_worldbuilder PROPERTIES OUTPUT_NAME "${REBORN_OMEGA_DISPLAY_NAME} WorldBuilder${RTS_BUILD_OUTPUT_SUFFIX}")
 else()
