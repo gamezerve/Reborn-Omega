@@ -451,12 +451,12 @@ void GameLogic::prepareNewGame( GameMode gameMode, GameDifficulty diff, Int rank
 
 	if (TheGameInfo)
 	{
-		
+		g_resourceMultiplierPercent = TheGameInfo->getResourceMultiplierPercent();
 		DEBUG_LOG(("Reborn: Resource multiplier set to %d from TheGameInfo during prepareNewGame", g_resourceMultiplierPercent));
 	}
 	else if (TheSkirmishGameInfo)
 	{
-		
+		g_resourceMultiplierPercent = TheSkirmishGameInfo->getResourceMultiplierPercent();
 		DEBUG_LOG(("Reborn: Resource multiplier set to %d from TheSkirmishGameInfo during prepareNewGame", g_resourceMultiplierPercent));
 	}
 	else

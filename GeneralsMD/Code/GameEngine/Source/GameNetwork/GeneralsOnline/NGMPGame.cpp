@@ -13,6 +13,8 @@
 #include "GameClient/View.h"
 #include "../NextGenMP_defines.h"
 
+extern Int g_resourceMultiplierPercent; // Reborn
+
 NGMPGameSlot::NGMPGameSlot()
 {
 	GameSlot();
@@ -57,7 +59,11 @@ NGMPGame::NGMPGame()
 
 NGMPGame::~NGMPGame()
 {
-	// Reborn: GO must not alter the Reborn Omega camera when leaving an online game.
+	// Reborn: Restore the player's personal camera preference when leaving GO, matching the LAN lifecycle.
+	if (isGameInProgress())
+		endGame();
+	else if (isInGame())
+		leaveGame();
 }
 
 void NGMPGame::SyncWithLobby(LobbyEntry& lobby)
@@ -126,11 +132,13 @@ void NGMPGame::SyncWithLobby(LobbyEntry& lobby)
 	startingCash.deposit(lobby.starting_cash, FALSE);
 	setStartingCash(startingCash);
 
-	// Reborn: Decode the host's synchronized camera height and cash multiplier from the GO lobby payload.
+	// Reborn: GO's camera field now carries a real camera height accepted by the service.
 	Int maxCameraHeight = DecodeRebornLobbyMaxCameraHeight(lobby.max_cam_height);
 	setUseCustomMaxCameraHeight(DecodeRebornLobbyUseCustomMaxCameraHeight(lobby.max_cam_height));
 	setLanMaxCameraHeight(maxCameraHeight);
-	setResourceMultiplierPercent(DecodeRebornLobbyResourceMultiplier(lobby.max_cam_height));
+	// Reborn: Preserve compatibility with lobbies created by older development builds; current builds sync cash over the lobby relay.
+	if (IsLegacyPackedRebornLobbyOptions(lobby.max_cam_height))
+		setResourceMultiplierPercent(DecodeRebornLobbyResourceMultiplier(lobby.max_cam_height));
 
 }
 
@@ -310,6 +318,28 @@ void NGMPGame::startGame(Int gameID)
 {
 	DEBUG_ASSERTCRASH(m_inGame, ("Starting a game while not in game"));
 	DEBUG_LOG(("NGMPGame::startGame - game id = %d\n", gameID));
+
+	// Reborn: Apply the synchronized GO options through the same GameInfo start path used by LAN.
+	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	if (pLobbyInterface != nullptr && pLobbyInterface->IsInLobby())
+		SyncWithLobby(pLobbyInterface->GetCurrentLobby());
+
+	// Reborn: Commit one normalized GO cash multiplier value for every gameplay system.
+	Int resourceMultiplierPercent = clamp(75, getResourceMultiplierPercent(), 125);
+	resourceMultiplierPercent = 75 + ((resourceMultiplierPercent - 75) / 5) * 5;
+	setResourceMultiplierPercent(resourceMultiplierPercent);
+	g_resourceMultiplierPercent = resourceMultiplierPercent;
+	GameInfo::startGame(gameID);
+
+	// Reborn: GameInfo restores the personal Options value first, so reapply the host's synchronized online camera afterwards.
+	Real maxCameraHeight = getUseCustomMaxCameraHeight() ? (Real)getLanMaxCameraHeight() : 310.0f;
+	TheWritableGlobalData->m_maxCameraHeight = maxCameraHeight;
+	if (TheTacticalView)
+	{
+		TheTacticalView->setMaxHeightAboveGround(maxCameraHeight);
+		TheTacticalView->setHeightAboveGround(TheTacticalView->getHeightAboveGround());
+	}
+
 	//DEBUG_ASSERTCRASH(m_transport == NULL, ("m_transport is not NULL when it should be"));
 	//DEBUG_ASSERTCRASH(TheNAT == NULL, ("TheNAT is not NULL when it should be"));
 

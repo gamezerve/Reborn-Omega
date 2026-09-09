@@ -264,16 +264,14 @@ void NGMP_OnlineServices_LobbyInterface::UpdateCurrentLobbyMaxCameraHeight(uint1
 {
 	if (IsHost())
 	{
-		Int resourceMultiplierPercent = TheNGMPGame ? TheNGMPGame->getResourceMultiplierPercent() : g_resourceMultiplierPercent;
-		Bool useCustomMaxCameraHeight = TheNGMPGame ? TheNGMPGame->getUseCustomMaxCameraHeight() : maxCameraHeight > 310;
-		uint16_t rebornLobbyOptions = EncodeRebornLobbyOptions(useCustomMaxCameraHeight, maxCameraHeight, resourceMultiplierPercent);
+		// Reborn: GO validates this field as a real camera height in the 210-1000 range; never pack other options into it.
+		maxCameraHeight = (uint16_t)clamp(310, (Int)maxCameraHeight, 750);
 
-		// Reborn: Match LAN behavior by sending only real changes and keeping the local choice while the service catches up.
-		if (m_CurrentLobby.max_cam_height == rebornLobbyOptions && m_pendingRebornLobbyOptions.load() == 0)
+		if (m_CurrentLobby.max_cam_height == maxCameraHeight && m_pendingMaxCameraHeight.load() == 0)
 			return;
 
-		m_CurrentLobby.max_cam_height = rebornLobbyOptions;
-		m_pendingRebornLobbyOptions.store(rebornLobbyOptions);
+		m_CurrentLobby.max_cam_height = maxCameraHeight;
+		m_pendingMaxCameraHeight.store(maxCameraHeight);
 
 		// reset autostart if host changes anything (because ready flag will reset too)
 #if !defined(GENERALS_ONLINE_DISABLE_AUTO_ACCEPT)
@@ -287,8 +285,7 @@ void NGMP_OnlineServices_LobbyInterface::UpdateCurrentLobbyMaxCameraHeight(uint1
 
 		nlohmann::json j;
 		j["field"] = ELobbyUpdateField::MAX_CAMERA_HEIGHT;
-		// Reborn: The GO service already relays this UInt16, so use the packed Reborn lobby options value.
-		j["max_camera_height"] = rebornLobbyOptions;
+		j["max_camera_height"] = maxCameraHeight;
 		std::string strPostData = j.dump();
 
 		// convert
@@ -296,8 +293,8 @@ void NGMP_OnlineServices_LobbyInterface::UpdateCurrentLobbyMaxCameraHeight(uint1
 			{
 				if (!bSuccess)
 				{
-					uint16_t expected = rebornLobbyOptions;
-					m_pendingRebornLobbyOptions.compare_exchange_strong(expected, 0);
+					uint16_t expected = maxCameraHeight;
+					m_pendingMaxCameraHeight.compare_exchange_strong(expected, 0);
 					UpdateRoomDataCache(nullptr);
 				}
 			});
@@ -513,6 +510,63 @@ void NGMP_OnlineServices_LobbyInterface::SendChatMessageToCurrentLobby(UnicodeSt
 	{
 		pWS->SendData_LobbyChatMessage(strChatMsgUnicode, bIsAction, false, false);
 	}
+}
+
+void NGMP_OnlineServices_LobbyInterface::SendRebornResourceMultiplier(Int resourceMultiplierPercent)
+{
+	if (!IsHost())
+		return;
+
+	resourceMultiplierPercent = clamp(75, resourceMultiplierPercent, 125);
+	resourceMultiplierPercent = 75 + ((resourceMultiplierPercent - 75) / 5) * 5;
+
+	// Reborn: Use GO's reliable lobby relay for this Reborn-only option and hide the control message from chat.
+	UnicodeString message;
+	message.format(L"[RebornOmegaControl]ResourceMultiplier=%d", resourceMultiplierPercent);
+	SendChatMessageToCurrentLobby(message, false);
+}
+
+void NGMP_OnlineServices_LobbyInterface::RequestRebornLobbyOptions()
+{
+	if (!IsInLobby() || IsHost())
+		return;
+
+	UnicodeString message(L"[RebornOmegaControl]RequestOptions");
+	SendChatMessageToCurrentLobby(message, false);
+}
+
+Bool NGMP_OnlineServices_LobbyInterface::HandleRebornLobbyControlMessage(const std::string& message, int64_t senderUserID)
+{
+	static const std::string requestMessage = "[RebornOmegaControl]RequestOptions";
+	static const std::string multiplierPrefix = "[RebornOmegaControl]ResourceMultiplier=";
+
+	if (message == requestMessage)
+	{
+		if (IsHost())
+			SendRebornResourceMultiplier(TheNGMPGame ? TheNGMPGame->getResourceMultiplierPercent() : g_resourceMultiplierPercent);
+		return TRUE;
+	}
+
+	if (message.compare(0, multiplierPrefix.length(), multiplierPrefix) != 0)
+		return FALSE;
+
+	// Reborn: Only the current GO lobby owner may enforce synchronized gameplay options.
+	if (senderUserID == m_CurrentLobby.owner)
+	{
+		Int resourceMultiplierPercent = atoi(message.c_str() + multiplierPrefix.length());
+		resourceMultiplierPercent = clamp(75, resourceMultiplierPercent, 125);
+		resourceMultiplierPercent = 75 + ((resourceMultiplierPercent - 75) / 5) * 5;
+
+		if (TheNGMPGame)
+			TheNGMPGame->setResourceMultiplierPercent(resourceMultiplierPercent);
+		g_resourceMultiplierPercent = resourceMultiplierPercent;
+
+		std::scoped_lock<std::mutex> lock(m_rosterCallbackMutex);
+		if (m_RosterNeedsRefreshCallback != nullptr)
+			m_RosterNeedsRefreshCallback();
+	}
+
+	return TRUE;
 }
 
 // TODO_NGMP: Just send a separate packet for each announce, more efficient and less hacky
@@ -881,16 +935,16 @@ void NGMP_OnlineServices_LobbyInterface::UpdateRoomDataCache(std::function<void(
 						lobbyEntryIter["MaximumCameraHeight"].get_to(lobbyEntry.max_cam_height);
 
 						// Reborn: Ignore an older service snapshot while the host's newest LAN-style options update is in flight.
-						uint16_t pendingRebornLobbyOptions = m_pendingRebornLobbyOptions.load();
-						if (pendingRebornLobbyOptions != 0)
+						uint16_t pendingMaxCameraHeight = m_pendingMaxCameraHeight.load();
+						if (pendingMaxCameraHeight != 0)
 						{
-							if (lobbyEntry.max_cam_height == pendingRebornLobbyOptions)
+							if (lobbyEntry.max_cam_height == pendingMaxCameraHeight)
 							{
-								if (!m_pendingRebornLobbyOptions.compare_exchange_strong(pendingRebornLobbyOptions, 0))
-									lobbyEntry.max_cam_height = pendingRebornLobbyOptions;
+								if (!m_pendingMaxCameraHeight.compare_exchange_strong(pendingMaxCameraHeight, 0))
+									lobbyEntry.max_cam_height = pendingMaxCameraHeight;
 							}
 							else
-								lobbyEntry.max_cam_height = pendingRebornLobbyOptions;
+								lobbyEntry.max_cam_height = pendingMaxCameraHeight;
 						}
 						lobbyEntryIter["ExeCRC"].get_to(lobbyEntry.exe_crc);
 						lobbyEntryIter["IniCRC"].get_to(lobbyEntry.ini_crc);
@@ -1111,7 +1165,7 @@ void NGMP_OnlineServices_LobbyInterface::JoinLobby(LobbyEntry lobbyInfo, std::st
 
 	m_bAttemptingToJoinLobby = true;
 	m_CurrentLobby = LobbyEntry();
-	m_pendingRebornLobbyOptions.store(0);
+	m_pendingMaxCameraHeight.store(0);
 
 	NGMP_OnlineServicesManager::GetInstance()->GetAndParseServiceConfig([=]()
 		{
@@ -1405,7 +1459,7 @@ void NGMP_OnlineServices_LobbyInterface::CreateLobby(UnicodeString strLobbyName,
 	NGMP_OnlineServicesManager::GetInstance()->GetAndParseServiceConfig([=]()
 		{
 			m_CurrentLobby = LobbyEntry();
-			m_pendingRebornLobbyOptions.store(0);
+			m_pendingMaxCameraHeight.store(0);
 			std::string strURI = NGMP_OnlineServicesManager::GetAPIEndpoint("Lobbies");
 			std::map<std::string, std::string> mapHeaders;
 
@@ -1439,14 +1493,8 @@ void NGMP_OnlineServices_LobbyInterface::CreateLobby(UnicodeString strLobbyName,
 			j["allow_observers"] = bAllowObservers;
 			j["exe_crc"] = TheGlobalData->m_exeCRC;
 			j["ini_crc"] = TheGlobalData->m_iniCRC;
-			// Reborn: Keep the protocol field but advertise Reborn Omega's existing camera limit.
-			Int resourceMultiplierPercent = g_resourceMultiplierPercent;
-#if !defined(GENERALS_ONLINE_ALLOW_ALL_SETTINGS_FOR_STATS_MATCHES)
-			if (bTrackStats)
-				resourceMultiplierPercent = 100;
-#endif
-			// Reborn: Like LAN, a newly hosted lobby starts with the standard 310 camera limit disabled.
-			j["max_cam_height"] = EncodeRebornLobbyOptions(FALSE, 310, resourceMultiplierPercent);
+			// Reborn: Like LAN, a newly hosted lobby starts with the standard server-valid 310 camera limit disabled.
+			j["max_cam_height"] = 310;
 			j["anticheat_id"] = AnticheatPlugInterface::GetAnticheatIdentifier();
 
 			std::string strPostData = j.dump();

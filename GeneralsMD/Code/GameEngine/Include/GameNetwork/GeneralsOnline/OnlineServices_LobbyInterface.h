@@ -80,25 +80,18 @@ struct LobbyEntry
 	int latency = 0;
 };
 
-// Reborn: Carry Reborn-only lobby options through GO's existing 16-bit camera field without requiring a server fork.
+// Reborn: Read lobbies created by older development builds that packed Reborn options into GO's camera field.
 static constexpr uint16_t REBORN_LOBBY_OPTIONS_MARKER = 0x8000;
 static constexpr uint16_t REBORN_LOBBY_CUSTOM_CAMERA = 0x4000;
 
-inline uint16_t EncodeRebornLobbyOptions(Bool useCustomMaxCameraHeight, Int maxCameraHeight, Int resourceMultiplierPercent)
+inline Bool IsLegacyPackedRebornLobbyOptions(uint16_t lobbyOptions)
 {
-	maxCameraHeight = clamp(310, maxCameraHeight, 750);
-	resourceMultiplierPercent = clamp(75, resourceMultiplierPercent, 125);
-	resourceMultiplierPercent = 75 + ((resourceMultiplierPercent - 75) / 5) * 5;
-
-	return REBORN_LOBBY_OPTIONS_MARKER |
-		(useCustomMaxCameraHeight ? REBORN_LOBBY_CUSTOM_CAMERA : 0) |
-		((uint16_t)(maxCameraHeight - 310) << 4) |
-		(uint16_t)((resourceMultiplierPercent - 75) / 5);
+	return (lobbyOptions & REBORN_LOBBY_OPTIONS_MARKER) != 0;
 }
 
 inline Bool DecodeRebornLobbyUseCustomMaxCameraHeight(uint16_t lobbyOptions)
 {
-	if ((lobbyOptions & REBORN_LOBBY_OPTIONS_MARKER) == 0)
+	if (!IsLegacyPackedRebornLobbyOptions(lobbyOptions))
 		return lobbyOptions > 310;
 
 	return (lobbyOptions & REBORN_LOBBY_CUSTOM_CAMERA) != 0;
@@ -106,7 +99,7 @@ inline Bool DecodeRebornLobbyUseCustomMaxCameraHeight(uint16_t lobbyOptions)
 
 inline Int DecodeRebornLobbyMaxCameraHeight(uint16_t lobbyOptions)
 {
-	if ((lobbyOptions & REBORN_LOBBY_OPTIONS_MARKER) == 0)
+	if (!IsLegacyPackedRebornLobbyOptions(lobbyOptions))
 		return clamp(310, (Int)lobbyOptions, 750);
 
 	return clamp(310, 310 + (Int)((lobbyOptions >> 4) & 0x01FF), 750);
@@ -114,7 +107,7 @@ inline Int DecodeRebornLobbyMaxCameraHeight(uint16_t lobbyOptions)
 
 inline Int DecodeRebornLobbyResourceMultiplier(uint16_t lobbyOptions)
 {
-	if ((lobbyOptions & REBORN_LOBBY_OPTIONS_MARKER) == 0)
+	if (!IsLegacyPackedRebornLobbyOptions(lobbyOptions))
 		return 100;
 
 	return clamp(75, 75 + (Int)(lobbyOptions & 0x000F) * 5, 125);
@@ -301,6 +294,10 @@ public:
 
 	void SendChatMessageToCurrentLobby(UnicodeString& strChatMsgUnicode, bool bIsAction);
 	void SendAnnouncementMessageToCurrentLobby(UnicodeString& strAnnouncementMsgUnicode, bool bShowToHost);
+	// Reborn: Synchronize the cash multiplier over GO's existing lobby message relay without changing server data fields.
+	void SendRebornResourceMultiplier(Int resourceMultiplierPercent);
+	void RequestRebornLobbyOptions();
+	Bool HandleRebornLobbyControlMessage(const std::string& message, int64_t senderUserID);
 
 	void InvokeCreateLobbyCallback(bool bSuccess)
 	{
@@ -460,7 +457,7 @@ public:
 	void ResetCachedRoomData()
 	{
 		m_CurrentLobby = LobbyEntry();
-		m_pendingRebornLobbyOptions.store(0);
+		m_pendingMaxCameraHeight.store(0);
 
 		std::scoped_lock<std::mutex> lock(m_rosterCallbackMutex);
 		if (m_RosterNeedsRefreshCallback != nullptr)
@@ -537,8 +534,8 @@ private:
 	std::function<void(EJoinLobbyResult)> m_callbackJoinedLobby = nullptr;
 
 	LobbyEntry m_CurrentLobby;
-	// Reborn: Keep the host's latest local options authoritative until the GO service echoes them back.
-	std::atomic<uint16_t> m_pendingRebornLobbyOptions = 0;
+	// Reborn: Keep the host's latest camera height authoritative until the GO service echoes it back.
+	std::atomic<uint16_t> m_pendingMaxCameraHeight = 0;
 
 	std::string m_strTURNUsername = "";
 	std::string m_strTURNToken = "";

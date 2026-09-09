@@ -238,6 +238,7 @@ static Bool isUpdatingOnlineLobbyOptions = FALSE;
 static UnsignedInt lastOnlineMaxCameraHeightEditTime = 0;
 static Int lastSentOnlineMaxCameraHeight = 310;
 static Bool lastSentUseOnlineMaxCameraHeight = FALSE;
+static Int lastAnnouncedOnlineMaxCameraHeight = 310;
 static GameWindow *checkBoxLimitArmies = NULL;
 
 static GameWindow *comboBoxPlayer[MAX_SLOTS] = {NULL,NULL,NULL,NULL,
@@ -956,13 +957,17 @@ static void handleOnlineResourceMultiplierSelection()
 		return;
 
 	Int value = (Int)GadgetComboBoxGetItemData(comboBoxResourceMultiplier, selected);
+	// Reborn: Keep GO cash multipliers on the same exact five-percent steps used by LAN.
+	value = clamp(75, value, 125);
+	value = 75 + ((value - 75) / 5) * 5;
 	if (TheNGMPGame->getResourceMultiplierPercent() == value)
 		return;
 
 	TheNGMPGame->setResourceMultiplierPercent(value);
 	g_resourceMultiplierPercent = value;
 	TheNGMPGame->resetAccepted();
-	updateOnlineLobbyOptions();
+	// Reborn: Cash is a separate Reborn-only option; relay it without corrupting GO's validated camera field.
+	pLobbyInterface->SendRebornResourceMultiplier(value);
 }
 
 static void handleOnlineMaxCameraHeightChanged(Bool clampText)
@@ -981,32 +986,33 @@ static void handleOnlineMaxCameraHeightChanged(Bool clampText)
 		value = clamp(310, atoi(text.str()), 750);
 	}
 
-	if (TheNGMPGame->getUseCustomMaxCameraHeight() == enabled && TheNGMPGame->getLanMaxCameraHeight() == value)
+	Bool valueChanged = TheNGMPGame->getUseCustomMaxCameraHeight() != enabled || TheNGMPGame->getLanMaxCameraHeight() != value;
+
+	if (valueChanged)
 	{
-		if (clampText)
-		{
-			UnicodeString clampedText;
-			clampedText.format(L"%d", value);
-			GadgetTextEntrySetText(textEntryMaxCameraHeight, clampedText);
-		}
-
-		textEntryMaxCameraHeight->winEnable(enabled);
-		return;
+		TheNGMPGame->setUseCustomMaxCameraHeight(enabled);
+		TheNGMPGame->setLanMaxCameraHeight(value);
+		TheNGMPGame->resetAccepted();
+		updateOnlineLobbyOptions();
 	}
-
-	TheNGMPGame->setUseCustomMaxCameraHeight(enabled);
-	TheNGMPGame->setLanMaxCameraHeight(value);
-	TheNGMPGame->resetAccepted();
 
 	if (clampText)
 	{
 		UnicodeString clampedText;
 		clampedText.format(L"%d", value);
 		GadgetTextEntrySetText(textEntryMaxCameraHeight, clampedText);
+
+		// Reborn: Announce the clamped GO camera height once, and only when its effective value changes.
+		if (lastAnnouncedOnlineMaxCameraHeight != value)
+		{
+			UnicodeString strInform;
+			strInform.format(L"The host has set the maximum camera height to %d.", value);
+			pLobbyInterface->SendAnnouncementMessageToCurrentLobby(strInform, true);
+			lastAnnouncedOnlineMaxCameraHeight = value;
+		}
 	}
 
 	textEntryMaxCameraHeight->winEnable(enabled);
-	updateOnlineLobbyOptions();
 }
 
 static void handleLimitSuperweaponsClick()
@@ -1687,6 +1693,8 @@ void InitWOLGameGadgets()
   DEBUG_ASSERTCRASH(windowMap, ("Could not find the GameSpyGameOptionsMenu.wnd:ComboBoxStartingCash" ));
 	comboBoxResourceMultiplier = TheWindowManager->winGetWindowFromId(parentWOLGameSetup, comboBoxResourceMultiplierID);
 	DEBUG_ASSERTCRASH(comboBoxResourceMultiplier, ("Could not find the GameSpyGameOptionsMenu.wnd:ComboBoxResourceMultiplier"));
+	// Reborn: Keep the cash multiplier dropdown above the chat window, matching Starting Cash.
+	comboBoxResourceMultiplier->winBringToTop();
 	checkMaxCameraHeight = TheWindowManager->winGetWindowFromId(parentWOLGameSetup, checkMaxCameraHeightID);
 	DEBUG_ASSERTCRASH(checkMaxCameraHeight, ("Could not find the GameSpyGameOptionsMenu.wnd:CheckMaxCameraHeight"));
 	textEntryMaxCameraHeight = TheWindowManager->winGetWindowFromId(parentWOLGameSetup, textEntryMaxCameraHeightID);
@@ -1703,6 +1711,7 @@ void InitWOLGameGadgets()
 	}
 	lastSentUseOnlineMaxCameraHeight = theGameInfo->getUseCustomMaxCameraHeight();
 	lastSentOnlineMaxCameraHeight = theGameInfo->getUseCustomMaxCameraHeight() ? theGameInfo->getLanMaxCameraHeight() : 310;
+	lastAnnouncedOnlineMaxCameraHeight = lastSentOnlineMaxCameraHeight;
 	lastOnlineMaxCameraHeightEditTime = 0;
 #else
   PopulateStartingCashComboBox( comboBoxStartingCash, TheGameSpyGame );
@@ -1918,6 +1927,7 @@ void DeinitWOLGameGadgets()
 	textEntryMaxCameraHeight = NULL;
 	isUpdatingOnlineLobbyOptions = FALSE;
 	lastOnlineMaxCameraHeightEditTime = 0;
+	lastAnnouncedOnlineMaxCameraHeight = 310;
 
 //	GameWindow *staticTextTitle = NULL;
 	for (Int i = 0; i < MAX_SLOTS; i++)
@@ -2158,6 +2168,8 @@ void WOLGameSetupMenuInit( WindowLayout *layout, void *userData )
 	EnableSlotListUpdates(FALSE);
 	InitWOLGameGadgets();
 	EnableSlotListUpdates(TRUE);
+	// Reborn: Request the host's Reborn-only options after the lobby controls are ready to refresh.
+	pLobbyInterface->RequestRebornLobbyOptions();
 	// TODO_NGMP
 	//TheGameSpyInfo->registerTextWindow(listboxGameSetupChat);
 
@@ -2712,6 +2724,10 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 					s_matchStartCountdownWasRunning = false;
 					// stop countdown
 					TheNGMPGame->StopCountdown();
+
+					// Reborn: Send one final host-authoritative cash value on the same ordered lobby connection before starting.
+					if (pLobbyInterface != nullptr)
+						pLobbyInterface->SendRebornResourceMultiplier(TheNGMPGame->getResourceMultiplierPercent());
 
 					// send start game packet
 					std::shared_ptr<WebSocket>  pWS = NGMP_OnlineServicesManager::GetWebSocket();

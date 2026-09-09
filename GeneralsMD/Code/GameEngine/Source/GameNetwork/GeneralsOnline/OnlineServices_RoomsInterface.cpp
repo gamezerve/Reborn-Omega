@@ -1293,6 +1293,10 @@ void WebSocket::Tick()
 											NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
 											if (pLobbyInterface != nullptr)
 											{
+												// Reborn: Consume private lobby-option synchronization messages before the visible chat callback.
+												if (pLobbyInterface->HandleRebornLobbyControlMessage(chatData.message, chatData.user_id))
+													break;
+
 												int lobbySlot = -1;
 												auto lobbyMembers = pLobbyInterface->GetMembersListForCurrentRoom();
 												for (const auto& lobbyMember : lobbyMembers)

@@ -115,6 +115,7 @@
 #include <rts/profile.h>
 
 Bool g_useLegacyForwardSpeed2D = FALSE;
+extern Int g_resourceMultiplierPercent; // Reborn
 
 struct QuitGameException {};
 
@@ -1269,6 +1270,21 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			TheGameInfo = TheChallengeGameInfo;
 		}
 	}
+
+#if defined(GENERALS_ONLINE)
+	if (m_gameMode == GAME_INTERNET && TheGameInfo)
+	{
+		// Reborn: The online GameInfo becomes authoritative here; commit its synchronized settings after all personal defaults.
+		g_resourceMultiplierPercent = TheGameInfo->getResourceMultiplierPercent();
+		Real maxCameraHeight = TheGameInfo->getUseCustomMaxCameraHeight() ? (Real)TheGameInfo->getLanMaxCameraHeight() : 310.0f;
+		TheWritableGlobalData->m_maxCameraHeight = maxCameraHeight;
+		if (TheTacticalView)
+		{
+			TheTacticalView->setMaxHeightAboveGround(maxCameraHeight);
+			TheTacticalView->setHeightAboveGround(TheTacticalView->getHeightAboveGround());
+		}
+	}
+#endif
 
   // On a NEW game, we need to copy the superweapon restrictions from the game info to here
   // (because TheGameInfo is not always saved and doesn't carry over to replays). On a save

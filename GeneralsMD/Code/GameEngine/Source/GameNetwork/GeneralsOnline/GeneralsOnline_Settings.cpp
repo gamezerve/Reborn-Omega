@@ -57,7 +57,7 @@ float GenOnlineSettings::DetermineCameraMaxHeight()
 		if (pLobbyInterface->IsInLobby())
 		{
 			LobbyEntry& theLobby = pLobbyInterface->GetCurrentLobby();
-			// Reborn: The lobby field also carries Reborn's synchronized cash multiplier.
+			// Reborn: Use the real camera height synchronized through GO's validated lobby field.
 			return (float)DecodeRebornLobbyMaxCameraHeight(theLobby.max_cam_height);
 		}
 	}
