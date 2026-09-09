@@ -1930,6 +1930,7 @@ const FieldParse CommandSet::m_commandSetFieldParseTable[] =
 	{ "24",			CommandSet::parseCommandButton, (void *)23,		offsetof( CommandSet, m_command ) },
 	{ "25",			CommandSet::parseCommandButton, (void *)24,		offsetof( CommandSet, m_command ) },
 	{ "26",			CommandSet::parseCommandButton, (void *)25,		offsetof( CommandSet, m_command ) },
+	{ "27",			CommandSet::parseCommandButton, (void *)26,		offsetof( CommandSet, m_command ) },
 	{ nullptr,			nullptr,														 nullptr,				0	}
 
 };
