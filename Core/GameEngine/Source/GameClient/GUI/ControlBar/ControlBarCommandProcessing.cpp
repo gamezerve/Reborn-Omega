@@ -72,6 +72,14 @@ static void selectObjectOfType( Object* obj, void* selectObjectsInfo )
 {
 	SelectObjectsInfo *soInfo = (SelectObjectsInfo*)selectObjectsInfo;
 
+	// Reborn: Keep selection shortcuts consistent with their availability check by ignoring objects that should not be selected anymore.
+	if( obj->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION ) ||
+			obj->testStatus( OBJECT_STATUS_SOLD ) ||
+			obj->isEffectivelyDead() )
+	{
+		return;
+	}
+
 	//Do the templates match?
 	if( obj->getTemplate()->isEquivalentTo( soInfo->thingTemplate ) )
 	{

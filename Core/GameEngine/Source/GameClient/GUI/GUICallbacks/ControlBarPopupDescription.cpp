@@ -1049,7 +1049,11 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 		Drawable* draw = TheInGameUI->getFirstSelectedDrawable();
 		Object* selectedObject = draw ? draw->getObject() : nullptr;
 
-		thingTemplate = getTooltipProducedThingTemplate(commandButton, selectedObject);
+		// Reborn: Selection shortcuts use their object template only as a matching group, so do not show meaningless build statistics for it.
+		if (commandButton->getCommandType() == GUI_COMMAND_SELECT_ALL_UNITS_OF_TYPE)
+			thingTemplate = nullptr;
+		else
+			thingTemplate = getTooltipProducedThingTemplate(commandButton, selectedObject);
 
 		const ThingTemplate* buildTemplate = thingTemplate;
 		const ThingTemplate* infoTemplate = thingTemplate;
