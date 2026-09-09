@@ -240,7 +240,8 @@ if(MSVC AND RTS_BUILD_OPTION_REBORN)
         "/DELAYLOAD:libcurl.dll")
     target_link_libraries(z_worldbuilder PRIVATE delayimp)
     target_sources(z_worldbuilder PRIVATE
-        "${CMAKE_CURRENT_SOURCE_DIR}/../../Main/RebornOmegaDllLoad.cpp")
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../Main/RebornOmegaDllLoad.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../Main/RebornOmegaDllLoad.h")
 endif()
 
 if(RTS_BUILD_OPTION_REBORN)

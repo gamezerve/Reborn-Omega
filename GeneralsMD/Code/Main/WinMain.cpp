@@ -68,6 +68,10 @@
 #include "GeneratedVersion.h"
 #include "resource.h"
 
+#ifdef REBORN_BUILD
+#include "RebornOmegaDllLoad.h"
+#endif
+
 #ifdef RTS_ENABLE_CRASHDUMP
 #include "Common/MiniDumper.h"
 #endif
@@ -799,6 +803,12 @@ static LONG WINAPI UnHandledExceptionFilter( struct _EXCEPTION_POINTERS* e_info 
 Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
                       LPSTR lpCmdLine, Int nCmdShow )
 {
+	#ifdef REBORN_BUILD
+		// Reborn: Report a complete and actionable error before starting with an incomplete private runtime.
+		if (!validateRebornOmegaRuntime())
+			return 1;
+	#endif
+
 	Int exitcode = 1;
 
 #ifdef RTS_PROFILE_LEGACY

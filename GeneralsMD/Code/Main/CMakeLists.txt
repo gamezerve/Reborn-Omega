@@ -104,7 +104,9 @@ if(MSVC)
             "/DELAYLOAD:GameNetworkingSockets.dll"
             "/DELAYLOAD:libcurl.dll")
         target_link_libraries(z_generals PRIVATE delayimp)
-        target_sources(z_generals PRIVATE RebornOmegaDllLoad.cpp)
+        target_sources(z_generals PRIVATE
+            RebornOmegaDllLoad.cpp
+            RebornOmegaDllLoad.h)
     endif()
 endif()
 

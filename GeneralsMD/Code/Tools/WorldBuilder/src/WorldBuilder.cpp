@@ -30,6 +30,10 @@
 #include "WBFrameWnd.h"
 #include "wbview3d.h"
 
+#ifdef REBORN_BUILD
+#include "../../../Main/RebornOmegaDllLoad.h"
+#endif
+
 //#include <wsys/StdFileSystem.h>
 #include "W3DDevice/GameClient/W3DFileSystem.h"
 #include "Common/FramePacer.h"
@@ -275,6 +279,12 @@ static LONG WINAPI UnHandledExceptionFilter(struct _EXCEPTION_POINTERS* e_info)
 
 BOOL CWorldBuilderApp::InitInstance()
 {
+	#ifdef REBORN_BUILD
+		// Reborn: Report a complete and actionable error before starting with an incomplete private runtime.
+		if (!validateRebornOmegaRuntime())
+			return FALSE;
+	#endif
+
 	ApplicationHWnd = GetDesktopWindow();
 
 	RebornDeletePreviewSoundTempFile();
