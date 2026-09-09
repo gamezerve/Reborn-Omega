@@ -835,14 +835,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		// initialize the memory manager early
 		initMemoryManager();
 
-		/// @todo remove this force set of working directory later
-		Char buffer[ _MAX_PATH ];
-		GetModuleFileName( nullptr, buffer, sizeof( buffer ) );
-		if (Char *pEnd = strrchr(buffer, '\\'))
-		{
-			*pEnd = 0;
-		}
-		::SetCurrentDirectory(buffer);
+		CommandLine::parseCommandLineForStartup();
 
 		#ifdef RTS_DEBUG
 			// Turn on Memory heap tracking
@@ -907,10 +900,8 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			}
 #endif
 
-		CommandLine::parseCommandLineForStartup();
-
 		
-		if (!TheGlobalData->m_windowed)
+		if (!TheGlobalData->m_headless && !TheGlobalData->m_windowed)
 		{
 			// Reborn: Keep the display-mode prompt visible above fullscreen compatibility surfaces.
 			int result = MessageBox(
