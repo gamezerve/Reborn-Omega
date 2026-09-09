@@ -1015,16 +1015,10 @@ static void handleOnlineMaxCameraHeightChanged(Bool clampText)
 		}
 	}
 
-	// Reborn: A disabled text entry must release focus and explicitly stop accepting input.
-	UnsignedInt inputStatus = textEntryMaxCameraHeight->winGetStatus();
-	if (enabled)
-		BitClear(inputStatus, WIN_STATUS_NO_INPUT);
-	else
-	{
-		BitSet(inputStatus, WIN_STATUS_NO_INPUT);
+	// Reborn: Release keyboard focus before disabling the text entry so it cannot keep receiving characters.
+	if (!enabled)
 		TheWindowManager->winSetFocus(nullptr);
-	}
-	textEntryMaxCameraHeight->winSetStatus(inputStatus);
+
 	textEntryMaxCameraHeight->winEnable(enabled);
 }
 
