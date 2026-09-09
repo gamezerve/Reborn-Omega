@@ -873,6 +873,7 @@ static void handleStartingCashSelection()
 // update it on the service
 	Int selIndex;
 	GadgetComboBoxGetSelectedPos(comboBoxStartingCash, &selIndex);
+	GadgetComboBoxCenterSelectedEntry(comboBoxStartingCash);
 
 	UnsignedInt startingCashValue = (UnsignedInt)GadgetComboBoxGetItemData(comboBoxStartingCash, selIndex);
 
@@ -932,6 +933,7 @@ static void PopulateOnlineResourceMultiplierComboBox(GameWindow* combo)
 
 	isUpdatingOnlineLobbyOptions = TRUE;
 	GadgetComboBoxSetSelectedPos(combo, defaultIndex, TRUE);
+	GadgetComboBoxCenterSelectedEntry(combo);
 	isUpdatingOnlineLobbyOptions = FALSE;
 }
 
@@ -965,6 +967,7 @@ static void handleOnlineResourceMultiplierSelection()
 
 	TheNGMPGame->setResourceMultiplierPercent(value);
 	g_resourceMultiplierPercent = value;
+	GadgetComboBoxCenterSelectedEntry(comboBoxResourceMultiplier);
 	TheNGMPGame->resetAccepted();
 	// Reborn: Cash is a separate Reborn-only option; relay it without corrupting GO's validated camera field.
 	pLobbyInterface->SendRebornResourceMultiplier(value);
@@ -1012,6 +1015,16 @@ static void handleOnlineMaxCameraHeightChanged(Bool clampText)
 		}
 	}
 
+	// Reborn: A disabled text entry must release focus and explicitly stop accepting input.
+	UnsignedInt inputStatus = textEntryMaxCameraHeight->winGetStatus();
+	if (enabled)
+		BitClear(inputStatus, WIN_STATUS_NO_INPUT);
+	else
+	{
+		BitSet(inputStatus, WIN_STATUS_NO_INPUT);
+		TheWindowManager->winSetFocus(nullptr);
+	}
+	textEntryMaxCameraHeight->winSetStatus(inputStatus);
 	textEntryMaxCameraHeight->winEnable(enabled);
 }
 
@@ -1480,6 +1493,7 @@ void WOLDisplayGameOptions()
   }
 
   DEBUG_ASSERTCRASH( index < itemCount, ("Could not find new starting cash amount %d in list", theGame->getStartingCash().countMoney() ) );
+	GadgetComboBoxCenterSelectedEntry(comboBoxStartingCash);
 
 	// Reborn: Reflect the host's synchronized cash multiplier and camera limit on every client.
 	isUpdatingOnlineLobbyOptions = TRUE;
@@ -1497,6 +1511,7 @@ void WOLDisplayGameOptions()
 				break;
 			}
 		}
+		GadgetComboBoxCenterSelectedEntry(comboBoxResourceMultiplier);
 	}
 
 	if (checkMaxCameraHeight && textEntryMaxCameraHeight)
@@ -2724,10 +2739,6 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 					s_matchStartCountdownWasRunning = false;
 					// stop countdown
 					TheNGMPGame->StopCountdown();
-
-					// Reborn: Send one final host-authoritative cash value on the same ordered lobby connection before starting.
-					if (pLobbyInterface != nullptr)
-						pLobbyInterface->SendRebornResourceMultiplier(TheNGMPGame->getResourceMultiplierPercent());
 
 					// send start game packet
 					std::shared_ptr<WebSocket>  pWS = NGMP_OnlineServicesManager::GetWebSocket();

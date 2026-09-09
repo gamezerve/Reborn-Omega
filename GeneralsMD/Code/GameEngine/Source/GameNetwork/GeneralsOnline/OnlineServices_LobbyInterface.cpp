@@ -520,10 +520,10 @@ void NGMP_OnlineServices_LobbyInterface::SendRebornResourceMultiplier(Int resour
 	resourceMultiplierPercent = clamp(75, resourceMultiplierPercent, 125);
 	resourceMultiplierPercent = 75 + ((resourceMultiplierPercent - 75) / 5) * 5;
 
-	// Reborn: Use GO's reliable lobby relay for this Reborn-only option and hide the control message from chat.
+	// Reborn: Use GO's host announcement flow so option changes are system notices rather than rate-limited player chat.
 	UnicodeString message;
-	message.format(L"[RebornOmegaControl]ResourceMultiplier=%d", resourceMultiplierPercent);
-	SendChatMessageToCurrentLobby(message, false);
+	message.format(L"The host has set the cash multiplier to %.2fx.", (Real)resourceMultiplierPercent / 100.0f);
+	SendAnnouncementMessageToCurrentLobby(message, true);
 }
 
 void NGMP_OnlineServices_LobbyInterface::RequestRebornLobbyOptions()
@@ -538,35 +538,38 @@ void NGMP_OnlineServices_LobbyInterface::RequestRebornLobbyOptions()
 Bool NGMP_OnlineServices_LobbyInterface::HandleRebornLobbyControlMessage(const std::string& message, int64_t senderUserID)
 {
 	static const std::string requestMessage = "[RebornOmegaControl]RequestOptions";
-	static const std::string multiplierPrefix = "[RebornOmegaControl]ResourceMultiplier=";
+	static const std::string multiplierPrefix = "The host has set the cash multiplier to ";
 
-	if (message == requestMessage)
+	if (message.find(requestMessage) != std::string::npos)
 	{
 		if (IsHost())
 			SendRebornResourceMultiplier(TheNGMPGame ? TheNGMPGame->getResourceMultiplierPercent() : g_resourceMultiplierPercent);
 		return TRUE;
 	}
 
-	if (message.compare(0, multiplierPrefix.length(), multiplierPrefix) != 0)
+	std::string::size_type multiplierPosition = message.find(multiplierPrefix);
+	if (multiplierPosition == std::string::npos)
 		return FALSE;
 
 	// Reborn: Only the current GO lobby owner may enforce synchronized gameplay options.
-	if (senderUserID == m_CurrentLobby.owner)
-	{
-		Int resourceMultiplierPercent = atoi(message.c_str() + multiplierPrefix.length());
-		resourceMultiplierPercent = clamp(75, resourceMultiplierPercent, 125);
-		resourceMultiplierPercent = 75 + ((resourceMultiplierPercent - 75) / 5) * 5;
+	if (senderUserID != m_CurrentLobby.owner)
+		return TRUE;
 
-		if (TheNGMPGame)
-			TheNGMPGame->setResourceMultiplierPercent(resourceMultiplierPercent);
-		g_resourceMultiplierPercent = resourceMultiplierPercent;
+	const char *multiplierText = message.c_str() + multiplierPosition + multiplierPrefix.length();
+	Int resourceMultiplierPercent = (Int)(atof(multiplierText) * 100.0f + 0.5f);
+	resourceMultiplierPercent = clamp(75, resourceMultiplierPercent, 125);
+	resourceMultiplierPercent = 75 + ((resourceMultiplierPercent - 75) / 5) * 5;
 
-		std::scoped_lock<std::mutex> lock(m_rosterCallbackMutex);
-		if (m_RosterNeedsRefreshCallback != nullptr)
-			m_RosterNeedsRefreshCallback();
-	}
+	if (TheNGMPGame)
+		TheNGMPGame->setResourceMultiplierPercent(resourceMultiplierPercent);
+	g_resourceMultiplierPercent = resourceMultiplierPercent;
 
-	return TRUE;
+	std::scoped_lock<std::mutex> lock(m_rosterCallbackMutex);
+	if (m_RosterNeedsRefreshCallback != nullptr)
+		m_RosterNeedsRefreshCallback();
+
+	// Reborn: Keep the host's human-readable GO announcement visible in the neutral system color.
+	return FALSE;
 }
 
 // TODO_NGMP: Just send a separate packet for each announce, more efficient and less hacky

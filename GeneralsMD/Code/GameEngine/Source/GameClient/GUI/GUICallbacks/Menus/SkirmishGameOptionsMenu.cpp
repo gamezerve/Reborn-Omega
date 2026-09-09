@@ -1038,6 +1038,7 @@ static void handleStartingCashSelection()
   {
     Int selIndex;
     GadgetComboBoxGetSelectedPos(comboBoxStartingCash, &selIndex);
+		GadgetComboBoxCenterSelectedEntry(comboBoxStartingCash);
 
     Money startingCash;
     startingCash.deposit( (UnsignedInt)GadgetComboBoxGetItemData( comboBoxStartingCash, selIndex ), FALSE, FALSE );
@@ -1072,6 +1073,7 @@ static void PopulateResourceMultiplierComboBox(GameWindow* combo) // Reborn: pop
 	}
 
 	GadgetComboBoxSetSelectedPos(combo, defaultIndex, TRUE);
+	GadgetComboBoxCenterSelectedEntry(combo);
 }
 
 static void handleResourceMultiplierSelection()
@@ -1082,6 +1084,7 @@ static void handleResourceMultiplierSelection()
 	Int selIndex;
 	GadgetComboBoxGetSelectedPos(comboBoxResourceMultiplier, &selIndex);
 	g_resourceMultiplierPercent = (Int)GadgetComboBoxGetItemData(comboBoxResourceMultiplier, selIndex);
+	GadgetComboBoxCenterSelectedEntry(comboBoxResourceMultiplier);
 	if (TheSkirmishGameInfo)
 		TheSkirmishGameInfo->setResourceMultiplierPercent(g_resourceMultiplierPercent);
 }
@@ -1397,10 +1400,11 @@ void updateSkirmishGameOptions()
   }
 
 	DEBUG_ASSERTCRASH( index < itemCount, ("Could not find new starting cash amount %d in list", TheSkirmishGameInfo->getStartingCash().countMoney() ) );
+	GadgetComboBoxCenterSelectedEntry(comboBoxStartingCash);
 
 
 	// Reborn: update the resource multiplier combo box to match the current value in TheSkirmishGameInfo
-	if (comboBoxResourceMultiplier)
+		if (comboBoxResourceMultiplier)
 	{
 		Int itemCount = GadgetComboBoxGetLength(comboBoxResourceMultiplier);
 		for (Int i = 0; i < itemCount; ++i)
@@ -1412,6 +1416,7 @@ void updateSkirmishGameOptions()
 				break;
 			}
 		}
+		GadgetComboBoxCenterSelectedEntry(comboBoxResourceMultiplier);
 	}
 
 }

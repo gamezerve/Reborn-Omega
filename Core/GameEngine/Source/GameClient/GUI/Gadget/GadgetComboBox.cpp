@@ -1056,6 +1056,28 @@ void GadgetComboBoxGetSelectedPos( GameWindow *comboBox, Int *selectedIndex )
 	TheWindowManager->winSendSystemMsg( comboBox, GCM_GET_SELECTION, 0, (WindowMsgData)selectedIndex );
 }
 
+// Reborn: Position the selected combo-box entry in the middle of its visible list where boundaries allow.
+void GadgetComboBoxCenterSelectedEntry( GameWindow *comboBox )
+{
+	if (comboBox == nullptr)
+		return;
+
+	ComboBoxData *comboBoxData = (ComboBoxData *)comboBox->winGetUserData();
+	GameWindow *listBox = GadgetComboBoxGetListBox(comboBox);
+	if (comboBoxData == nullptr || listBox == nullptr || comboBoxData->entryCount <= 0)
+		return;
+
+	Int selectedIndex = -1;
+	GadgetComboBoxGetSelectedPos(comboBox, &selectedIndex);
+	if (selectedIndex < 0)
+		return;
+
+	Int visibleEntries = clamp(1, comboBoxData->maxDisplay, comboBoxData->entryCount);
+	Int maximumTopEntry = max(0, comboBoxData->entryCount - visibleEntries);
+	Int topEntry = clamp(0, selectedIndex - visibleEntries / 2, maximumTopEntry);
+	GadgetListBoxSetTopVisibleEntry(listBox, topEntry);
+}
+
 // GadgetComboBoxSetSelectedPos ===============================================
 /** Convenience wrapper function for setting the selected Position, if don't hide
 		is set to true, the listbox won't be forced to hide when the Selected call is

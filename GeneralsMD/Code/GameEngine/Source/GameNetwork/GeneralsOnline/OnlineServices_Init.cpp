@@ -877,7 +877,8 @@ void NGMP_OnlineServicesManager::Init()
 
 	// TODO_NGMP: Better location
 	// TODO_NGMP: Get all of this from the service
-	int moneyVal = 100000;
+	// Reborn: The base multiplayer list already contains 100000; extend it without adding a duplicate entry.
+	int moneyVal = 150000;
 	int maxMoneyVal = 1000000;
 
 	while (moneyVal <= maxMoneyVal)

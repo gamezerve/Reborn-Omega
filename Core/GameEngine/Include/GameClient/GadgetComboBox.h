@@ -67,6 +67,7 @@ extern void GadgetComboBoxReset( GameWindow *comboBox );
 
 extern void GadgetComboBoxSetSelectedPos( GameWindow *comboBox, Int selectedIndex, Bool dontHide = FALSE );
 extern void GadgetComboBoxGetSelectedPos( GameWindow *comboBox, Int *selectedIndex );
+extern void GadgetComboBoxCenterSelectedEntry( GameWindow *comboBox );
 extern void GadgetComboBoxSetItemData( GameWindow *comboBox, Int index, void *data );
 extern void *GadgetComboBoxGetItemData( GameWindow *comboBox, Int index );
 extern Int  GadgetComboBoxGetLength( GameWindow *comboBox );

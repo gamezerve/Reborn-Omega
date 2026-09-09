@@ -355,6 +355,8 @@ void PopulateStartingCashComboBox(GameWindow *comboBox, GameInfo *myGame)
   }
 
   GadgetComboBoxSetSelectedPos(comboBox, currentSelectionIndex);
+	// Reborn: Open starting-cash lists around the current value while respecting their upper and lower boundaries.
+	GadgetComboBoxCenterSelectedEntry(comboBox);
 }
 
 // -----------------------------------------------------------------------------

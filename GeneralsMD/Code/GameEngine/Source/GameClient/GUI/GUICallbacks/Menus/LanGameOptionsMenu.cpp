@@ -658,6 +658,7 @@ static void PopulateLANResourceMultiplierComboBox(GameWindow* combo)
 	}
 
 	GadgetComboBoxSetSelectedPos(combo, defaultIndex, TRUE);
+	GadgetComboBoxCenterSelectedEntry(combo);
 }
 
 static void handleStartingCashSelection()
@@ -668,6 +669,7 @@ static void handleStartingCashSelection()
   {
     Int selIndex;
     GadgetComboBoxGetSelectedPos(comboBoxStartingCash, &selIndex);
+		GadgetComboBoxCenterSelectedEntry(comboBoxStartingCash);
 
     Money startingCash;
     startingCash.deposit( (UnsignedInt)GadgetComboBoxGetItemData( comboBoxStartingCash, selIndex ), FALSE, FALSE );
@@ -727,6 +729,7 @@ static void handleResourceMultiplierSelection()
 
 	g_resourceMultiplierPercent = (Int)GadgetComboBoxGetItemData(comboBoxResourceMultiplier, selIndex);
 	myGame->setResourceMultiplierPercent(g_resourceMultiplierPercent);
+	GadgetComboBoxCenterSelectedEntry(comboBoxResourceMultiplier);
 
 	myGame->resetAccepted();
 
@@ -1278,6 +1281,7 @@ void updateGameOptions()
     }
 
     DEBUG_ASSERTCRASH( index < itemCount, ("Could not find new starting cash amount %d in list", theGame->getStartingCash().countMoney() ) );
+		GadgetComboBoxCenterSelectedEntry(comboBoxStartingCash);
 
 		if (comboBoxResourceMultiplier)
 		{
@@ -1291,6 +1295,7 @@ void updateGameOptions()
 					break;
 				}
 			}
+			GadgetComboBoxCenterSelectedEntry(comboBoxResourceMultiplier);
 		}
 
 		if (checkMaxCameraHeight && textEntryMaxCameraHeight)
