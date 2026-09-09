@@ -1177,8 +1177,8 @@ static CommandLineParam paramsForStartup[] =
 	// TheSuperHackers @feature CryoTheRenegade 14/08/2026
 	// Use the current working directory as provided by the OS, or an explicit path.
 	// The last successful selection wins; otherwise use the executable directory.
-	{ "-setCwd", parseSetCwd },
-	{ "-useCwd", parseUseCwd },
+	//{ "-setCwd", parseSetCwd }, // Reborn: Don't allow this anymore, as it can break the RebornOmegaData pathing system
+	//{ "-useCwd", parseUseCwd }, // Reborn: Don't allow this anymore, as it can break the RebornOmegaData pathing system
 };
 
 // These Params are parsed during Engine Init before INI data is loaded
