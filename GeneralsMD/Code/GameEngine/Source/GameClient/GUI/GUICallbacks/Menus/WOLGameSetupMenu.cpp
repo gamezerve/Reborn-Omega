@@ -73,6 +73,7 @@
 #include "GameLogic/GameLogic.h"
 // Reborn: Keep the GO-backed game object available to the legacy online setup UI.
 NGMPGame* TheNGMPGame = NULL;
+extern Int g_resourceMultiplierPercent; // Reborn
 
 void WOLDisplaySlotList( void );
 static void WOLRefreshConnectionIndicators( void );
@@ -212,6 +213,9 @@ static NameKeyType windowMapSelectMapID = NAMEKEY_INVALID;
 static NameKeyType checkBoxUseStatsID = NAMEKEY_INVALID;
 static NameKeyType checkBoxLimitSuperweaponsID = NAMEKEY_INVALID;
 static NameKeyType comboBoxStartingCashID = NAMEKEY_INVALID;
+static NameKeyType comboBoxResourceMultiplierID = NAMEKEY_INVALID;
+static NameKeyType checkMaxCameraHeightID = NAMEKEY_INVALID;
+static NameKeyType textEntryMaxCameraHeightID = NAMEKEY_INVALID;
 static NameKeyType checkBoxLimitArmiesID = NAMEKEY_INVALID;
 
 // Window Pointers ------------------------------------------------------------------------
@@ -226,6 +230,14 @@ static GameWindow *windowMap = NULL;
 static GameWindow *checkBoxUseStats = NULL;
 static GameWindow *checkBoxLimitSuperweapons = NULL;
 static GameWindow *comboBoxStartingCash = NULL;
+static GameWindow *comboBoxResourceMultiplier = NULL;
+static GameWindow *checkMaxCameraHeight = NULL;
+static GameWindow *textEntryMaxCameraHeight = NULL;
+// Reborn: Prevent server-driven control refreshes from being treated as host input.
+static Bool isUpdatingOnlineLobbyOptions = FALSE;
+static UnsignedInt lastOnlineMaxCameraHeightEditTime = 0;
+static Int lastSentOnlineMaxCameraHeight = 310;
+static Bool lastSentUseOnlineMaxCameraHeight = FALSE;
 static GameWindow *checkBoxLimitArmies = NULL;
 
 static GameWindow *comboBoxPlayer[MAX_SLOTS] = {NULL,NULL,NULL,NULL,
@@ -894,6 +906,109 @@ static void handleStartingCashSelection()
 #endif
 }
 
+// Reborn: Match the LAN cash multiplier choices in the Generals Online lobby.
+static void PopulateOnlineResourceMultiplierComboBox(GameWindow* combo)
+{
+	if (!combo)
+		return;
+
+	GadgetComboBoxReset(combo);
+	Int defaultIndex = 0;
+	Int index = 0;
+
+	for (Int value = 75; value <= 125; value += 5)
+	{
+		UnicodeString label;
+		label.format(L"%.2fx", value / 100.0f);
+		GadgetComboBoxAddEntry(combo, label, GameMakeColor(255, 255, 255, 255));
+		GadgetComboBoxSetItemData(combo, index, (void*)value);
+
+		if (TheNGMPGame && value == TheNGMPGame->getResourceMultiplierPercent())
+			defaultIndex = index;
+
+		++index;
+	}
+
+	isUpdatingOnlineLobbyOptions = TRUE;
+	GadgetComboBoxSetSelectedPos(combo, defaultIndex, TRUE);
+	isUpdatingOnlineLobbyOptions = FALSE;
+}
+
+static void updateOnlineLobbyOptions()
+{
+	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	if (!pLobbyInterface || !TheNGMPGame || !pLobbyInterface->IsHost())
+		return;
+
+	Int maxCameraHeight = TheNGMPGame->getUseCustomMaxCameraHeight() ? TheNGMPGame->getLanMaxCameraHeight() : 310;
+	pLobbyInterface->UpdateCurrentLobbyMaxCameraHeight((uint16_t)maxCameraHeight);
+}
+
+static void handleOnlineResourceMultiplierSelection()
+{
+	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	if (isUpdatingOnlineLobbyOptions || !pLobbyInterface || !pLobbyInterface->IsHost() || !TheNGMPGame || !comboBoxResourceMultiplier)
+		return;
+
+	Int selected = -1;
+	GadgetComboBoxGetSelectedPos(comboBoxResourceMultiplier, &selected);
+	if (selected < 0)
+		return;
+
+	Int value = (Int)GadgetComboBoxGetItemData(comboBoxResourceMultiplier, selected);
+	if (TheNGMPGame->getResourceMultiplierPercent() == value)
+		return;
+
+	TheNGMPGame->setResourceMultiplierPercent(value);
+	g_resourceMultiplierPercent = value;
+	TheNGMPGame->resetAccepted();
+	updateOnlineLobbyOptions();
+}
+
+static void handleOnlineMaxCameraHeightChanged(Bool clampText)
+{
+	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	if (isUpdatingOnlineLobbyOptions || !pLobbyInterface || !pLobbyInterface->IsHost() || !TheNGMPGame || !checkMaxCameraHeight || !textEntryMaxCameraHeight)
+		return;
+
+	Bool enabled = GadgetCheckBoxIsChecked(checkMaxCameraHeight);
+	Int value = 310;
+
+	if (enabled)
+	{
+		AsciiString text;
+		text.translate(GadgetTextEntryGetText(textEntryMaxCameraHeight));
+		value = clamp(310, atoi(text.str()), 750);
+	}
+
+	if (TheNGMPGame->getUseCustomMaxCameraHeight() == enabled && TheNGMPGame->getLanMaxCameraHeight() == value)
+	{
+		if (clampText)
+		{
+			UnicodeString clampedText;
+			clampedText.format(L"%d", value);
+			GadgetTextEntrySetText(textEntryMaxCameraHeight, clampedText);
+		}
+
+		textEntryMaxCameraHeight->winEnable(enabled);
+		return;
+	}
+
+	TheNGMPGame->setUseCustomMaxCameraHeight(enabled);
+	TheNGMPGame->setLanMaxCameraHeight(value);
+	TheNGMPGame->resetAccepted();
+
+	if (clampText)
+	{
+		UnicodeString clampedText;
+		clampedText.format(L"%d", value);
+		GadgetTextEntrySetText(textEntryMaxCameraHeight, clampedText);
+	}
+
+	textEntryMaxCameraHeight->winEnable(enabled);
+	updateOnlineLobbyOptions();
+}
+
 static void handleLimitSuperweaponsClick()
 {
 
@@ -938,6 +1053,9 @@ static void WOLLockSettings()
 	buttonBack->winEnable(false);
 	checkBoxLimitSuperweapons->winEnable(false);
 	comboBoxStartingCash->winEnable(false);
+	comboBoxResourceMultiplier->winEnable(false);
+	checkMaxCameraHeight->winEnable(false);
+	textEntryMaxCameraHeight->winEnable(false);
 
 	for (Int i = 0; i < MAX_SLOTS; ++i)
 	{
@@ -1356,6 +1474,40 @@ void WOLDisplayGameOptions()
   }
 
   DEBUG_ASSERTCRASH( index < itemCount, ("Could not find new starting cash amount %d in list", theGame->getStartingCash().countMoney() ) );
+
+	// Reborn: Reflect the host's synchronized cash multiplier and camera limit on every client.
+	isUpdatingOnlineLobbyOptions = TRUE;
+	if (comboBoxResourceMultiplier)
+	{
+		Int multiplierItemCount = GadgetComboBoxGetLength(comboBoxResourceMultiplier);
+		for (Int i = 0; i < multiplierItemCount; ++i)
+		{
+			if ((Int)GadgetComboBoxGetItemData(comboBoxResourceMultiplier, i) == theGame->getResourceMultiplierPercent())
+			{
+				Int selected = -1;
+				GadgetComboBoxGetSelectedPos(comboBoxResourceMultiplier, &selected);
+				if (selected != i)
+					GadgetComboBoxSetSelectedPos(comboBoxResourceMultiplier, i, TRUE);
+				break;
+			}
+		}
+	}
+
+	if (checkMaxCameraHeight && textEntryMaxCameraHeight)
+	{
+		Bool enabled = theGame->getUseCustomMaxCameraHeight();
+		GadgetCheckBoxSetChecked(checkMaxCameraHeight, enabled);
+
+		// Reborn: Do not replace a host's partially typed camera value during an unrelated roster refresh.
+		if (!pLobbyInterface->IsHost() || TheWindowManager->winGetFocus() != textEntryMaxCameraHeight)
+		{
+			UnicodeString value;
+			value.format(L"%d", enabled ? theGame->getLanMaxCameraHeight() : 310);
+			GadgetTextEntrySetText(textEntryMaxCameraHeight, value);
+		}
+		textEntryMaxCameraHeight->winEnable(pLobbyInterface->IsHost() && enabled);
+	}
+	isUpdatingOnlineLobbyOptions = FALSE;
 }
 
 
@@ -1507,6 +1659,9 @@ void InitWOLGameGadgets()
 	windowMapID = TheNameKeyGenerator->nameToKey( "GameSpyGameOptionsMenu.wnd:MapWindow" );
   checkBoxLimitSuperweaponsID = TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:CheckboxLimitSuperweapons");
   comboBoxStartingCashID = TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:ComboBoxStartingCash");
+  comboBoxResourceMultiplierID = TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:ComboBoxResourceMultiplier");
+  checkMaxCameraHeightID = TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:CheckMaxCameraHeight");
+  textEntryMaxCameraHeightID = TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:TextEntryMaxCameraHeight");
   checkBoxLimitArmiesID = TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:CheckBoxLimitArmies");
 	windowMapSelectMapID = TheNameKeyGenerator->nameToKey("WOLMapSelectMenu.wnd:WinMapPreview");
 
@@ -1530,9 +1685,25 @@ void InitWOLGameGadgets()
   DEBUG_ASSERTCRASH(windowMap, ("Could not find the GameSpyGameOptionsMenu.wnd:CheckboxLimitSuperweapons" ));
   comboBoxStartingCash = TheWindowManager->winGetWindowFromId( parentWOLGameSetup, comboBoxStartingCashID );
   DEBUG_ASSERTCRASH(windowMap, ("Could not find the GameSpyGameOptionsMenu.wnd:ComboBoxStartingCash" ));
+	comboBoxResourceMultiplier = TheWindowManager->winGetWindowFromId(parentWOLGameSetup, comboBoxResourceMultiplierID);
+	DEBUG_ASSERTCRASH(comboBoxResourceMultiplier, ("Could not find the GameSpyGameOptionsMenu.wnd:ComboBoxResourceMultiplier"));
+	checkMaxCameraHeight = TheWindowManager->winGetWindowFromId(parentWOLGameSetup, checkMaxCameraHeightID);
+	DEBUG_ASSERTCRASH(checkMaxCameraHeight, ("Could not find the GameSpyGameOptionsMenu.wnd:CheckMaxCameraHeight"));
+	textEntryMaxCameraHeight = TheWindowManager->winGetWindowFromId(parentWOLGameSetup, textEntryMaxCameraHeightID);
+	DEBUG_ASSERTCRASH(textEntryMaxCameraHeight, ("Could not find the GameSpyGameOptionsMenu.wnd:TextEntryMaxCameraHeight"));
 
 #if defined(GENERALS_ONLINE)
   PopulateStartingCashComboBox(comboBoxStartingCash, theGameInfo);
+	PopulateOnlineResourceMultiplierComboBox(comboBoxResourceMultiplier);
+	GadgetCheckBoxSetChecked(checkMaxCameraHeight, theGameInfo->getUseCustomMaxCameraHeight());
+	{
+		UnicodeString maxCameraHeight;
+		maxCameraHeight.format(L"%d", theGameInfo->getUseCustomMaxCameraHeight() ? theGameInfo->getLanMaxCameraHeight() : 310);
+		GadgetTextEntrySetText(textEntryMaxCameraHeight, maxCameraHeight);
+	}
+	lastSentUseOnlineMaxCameraHeight = theGameInfo->getUseCustomMaxCameraHeight();
+	lastSentOnlineMaxCameraHeight = theGameInfo->getUseCustomMaxCameraHeight() ? theGameInfo->getLanMaxCameraHeight() : 310;
+	lastOnlineMaxCameraHeightEditTime = 0;
 #else
   PopulateStartingCashComboBox( comboBoxStartingCash, TheGameSpyGame );
 #endif
@@ -1562,6 +1733,9 @@ void InitWOLGameGadgets()
   {
     checkBoxLimitSuperweapons->winEnable( false );
     comboBoxStartingCash->winEnable( false );
+		comboBoxResourceMultiplier->winEnable(FALSE);
+		checkMaxCameraHeight->winEnable(FALSE);
+		textEntryMaxCameraHeight->winEnable(FALSE);
 		NameKeyType labelID = TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:StartingCashLabel");
 		TheWindowManager->winGetWindowFromId(parentWOLGameSetup, labelID)->winEnable( FALSE );
   }
@@ -1570,6 +1744,9 @@ void InitWOLGameGadgets()
   {
 	  checkBoxLimitSuperweapons->winEnable(true);
 	  comboBoxStartingCash->winEnable(true);
+	  comboBoxResourceMultiplier->winEnable(TRUE);
+	  checkMaxCameraHeight->winEnable(TRUE);
+	  textEntryMaxCameraHeight->winEnable(theGameInfo->getUseCustomMaxCameraHeight());
   }
 #endif
 
@@ -1581,6 +1758,7 @@ void InitWOLGameGadgets()
 		// This should probably be enforced at the gamespy level as well, to prevent expoits.
 		checkBoxLimitSuperweapons->winEnable( FALSE );
 		comboBoxStartingCash->winEnable( FALSE );
+		comboBoxResourceMultiplier->winEnable(FALSE);
 		checkBoxLimitArmies->winEnable( FALSE );
 		NameKeyType labelID = TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:StartingCashLabel");
 		TheWindowManager->winGetWindowFromId(parentWOLGameSetup, labelID)->winEnable( FALSE );
@@ -1735,6 +1913,11 @@ void DeinitWOLGameGadgets()
 	checkBoxUseStats = NULL;
   checkBoxLimitSuperweapons = NULL;
   comboBoxStartingCash = NULL;
+	comboBoxResourceMultiplier = NULL;
+	checkMaxCameraHeight = NULL;
+	textEntryMaxCameraHeight = NULL;
+	isUpdatingOnlineLobbyOptions = FALSE;
+	lastOnlineMaxCameraHeightEditTime = 0;
 
 //	GameWindow *staticTextTitle = NULL;
 	for (Int i = 0; i < MAX_SLOTS; i++)
@@ -2320,6 +2503,40 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 	// Refresh only the fast-changing connection indicators each frame.
 	WOLRefreshConnectionIndicators();
 
+	// Reborn: Use LAN's edit/debounce behavior so partial camera values are not clamped while typing.
+	NGMP_OnlineServices_LobbyInterface* onlineLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	if (initDone && onlineLobbyInterface && onlineLobbyInterface->IsHost() && TheNGMPGame && checkMaxCameraHeight && textEntryMaxCameraHeight && !isUpdatingOnlineLobbyOptions)
+	{
+		Bool enabled = GadgetCheckBoxIsChecked(checkMaxCameraHeight);
+		Int value = 310;
+
+		if (enabled)
+		{
+			AsciiString text;
+			text.translate(GadgetTextEntryGetText(textEntryMaxCameraHeight));
+			value = atoi(text.str());
+		}
+
+		if (enabled != lastSentUseOnlineMaxCameraHeight || value != lastSentOnlineMaxCameraHeight)
+		{
+			lastSentUseOnlineMaxCameraHeight = enabled;
+			lastSentOnlineMaxCameraHeight = value;
+			lastOnlineMaxCameraHeightEditTime = timeGetTime();
+			handleOnlineMaxCameraHeightChanged(FALSE);
+		}
+
+		if (enabled && lastOnlineMaxCameraHeightEditTime != 0)
+		{
+			AsciiString text;
+			text.translate(GadgetTextEntryGetText(textEntryMaxCameraHeight));
+			if (text.getLength() >= 3 && timeGetTime() - lastOnlineMaxCameraHeightEditTime > 750)
+			{
+				lastOnlineMaxCameraHeightEditTime = 0;
+				handleOnlineMaxCameraHeightChanged(TRUE);
+			}
+		}
+	}
+
 	// need to exit?
 	if (NGMP_OnlineServicesManager::GetInstance() != nullptr && NGMP_OnlineServicesManager::GetInstance()->IsPendingFullTeardown())
 	{
@@ -2382,6 +2599,9 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 
 							comboBoxStartingCash->winEnable(TRUE);
 							checkBoxLimitSuperweapons->winEnable(TRUE);
+							comboBoxResourceMultiplier->winEnable(TRUE);
+							checkMaxCameraHeight->winEnable(TRUE);
+							textEntryMaxCameraHeight->winEnable(TheNGMPGame->getUseCustomMaxCameraHeight());
 
 
 							NetworkLog(ELogVerbosity::LOG_RELEASE, "Host left and server migrated the host to us...");
@@ -3776,6 +3996,10 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 			{
 				handleStartingCashSelection();
 			}
+			else if (controlID == comboBoxResourceMultiplierID)
+			{
+				handleOnlineResourceMultiplierSelection();
+			}
 			else
 			{
 				for (Int i = 0; i < MAX_SLOTS; i++)
@@ -3963,6 +4187,10 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
         {
           handleLimitSuperweaponsClick();
         }
+				else if (controlID == checkMaxCameraHeightID)
+				{
+					handleOnlineMaxCameraHeightChanged(TRUE);
+				}
 				else
 				{
 					NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
@@ -4088,6 +4316,10 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 						}
 					}
 
+				}
+				else if (controlID == textEntryMaxCameraHeightID)
+				{
+					handleOnlineMaxCameraHeightChanged(TRUE);
 				}
 				break;
 			}

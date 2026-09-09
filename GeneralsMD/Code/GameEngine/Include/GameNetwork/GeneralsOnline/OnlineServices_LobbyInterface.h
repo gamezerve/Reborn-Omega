@@ -80,6 +80,46 @@ struct LobbyEntry
 	int latency = 0;
 };
 
+// Reborn: Carry Reborn-only lobby options through GO's existing 16-bit camera field without requiring a server fork.
+static constexpr uint16_t REBORN_LOBBY_OPTIONS_MARKER = 0x8000;
+static constexpr uint16_t REBORN_LOBBY_CUSTOM_CAMERA = 0x4000;
+
+inline uint16_t EncodeRebornLobbyOptions(Bool useCustomMaxCameraHeight, Int maxCameraHeight, Int resourceMultiplierPercent)
+{
+	maxCameraHeight = clamp(310, maxCameraHeight, 750);
+	resourceMultiplierPercent = clamp(75, resourceMultiplierPercent, 125);
+	resourceMultiplierPercent = 75 + ((resourceMultiplierPercent - 75) / 5) * 5;
+
+	return REBORN_LOBBY_OPTIONS_MARKER |
+		(useCustomMaxCameraHeight ? REBORN_LOBBY_CUSTOM_CAMERA : 0) |
+		((uint16_t)(maxCameraHeight - 310) << 4) |
+		(uint16_t)((resourceMultiplierPercent - 75) / 5);
+}
+
+inline Bool DecodeRebornLobbyUseCustomMaxCameraHeight(uint16_t lobbyOptions)
+{
+	if ((lobbyOptions & REBORN_LOBBY_OPTIONS_MARKER) == 0)
+		return lobbyOptions > 310;
+
+	return (lobbyOptions & REBORN_LOBBY_CUSTOM_CAMERA) != 0;
+}
+
+inline Int DecodeRebornLobbyMaxCameraHeight(uint16_t lobbyOptions)
+{
+	if ((lobbyOptions & REBORN_LOBBY_OPTIONS_MARKER) == 0)
+		return clamp(310, (Int)lobbyOptions, 750);
+
+	return clamp(310, 310 + (Int)((lobbyOptions >> 4) & 0x01FF), 750);
+}
+
+inline Int DecodeRebornLobbyResourceMultiplier(uint16_t lobbyOptions)
+{
+	if ((lobbyOptions & REBORN_LOBBY_OPTIONS_MARKER) == 0)
+		return 100;
+
+	return clamp(75, 75 + (Int)(lobbyOptions & 0x000F) * 5, 125);
+}
+
 enum class EJoinLobbyResult
 {
 	JoinLobbyResult_Success, // The room was joined.
@@ -420,6 +460,7 @@ public:
 	void ResetCachedRoomData()
 	{
 		m_CurrentLobby = LobbyEntry();
+		m_pendingRebornLobbyOptions.store(0);
 
 		std::scoped_lock<std::mutex> lock(m_rosterCallbackMutex);
 		if (m_RosterNeedsRefreshCallback != nullptr)
@@ -496,6 +537,8 @@ private:
 	std::function<void(EJoinLobbyResult)> m_callbackJoinedLobby = nullptr;
 
 	LobbyEntry m_CurrentLobby;
+	// Reborn: Keep the host's latest local options authoritative until the GO service echoes them back.
+	std::atomic<uint16_t> m_pendingRebornLobbyOptions = 0;
 
 	std::string m_strTURNUsername = "";
 	std::string m_strTURNToken = "";

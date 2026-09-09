@@ -126,6 +126,12 @@ void NGMPGame::SyncWithLobby(LobbyEntry& lobby)
 	startingCash.deposit(lobby.starting_cash, FALSE);
 	setStartingCash(startingCash);
 
+	// Reborn: Decode the host's synchronized camera height and cash multiplier from the GO lobby payload.
+	Int maxCameraHeight = DecodeRebornLobbyMaxCameraHeight(lobby.max_cam_height);
+	setUseCustomMaxCameraHeight(DecodeRebornLobbyUseCustomMaxCameraHeight(lobby.max_cam_height));
+	setLanMaxCameraHeight(maxCameraHeight);
+	setResourceMultiplierPercent(DecodeRebornLobbyResourceMultiplier(lobby.max_cam_height));
+
 }
 
 void NGMPGame::UpdateSlotsFromCurrentLobby()

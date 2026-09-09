@@ -48,6 +48,7 @@
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 static NameKeyType buttonBack = NAMEKEY_INVALID;
 static NameKeyType buttonOK = NAMEKEY_INVALID;
+static NameKeyType buttonRandomMap = NAMEKEY_INVALID;
 static NameKeyType listboxMap = NAMEKEY_INVALID;
 static GameWindow *parent = nullptr;
 static Bool raiseMessageBoxes = FALSE;
@@ -156,6 +157,7 @@ void WOLMapSelectMenuInit( WindowLayout *layout, void *userData )
 
 	buttonBack = TheNameKeyGenerator->nameToKey( "WOLMapSelectMenu.wnd:ButtonBack" );
 	buttonOK = TheNameKeyGenerator->nameToKey( "WOLMapSelectMenu.wnd:ButtonOK" );
+	buttonRandomMap = TheNameKeyGenerator->nameToKey( "WOLMapSelectMenu.wnd:ButtonRandomMap" );
 	listboxMap = TheNameKeyGenerator->nameToKey( "WOLMapSelectMenu.wnd:ListboxMap" );
 	radioButtonSystemMapsID = TheNameKeyGenerator->nameToKey( "WOLMapSelectMenu.wnd:RadioButtonSystemMaps" );
 	radioButtonUserMapsID = TheNameKeyGenerator->nameToKey( "WOLMapSelectMenu.wnd:RadioButtonUserMaps" );
@@ -431,6 +433,50 @@ WindowMsgHandledType WOLMapSelectMenuSystem( GameWindow *window, UnsignedInt msg
 				CustomMatchPreferences pref;
 				pref.setUsesSystemMapDir(FALSE);
 				pref.write();
+			}
+			else if (controlID == buttonRandomMap)
+			{
+				Int playerCount = TheNGMPGame->getNumPlayers();
+				std::vector<AsciiString> validMaps;
+
+				for (std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->begin(); it != TheMapCache->end(); ++it)
+				{
+					const MapMetaData& mmd = it->second;
+
+					// Reborn: Preserve the online stats restriction while using the same random-map rules as LAN and Skirmish.
+#if !defined(GENERALS_ONLINE_ALLOW_ALL_SETTINGS_FOR_STATS_MATCHES)
+					if (TheNGMPGame->getUseStats() && !mmd.m_isOfficial)
+						continue;
+#endif
+
+					if (mmd.m_numPlayers >= playerCount)
+						validMaps.push_back(it->first);
+				}
+
+				if (!validMaps.empty())
+				{
+					Int randomIndex = GameClientRandomValue(0, validMaps.size() - 1);
+					AsciiString randomMap = validMaps[randomIndex];
+
+					const MapMetaData* md = TheMapCache->findMap(randomMap);
+					if (md)
+					{
+						if (md->m_isOfficial)
+						{
+							GameWindow* radioButtonSystemMaps = TheWindowManager->winGetWindowFromId(parent, radioButtonSystemMapsID);
+							GadgetRadioSetSelection(radioButtonSystemMaps, FALSE);
+
+							populateMapListbox(mapList, TRUE, TRUE, randomMap);
+						}
+						else
+						{
+							GameWindow* radioButtonUserMaps = TheWindowManager->winGetWindowFromId(parent, radioButtonUserMapsID);
+							GadgetRadioSetSelection(radioButtonUserMaps, FALSE);
+
+							populateMapListbox(mapList, FALSE, TRUE, randomMap);
+						}
+					}
+				}
 			}
 			else if( controlID == buttonOK )
 			{
