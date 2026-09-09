@@ -1054,42 +1054,42 @@ public:
 					ParkingPlaceBehaviorInterface::PPInfo ppinfo;
 					pp->calcPPInfo(jet->getID(), &ppinfo);
 
-					DEBUG_LOG((
-						"ROCarrierJet TAKEOFF PATH "
-						"frame=%u id=%u index=%d "
-						"jetOrient=%.4f carrierOrient=%.4f "
-						"goal=(%.2f, %.2f, %.2f) "
-						"runwayEnd=(%.2f, %.2f, %.2f) "
-						"approach=(%.2f, %.2f, %.2f)\n",
+					//DEBUG_LOG((
+					//	"ROCarrierJet TAKEOFF PATH "
+					//	"frame=%u id=%u index=%d "
+					//	"jetOrient=%.4f carrierOrient=%.4f "
+					//	"goal=(%.2f, %.2f, %.2f) "
+					//	"runwayEnd=(%.2f, %.2f, %.2f) "
+					//	"approach=(%.2f, %.2f, %.2f)\n",
 
-						TheGameLogic->getFrame(),
-						jet->getID(),
-						getCurPathIndex(),
+					//	TheGameLogic->getFrame(),
+					//	jet->getID(),
+					//	getCurPathIndex(),
 
-						jet->getOrientation(),
-						producer->getOrientation(),
+					//	jet->getOrientation(),
+					//	producer->getOrientation(),
 
-						m_goalPosition.x,
-						m_goalPosition.y,
-						m_goalPosition.z,
+					//	m_goalPosition.x,
+					//	m_goalPosition.y,
+					//	m_goalPosition.z,
 
-						ppinfo.runwayEnd.x,
-						ppinfo.runwayEnd.y,
-						ppinfo.runwayEnd.z,
+					//	ppinfo.runwayEnd.x,
+					//	ppinfo.runwayEnd.y,
+					//	ppinfo.runwayEnd.z,
 
-						ppinfo.runwayApproach.x,
-						ppinfo.runwayApproach.y,
-						ppinfo.runwayApproach.z
-						));
+					//	ppinfo.runwayApproach.x,
+					//	ppinfo.runwayApproach.y,
+					//	ppinfo.runwayApproach.z
+					//	));
 				}
 			}
 		}
 #endif
 
 #if defined(RTS_DEBUG)
-		Real orientBeforeFollowPath = jet->getOrientation();
+		//Real orientBeforeFollowPath = jet->getOrientation();
 		Coord3D posBeforeFollowPath = *jet->getPosition();
-		Int pathIndexBefore = getCurPathIndex();
+		//Int pathIndexBefore = getCurPathIndex();
 #endif
 
 		if (m_landing)
@@ -1150,34 +1150,34 @@ public:
 			producer &&
 			producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO))
 		{
-			DEBUG_LOG((
-				"ROCarrierJet FOLLOWPATH "
-				"frame=%u id=%u "
-				"indexBefore=%d indexAfter=%d "
-				"orientBefore=%.4f orientAfter=%.4f "
-				"posBefore=(%.2f,%.2f,%.2f) "
-				"posAfter=(%.2f,%.2f,%.2f) "
-				"followCarrier=%d\n",
+			//DEBUG_LOG((
+			//	"ROCarrierJet FOLLOWPATH "
+			//	"frame=%u id=%u "
+			//	"indexBefore=%d indexAfter=%d "
+			//	"orientBefore=%.4f orientAfter=%.4f "
+			//	"posBefore=(%.2f,%.2f,%.2f) "
+			//	"posAfter=(%.2f,%.2f,%.2f) "
+			//	"followCarrier=%d\n",
 
-				TheGameLogic->getFrame(),
-				jet->getID(),
+			//	TheGameLogic->getFrame(),
+			//	jet->getID(),
 
-				pathIndexBefore,
-				getCurPathIndex(),
+			//	pathIndexBefore,
+			//	getCurPathIndex(),
 
-				orientBeforeFollowPath,
-				jet->getOrientation(),
+			//	orientBeforeFollowPath,
+			//	jet->getOrientation(),
 
-				posBeforeFollowPath.x,
-				posBeforeFollowPath.y,
-				posBeforeFollowPath.z,
+			//	posBeforeFollowPath.x,
+			//	posBeforeFollowPath.y,
+			//	posBeforeFollowPath.z,
 
-				jet->getPosition()->x,
-				jet->getPosition()->y,
-				jet->getPosition()->z,
+			//	jet->getPosition()->x,
+			//	jet->getPosition()->y,
+			//	jet->getPosition()->z,
 
-				jetAI->friend_shouldFollowMovingCarrierDeck()
-				));
+			//	jetAI->friend_shouldFollowMovingCarrierDeck()
+			//	));
 		}
 #endif
 
@@ -1201,20 +1201,20 @@ public:
 			producer &&
 			producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO))
 		{
-			DEBUG_LOG((
-				"ROCarrierJet TAKEOFF EXIT "
-				"frame=%u id=%u "
-				"jetOrient=%.4f carrierOrient=%.4f "
-				"pos=(%.2f, %.2f, %.2f)\n",
+			//DEBUG_LOG((
+			//	"ROCarrierJet TAKEOFF EXIT "
+			//	"frame=%u id=%u "
+			//	"jetOrient=%.4f carrierOrient=%.4f "
+			//	"pos=(%.2f, %.2f, %.2f)\n",
 
-				TheGameLogic->getFrame(),
-				jet->getID(),
-				jet->getOrientation(),
-				producer->getOrientation(),
-				jet->getPosition()->x,
-				jet->getPosition()->y,
-				jet->getPosition()->z
-				));
+			//	TheGameLogic->getFrame(),
+			//	jet->getID(),
+			//	jet->getOrientation(),
+			//	producer->getOrientation(),
+			//	jet->getPosition()->x,
+			//	jet->getPosition()->y,
+			//	jet->getPosition()->z
+			//	));
 		}
 
 		if (m_landing)
