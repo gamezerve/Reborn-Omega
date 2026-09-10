@@ -166,6 +166,7 @@ public:
 	virtual const ThingTemplate* getReferenceThingTemplate() const override { return nullptr; }
 
 protected:
+	Bool isDisabledByNoSuperweaponRestriction() const; // Reborn: Suppress the superweapon side of exempt upgrade facilities.
 
 	Bool initiateIntentToDoSpecialPower( const Object *targetObj, const Coord3D *targetPos, const Waypoint *way, UnsignedInt commandOptions );
 	void triggerSpecialPower( const Coord3D *location );

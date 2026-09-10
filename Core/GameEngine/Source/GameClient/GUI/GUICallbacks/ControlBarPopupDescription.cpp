@@ -1877,8 +1877,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 
 UnsignedInt buildLimit = thingTemplate->getMaxSimultaneousOfType();
 // Reborn: Do not expose the No Superweapons sentinel as a real build limit for exempt upgrade facilities.
-if (TheGameLogic && TheGameLogic->getSuperweaponRestriction() == SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS &&
-	TheControlBar && TheControlBar->isNoSuperweaponRestrictionExempt(thingTemplate))
+if (TheControlBar && TheControlBar->isNoSuperweaponFunctionalityDisabled(thingTemplate))
 {
 	buildLimit = 0;
 }
@@ -2961,8 +2960,7 @@ if (obj &&
 
 			UnsignedInt buildLimit = thing->getMaxSimultaneousOfType();
 			// Reborn: Do not expose the No Superweapons sentinel as a real build limit for exempt upgrade facilities.
-			if (TheGameLogic && TheGameLogic->getSuperweaponRestriction() == SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS &&
-				TheControlBar && TheControlBar->isNoSuperweaponRestrictionExempt(thing))
+			if (TheControlBar && TheControlBar->isNoSuperweaponFunctionalityDisabled(thing))
 			{
 				buildLimit = 0;
 			}

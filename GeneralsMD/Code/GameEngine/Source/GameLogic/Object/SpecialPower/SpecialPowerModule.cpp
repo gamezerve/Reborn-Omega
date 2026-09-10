@@ -137,7 +137,8 @@ SpecialPowerModule::SpecialPowerModule( Thing *thing, const ModuleData *moduleDa
 	// but there is already a science granted for our shared superweapon,
 	// lets make sure TheIngameUI knows about our public timer
 	// add this weapon to the UI if it has a public timer for all to see
-	if( m_pausedCount == 0 &&
+	if( !isDisabledByNoSuperweaponRestriction() &&
+			m_pausedCount == 0 &&
 			getSpecialPowerTemplate()->isSharedNSync() == TRUE &&
 			getSpecialPowerTemplate()->hasPublicTimer() == TRUE &&
 			getObject()->getControllingPlayer() &&
@@ -175,6 +176,9 @@ SpecialPowerModule::~SpecialPowerModule()
 //-------------------------------------------------------------------------------------------------
 void SpecialPowerModule::setReadyFrame( UnsignedInt frame )
 {
+	if (isDisabledByNoSuperweaponRestriction())
+		return;
+
 	m_availableOnFrame = frame;
 
 	//If a script should change the ready frame, we need to update the paused frame. This value isn't
@@ -210,6 +214,10 @@ void SpecialPowerModule::onSpecialPowerCreation()
 {
 	// THIS gets called by addScience(), that is, when the General has purchased a new special power,
 	// and this module is thus activated.
+
+	// Reborn: Keep the module permanently dormant when its structure is upgrade-only.
+	if (isDisabledByNoSuperweaponRestriction())
+		return;
 
 	// start a power recharge going
 	startPowerRecharge();
@@ -295,6 +303,9 @@ Bool SpecialPowerModule::isModuleForPower( const SpecialPowerTemplate *specialPo
 //-------------------------------------------------------------------------------------------------
 Bool SpecialPowerModule::isReady() const
 {
+	if (isDisabledByNoSuperweaponRestriction())
+		return FALSE;
+
 #if defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 	// this is a cheat ... remove this for release!
 	if( TheGlobalData->m_specialPowerUsesDelay == FALSE )
@@ -327,6 +338,9 @@ Bool SpecialPowerModule::isReady() const
 	//-------------------------------------------------------------------------------------------------
 Real SpecialPowerModule::getPercentReady() const
 {
+	if (isDisabledByNoSuperweaponRestriction())
+		return 0.0f;
+
 	// get the module data
 	const SpecialPowerModuleData* modData = getSpecialPowerModuleData();
 
@@ -407,6 +421,9 @@ Bool SpecialPowerModule::isScriptOnly() const
 //-------------------------------------------------------------------------------------------------
 void SpecialPowerModule::startPowerRecharge()
 {
+	if (isDisabledByNoSuperweaponRestriction())
+		return;
+
 	/*DEBUG_LOG(("START RECHARGE: object=%s power=%s currentFrame=%u reloadTime=%u oldReadyFrame=%u",
 		getObject() ? getObject()->getTemplate()->getName().str() : "<null>",
 		getSpecialPowerTemplate() ? getSpecialPowerTemplate()->getName().str() : "<null>",
@@ -514,6 +531,9 @@ Bool SpecialPowerModule::initiateIntentToDoSpecialPower( const Object *targetObj
 //-------------------------------------------------------------------------------------------------
 void SpecialPowerModule::triggerSpecialPower( const Coord3D *location )
 {
+	if (isDisabledByNoSuperweaponRestriction())
+		return;
+
 	aboutToDoSpecialPower( location );	// do BEFORE recharge
 
 	createViewObject(location);
@@ -566,6 +586,9 @@ void SpecialPowerModule::createViewObject( const Coord3D *location )
 //-------------------------------------------------------------------------------------------------
 void SpecialPowerModule::markSpecialPowerTriggered( const Coord3D *location )
 {
+	if (isDisabledByNoSuperweaponRestriction())
+		return;
+
 	triggerSpecialPower( location );
 }
 
@@ -705,7 +728,7 @@ void SpecialPowerModule::aboutToDoSpecialPower( const Coord3D *location )
 //-------------------------------------------------------------------------------------------------
 void SpecialPowerModule::doSpecialPower( UnsignedInt commandOptions )
 {
-	if (m_pausedCount > 0 || getObject()->isDisabled()) {
+	if (isDisabledByNoSuperweaponRestriction() || m_pausedCount > 0 || getObject()->isDisabled()) {
 		return;
 	}
 
@@ -727,7 +750,7 @@ void SpecialPowerModule::doSpecialPower( UnsignedInt commandOptions )
 //-------------------------------------------------------------------------------------------------
 void SpecialPowerModule::doSpecialPowerAtObject( Object *obj, UnsignedInt commandOptions )
 {
-	if (m_pausedCount > 0 || getObject()->isDisabled()) {
+	if (isDisabledByNoSuperweaponRestriction() || m_pausedCount > 0 || getObject()->isDisabled()) {
 		return;
 	}
 
@@ -749,7 +772,7 @@ void SpecialPowerModule::doSpecialPowerAtObject( Object *obj, UnsignedInt comman
 //-------------------------------------------------------------------------------------------------
 void SpecialPowerModule::doSpecialPowerAtLocation( const Coord3D *loc, Real angle, UnsignedInt commandOptions )
 {
-	if (m_pausedCount > 0 || getObject()->isDisabled()) {
+	if (isDisabledByNoSuperweaponRestriction() || m_pausedCount > 0 || getObject()->isDisabled()) {
 		return;
 	}
 
@@ -777,7 +800,7 @@ void SpecialPowerModule::doSpecialPowerAtLocation( const Coord3D *loc, Real angl
 //-------------------------------------------------------------------------------------------------
 void SpecialPowerModule::doSpecialPowerUsingWaypoints( const Waypoint *way, UnsignedInt commandOptions )
 {
-	if (m_pausedCount > 0 || getObject()->isDisabled()) {
+	if (isDisabledByNoSuperweaponRestriction() || m_pausedCount > 0 || getObject()->isDisabled()) {
 		return;
 	}
 
@@ -827,6 +850,9 @@ void SpecialPowerModule::pauseCountdown( Bool pause )
 //-------------------------------------------------------------------------------------------------
 UnsignedInt SpecialPowerModule::getReadyFrame() const
 {
+	if (isDisabledByNoSuperweaponRestriction())
+		return 0xFFFFFFFF;
+
 	if ( getSpecialPowerTemplate()->isSharedNSync() )
 	{
 		const Object* obj = getObject();
@@ -905,7 +931,8 @@ void SpecialPowerModule::loadPostProcess()
 	// but there is already a science granted for our shared superweapon,
 	// lets make sure TheIngameUI knows about our public timer
 	// add this weapon to the UI if it has a public timer for all to see
-	if( m_pausedCount == 0 &&
+	if( !isDisabledByNoSuperweaponRestriction() &&
+			m_pausedCount == 0 &&
 			getSpecialPowerTemplate()->isSharedNSync() == TRUE &&
 			getSpecialPowerTemplate()->hasPublicTimer() == TRUE &&
 			getObject()->getControllingPlayer() &&
@@ -922,4 +949,15 @@ void SpecialPowerModule::loadPostProcess()
 
 
 
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return true when this structure is retained for upgrades but its superweapon is disabled. */
+//-------------------------------------------------------------------------------------------------
+Bool SpecialPowerModule::isDisabledByNoSuperweaponRestriction() const
+{
+	const Object* object = getObject();
+	const SpecialPowerTemplate* specialPower = getSpecialPowerTemplate();
+	return TheControlBar && object && specialPower && specialPower->hasPublicTimer() &&
+		TheControlBar->isNoSuperweaponFunctionalityDisabled(object->getTemplate());
 }

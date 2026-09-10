@@ -1775,6 +1775,10 @@ void Player::onStructureConstructionComplete( Object *builder, Object *structure
 	if( TheControlBar )
 		TheControlBar->markUIDirty();
 
+	// Reborn: Exempt No Superweapons structures remain upgrade facilities, not public superweapons.
+	if (TheControlBar && TheControlBar->isNoSuperweaponFunctionalityDisabled(structure->getTemplate()))
+		return;
+
 	// This object may require us to play some EVA sounds.
 	Player *localPlayer = ThePlayerList->getLocalPlayer();
 
@@ -3063,7 +3067,7 @@ Bool Player::canBuildMoreOfType( const ThingTemplate *whatToBuild ) const
 {
 	// Reborn: No Superweapon is stronger than a numeric cap. Keep non-UI build
 	// paths and AI from bypassing the removed construction buttons.
-	const Bool noSuperweaponExempt = TheControlBar && TheControlBar->isNoSuperweaponRestrictionExempt(whatToBuild);
+	const Bool noSuperweaponExempt = TheControlBar && TheControlBar->isNoSuperweaponFunctionalityDisabled(whatToBuild);
 	if (TheGameLogic && TheGameLogic->getSuperweaponRestriction() == SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS &&
 		whatToBuild->isMaxSimultaneousDeterminedBySuperweaponRestriction() && !noSuperweaponExempt)
 	{

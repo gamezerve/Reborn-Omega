@@ -3482,6 +3482,21 @@ Bool ControlBar::isNoSuperweaponRestrictionExempt(const ThingTemplate* thingTemp
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Disable only the superweapon functionality of an exempt upgrade facility. */
+//-------------------------------------------------------------------------------------------------
+Bool ControlBar::isNoSuperweaponFunctionalityDisabled(const ThingTemplate* thingTemplate) const
+{
+#if !RTS_GENERALS
+	return TheGameLogic &&
+		TheGameLogic->getSuperweaponRestriction() == SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS &&
+		thingTemplate && thingTemplate->isMaxSimultaneousDeterminedBySuperweaponRestriction() &&
+		isNoSuperweaponRestrictionExempt(thingTemplate);
+#else
+	return FALSE;
+#endif
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Reborn: Remove lobby-controlled superweapon construction buttons from every command set.
 	* Scanning the final command-set list also covers submenu sets and every CommandSetUpgrade target.
 	* The overrides are match-local and are cleared by GameLogic::reset(). */
@@ -3492,6 +3507,55 @@ void ControlBar::applyNoSuperweaponRestriction()
 	if (!TheGameLogic)
 		return;
 
+	auto removeSpecialPowerButtons = [this](const AsciiString& commandSetName)
+	{
+		if (commandSetName.isEmpty())
+			return;
+
+		const CommandSet* commandSet = findCommandSet(commandSetName);
+		if (!commandSet)
+			return;
+
+		for (Int slot = 0; slot < MAX_COMMANDS_PER_SET; ++slot)
+		{
+			const CommandButton* commandButton = commandSet->getCommandButton(slot);
+			if (!commandButton)
+				continue;
+
+			const GUICommandType commandType = commandButton->getCommandType();
+			const Bool isSpecialPowerCommand = commandType == GUI_COMMAND_SPECIAL_POWER ||
+				commandType == GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT ||
+				commandType == GUI_COMMAND_SPECIAL_POWER_CONSTRUCT ||
+				commandType == GUI_COMMAND_SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT;
+			const SpecialPowerTemplate* specialPower = commandButton->getSpecialPowerTemplate();
+			if (isSpecialPowerCommand && specialPower && specialPower->hasPublicTimer())
+			{
+				// Reborn: Preserve upgrade and utility buttons while removing the disabled superweapon action.
+				TheGameLogic->setControlBarOverride(commandSet->getName(), slot, nullptr);
+			}
+		}
+	};
+
+	auto removeTemplateSpecialPowerButtons = [this, &removeSpecialPowerButtons](const ThingTemplate* thingTemplate)
+	{
+		removeSpecialPowerButtons(thingTemplate->friend_getCommandSetString());
+
+		const ModuleInfo& moduleInfo = thingTemplate->getBehaviorModuleInfo();
+		for (Int moduleIndex = 0; moduleIndex < moduleInfo.getCount(); ++moduleIndex)
+		{
+			if (moduleInfo.getNthName(moduleIndex).compareNoCase("CommandSetUpgrade") != 0)
+				continue;
+
+			const CommandSetUpgradeModuleData* moduleData =
+				static_cast<const CommandSetUpgradeModuleData*>(moduleInfo.getNthData(moduleIndex));
+			if (moduleData)
+			{
+				removeSpecialPowerButtons(moduleData->m_newCommandSet);
+				removeSpecialPowerButtons(moduleData->m_newCommandSetAlt);
+			}
+		}
+	};
+
 	for (const CommandSet* commandSet = m_commandSets; commandSet; commandSet = commandSet->friend_getNext())
 	{
 		for (Int slot = 0; slot < MAX_COMMANDS_PER_SET; ++slot)
@@ -3501,8 +3565,14 @@ void ControlBar::applyNoSuperweaponRestriction()
 				continue;
 
 			const ThingTemplate* thingTemplate = commandButton->getThingTemplate();
-			if (thingTemplate && thingTemplate->isMaxSimultaneousDeterminedBySuperweaponRestriction() &&
-				!isNoSuperweaponRestrictionExempt(thingTemplate))
+			if (!thingTemplate || !thingTemplate->isMaxSimultaneousDeterminedBySuperweaponRestriction())
+				continue;
+
+			if (isNoSuperweaponRestrictionExempt(thingTemplate))
+			{
+				removeTemplateSpecialPowerButtons(thingTemplate);
+			}
+			else
 			{
 				TheGameLogic->setControlBarOverride(commandSet->getName(), slot, nullptr);
 			}

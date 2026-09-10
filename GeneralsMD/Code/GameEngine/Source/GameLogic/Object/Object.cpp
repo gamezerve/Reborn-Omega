@@ -5134,6 +5134,11 @@ void Object::look()
 			//reveal to all range can specify a different value so we can get a much smaller reveal distance.
 			// And don't reveal while under construction.  When finished, a refresh occurs, so don't worry.
 			Real shroudRevealToAllRange = getTemplate()->getShroudRevealToAllRange();
+			if (TheControlBar && TheControlBar->isNoSuperweaponFunctionalityDisabled(getTemplate()))
+			{
+				// Reborn: Do not reveal an upgrade-only superweapon facility to enemy players.
+				shroudRevealToAllRange = 0.0f;
+			}
 			if( shroudRevealToAllRange > 0.0f && !testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION ) )
 			{
 				//Kris: August 20, 2003
