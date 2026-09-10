@@ -50,6 +50,14 @@ enum
 	PLAYERTEMPLATE_MIN = PLAYERTEMPLATE_OBSERVER
 };
 
+// Reborn: Reserve one serialized value for games where superweapon construction
+// is disabled completely. Zero keeps its original Unlimited meaning.
+enum SuperweaponRestrictionValue
+{
+	SUPERWEAPON_RESTRICTION_UNLIMITED = 0,
+	SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS = 0xffff
+};
+
 /**
   * GameSlot class - maintains information about the contents of a
 	* game slot.  This persists throughout the game.

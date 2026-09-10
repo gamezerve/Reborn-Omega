@@ -1303,6 +1303,13 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 		{
 			m_superweaponRestriction = 0;
 		}
+
+		// Reborn: Apply No Superweapon after the synchronized match option has
+		// reached GameLogic. Save games restore their serialized overrides instead.
+		if (m_superweaponRestriction == SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS && TheControlBar)
+		{
+			TheControlBar->applyNoSuperweaponRestriction();
+		}
 	}
 
 	checkForDuplicateColors( TheGameInfo );

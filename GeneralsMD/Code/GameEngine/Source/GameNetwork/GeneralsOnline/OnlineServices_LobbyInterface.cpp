@@ -526,6 +526,25 @@ void NGMP_OnlineServices_LobbyInterface::SendRebornResourceMultiplier(Int resour
 	SendAnnouncementMessageToCurrentLobby(message, true);
 }
 
+void NGMP_OnlineServices_LobbyInterface::SendRebornSuperweaponRestriction(UnsignedShort restriction)
+{
+	if (!IsHost())
+		return;
+
+	UnicodeString value;
+	if (restriction == SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS)
+		value = L"No Superweapons";
+	else if (restriction == SUPERWEAPON_RESTRICTION_UNLIMITED)
+		value = L"Unlimited";
+	else
+		value.format(L"%u", clamp(1, (Int)restriction, 3));
+
+	// Reborn: Use GO's non-rate-limited announcement channel for both synchronization and presentation.
+	UnicodeString message;
+	message.format(L"The host has set the superweapon rule to %ls.", value.str());
+	SendAnnouncementMessageToCurrentLobby(message, true);
+}
+
 void NGMP_OnlineServices_LobbyInterface::RequestRebornLobbyOptions()
 {
 	if (!IsInLobby() || IsHost())
@@ -543,8 +562,39 @@ Bool NGMP_OnlineServices_LobbyInterface::HandleRebornLobbyControlMessage(const s
 	if (message.find(requestMessage) != std::string::npos)
 	{
 		if (IsHost())
+		{
 			SendRebornResourceMultiplier(TheNGMPGame ? TheNGMPGame->getResourceMultiplierPercent() : g_resourceMultiplierPercent);
+			SendRebornSuperweaponRestriction(TheNGMPGame ? TheNGMPGame->getSuperweaponRestriction() : 1);
+		}
 		return TRUE;
+	}
+
+	static const std::string superweaponPrefix = "The host has set the superweapon rule to ";
+	std::string::size_type superweaponPosition = message.find(superweaponPrefix);
+	if (superweaponPosition != std::string::npos)
+	{
+		// Reborn: Only the lobby owner may enforce the extended superweapon rule.
+		if (senderUserID != m_CurrentLobby.owner)
+			return TRUE;
+
+		const char* value = message.c_str() + superweaponPosition + superweaponPrefix.length();
+		UnsignedShort restriction = 1;
+		if (strncmp(value, "No Superweapons", 15) == 0)
+			restriction = SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS;
+		else if (strncmp(value, "Unlimited", 9) == 0)
+			restriction = SUPERWEAPON_RESTRICTION_UNLIMITED;
+		else
+			restriction = (UnsignedShort)clamp(1, atoi(value), 3);
+
+		if (TheNGMPGame)
+			TheNGMPGame->setSuperweaponRestriction(restriction);
+
+		std::scoped_lock<std::mutex> lock(m_rosterCallbackMutex);
+		if (m_RosterNeedsRefreshCallback != nullptr)
+			m_RosterNeedsRefreshCallback();
+
+		// Reborn: Keep the host's human-readable announcement visible to the lobby.
+		return FALSE;
 	}
 
 	std::string::size_type multiplierPosition = message.find(multiplierPrefix);

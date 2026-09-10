@@ -725,6 +725,7 @@ public:
 	/// find existing command set
 	//const CommandSet *findCommandSet( const AsciiString& name );
 	const CommandSet* findCommandSet(const AsciiString& name) const;
+	void applyNoSuperweaponRestriction(); // Reborn: Hide every lobby-controlled superweapon construction button for No Superweapon matches.
 
 	void showPurchaseScience();
 	void hidePurchaseScience();

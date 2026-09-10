@@ -90,7 +90,9 @@ public:
 	UnicodeString getRemoteIPEntry(Int i);	// convenience function
 
   Bool getSuperweaponRestricted() const;
+	UnsignedShort getSuperweaponRestriction() const; // Reborn: Preserve 1/2/3/Unlimited/No Superweapon between hosted matches.
   Money getStartingCash() const;
   void setSuperweaponRestricted( Bool superweaponRestricted);
+	void setSuperweaponRestriction(UnsignedShort superweaponRestriction); // Reborn
   void setStartingCash( const Money & startingCash );
 };

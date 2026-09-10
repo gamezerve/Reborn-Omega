@@ -80,6 +80,8 @@ public:
 
   Bool getSuperweaponRestricted() const;
   void setSuperweaponRestricted( Bool superweaponRestricted);
+	UnsignedShort getSuperweaponRestriction() const; // Reborn
+	void setSuperweaponRestriction(UnsignedShort superweaponRestriction); // Reborn
 
   Money getStartingCash() const;
   void setStartingCash( const Money &startingCash );

@@ -123,10 +123,7 @@ static NameKeyType checkMaxCameraHeightID = NAMEKEY_INVALID;
 static NameKeyType textEntryMaxCameraHeightID = NAMEKEY_INVALID;
 static NameKeyType windowMapID = NAMEKEY_INVALID;
 
-static NameKeyType checkboxLimitSuperweaponsUnlimitedID = NAMEKEY_INVALID;
-static NameKeyType checkboxLimitSuperweapons1ID = NAMEKEY_INVALID;
-static NameKeyType checkboxLimitSuperweapons2ID = NAMEKEY_INVALID;
-static NameKeyType checkboxLimitSuperweapons3ID = NAMEKEY_INVALID;
+static NameKeyType comboBoxSuperweaponRestrictionID = NAMEKEY_INVALID; // Reborn
 
 // Window Pointers ------------------------------------------------------------------------
 static GameWindow *parentLanGameOptions = nullptr;
@@ -143,12 +140,7 @@ static GameWindow* checkMaxCameraHeight = nullptr;
 static GameWindow* textEntryMaxCameraHeight = nullptr;
 static GameWindow *windowMap = nullptr;
 
-static GameWindow* checkboxLimitSuperweaponsUnlimited = nullptr;
-static GameWindow* checkboxLimitSuperweapons1 = nullptr;
-static GameWindow* checkboxLimitSuperweapons2 = nullptr;
-static GameWindow* checkboxLimitSuperweapons3 = nullptr;
-
-static Bool isUpdatingSuperweaponCheckboxes = FALSE;
+static GameWindow* comboBoxSuperweaponRestriction = nullptr; // Reborn
 
 static GameWindow *comboBoxPlayer[MAX_SLOTS] = {0};
 static GameWindow *buttonAccept[MAX_SLOTS] = {0};
@@ -773,33 +765,67 @@ static void handleResourceMultiplierSelection()
 //  }
 //}
 
-static void updateSuperweaponLimitCheckboxes(Int restriction)
+// Reborn: Present all superweapon rules in the same compact combo-box style as cash options.
+static void PopulateLANSuperweaponRestrictionComboBox(GameWindow* combo)
 {
-	isUpdatingSuperweaponCheckboxes = TRUE;
-
-	GadgetCheckBoxSetChecked(checkboxLimitSuperweaponsUnlimited, restriction == 0);
-	GadgetCheckBoxSetChecked(checkboxLimitSuperweapons1, restriction == 1);
-	GadgetCheckBoxSetChecked(checkboxLimitSuperweapons2, restriction == 2);
-	GadgetCheckBoxSetChecked(checkboxLimitSuperweapons3, restriction == 3);
-
-	isUpdatingSuperweaponCheckboxes = FALSE;
-}
-
-static void handleLimitSuperweaponsClick(Int restriction)
-{
-	if (isUpdatingSuperweaponCheckboxes)
+	if (!combo)
 		return;
 
-	LANGameInfo* myGame = TheLAN->GetMyGame();
+	static const UnsignedShort values[] = { 1, 2, 3, SUPERWEAPON_RESTRICTION_UNLIMITED, SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS };
+	static const char* labels[] = { "GUI:LimitSuperweapons1", "GUI:LimitSuperweapons2", "GUI:LimitSuperweapons3", "GUI:LimitSuperweaponsUnlimited", "GUI:NoSuperweapons" };
+	LANGameInfo* game = TheLAN ? TheLAN->GetMyGame() : nullptr;
+	UnsignedShort current = game ? game->getSuperweaponRestriction() : SUPERWEAPON_RESTRICTION_UNLIMITED;
+	Int selected = 3;
 
-	if (!myGame)
+	GadgetComboBoxReset(combo);
+	for (Int i = 0; i < ARRAY_SIZE(values); ++i)
+	{
+		GadgetComboBoxAddEntry(combo, TheGameText->fetch(labels[i]), GameMakeColor(255, 255, 255, 255));
+		GadgetComboBoxSetItemData(combo, i, (void*)(UnsignedInt)values[i]);
+		if (values[i] == current)
+			selected = i;
+	}
+
+	GadgetComboBoxSetSelectedPos(combo, selected, TRUE);
+	GadgetComboBoxCenterSelectedEntry(combo);
+}
+
+static void updateLANSuperweaponRestrictionSelection(UnsignedShort restriction)
+{
+	if (!comboBoxSuperweaponRestriction)
+		return;
+
+	for (Int i = 0; i < GadgetComboBoxGetLength(comboBoxSuperweaponRestriction); ++i)
+	{
+		if ((UnsignedShort)(UnsignedInt)GadgetComboBoxGetItemData(comboBoxSuperweaponRestriction, i) == restriction)
+		{
+			GadgetComboBoxSetSelectedPos(comboBoxSuperweaponRestriction, i, TRUE);
+			break;
+		}
+	}
+	GadgetComboBoxCenterSelectedEntry(comboBoxSuperweaponRestriction);
+}
+
+static void handleLANSuperweaponRestrictionSelection()
+{
+	LANGameInfo* myGame = TheLAN ? TheLAN->GetMyGame() : nullptr;
+	if (!myGame || !myGame->amIHost() || !comboBoxSuperweaponRestriction)
+		return;
+
+	Int selected = -1;
+	GadgetComboBoxGetSelectedPos(comboBoxSuperweaponRestriction, &selected);
+	if (selected < 0)
+		return;
+
+	UnsignedShort restriction = (UnsignedShort)(UnsignedInt)GadgetComboBoxGetItemData(comboBoxSuperweaponRestriction, selected);
+	if (myGame->getSuperweaponRestriction() == restriction)
 		return;
 
 	myGame->setSuperweaponRestriction(restriction);
 	myGame->resetAccepted();
-	updateSuperweaponLimitCheckboxes(restriction);
+	GadgetComboBoxCenterSelectedEntry(comboBoxSuperweaponRestriction);
 
-	if (myGame->amIHost() && !s_isIniting)
+	if (!s_isIniting)
 	{
 		TheLAN->RequestGameOptions(GenerateGameOptionsString(), true);
 		lanUpdateSlotList();
@@ -906,10 +932,7 @@ void InitLanGameGadgets()
 	buttonChatID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:ButtonEmote" ); // TODO Rename ButtonEmote to ButtonChat in .wnd file
 	buttonSelectMapID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:ButtonSelectMap" );
   //checkboxLimitSuperweaponsID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:CheckboxLimitSuperweapons" );
-	checkboxLimitSuperweaponsUnlimitedID = TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:CheckboxLimitSuperweaponsUnlimited");
-	checkboxLimitSuperweapons1ID = TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:CheckboxLimitSuperweapons1");
-	checkboxLimitSuperweapons2ID = TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:CheckboxLimitSuperweapons2");
-	checkboxLimitSuperweapons3ID = TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:CheckboxLimitSuperweapons3");
+	comboBoxSuperweaponRestrictionID = TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:ComboBoxSuperweaponRestriction"); // Reborn
   comboBoxStartingCashID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:ComboBoxStartingCash" );
 	comboBoxResourceMultiplierID = TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:ComboBoxResourceMultiplier"); // Reborn: resource multiplier combo box
 	checkMaxCameraHeightID = TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:CheckMaxCameraHeight");
@@ -935,17 +958,9 @@ void InitLanGameGadgets()
 	DEBUG_ASSERTCRASH(textEntryMapDisplay, ("Could not find the textEntryMapDisplay"));
   //checkboxLimitSuperweapons = TheWindowManager->winGetWindowFromId( parentLanGameOptions, checkboxLimitSuperweaponsID );
   //DEBUG_ASSERTCRASH(checkboxLimitSuperweapons, ("Could not find the checkboxLimitSuperweapons"));
-	checkboxLimitSuperweaponsUnlimited = TheWindowManager->winGetWindowFromId(parentLanGameOptions, checkboxLimitSuperweaponsUnlimitedID);
-	DEBUG_ASSERTCRASH(checkboxLimitSuperweaponsUnlimited, ("Could not find checkboxLimitSuperweaponsUnlimited"));
-
-	checkboxLimitSuperweapons1 = TheWindowManager->winGetWindowFromId(parentLanGameOptions, checkboxLimitSuperweapons1ID);
-	DEBUG_ASSERTCRASH(checkboxLimitSuperweapons1, ("Could not find checkboxLimitSuperweapons1"));
-
-	checkboxLimitSuperweapons2 = TheWindowManager->winGetWindowFromId(parentLanGameOptions, checkboxLimitSuperweapons2ID);
-	DEBUG_ASSERTCRASH(checkboxLimitSuperweapons2, ("Could not find checkboxLimitSuperweapons2"));
-
-	checkboxLimitSuperweapons3 = TheWindowManager->winGetWindowFromId(parentLanGameOptions, checkboxLimitSuperweapons3ID);
-	DEBUG_ASSERTCRASH(checkboxLimitSuperweapons3, ("Could not find checkboxLimitSuperweapons3"));
+	comboBoxSuperweaponRestriction = TheWindowManager->winGetWindowFromId(parentLanGameOptions, comboBoxSuperweaponRestrictionID); // Reborn
+	DEBUG_ASSERTCRASH(comboBoxSuperweaponRestriction, ("Could not find comboBoxSuperweaponRestriction"));
+	PopulateLANSuperweaponRestrictionComboBox(comboBoxSuperweaponRestriction);
 
 
   comboBoxStartingCash = TheWindowManager->winGetWindowFromId( parentLanGameOptions, comboBoxStartingCashID );
@@ -1055,10 +1070,7 @@ void DeinitLanGameGadgets()
 	textEntryChat = nullptr;
 	textEntryMapDisplay = nullptr;
   //checkboxLimitSuperweapons = nullptr;
-	checkboxLimitSuperweaponsUnlimited = nullptr;
-	checkboxLimitSuperweapons1 = nullptr;
-	checkboxLimitSuperweapons2 = nullptr;
-	checkboxLimitSuperweapons3 = nullptr;
+	comboBoxSuperweaponRestriction = nullptr;
   comboBoxStartingCash = nullptr;
 	comboBoxResourceMultiplier = nullptr;
 	checkMaxCameraHeight = nullptr;
@@ -1143,8 +1155,7 @@ void LanGameOptionsMenuInit( WindowLayout *layout, void *userData )
 		game->setMap( pref.getPreferredMap() );
     game->setStartingCash( pref.getStartingCash() );
 		game->setResourceMultiplierPercent(g_resourceMultiplierPercent); // Reborn
-    //game->setSuperweaponRestriction( pref.getSuperweaponRestricted() ? 1 : 0 );
-		game->setSuperweaponRestriction(0);
+		game->setSuperweaponRestriction(pref.getSuperweaponRestriction()); // Reborn: Restore the complete list selection for new hosted LAN games.
 		game->setUseCustomMaxCameraHeight(FALSE);
 		game->setLanMaxCameraHeight(310);
 		AsciiString lowerMap = pref.getPreferredMap();
@@ -1181,10 +1192,7 @@ void LanGameOptionsMenuInit( WindowLayout *layout, void *userData )
 		buttonStart->winSetText(TheGameText->fetch("GUI:Accept"));
 		buttonSelectMap->winEnable( FALSE );
     //checkboxLimitSuperweapons->winEnable( FALSE ); // Can look but only host can touch
-		checkboxLimitSuperweaponsUnlimited->winEnable(FALSE);
-		checkboxLimitSuperweapons1->winEnable(FALSE);
-		checkboxLimitSuperweapons2->winEnable(FALSE);
-		checkboxLimitSuperweapons3->winEnable(FALSE);
+		comboBoxSuperweaponRestriction->winEnable(FALSE);
 
     comboBoxStartingCash->winEnable( FALSE );      // Ditto
 		comboBoxResourceMultiplier->winEnable(FALSE);   // Reborn: Ditto
@@ -1266,7 +1274,7 @@ void updateGameOptions()
 		GadgetStaticTextSetText(textEntryMapDisplay, mapDisplayName);
 
     //GadgetCheckBoxSetChecked( checkboxLimitSuperweapons, theGame->getSuperweaponRestriction() != 0 );
-		updateSuperweaponLimitCheckboxes(theGame->getSuperweaponRestriction());
+		updateLANSuperweaponRestrictionSelection(theGame->getSuperweaponRestriction());
 
 		Int itemCount = GadgetComboBoxGetLength(comboBoxStartingCash);
     Int index = 0;
@@ -1579,6 +1587,10 @@ WindowMsgHandledType LanGameOptionsMenuSystem( GameWindow *window, UnsignedInt m
 				{
 					handleResourceMultiplierSelection();
 				}
+				else if (controlID == comboBoxSuperweaponRestrictionID) // Reborn
+				{
+					handleLANSuperweaponRestrictionSelection();
+				}
         else
         {
 				  for (Int i = 0; i < MAX_SLOTS; i++)
@@ -1711,22 +1723,6 @@ WindowMsgHandledType LanGameOptionsMenuSystem( GameWindow *window, UnsignedInt m
         //{
         //  handleLimitSuperweaponsClick();
         //}
-				else if (controlID == checkboxLimitSuperweaponsUnlimitedID)
-				{
-					handleLimitSuperweaponsClick(0);
-				}
-				else if (controlID == checkboxLimitSuperweapons1ID)
-				{
-					handleLimitSuperweaponsClick(1);
-				}
-				else if (controlID == checkboxLimitSuperweapons2ID)
-				{
-					handleLimitSuperweaponsClick(2);
-				}
-				else if (controlID == checkboxLimitSuperweapons3ID)
-				{
-					handleLimitSuperweaponsClick(3);
-				}
 				else
 				{
 					for (Int i = 0; i < MAX_SLOTS; i++)

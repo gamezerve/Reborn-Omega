@@ -210,7 +210,11 @@ void LANAPI::OnGameStart()
 		if (m_currentGame->amIHost())
     {
     	pref["Map"] = AsciiStringToQuotedPrintable(m_currentGame->getMap());
-      pref.setSuperweaponRestricted( m_currentGame->getSuperweaponRestriction() > 0 );
+#if RTS_GENERALS
+		pref.setSuperweaponRestricted(m_currentGame->getSuperweaponRestriction() != 0);
+#else
+		pref.setSuperweaponRestriction(m_currentGame->getSuperweaponRestriction()); // Reborn
+#endif
       pref.setStartingCash( m_currentGame->getStartingCash() );
     }
 		pref.write();

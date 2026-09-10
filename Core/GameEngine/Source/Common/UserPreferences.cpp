@@ -49,6 +49,7 @@
 #include "Common/MultiplayerSettings.h"
 #include "GameClient/MapUtil.h"
 #include "GameClient/ChallengeGenerals.h"
+#include "GameNetwork/GameInfo.h" // Reborn: Shared superweapon restriction values.
 #include "GameNetwork/GameSpy/PeerDefs.h"
 
 #if defined(GENERALS_ONLINE)
@@ -740,19 +741,57 @@ static const char superweaponRestrictionKey[] = "SuperweaponRestrict";
 
 Bool CustomMatchPreferences::getSuperweaponRestricted() const
 {
-  const_iterator it = find(superweaponRestrictionKey);
-  if (it == end())
-  {
-    return false;
-  }
-
-  return ( it->second.compareNoCase( "yes" ) == 0 );
+#if RTS_GENERALS
+	const_iterator it = find(superweaponRestrictionKey);
+	if (it == end())
+		return false;
+	return (it->second.compareNoCase("yes") == 0);
+#else
+	return getSuperweaponRestriction() != SUPERWEAPON_RESTRICTION_UNLIMITED;
+#endif
 }
 
 void CustomMatchPreferences::setSuperweaponRestricted( Bool superweaponRestricted )
 {
-  (*this)[superweaponRestrictionKey] = superweaponRestricted ? "Yes" : "No";
+#if RTS_GENERALS
+	(*this)[superweaponRestrictionKey] = superweaponRestricted ? "Yes" : "No";
+#else
+	setSuperweaponRestriction(superweaponRestricted ? 1 : SUPERWEAPON_RESTRICTION_UNLIMITED);
+#endif
 }
+
+#if !RTS_GENERALS
+UnsignedShort CustomMatchPreferences::getSuperweaponRestriction() const
+{
+	const_iterator it = find(superweaponRestrictionKey);
+	if (it == end())
+		return SUPERWEAPON_RESTRICTION_UNLIMITED;
+
+	// Reborn: Read legacy Yes/No preferences as well as the new numeric format.
+	if (it->second.compareNoCase("yes") == 0)
+		return 1;
+	if (it->second.compareNoCase("no") == 0)
+		return SUPERWEAPON_RESTRICTION_UNLIMITED;
+
+	Int value = atoi(it->second.str());
+	if (value != 0 && value != 1 && value != 2 && value != 3 && value != SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS)
+		value = SUPERWEAPON_RESTRICTION_UNLIMITED;
+	return (UnsignedShort)value;
+}
+
+void CustomMatchPreferences::setSuperweaponRestriction(UnsignedShort superweaponRestriction)
+{
+	if (superweaponRestriction != 0 && superweaponRestriction != 1 && superweaponRestriction != 2 &&
+		superweaponRestriction != 3 && superweaponRestriction != SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS)
+	{
+		superweaponRestriction = SUPERWEAPON_RESTRICTION_UNLIMITED;
+	}
+
+	AsciiString value;
+	value.format("%u", superweaponRestriction);
+	(*this)[superweaponRestrictionKey] = value;
+}
+#endif
 
 static const char startingCashKey[] = "StartingCash";
 Money CustomMatchPreferences::getStartingCash() const

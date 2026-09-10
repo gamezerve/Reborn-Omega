@@ -113,11 +113,7 @@ static NameKeyType buttonResetID = NAMEKEY_INVALID;
 static NameKeyType windowMapID = NAMEKEY_INVALID;
 static NameKeyType sliderGameSpeedID = NAMEKEY_INVALID;
 static NameKeyType staticTextGameSpeedID = NAMEKEY_INVALID;
-static NameKeyType checkBoxLimitSuperweaponsID = NAMEKEY_INVALID;
-static NameKeyType checkBoxLimitSuperweapons1ID = NAMEKEY_INVALID; //Reborn
-static NameKeyType checkBoxLimitSuperweapons2ID = NAMEKEY_INVALID; //Reborn
-static NameKeyType checkBoxLimitSuperweapons3ID = NAMEKEY_INVALID; //Reborn
-static NameKeyType checkBoxLimitSuperweaponsUnlimitedID = NAMEKEY_INVALID; //Reborn
+static NameKeyType comboBoxSuperweaponRestrictionID = NAMEKEY_INVALID; // Reborn
 static NameKeyType comboBoxStartingCashID = NAMEKEY_INVALID;
 static NameKeyType comboBoxResourceMultiplierID = NAMEKEY_INVALID; // Reborn
 
@@ -131,11 +127,7 @@ static GameWindow *textEntryMapDisplay = nullptr;
 static GameWindow *buttonReset = nullptr;
 static GameWindow *windowMap = nullptr;
 static GameWindow *textEntryPlayerName = nullptr;
-static GameWindow *checkBoxLimitSuperweapons = nullptr;
-static GameWindow* checkBoxLimitSuperweapons1 = nullptr; //Reborn
-static GameWindow* checkBoxLimitSuperweapons2 = nullptr; //Reborn
-static GameWindow* checkBoxLimitSuperweapons3 = nullptr; //Reborn
-static GameWindow* checkBoxLimitSuperweaponsUnlimited = nullptr; //Reborn
+static GameWindow* comboBoxSuperweaponRestriction = nullptr; // Reborn
 static GameWindow *comboBoxStartingCash = nullptr;
 static GameWindow* comboBoxResourceMultiplier = nullptr; // Reborn
 static GameWindow *comboBoxPlayer[MAX_SLOTS] = {0};
@@ -157,7 +149,6 @@ static Int	initialGadgetDelay = 2;
 static Bool justEntered = FALSE;
 static Bool buttonPushed = FALSE;
 static Bool stillNeedsToSetOptions = FALSE;
-static Bool isUpdatingSuperweaponCheckboxes = FALSE; // Reborn
 void skirmishUpdateSlotList();
 static void populateSkirmishBattleHonors();
 enum{ GREATER_NO_FPS_LIMIT = 60};
@@ -332,7 +323,7 @@ Int SkirmishPreferences::getSuperweaponRestriction() const
 		return 1;
 
 	Int value = atoi(it->second.str());
-	if (value != 0 && value != 1 && value != 2 && value != 3)
+	if (value != 0 && value != 1 && value != 2 && value != 3 && value != SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS)
 		value = 1;
 
 	return value;
@@ -343,7 +334,8 @@ void SkirmishPreferences::setSuperweaponRestriction(Int superweaponRestriction)
 	if (superweaponRestriction != 0 &&
 		superweaponRestriction != 1 &&
 		superweaponRestriction != 2 &&
-		superweaponRestriction != 3)
+		superweaponRestriction != 3 &&
+		superweaponRestriction != SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS)
 	{
 		superweaponRestriction = 1;
 	}
@@ -1089,60 +1081,43 @@ static void handleResourceMultiplierSelection()
 		TheSkirmishGameInfo->setResourceMultiplierPercent(g_resourceMultiplierPercent);
 }
 
-static void handleLimitSuperweaponsClick()
+// Reborn: Present every superweapon rule in one compact list, matching the cash controls.
+static void PopulateSuperweaponRestrictionComboBox(GameWindow* combo)
 {
-  GameInfo *myGame = TheSkirmishGameInfo;
-
-  if (myGame)
-  {
-    // At the moment, 1 and 0 are the only choices supported in the GUI, though the system could
-    // support more.
-    if ( GadgetCheckBoxIsChecked( checkBoxLimitSuperweapons ) )
-    {
-      myGame->setSuperweaponRestriction( 1 );
-    }
-    else
-    {
-      myGame->setSuperweaponRestriction( 0 );
-    }
-  }
-}
-
-static void setSuperweaponCheckboxGroup(Int limit)
-{
-	if (!checkBoxLimitSuperweapons1 || !checkBoxLimitSuperweapons2 ||
-		!checkBoxLimitSuperweapons3 || !checkBoxLimitSuperweaponsUnlimited)
-	{
+	if (!combo)
 		return;
+
+	static const UnsignedShort values[] = { 1, 2, 3, SUPERWEAPON_RESTRICTION_UNLIMITED, SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS };
+	static const char* labels[] = { "GUI:LimitSuperweapons1", "GUI:LimitSuperweapons2", "GUI:LimitSuperweapons3", "GUI:LimitSuperweaponsUnlimited", "GUI:NoSuperweapons" };
+	UnsignedShort current = TheSkirmishGameInfo ? TheSkirmishGameInfo->getSuperweaponRestriction() : 1;
+	Int selected = 0;
+
+	GadgetComboBoxReset(combo);
+	for (Int i = 0; i < ARRAY_SIZE(values); ++i)
+	{
+		GadgetComboBoxAddEntry(combo, TheGameText->fetch(labels[i]), GameMakeColor(255, 255, 255, 255));
+		GadgetComboBoxSetItemData(combo, i, (void*)(UnsignedInt)values[i]);
+		if (values[i] == current)
+			selected = i;
 	}
 
-	isUpdatingSuperweaponCheckboxes = TRUE;
-
-	GadgetCheckBoxSetChecked(checkBoxLimitSuperweapons1, limit == 1);
-	GadgetCheckBoxSetChecked(checkBoxLimitSuperweapons2, limit == 2);
-	GadgetCheckBoxSetChecked(checkBoxLimitSuperweapons3, limit == 3);
-	GadgetCheckBoxSetChecked(checkBoxLimitSuperweaponsUnlimited, limit == 0);
-
-	isUpdatingSuperweaponCheckboxes = FALSE;
+	GadgetComboBoxSetSelectedPos(combo, selected, TRUE);
+	GadgetComboBoxCenterSelectedEntry(combo);
 }
 
-static void applySuperweaponLimitSelection(Int limit)
+static void handleSuperweaponRestrictionSelection()
 {
-	GameInfo* myGame = TheSkirmishGameInfo;
-	if (!myGame)
+	if (!TheSkirmishGameInfo || !comboBoxSuperweaponRestriction)
 		return;
 
-	if (limit != 0 && limit != 1 && limit != 2 && limit != 3)
-		limit = 1;
-
-	if (myGame->getSuperweaponRestriction() == limit)
-	{
-		setSuperweaponCheckboxGroup(limit);
+	Int selected = -1;
+	GadgetComboBoxGetSelectedPos(comboBoxSuperweaponRestriction, &selected);
+	if (selected < 0)
 		return;
-	}
 
-	myGame->setSuperweaponRestriction(limit);
-	setSuperweaponCheckboxGroup(limit);
+	UnsignedShort restriction = (UnsignedShort)(UnsignedInt)GadgetComboBoxGetItemData(comboBoxSuperweaponRestriction, selected);
+	TheSkirmishGameInfo->setSuperweaponRestriction(restriction);
+	GadgetComboBoxCenterSelectedEntry(comboBoxSuperweaponRestriction);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1195,20 +1170,10 @@ void InitSkirmishGameGadgets()
 	windowMap = TheWindowManager->winGetWindowFromId( parentSkirmishGameOptions,windowMapID  );
 	DEBUG_ASSERTCRASH(windowMap, ("Could not find the SkirmishGameOptionsMenu.wnd:MapWindow" ));
 
-	checkBoxLimitSuperweapons1ID = TheNameKeyGenerator->nameToKey("SkirmishGameOptionsMenu.wnd:CheckboxLimitSuperweapons1"); //Reborn
-	checkBoxLimitSuperweapons2ID = TheNameKeyGenerator->nameToKey("SkirmishGameOptionsMenu.wnd:CheckboxLimitSuperweapons2"); //Reborn
-	checkBoxLimitSuperweapons3ID = TheNameKeyGenerator->nameToKey("SkirmishGameOptionsMenu.wnd:CheckboxLimitSuperweapons3"); //Reborn
-	checkBoxLimitSuperweaponsUnlimitedID = TheNameKeyGenerator->nameToKey("SkirmishGameOptionsMenu.wnd:CheckboxLimitSuperweaponsUnlimited"); //Reborn
-
-	checkBoxLimitSuperweapons1 = TheWindowManager->winGetWindowFromId(parentSkirmishGameOptions, checkBoxLimitSuperweapons1ID); //Reborn
-	checkBoxLimitSuperweapons2 = TheWindowManager->winGetWindowFromId(parentSkirmishGameOptions, checkBoxLimitSuperweapons2ID); //Reborn
-	checkBoxLimitSuperweapons3 = TheWindowManager->winGetWindowFromId(parentSkirmishGameOptions, checkBoxLimitSuperweapons3ID); //Reborn
-	checkBoxLimitSuperweaponsUnlimited = TheWindowManager->winGetWindowFromId(parentSkirmishGameOptions, checkBoxLimitSuperweaponsUnlimitedID); //Reborn
-
-	DEBUG_ASSERTCRASH(checkBoxLimitSuperweapons1, ("Could not find checkBoxLimitSuperweapons1")); //Reborn
-	DEBUG_ASSERTCRASH(checkBoxLimitSuperweapons2, ("Could not find checkBoxLimitSuperweapons2")); //Reborn
-	DEBUG_ASSERTCRASH(checkBoxLimitSuperweapons3, ("Could not find checkBoxLimitSuperweapons3")); //Reborn
-	DEBUG_ASSERTCRASH(checkBoxLimitSuperweaponsUnlimited, ("Could not find checkBoxLimitSuperweaponsUnlimited")); //Reborn
+	comboBoxSuperweaponRestrictionID = TheNameKeyGenerator->nameToKey("SkirmishGameOptionsMenu.wnd:ComboBoxSuperweaponRestriction"); // Reborn
+	comboBoxSuperweaponRestriction = TheWindowManager->winGetWindowFromId(parentSkirmishGameOptions, comboBoxSuperweaponRestrictionID); // Reborn
+	DEBUG_ASSERTCRASH(comboBoxSuperweaponRestriction, ("Could not find comboBoxSuperweaponRestriction"));
+	PopulateSuperweaponRestrictionComboBox(comboBoxSuperweaponRestriction);
 
 
 	windowMap->winSetTooltipFunc(MapSelectorTooltip);
@@ -1383,8 +1348,7 @@ void updateSkirmishGameOptions()
 	}
 
   //GadgetCheckBoxSetChecked( checkBoxLimitSuperweapons, TheSkirmishGameInfo->getSuperweaponRestriction() != 0 );
-	Int limit = TheSkirmishGameInfo->getSuperweaponRestriction(); //Reborn
-	setSuperweaponCheckboxGroup(limit); //Reborn
+	PopulateSuperweaponRestrictionComboBox(comboBoxSuperweaponRestriction); // Reborn
 
 
   Int itemCount = GadgetComboBoxGetLength(comboBoxStartingCash);
@@ -1494,7 +1458,7 @@ void SkirmishGameOptionsMenuInit( WindowLayout *layout, void *userData )
 	TheSkirmishGameInfo->setSuperweaponRestriction(prefs.getSuperweaponRestriction()); // Reborn
 
 	Int savedLimit = prefs.getInt("SuperweaponRestrict", 1);  //Reborn - we used to only support 0 and 1, but now we support more, so we need to validate the saved value.
-	if (savedLimit != 1 && savedLimit != 2 && savedLimit != 3 && savedLimit != 0)
+	if (savedLimit != 1 && savedLimit != 2 && savedLimit != 3 && savedLimit != 0 && savedLimit != SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS)
 		savedLimit = 1;
 	TheSkirmishGameInfo->setSuperweaponRestriction(savedLimit);
 
@@ -1734,6 +1698,10 @@ WindowMsgHandledType SkirmishGameOptionsMenuSystem( GameWindow *window, Unsigned
 				{
 					handleResourceMultiplierSelection();
 				}
+				else if (controlID == comboBoxSuperweaponRestrictionID) // Reborn
+				{
+					handleSuperweaponRestrictionSelection();
+				}
 				else
 				{
 				  for (Int i = 0; i < MAX_SLOTS; i++)
@@ -1775,9 +1743,6 @@ WindowMsgHandledType SkirmishGameOptionsMenuSystem( GameWindow *window, Unsigned
 		//-------------------------------------------------------------------------------------------------
 		case GBM_SELECTED:
 			{
-				if (isUpdatingSuperweaponCheckboxes)
-				break;
-
 				GameWindow *control = (GameWindow *)mData1;
 				Int controlID = control->winGetWindowId();
 ///				static NameKeyType buttonResetFPSID = TheNameKeyGenerator->nameToKey( "SkirmishGameOptionsMenu.wnd:ButtonResetFPS" );
@@ -1833,23 +1798,6 @@ WindowMsgHandledType SkirmishGameOptionsMenuSystem( GameWindow *window, Unsigned
         //{
         //  handleLimitSuperweaponsClick();
         //}
-				else if (controlID == checkBoxLimitSuperweapons1ID) //Reborn
-				{
-					applySuperweaponLimitSelection(1);
-				}
-				else if (controlID == checkBoxLimitSuperweapons2ID)
-				{
-					applySuperweaponLimitSelection(2);
-				}
-				else if (controlID == checkBoxLimitSuperweapons3ID)
-				{
-					applySuperweaponLimitSelection(3);
-				}
-				else if (controlID == checkBoxLimitSuperweaponsUnlimitedID)
-				{
-					applySuperweaponLimitSelection(0);
-				}
-
 				else
 				{
 					for (Int i = 0; i < MAX_SLOTS; i++)

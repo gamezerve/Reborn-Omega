@@ -296,6 +296,7 @@ public:
 	void SendAnnouncementMessageToCurrentLobby(UnicodeString& strAnnouncementMsgUnicode, bool bShowToHost);
 	// Reborn: Synchronize the cash multiplier over GO's existing lobby message relay without changing server data fields.
 	void SendRebornResourceMultiplier(Int resourceMultiplierPercent);
+	void SendRebornSuperweaponRestriction(UnsignedShort restriction); // Reborn: Relay the full 1/2/3/Unlimited/No Superweapon rule alongside GO's boolean field.
 	void RequestRebornLobbyOptions();
 	Bool HandleRebornLobbyControlMessage(const std::string& message, int64_t senderUserID);
 

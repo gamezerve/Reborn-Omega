@@ -211,7 +211,7 @@ static bool s_matchStartCountdownWasRunning = false;
 
 static NameKeyType windowMapSelectMapID = NAMEKEY_INVALID;
 static NameKeyType checkBoxUseStatsID = NAMEKEY_INVALID;
-static NameKeyType checkBoxLimitSuperweaponsID = NAMEKEY_INVALID;
+static NameKeyType comboBoxSuperweaponRestrictionID = NAMEKEY_INVALID; // Reborn
 static NameKeyType comboBoxStartingCashID = NAMEKEY_INVALID;
 static NameKeyType comboBoxResourceMultiplierID = NAMEKEY_INVALID;
 static NameKeyType checkMaxCameraHeightID = NAMEKEY_INVALID;
@@ -228,7 +228,7 @@ static GameWindow *textEntryChat = NULL;
 static GameWindow *textEntryMapDisplay = NULL;
 static GameWindow *windowMap = NULL;
 static GameWindow *checkBoxUseStats = NULL;
-static GameWindow *checkBoxLimitSuperweapons = NULL;
+static GameWindow *comboBoxSuperweaponRestriction = NULL; // Reborn
 static GameWindow *comboBoxStartingCash = NULL;
 static GameWindow *comboBoxResourceMultiplier = NULL;
 static GameWindow *checkMaxCameraHeight = NULL;
@@ -1022,49 +1022,89 @@ static void handleOnlineMaxCameraHeightChanged(Bool clampText)
 	textEntryMaxCameraHeight->winEnable(enabled);
 }
 
-static void handleLimitSuperweaponsClick()
+// Reborn: Match the Skirmish and LAN superweapon rule list in online lobbies.
+static void PopulateOnlineSuperweaponRestrictionComboBox(GameWindow* combo)
 {
+	if (!combo)
+		return;
 
-#if defined(GENERALS_ONLINE)
-	// update it on the service
-	bool bLimitSuperweapons = GadgetCheckBoxIsChecked(checkBoxLimitSuperweapons);
+	static const UnsignedShort values[] = { 1, 2, 3, SUPERWEAPON_RESTRICTION_UNLIMITED, SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS };
+	static const char* labels[] = { "GUI:LimitSuperweapons1", "GUI:LimitSuperweapons2", "GUI:LimitSuperweapons3", "GUI:LimitSuperweaponsUnlimited", "GUI:NoSuperweapons" };
+	UnsignedShort current = TheNGMPGame ? TheNGMPGame->getSuperweaponRestriction() : 1;
+	Int selected = 0;
 
-	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
-	if (pLobbyInterface != nullptr)
+	GadgetComboBoxReset(combo);
+	for (Int i = 0; i < ARRAY_SIZE(values); ++i)
 	{
-		pLobbyInterface->UpdateCurrentLobby_LimitSuperweapons(bLimitSuperweapons);
+		GadgetComboBoxAddEntry(combo, TheGameText->fetch(labels[i]), GameMakeColor(255, 255, 255, 255));
+		GadgetComboBoxSetItemData(combo, i, (void*)(UnsignedInt)values[i]);
+		if (values[i] == current)
+			selected = i;
 	}
+
+	isUpdatingOnlineLobbyOptions = TRUE;
+	GadgetComboBoxSetSelectedPos(combo, selected, TRUE);
+	GadgetComboBoxCenterSelectedEntry(combo);
+	isUpdatingOnlineLobbyOptions = FALSE;
+}
+
+static void updateOnlineSuperweaponRestrictionSelection(UnsignedShort restriction)
+{
+	if (!comboBoxSuperweaponRestriction)
+		return;
+
+	isUpdatingOnlineLobbyOptions = TRUE;
+	for (Int i = 0; i < GadgetComboBoxGetLength(comboBoxSuperweaponRestriction); ++i)
+	{
+		if ((UnsignedShort)(UnsignedInt)GadgetComboBoxGetItemData(comboBoxSuperweaponRestriction, i) == restriction)
+		{
+			GadgetComboBoxSetSelectedPos(comboBoxSuperweaponRestriction, i, TRUE);
+			break;
+		}
+	}
+	GadgetComboBoxCenterSelectedEntry(comboBoxSuperweaponRestriction);
+	isUpdatingOnlineLobbyOptions = FALSE;
+}
+
+static void handleSuperweaponRestrictionSelection()
+{
+	if (isUpdatingOnlineLobbyOptions || !comboBoxSuperweaponRestriction)
+		return;
+
+	Int selected = -1;
+	GadgetComboBoxGetSelectedPos(comboBoxSuperweaponRestriction, &selected);
+	if (selected < 0)
+		return;
+
+	UnsignedShort restriction = (UnsignedShort)(UnsignedInt)GadgetComboBoxGetItemData(comboBoxSuperweaponRestriction, selected);
+#if defined(GENERALS_ONLINE)
+	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
+	if (!pLobbyInterface || !pLobbyInterface->IsHost() || !TheNGMPGame || TheNGMPGame->getSuperweaponRestriction() == restriction)
+		return;
+
+	TheNGMPGame->setSuperweaponRestriction(restriction);
+	TheNGMPGame->resetAccepted();
+	GadgetComboBoxCenterSelectedEntry(comboBoxSuperweaponRestriction);
+	// Reborn: Keep GO's native boolean field compatible while relaying the full Reborn rule separately.
+	pLobbyInterface->UpdateCurrentLobby_LimitSuperweapons(restriction != SUPERWEAPON_RESTRICTION_UNLIMITED);
+	pLobbyInterface->SendRebornSuperweaponRestriction(restriction);
 #else
-  GameInfo *myGame = TheGameSpyInfo->getCurrentStagingRoom();
+	GameInfo* myGame = TheGameSpyInfo->getCurrentStagingRoom();
+	if (!myGame || !myGame->amIHost() || myGame->getSuperweaponRestriction() == restriction)
+		return;
 
-  if (myGame)
-  {
-    // At the moment, 1 and 0 are the only choices supported in the GUI, though the system could
-    // support more.
-    if ( GadgetCheckBoxIsChecked( checkBoxLimitSuperweapons ) )
-    {
-      myGame->setSuperweaponRestriction( 1 );
-    }
-    else
-    {
-      myGame->setSuperweaponRestriction( 0 );
-    }
-    myGame->resetAccepted();
-
-    if (myGame->amIHost())
-    {
-      // send around a new slotlist
-      TheGameSpyInfo->setGameOptions();
-      WOLDisplaySlotList();// Update the accepted button UI
-    }
-  }
+	myGame->setSuperweaponRestriction(restriction);
+	myGame->resetAccepted();
+	GadgetComboBoxCenterSelectedEntry(comboBoxSuperweaponRestriction);
+	TheGameSpyInfo->setGameOptions();
+	WOLDisplaySlotList();
 #endif
 }
 
 static void WOLLockSettings()
 {
 	buttonBack->winEnable(false);
-	checkBoxLimitSuperweapons->winEnable(false);
+	comboBoxSuperweaponRestriction->winEnable(false);
 	comboBoxStartingCash->winEnable(false);
 	comboBoxResourceMultiplier->winEnable(false);
 	checkMaxCameraHeight->winEnable(false);
@@ -1465,9 +1505,7 @@ void WOLDisplayGameOptions()
   }
 
   // Note: must check if checkbox is already correct to avoid infinite recursion
-  Bool limitSuperweapons = (theGame->getSuperweaponRestriction() != 0);
-  if ( limitSuperweapons != GadgetCheckBoxIsChecked(checkBoxLimitSuperweapons))
-    GadgetCheckBoxSetChecked( checkBoxLimitSuperweapons, limitSuperweapons );
+	updateOnlineSuperweaponRestrictionSelection(theGame->getSuperweaponRestriction()); // Reborn
 
   Int itemCount = GadgetComboBoxGetLength(comboBoxStartingCash);
   Int index = 0;
@@ -1672,7 +1710,7 @@ void InitWOLGameGadgets()
 	buttonSelectMapID = TheNameKeyGenerator->nameToKey( "GameSpyGameOptionsMenu.wnd:ButtonSelectMap" );
 	checkBoxUseStatsID = TheNameKeyGenerator->nameToKey( "GameSpyGameOptionsMenu.wnd:CheckBoxUseStats" );
 	windowMapID = TheNameKeyGenerator->nameToKey( "GameSpyGameOptionsMenu.wnd:MapWindow" );
-  checkBoxLimitSuperweaponsID = TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:CheckboxLimitSuperweapons");
+	comboBoxSuperweaponRestrictionID = TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:ComboBoxSuperweaponRestriction"); // Reborn
   comboBoxStartingCashID = TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:ComboBoxStartingCash");
   comboBoxResourceMultiplierID = TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:ComboBoxResourceMultiplier");
   checkMaxCameraHeightID = TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:CheckMaxCameraHeight");
@@ -1696,8 +1734,9 @@ void InitWOLGameGadgets()
 	SetListBoxRowAnimMode(listboxGameSetupChat, LIST_ROW_ANIM_SLOT);
   DEBUG_ASSERTCRASH(windowMap, ("Could not find the parentWOLGameSetup.wnd:MapWindow" ));
 
-  checkBoxLimitSuperweapons = TheWindowManager->winGetWindowFromId( parentWOLGameSetup, checkBoxLimitSuperweaponsID );
-  DEBUG_ASSERTCRASH(windowMap, ("Could not find the GameSpyGameOptionsMenu.wnd:CheckboxLimitSuperweapons" ));
+	comboBoxSuperweaponRestriction = TheWindowManager->winGetWindowFromId(parentWOLGameSetup, comboBoxSuperweaponRestrictionID); // Reborn
+	DEBUG_ASSERTCRASH(comboBoxSuperweaponRestriction, ("Could not find the GameSpyGameOptionsMenu.wnd:ComboBoxSuperweaponRestriction"));
+	PopulateOnlineSuperweaponRestrictionComboBox(comboBoxSuperweaponRestriction);
   comboBoxStartingCash = TheWindowManager->winGetWindowFromId( parentWOLGameSetup, comboBoxStartingCashID );
   DEBUG_ASSERTCRASH(windowMap, ("Could not find the GameSpyGameOptionsMenu.wnd:ComboBoxStartingCash" ));
 	comboBoxResourceMultiplier = TheWindowManager->winGetWindowFromId(parentWOLGameSetup, comboBoxResourceMultiplierID);
@@ -1749,7 +1788,7 @@ void InitWOLGameGadgets()
   if ( !TheGameSpyGame->amIHost() )
 #endif
   {
-    checkBoxLimitSuperweapons->winEnable( false );
+		comboBoxSuperweaponRestriction->winEnable(false);
     comboBoxStartingCash->winEnable( false );
 		comboBoxResourceMultiplier->winEnable(FALSE);
 		checkMaxCameraHeight->winEnable(FALSE);
@@ -1760,7 +1799,7 @@ void InitWOLGameGadgets()
 #if defined(GENERALS_ONLINE)
   else
   {
-	  checkBoxLimitSuperweapons->winEnable(true);
+		comboBoxSuperweaponRestriction->winEnable(true);
 	  comboBoxStartingCash->winEnable(true);
 	  comboBoxResourceMultiplier->winEnable(TRUE);
 	  checkMaxCameraHeight->winEnable(TRUE);
@@ -1774,7 +1813,7 @@ void InitWOLGameGadgets()
 	{
 		// Recorded stats games can never limit superweapons, limit armies, or have inflated starting cash.
 		// This should probably be enforced at the gamespy level as well, to prevent expoits.
-		checkBoxLimitSuperweapons->winEnable( FALSE );
+		comboBoxSuperweaponRestriction->winEnable(FALSE);
 		comboBoxStartingCash->winEnable( FALSE );
 		comboBoxResourceMultiplier->winEnable(FALSE);
 		checkBoxLimitArmies->winEnable( FALSE );
@@ -1929,7 +1968,7 @@ void DeinitWOLGameGadgets()
 		windowMap = NULL;
 	}
 	checkBoxUseStats = NULL;
-  checkBoxLimitSuperweapons = NULL;
+	comboBoxSuperweaponRestriction = NULL;
   comboBoxStartingCash = NULL;
 	comboBoxResourceMultiplier = NULL;
 	checkMaxCameraHeight = NULL;
@@ -2223,12 +2262,12 @@ void WOLGameSetupMenuInit( WindowLayout *layout, void *userData )
 
 #if !defined(GENERALS_ONLINE_ALLOW_ALL_SETTINGS_FOR_STATS_MATCHES)
 		game->setStartingCash( isUsingStats? TheMultiplayerSettings->getDefaultStartingMoney() : customPref.getStartingCash() );
-		game->setSuperweaponRestriction( isUsingStats? 0 : customPref.getSuperweaponRestricted() ? 1 : 0 );
+		game->setSuperweaponRestriction(isUsingStats ? SUPERWEAPON_RESTRICTION_UNLIMITED : customPref.getSuperweaponRestriction()); // Reborn
 		if (isUsingStats)
 			game->setOldFactionsOnly( 0 );
 #else
 		game->setStartingCash(customPref.getStartingCash());
-		game->setSuperweaponRestriction(customPref.getSuperweaponRestricted() ? 1 : 0);
+		game->setSuperweaponRestriction(customPref.getSuperweaponRestriction()); // Reborn
 #endif
 
 		//game->setOldFactionsOnly( customPref.getFactionsLimited() );
@@ -2619,7 +2658,7 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 							initialAcceptEnable = TRUE;
 
 							comboBoxStartingCash->winEnable(TRUE);
-							checkBoxLimitSuperweapons->winEnable(TRUE);
+							comboBoxSuperweaponRestriction->winEnable(TRUE);
 							comboBoxResourceMultiplier->winEnable(TRUE);
 							checkMaxCameraHeight->winEnable(TRUE);
 							textEntryMaxCameraHeight->winEnable(TheNGMPGame->getUseCustomMaxCameraHeight());
@@ -4021,6 +4060,10 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 			{
 				handleOnlineResourceMultiplierSelection();
 			}
+			else if (controlID == comboBoxSuperweaponRestrictionID) // Reborn
+			{
+				handleSuperweaponRestrictionSelection();
+			}
 			else
 			{
 				for (Int i = 0; i < MAX_SLOTS; i++)
@@ -4204,10 +4247,6 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 						*/
 					}
 				}
-        else if ( controlID == checkBoxLimitSuperweaponsID )
-        {
-          handleLimitSuperweaponsClick();
-        }
 				else if (controlID == checkMaxCameraHeightID)
 				{
 					handleOnlineMaxCameraHeightChanged(TRUE);

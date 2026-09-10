@@ -3427,6 +3427,35 @@ const CommandSet* ControlBar::findCommandSet(const AsciiString& name) const
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Remove lobby-controlled superweapon construction buttons from every command set.
+	* Scanning the final command-set list also covers submenu sets and every CommandSetUpgrade target.
+	* The overrides are match-local and are cleared by GameLogic::reset(). */
+//-------------------------------------------------------------------------------------------------
+void ControlBar::applyNoSuperweaponRestriction()
+{
+#if !RTS_GENERALS
+	if (!TheGameLogic)
+		return;
+
+	for (const CommandSet* commandSet = m_commandSets; commandSet; commandSet = commandSet->friend_getNext())
+	{
+		for (Int slot = 0; slot < MAX_COMMANDS_PER_SET; ++slot)
+		{
+			const CommandButton* commandButton = commandSet->getCommandButton(slot);
+			if (!commandButton || commandButton->getCommandType() != GUI_COMMAND_DOZER_CONSTRUCT)
+				continue;
+
+			const ThingTemplate* thingTemplate = commandButton->getThingTemplate();
+			if (thingTemplate && thingTemplate->isMaxSimultaneousDeterminedBySuperweaponRestriction())
+			{
+				TheGameLogic->setControlBarOverride(commandSet->getName(), slot, nullptr);
+			}
+		}
+	}
+#endif
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Allocate a new command set, link to list, initialize to default, and return it */
 //-------------------------------------------------------------------------------------------------
 CommandSet *ControlBar::newCommandSet( const AsciiString& name )

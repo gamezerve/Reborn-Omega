@@ -105,7 +105,16 @@ void NGMPGame::SyncWithLobby(LobbyEntry& lobby)
 	}
 
 	// superweapon
-	setSuperweaponRestriction(lobby.limit_superweapons);
+	// Reborn: GO stores this option as a boolean. Preserve the richer Reborn
+	// value once it has arrived through the authenticated host announcement.
+	if (!lobby.limit_superweapons)
+	{
+		setSuperweaponRestriction(SUPERWEAPON_RESTRICTION_UNLIMITED);
+	}
+	else if (getSuperweaponRestriction() == SUPERWEAPON_RESTRICTION_UNLIMITED)
+	{
+		setSuperweaponRestriction(1);
+	}
 
 	// vanilla teams
 	setOldFactionsOnly(lobby.vanilla_teams);

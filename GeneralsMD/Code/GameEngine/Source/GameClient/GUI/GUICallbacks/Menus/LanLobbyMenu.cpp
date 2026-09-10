@@ -247,18 +247,39 @@ static const char superweaponRestrictionKey[] = "SuperweaponRestrict";
 
 Bool LANPreferences::getSuperweaponRestricted() const
 {
-  LANPreferences::const_iterator it = find(superweaponRestrictionKey);
-  if (it == end())
-  {
-    return false;
-  }
-
-  return ( it->second.compareNoCase( "yes" ) == 0 );
+	return getSuperweaponRestriction() != 0;
 }
 
 void LANPreferences::setSuperweaponRestricted( Bool superweaponRestricted )
 {
-  (*this)[superweaponRestrictionKey] = superweaponRestricted ? "Yes" : "No";
+	setSuperweaponRestriction(superweaponRestricted ? 1 : 0);
+}
+
+UnsignedShort LANPreferences::getSuperweaponRestriction() const
+{
+	LANPreferences::const_iterator it = find(superweaponRestrictionKey);
+	if (it == end())
+		return 0;
+	if (it->second.compareNoCase("yes") == 0)
+		return 1;
+	if (it->second.compareNoCase("no") == 0)
+		return 0;
+	Int value = atoi(it->second.str());
+	if (value != 0 && value != 1 && value != 2 && value != 3 && value != 0xffff)
+		value = 0;
+	return (UnsignedShort)value;
+}
+
+void LANPreferences::setSuperweaponRestriction(UnsignedShort superweaponRestriction)
+{
+	if (superweaponRestriction != 0 && superweaponRestriction != 1 && superweaponRestriction != 2 &&
+		superweaponRestriction != 3 && superweaponRestriction != 0xffff)
+	{
+		superweaponRestriction = 0;
+	}
+	AsciiString value;
+	value.format("%u", superweaponRestriction);
+	(*this)[superweaponRestrictionKey] = value;
 }
 
 static const char startingCashKey[] = "StartingCash";

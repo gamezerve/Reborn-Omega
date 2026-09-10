@@ -526,6 +526,7 @@ public:
   //-------------------------------------------------------------------------------------------------
   NameKeyType getMaxSimultaneousLinkKey() const { return m_maxSimultaneousLinkKey; }
   UnsignedInt getMaxSimultaneousOfType() const;
+	Bool isMaxSimultaneousDeterminedBySuperweaponRestriction() const { return m_maxSimultaneousDeterminedBySuperweaponRestriction; } // Reborn: Identify construction buttons governed by the lobby superweapon setting.
 
 	void validate();
 

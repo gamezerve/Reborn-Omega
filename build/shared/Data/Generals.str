@@ -18398,6 +18398,10 @@ GUI:LimitSuperweaponsUnlimited
 "Unlimited"
 END
 
+GUI:NoSuperweapons
+"No Superweapons"
+END
+
 GUI:Load
 "LOAD"
 END
@@ -26707,7 +26711,7 @@ TOOLTIP:LimitArmies
 END
 
 TOOLTIP:LimitSuperweapons
-"Check to limit Particle Cannons, Scud Storms, etc. to one per player"
+"Select the number of superweapons allowed per player, or disable their construction"
 END
 
 TOOLTIP:ListOfPlayers

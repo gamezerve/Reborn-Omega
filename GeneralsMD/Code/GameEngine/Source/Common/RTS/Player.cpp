@@ -3061,6 +3061,14 @@ static void countExisting( Object *obj, void *userData )
 // Make sure that building another of this unit/structure/object won't exceed MaxSimultaneousOfType()
 Bool Player::canBuildMoreOfType( const ThingTemplate *whatToBuild ) const
 {
+	// Reborn: No Superweapon is stronger than a numeric cap. Keep non-UI build
+	// paths and AI from bypassing the removed construction buttons.
+	if (TheGameLogic && TheGameLogic->getSuperweaponRestriction() == SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS &&
+		whatToBuild->isMaxSimultaneousDeterminedBySuperweaponRestriction())
+	{
+		return false;
+	}
+
   // make sure we're not maxed out for this type of unit.
   UnsignedInt maxSimultaneousOfType = whatToBuild->getMaxSimultaneousOfType();
   if (maxSimultaneousOfType != 0)
