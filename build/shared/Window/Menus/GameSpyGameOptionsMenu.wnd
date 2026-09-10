@@ -294,7 +294,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 42 336,
-                   BOTTOMRIGHT: 180 360,
+                   BOTTOMRIGHT: 174 360,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyGameOptionsMenu.wnd:SuperweaponRestrictionLabel";
       STATUS = ENABLED+IMAGE;
@@ -344,7 +344,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = COMBOBOX;
       SCREENRECT = UPPERLEFT: 178 336,
-                   BOTTOMRIGHT: 330 360,
+                   BOTTOMRIGHT: 290 360,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyGameOptionsMenu.wnd:ComboBoxSuperweaponRestriction";
       STATUS = ENABLED+IMAGE;

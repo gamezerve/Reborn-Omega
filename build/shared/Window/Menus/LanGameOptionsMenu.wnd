@@ -460,7 +460,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = COMBOBOX;
       SCREENRECT = UPPERLEFT: 592 336,
-                   BOTTOMRIGHT: 742 360,
+                   BOTTOMRIGHT: 704 360,
                    CREATIONRESOLUTION: 800 600;
       NAME = "LanGameOptionsMenu.wnd:ComboBoxSuperweaponRestriction";
       STATUS = ENABLED+IMAGE;

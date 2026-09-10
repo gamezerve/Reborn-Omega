@@ -1737,6 +1737,8 @@ void InitWOLGameGadgets()
 	comboBoxSuperweaponRestriction = TheWindowManager->winGetWindowFromId(parentWOLGameSetup, comboBoxSuperweaponRestrictionID); // Reborn
 	DEBUG_ASSERTCRASH(comboBoxSuperweaponRestriction, ("Could not find the GameSpyGameOptionsMenu.wnd:ComboBoxSuperweaponRestriction"));
 	PopulateOnlineSuperweaponRestrictionComboBox(comboBoxSuperweaponRestriction);
+	// Reborn: Keep the superweapon restriction dropdown above the online chat window.
+	comboBoxSuperweaponRestriction->winBringToTop();
   comboBoxStartingCash = TheWindowManager->winGetWindowFromId( parentWOLGameSetup, comboBoxStartingCashID );
   DEBUG_ASSERTCRASH(windowMap, ("Could not find the GameSpyGameOptionsMenu.wnd:ComboBoxStartingCash" ));
 	comboBoxResourceMultiplier = TheWindowManager->winGetWindowFromId(parentWOLGameSetup, comboBoxResourceMultiplierID);

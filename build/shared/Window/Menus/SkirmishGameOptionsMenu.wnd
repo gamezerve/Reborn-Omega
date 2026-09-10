@@ -625,8 +625,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = COMBOBOX;
-      SCREENRECT = UPPERLEFT: 581 336,
-                   BOTTOMRIGHT: 742 362,
+      SCREENRECT = UPPERLEFT: 606 336,
+                   BOTTOMRIGHT: 718 362,
                    CREATIONRESOLUTION: 800 600;
       NAME = "SkirmishGameOptionsMenu.wnd:ComboBoxSuperweaponRestriction";
       STATUS = ENABLED+IMAGE;
