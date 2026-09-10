@@ -71,6 +71,10 @@
 #include "GameLogic/Locomotor.h"
 #include "GameLogic/VictoryConditions.h"
 
+#if !RTS_GENERALS
+#include "GameLogic/Module/CommandSetUpgrade.h"
+#endif
+
 #include "GameClient/AnimateWindowManager.h"
 #include "GameClient/ControlBar.h"
 #include "GameClient/ControlBarScheme.h"
@@ -3427,6 +3431,57 @@ const CommandSet* ControlBar::findCommandSet(const AsciiString& name) const
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Keep superweapon structures that also serve as player-upgrade facilities buildable. */
+//-------------------------------------------------------------------------------------------------
+Bool ControlBar::isNoSuperweaponRestrictionExempt(const ThingTemplate* thingTemplate) const
+{
+#if !RTS_GENERALS
+	auto commandSetContainsPlayerUpgrade = [this](const AsciiString& commandSetName) -> Bool
+	{
+		if (commandSetName.isEmpty())
+			return FALSE;
+
+		const CommandSet* commandSet = findCommandSet(commandSetName);
+		if (!commandSet)
+			return FALSE;
+
+		for (Int slot = 0; slot < MAX_COMMANDS_PER_SET; ++slot)
+		{
+			const CommandButton* commandButton = commandSet->getCommandButton(slot);
+			if (commandButton && commandButton->getCommandType() == GUI_COMMAND_PLAYER_UPGRADE)
+				return TRUE;
+		}
+
+		return FALSE;
+	};
+
+	if (!thingTemplate)
+		return FALSE;
+
+	if (commandSetContainsPlayerUpgrade(thingTemplate->friend_getCommandSetString()))
+		return TRUE;
+
+	const ModuleInfo& moduleInfo = thingTemplate->getBehaviorModuleInfo();
+	for (Int moduleIndex = 0; moduleIndex < moduleInfo.getCount(); ++moduleIndex)
+	{
+		if (moduleInfo.getNthName(moduleIndex).compareNoCase("CommandSetUpgrade") != 0)
+			continue;
+
+		const CommandSetUpgradeModuleData* moduleData =
+			static_cast<const CommandSetUpgradeModuleData*>(moduleInfo.getNthData(moduleIndex));
+		if (moduleData &&
+			(commandSetContainsPlayerUpgrade(moduleData->m_newCommandSet) ||
+				commandSetContainsPlayerUpgrade(moduleData->m_newCommandSetAlt)))
+		{
+			return TRUE;
+		}
+	}
+#endif
+
+	return FALSE;
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Reborn: Remove lobby-controlled superweapon construction buttons from every command set.
 	* Scanning the final command-set list also covers submenu sets and every CommandSetUpgrade target.
 	* The overrides are match-local and are cleared by GameLogic::reset(). */
@@ -3446,7 +3501,8 @@ void ControlBar::applyNoSuperweaponRestriction()
 				continue;
 
 			const ThingTemplate* thingTemplate = commandButton->getThingTemplate();
-			if (thingTemplate && thingTemplate->isMaxSimultaneousDeterminedBySuperweaponRestriction())
+			if (thingTemplate && thingTemplate->isMaxSimultaneousDeterminedBySuperweaponRestriction() &&
+				!isNoSuperweaponRestrictionExempt(thingTemplate))
 			{
 				TheGameLogic->setControlBarOverride(commandSet->getName(), slot, nullptr);
 			}

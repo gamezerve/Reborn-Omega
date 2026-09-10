@@ -725,6 +725,7 @@ public:
 	/// find existing command set
 	//const CommandSet *findCommandSet( const AsciiString& name );
 	const CommandSet* findCommandSet(const AsciiString& name) const;
+	Bool isNoSuperweaponRestrictionExempt(const ThingTemplate* thingTemplate) const; // Reborn: Preserve superweapon structures that provide player upgrades.
 	void applyNoSuperweaponRestriction(); // Reborn: Hide every lobby-controlled superweapon construction button for No Superweapon matches.
 
 	void showPurchaseScience();

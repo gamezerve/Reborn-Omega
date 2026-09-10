@@ -3063,14 +3063,16 @@ Bool Player::canBuildMoreOfType( const ThingTemplate *whatToBuild ) const
 {
 	// Reborn: No Superweapon is stronger than a numeric cap. Keep non-UI build
 	// paths and AI from bypassing the removed construction buttons.
+	const Bool noSuperweaponExempt = TheControlBar && TheControlBar->isNoSuperweaponRestrictionExempt(whatToBuild);
 	if (TheGameLogic && TheGameLogic->getSuperweaponRestriction() == SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS &&
-		whatToBuild->isMaxSimultaneousDeterminedBySuperweaponRestriction())
+		whatToBuild->isMaxSimultaneousDeterminedBySuperweaponRestriction() && !noSuperweaponExempt)
 	{
 		return false;
 	}
 
-  // make sure we're not maxed out for this type of unit.
-  UnsignedInt maxSimultaneousOfType = whatToBuild->getMaxSimultaneousOfType();
+	// make sure we're not maxed out for this type of unit.
+	// Reborn: The No Superweapons sentinel is unlimited for exempt player-upgrade facilities.
+	UnsignedInt maxSimultaneousOfType = noSuperweaponExempt ? 0 : whatToBuild->getMaxSimultaneousOfType();
   if (maxSimultaneousOfType != 0)
   {
 

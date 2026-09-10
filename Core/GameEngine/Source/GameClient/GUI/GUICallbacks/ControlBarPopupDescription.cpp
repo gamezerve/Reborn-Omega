@@ -98,6 +98,7 @@
 #include "GameLogic/Module/ActiveBody.h"
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/Locomotor.h"
+#include "GameNetwork/GameInfo.h"
 #include "GameLogic/Object.h"
 #include "GameLogic/LocomotorSet.h"
 #include "GameLogic/Module/AutoDepositUpdate.h"
@@ -1875,6 +1876,12 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			getSupplyDropZoneIncomeForTooltip(infoTemplate, nullptr, player, supplyDropText);
 
 UnsignedInt buildLimit = thingTemplate->getMaxSimultaneousOfType();
+// Reborn: Do not expose the No Superweapons sentinel as a real build limit for exempt upgrade facilities.
+if (TheGameLogic && TheGameLogic->getSuperweaponRestriction() == SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS &&
+	TheControlBar && TheControlBar->isNoSuperweaponRestrictionExempt(thingTemplate))
+{
+	buildLimit = 0;
+}
 if (buildLimit > 0)
 {
 	Int currentCount = 0;
@@ -2953,6 +2960,12 @@ if (obj &&
 
 
 			UnsignedInt buildLimit = thing->getMaxSimultaneousOfType();
+			// Reborn: Do not expose the No Superweapons sentinel as a real build limit for exempt upgrade facilities.
+			if (TheGameLogic && TheGameLogic->getSuperweaponRestriction() == SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS &&
+				TheControlBar && TheControlBar->isNoSuperweaponRestrictionExempt(thing))
+			{
+				buildLimit = 0;
+			}
 			if (buildLimit > 0)
 			{
 				Int currentCount = 0;
