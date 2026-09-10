@@ -1028,9 +1028,9 @@ static void PopulateOnlineSuperweaponRestrictionComboBox(GameWindow* combo)
 	if (!combo)
 		return;
 
-	static const UnsignedShort values[] = { 1, 2, 3, SUPERWEAPON_RESTRICTION_UNLIMITED, SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS };
-	static const char* labels[] = { "GUI:LimitSuperweapons1", "GUI:LimitSuperweapons2", "GUI:LimitSuperweapons3", "GUI:LimitSuperweaponsUnlimited", "GUI:NoSuperweapons" };
-	UnsignedShort current = TheNGMPGame ? TheNGMPGame->getSuperweaponRestriction() : 1;
+	static const UnsignedShort values[] = { SUPERWEAPON_RESTRICTION_UNLIMITED, 3, 2, 1, SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS };
+	static const char* labels[] = { "GUI:LimitSuperweaponsUnlimited", "GUI:LimitSuperweapons3", "GUI:LimitSuperweapons2", "GUI:LimitSuperweapons1", "GUI:NoSuperweapons" };
+	UnsignedShort current = TheNGMPGame ? TheNGMPGame->getSuperweaponRestriction() : SUPERWEAPON_RESTRICTION_UNLIMITED;
 	Int selected = 0;
 
 	GadgetComboBoxReset(combo);
@@ -1085,6 +1085,10 @@ static void handleSuperweaponRestrictionSelection()
 	TheNGMPGame->setSuperweaponRestriction(restriction);
 	TheNGMPGame->resetAccepted();
 	GadgetComboBoxCenterSelectedEntry(comboBoxSuperweaponRestriction);
+	// Reborn: Remember the host's latest superweapon rule for the next online lobby.
+	CustomMatchPreferences preferences;
+	preferences.setSuperweaponRestriction(restriction);
+	preferences.write();
 	// Reborn: Keep GO's native boolean field compatible while relaying the full Reborn rule separately.
 	pLobbyInterface->UpdateCurrentLobby_LimitSuperweapons(restriction != SUPERWEAPON_RESTRICTION_UNLIMITED);
 	pLobbyInterface->SendRebornSuperweaponRestriction(restriction);

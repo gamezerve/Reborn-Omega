@@ -409,8 +409,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 200 335,
-                   BOTTOMRIGHT: 302 355,
+      SCREENRECT = UPPERLEFT: 221 335,
+                   BOTTOMRIGHT: 323 355,
                    CREATIONRESOLUTION: 800 600;
       NAME = "LanGameOptionsMenu.wnd:ResourceMultiplier";
       STATUS = ENABLED+IMAGE;
@@ -459,8 +459,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = COMBOBOX;
-      SCREENRECT = UPPERLEFT: 592 336,
-                   BOTTOMRIGHT: 704 360,
+      SCREENRECT = UPPERLEFT: 632 333,
+                   BOTTOMRIGHT: 744 357,
                    CREATIONRESOLUTION: 800 600;
       NAME = "LanGameOptionsMenu.wnd:ComboBoxSuperweaponRestriction";
       STATUS = ENABLED+IMAGE;
@@ -700,8 +700,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = ENTRYFIELD;
-      SCREENRECT = UPPERLEFT: 439 333,
-                   BOTTOMRIGHT: 476 357,
+      SCREENRECT = UPPERLEFT: 471 333,
+                   BOTTOMRIGHT: 508 357,
                    CREATIONRESOLUTION: 800 600;
       NAME = "LanGameOptionsMenu.wnd:TextEntryMaxCameraHeight";
       STATUS = ENABLED+IMAGE;
@@ -754,8 +754,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = CHECKBOX;
-      SCREENRECT = UPPERLEFT: 345 333,
-                   BOTTOMRIGHT: 398 357,
+      SCREENRECT = UPPERLEFT: 377 333,
+                   BOTTOMRIGHT: 430 357,
                    CREATIONRESOLUTION: 800 600;
       NAME = "LanGameOptionsMenu.wnd:CheckMaxCameraHeight";
       STATUS = ENABLED+IMAGE+BORDER;
@@ -1095,8 +1095,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 472 336,
-                   BOTTOMRIGHT: 600 356,
+      SCREENRECT = UPPERLEFT: 516 334,
+                   BOTTOMRIGHT: 644 354,
                    CREATIONRESOLUTION: 800 600;
       NAME = "LanGameOptionsMenu.wnd:NewSuperweaponLimitHeader";
       STATUS = ENABLED+IMAGE;
@@ -1145,8 +1145,8 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = COMBOBOX;
-      SCREENRECT = UPPERLEFT: 288 333,
-                   BOTTOMRIGHT: 336 357,
+      SCREENRECT = UPPERLEFT: 309 333,
+                   BOTTOMRIGHT: 357 357,
                    CREATIONRESOLUTION: 800 600;
       NAME = "LanGameOptionsMenu.wnd:ComboBoxResourceMultiplier";
       STATUS = ENABLED+IMAGE;

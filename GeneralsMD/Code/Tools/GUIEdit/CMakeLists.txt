@@ -63,3 +63,14 @@ if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
 
     target_sources(z_guiedit PRIVATE Resource/GUIEdit.rc)
 endif()
+
+if(MSVC AND RTS_BUILD_OPTION_REBORN)
+    # Reborn: Keep GUIEdit from resolving the shared GO imports beside the executable.
+    target_link_options(z_guiedit PRIVATE
+        "/DELAYLOAD:GameNetworkingSockets.dll"
+        "/DELAYLOAD:libcurl.dll")
+    target_link_libraries(z_guiedit PRIVATE delayimp)
+    target_sources(z_guiedit PRIVATE
+        ../../Main/RebornOmegaDllLoad.cpp
+        ../../Main/RebornOmegaDllLoad.h)
+endif()

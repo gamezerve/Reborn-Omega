@@ -320,11 +320,11 @@ Int SkirmishPreferences::getSuperweaponRestriction() const
 {
 	auto it = this->find(superweaponRestrictionKey);
 	if (it == this->end())
-		return 1;
+		return SUPERWEAPON_RESTRICTION_UNLIMITED;
 
 	Int value = atoi(it->second.str());
 	if (value != 0 && value != 1 && value != 2 && value != 3 && value != SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS)
-		value = 1;
+		value = SUPERWEAPON_RESTRICTION_UNLIMITED;
 
 	return value;
 }
@@ -337,7 +337,7 @@ void SkirmishPreferences::setSuperweaponRestriction(Int superweaponRestriction)
 		superweaponRestriction != 3 &&
 		superweaponRestriction != SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS)
 	{
-		superweaponRestriction = 1;
+		superweaponRestriction = SUPERWEAPON_RESTRICTION_UNLIMITED;
 	}
 
 	AsciiString option;
@@ -1087,9 +1087,9 @@ static void PopulateSuperweaponRestrictionComboBox(GameWindow* combo)
 	if (!combo)
 		return;
 
-	static const UnsignedShort values[] = { 1, 2, 3, SUPERWEAPON_RESTRICTION_UNLIMITED, SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS };
-	static const char* labels[] = { "GUI:LimitSuperweapons1", "GUI:LimitSuperweapons2", "GUI:LimitSuperweapons3", "GUI:LimitSuperweaponsUnlimited", "GUI:NoSuperweapons" };
-	UnsignedShort current = TheSkirmishGameInfo ? TheSkirmishGameInfo->getSuperweaponRestriction() : 1;
+	static const UnsignedShort values[] = { SUPERWEAPON_RESTRICTION_UNLIMITED, 3, 2, 1, SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS };
+	static const char* labels[] = { "GUI:LimitSuperweaponsUnlimited", "GUI:LimitSuperweapons3", "GUI:LimitSuperweapons2", "GUI:LimitSuperweapons1", "GUI:NoSuperweapons" };
+	UnsignedShort current = TheSkirmishGameInfo ? TheSkirmishGameInfo->getSuperweaponRestriction() : SUPERWEAPON_RESTRICTION_UNLIMITED;
 	Int selected = 0;
 
 	GadgetComboBoxReset(combo);
@@ -1457,9 +1457,9 @@ void SkirmishGameOptionsMenuInit( WindowLayout *layout, void *userData )
   //TheSkirmishGameInfo->setSuperweaponRestriction( prefs.getSuperweaponRestricted() ? 1 : 0 );
 	TheSkirmishGameInfo->setSuperweaponRestriction(prefs.getSuperweaponRestriction()); // Reborn
 
-	Int savedLimit = prefs.getInt("SuperweaponRestrict", 1);  //Reborn - we used to only support 0 and 1, but now we support more, so we need to validate the saved value.
+	Int savedLimit = prefs.getInt("SuperweaponRestrict", SUPERWEAPON_RESTRICTION_UNLIMITED);  //Reborn - we used to only support 0 and 1, but now we support more, so we need to validate the saved value.
 	if (savedLimit != 1 && savedLimit != 2 && savedLimit != 3 && savedLimit != 0 && savedLimit != SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS)
-		savedLimit = 1;
+		savedLimit = SUPERWEAPON_RESTRICTION_UNLIMITED;
 	TheSkirmishGameInfo->setSuperweaponRestriction(savedLimit);
 
   TheSkirmishGameInfo->setMap(prefs.getPreferredMap());

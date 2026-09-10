@@ -771,11 +771,11 @@ static void PopulateLANSuperweaponRestrictionComboBox(GameWindow* combo)
 	if (!combo)
 		return;
 
-	static const UnsignedShort values[] = { 1, 2, 3, SUPERWEAPON_RESTRICTION_UNLIMITED, SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS };
-	static const char* labels[] = { "GUI:LimitSuperweapons1", "GUI:LimitSuperweapons2", "GUI:LimitSuperweapons3", "GUI:LimitSuperweaponsUnlimited", "GUI:NoSuperweapons" };
+	static const UnsignedShort values[] = { SUPERWEAPON_RESTRICTION_UNLIMITED, 3, 2, 1, SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS };
+	static const char* labels[] = { "GUI:LimitSuperweaponsUnlimited", "GUI:LimitSuperweapons3", "GUI:LimitSuperweapons2", "GUI:LimitSuperweapons1", "GUI:NoSuperweapons" };
 	LANGameInfo* game = TheLAN ? TheLAN->GetMyGame() : nullptr;
 	UnsignedShort current = game ? game->getSuperweaponRestriction() : SUPERWEAPON_RESTRICTION_UNLIMITED;
-	Int selected = 3;
+	Int selected = 0;
 
 	GadgetComboBoxReset(combo);
 	for (Int i = 0; i < ARRAY_SIZE(values); ++i)
@@ -827,6 +827,11 @@ static void handleLANSuperweaponRestrictionSelection()
 
 	if (!s_isIniting)
 	{
+		// Reborn: Remember the host's latest superweapon rule for the next LAN lobby.
+		LANPreferences preferences;
+		preferences.setSuperweaponRestriction(restriction);
+		preferences.write();
+
 		TheLAN->RequestGameOptions(GenerateGameOptionsString(), true);
 		lanUpdateSlotList();
 	}
