@@ -1883,37 +1883,46 @@ if (TheControlBar && TheControlBar->isNoSuperweaponFunctionalityDisabled(thingTe
 }
 if (buildLimit > 0)
 {
-	Int currentCount = 0;
-	const ThingTemplate* tmpl = thingTemplate;
-	player->countObjectsByThingTemplate(1, &tmpl, true, &currentCount);
+	// Reborn: Retail per-template build-limit display retained for reference.
+	// Int currentCount = 0;
+	// const ThingTemplate* tmpl = thingTemplate;
+	// player->countObjectsByThingTemplate(1, &tmpl, true, &currentCount);
+	//
+	// Int queuedCount = 0;
+	// Int effectiveCount = currentCount;
+	//
+	// Drawable *draw = TheInGameUI->getFirstSelectedDrawable();
+	// Object *selectedObject = draw ? draw->getObject() : nullptr;
+	// if (selectedObject)
+	// {
+	// 	ProductionUpdateInterface *pui = selectedObject->getProductionUpdateInterface();
+	// 	if (pui)
+	// 	{
+	// 		queuedCount = pui->countUnitTypeInQueue(thingTemplate);
+	// 	}
+	//
+	// 	effectiveCount = currentCount + queuedCount;
+	//
+	// 	CanMakeType makeType = TheBuildAssistant->canMakeUnit(selectedObject, thingTemplate);
+	// 	if (makeType == CANMAKE_MAXED_OUT_FOR_PLAYER && effectiveCount < (Int)buildLimit)
+	// 	{
+	// 		effectiveCount = buildLimit;
+	// 	}
+	// }
+	// else
+	// {
+	// 	effectiveCount = currentCount;
+	// }
+	//
+	// limittext.format(L"Build Limit: %d/%d", effectiveCount, buildLimit);
 
-	Int queuedCount = 0;
-	Int effectiveCount = currentCount;
-
-	Drawable *draw = TheInGameUI->getFirstSelectedDrawable();
-	Object *selectedObject = draw ? draw->getObject() : nullptr;
-	if (selectedObject)
-	{
-		ProductionUpdateInterface *pui = selectedObject->getProductionUpdateInterface();
-		if (pui)
-		{
-			queuedCount = pui->countUnitTypeInQueue(thingTemplate);
-		}
-
-		effectiveCount = currentCount + queuedCount;
-
-		CanMakeType makeType = TheBuildAssistant->canMakeUnit(selectedObject, thingTemplate);
-		if (makeType == CANMAKE_MAXED_OUT_FOR_PLAYER && effectiveCount < (Int)buildLimit)
-		{
-			effectiveCount = buildLimit;
-		}
-	}
+	// Reborn: Match the gameplay limit calculation, including every template sharing a link key.
+	UnsignedInt effectiveCount = player->countObjectsForMaxSimultaneousOfType(thingTemplate, TRUE);
+	static NameKeyType superweaponLinkKey = NAMEKEY("Superweapon");
+	if (thingTemplate->getMaxSimultaneousLinkKey() == superweaponLinkKey)
+		limittext.format(L"Superweapon Limit: %d/%d", effectiveCount, buildLimit);
 	else
-	{
-		effectiveCount = currentCount;
-	}
-
-	limittext.format(L"Build Limit: %d/%d", effectiveCount, buildLimit);
+		limittext.format(L"Build Limit: %d/%d", effectiveCount, buildLimit);
 }
 
 
@@ -2966,10 +2975,19 @@ if (obj &&
 			}
 			if (buildLimit > 0)
 			{
-				Int currentCount = 0;
-				const ThingTemplate* tmpl = thing;
-				player->countObjectsByThingTemplate(1, &tmpl, true, &currentCount);
-				limittext.format(L"Build Limit: %d/%d", currentCount, buildLimit);
+				// Reborn: Retail per-template build-limit display retained for reference.
+				// Int currentCount = 0;
+				// const ThingTemplate* tmpl = thing;
+				// player->countObjectsByThingTemplate(1, &tmpl, true, &currentCount);
+				// limittext.format(L"Build Limit: %d/%d", currentCount, buildLimit);
+
+				// Reborn: Selected superweapons display their shared group count, not only their own type.
+				UnsignedInt currentCount = player->countObjectsForMaxSimultaneousOfType(thing, FALSE);
+				static NameKeyType superweaponLinkKey = NAMEKEY("Superweapon");
+				if (thing->getMaxSimultaneousLinkKey() == superweaponLinkKey)
+					limittext.format(L"Superweapon Limit: %d/%d", currentCount, buildLimit);
+				else
+					limittext.format(L"Build Limit: %d/%d", currentCount, buildLimit);
 			}
 
 

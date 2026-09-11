@@ -3431,7 +3431,8 @@ const CommandSet* ControlBar::findCommandSet(const AsciiString& name) const
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Reborn: Keep superweapon structures that also serve as player-upgrade facilities buildable. */
+/** Reborn: Keep superweapon structures that also serve as player-upgrade facilities buildable.
+	* Reborn: The same exemption also covers structures required as object prerequisites. */
 //-------------------------------------------------------------------------------------------------
 Bool ControlBar::isNoSuperweaponRestrictionExempt(const ThingTemplate* thingTemplate) const
 {
@@ -3457,6 +3458,9 @@ Bool ControlBar::isNoSuperweaponRestrictionExempt(const ThingTemplate* thingTemp
 
 	if (!thingTemplate)
 		return FALSE;
+
+	if (thingTemplate->isPrerequisite())
+		return TRUE;
 
 	if (commandSetContainsPlayerUpgrade(thingTemplate->friend_getCommandSetString()))
 		return TRUE;

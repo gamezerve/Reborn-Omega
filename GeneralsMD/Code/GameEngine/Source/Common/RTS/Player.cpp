@@ -3062,6 +3062,23 @@ static void countExisting( Object *obj, void *userData )
 }
 
 //=============================================================================
+// Reborn: Count the same object/link-key group used by canBuildMoreOfType().
+UnsignedInt Player::countObjectsForMaxSimultaneousOfType(const ThingTemplate* thingTemplate, Bool includeProductionQueues) const
+{
+	if (!thingTemplate)
+		return 0;
+
+	TypeCountData typeCountData;
+	typeCountData.count = 0;
+	typeCountData.type = thingTemplate;
+	typeCountData.linkKey = thingTemplate->getMaxSimultaneousLinkKey();
+	typeCountData.checkProductionInterface = includeProductionQueues;
+	iterateObjects(countExisting, &typeCountData);
+
+	return typeCountData.count;
+}
+
+//=============================================================================
 // Make sure that building another of this unit/structure/object won't exceed MaxSimultaneousOfType()
 Bool Player::canBuildMoreOfType( const ThingTemplate *whatToBuild ) const
 {
@@ -3076,7 +3093,7 @@ Bool Player::canBuildMoreOfType( const ThingTemplate *whatToBuild ) const
 
 	// make sure we're not maxed out for this type of unit.
 	// Reborn: The No Superweapons sentinel is unlimited for exempt player-upgrade facilities.
-	UnsignedInt maxSimultaneousOfType = noSuperweaponExempt ? 0 : whatToBuild->getMaxSimultaneousOfType();
+  UnsignedInt maxSimultaneousOfType = noSuperweaponExempt ? 0 : whatToBuild->getMaxSimultaneousOfType();
   if (maxSimultaneousOfType != 0)
   {
 

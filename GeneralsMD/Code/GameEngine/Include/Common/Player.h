@@ -277,6 +277,7 @@ public:
 
   // Check MaxSimultaneousOfType
   Bool canBuildMoreOfType( const ThingTemplate *whatToBuild ) const;
+	UnsignedInt countObjectsForMaxSimultaneousOfType(const ThingTemplate* thingTemplate, Bool includeProductionQueues) const; // Reborn: Count linked build-limit groups consistently in logic and tooltips.
 
 	/// Difficulty level for this player.
 	GameDifficulty getPlayerDifficulty() const;

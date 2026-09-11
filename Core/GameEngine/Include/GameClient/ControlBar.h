@@ -725,6 +725,7 @@ public:
 	/// find existing command set
 	//const CommandSet *findCommandSet( const AsciiString& name );
 	const CommandSet* findCommandSet(const AsciiString& name) const;
+	// Reborn: The same exemption also covers structures required as object prerequisites.
 	Bool isNoSuperweaponRestrictionExempt(const ThingTemplate* thingTemplate) const; // Reborn: Preserve superweapon structures that provide player upgrades.
 	Bool isNoSuperweaponFunctionalityDisabled(const ThingTemplate* thingTemplate) const; // Reborn: Keep exempt structures usable only as upgrade facilities.
 	void applyNoSuperweaponRestriction(); // Reborn: Hide every lobby-controlled superweapon construction button for No Superweapon matches.

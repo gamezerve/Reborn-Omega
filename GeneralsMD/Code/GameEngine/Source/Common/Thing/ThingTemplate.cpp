@@ -1527,6 +1527,21 @@ void ThingTemplate::resolveNames()
 	for (i = 0; i < m_prereqInfo.size(); i++)
 	{
 		m_prereqInfo[i].resolveNames();
+
+		// Reborn: Automatically mark every object referenced as a prerequisite.
+		for (j = 0; j < m_prereqInfo[i].getNumUnitPrereqs(); ++j)
+		{
+			const ThingTemplate* prereqTemplate = m_prereqInfo[i].getUnitPrereq(j);
+			if (prereqTemplate)
+			{
+				ThingTemplate* mutablePrereqTemplate = const_cast<ThingTemplate*>(prereqTemplate);
+				mutablePrereqTemplate->m_isPrerequisite = TRUE;
+
+				ThingTemplate* finalPrereqTemplate =
+					const_cast<ThingTemplate*>(static_cast<const ThingTemplate*>(prereqTemplate->getFinalOverride()));
+				finalPrereqTemplate->m_isPrerequisite = TRUE;
+			}
+		}
 	}
 
 	const Int MAX_BF = 32;
