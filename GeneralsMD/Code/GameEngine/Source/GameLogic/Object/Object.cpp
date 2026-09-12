@@ -3850,19 +3850,6 @@ void Object::updateObjValuesFromMapProperties(Dict* properties)
 //-------------------------------------------------------------------------------------------------
 void Object::friend_adjustPowerForPlayer(Bool incoming)
 {
-	if (!incoming)
-	{
-		for (BehaviorModule** behavior = m_behaviors; *behavior; ++behavior)
-		{
-			SlowDeathBehaviorInterface* slowDeath = (*behavior)->getSlowDeathBehaviorInterface();
-			if (slowDeath && slowDeath->hasReleasedPowerWhileDying())
-			{
-				// Reborn: SlowDeathBehavior already removed this object's energy influence at death start.
-				return;
-			}
-		}
-	}
-
 	// Reborn: Objects manually disabled by Power Mode should not contribute to
 	// the player's energy pool. This also prevents save/load rebuilds from
 	// re-adding their energy consumption while the disabled flag is still active.
@@ -6516,14 +6503,6 @@ Real Object::getCarrierDeckHeight() const
 			ParkingPlaceBehaviorInterface* pp = (*i)->getParkingPlaceBehaviorInterface();
 			if( pp )
 			{
-				Coord3D helicopterRepairPoint;
-				if (pp->getHelicopterRepairPoint(getID(), &helicopterRepairPoint))
-				{
-					// Reborn: Treat the reserved helicopter repair point as the physical carrier deck surface.
-					return helicopterRepairPoint.z
-						- TheTerrainLogic->getLayerHeight(getPosition()->x, getPosition()->y, getLayer());
-				}
-
 				if (pp->useDynamicDeckHeight())
 					return producer->getPosition()->z + pp->getLandingDeckHeightOffset()
 					- TheTerrainLogic->getLayerHeight(getPosition()->x, getPosition()->y, getLayer());

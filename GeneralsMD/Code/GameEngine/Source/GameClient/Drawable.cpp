@@ -1369,16 +1369,17 @@ void Drawable::applyPhysicsXform(Matrix3D* mtx)
 				TheGameLogic->findObjectByID(
 					obj->getProducerID());
 
-			if (producer && producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO))
+			JetAIUpdate* jetAI =
+				static_cast<JetAIUpdate*>(
+					obj->getAIUpdateInterface());
+
+			if (producer &&
+				producer->isKindOf(KINDOF_AIRCRAFT_CARRIER_RO) &&
+				jetAI)
 			{
-				Bool attachedToCarrierDeck = !obj->isAirborneTarget();
-				if (!attachedToCarrierDeck)
-				{
-					// Reborn: Only query JetAI flags when this object actually owns a JetAIUpdate.
-					static NameKeyType jetAIKey = TheNameKeyGenerator->nameToKey("JetAIUpdate");
-					JetAIUpdate* jetAI = static_cast<JetAIUpdate*>(obj->findUpdateModule(jetAIKey));
-					attachedToCarrierDeck = jetAI && jetAI->friend_isParkedOnMovingCarrierDeck();
-				}
+				const Bool attachedToCarrierDeck =
+					jetAI->friend_isParkedOnMovingCarrierDeck() ||
+					!obj->isAirborneTarget();
 
 				if (attachedToCarrierDeck)
 				{

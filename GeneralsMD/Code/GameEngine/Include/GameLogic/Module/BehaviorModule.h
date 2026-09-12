@@ -250,12 +250,6 @@ public:
 	virtual Real getApproachHeight() const = 0;
 	virtual Real getLandingDeckHeightOffset() const = 0;
 	virtual Bool useDynamicDeckHeight() const { return FALSE; }
-	// Reborn: Optional single-space helicopter repair point used by moving carriers.
-	virtual Bool hasHelicopterRepairPoint() const { return FALSE; }
-	virtual Bool isHelicopterRepairPointAvailable(ObjectID id) const { return TRUE; }
-	virtual Bool reserveHelicopterRepairPoint(ObjectID id, Coord3D* position) { return FALSE; }
-	virtual Bool getHelicopterRepairPoint(ObjectID id, Coord3D* position) const { return FALSE; }
-	virtual void releaseHelicopterRepairPoint(ObjectID id) {}
 	virtual void setHealee(Object* healee, Bool add) = 0;
 	virtual void killAllParkedUnits() = 0;
 	virtual void defectAllParkedUnits(Team* newTeam, UnsignedInt detectionTime) = 0;

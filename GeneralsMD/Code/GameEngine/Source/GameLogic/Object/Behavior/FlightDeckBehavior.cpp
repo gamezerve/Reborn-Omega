@@ -60,8 +60,6 @@ FlightDeckBehaviorModuleData::FlightDeckBehaviorModuleData()
 	m_numRows = 0;
 	m_numCols = 0;
 	m_movingCarrier = false;
-	m_hasHelicopterRepairPoint = false;
-	m_helicopterRepairPointOffset.zero();
 	m_approachHeight = 0.0f;
 	m_landingDeckHeightOffset = 0.0f;
 	m_dockAnimationFrames = 0;
@@ -122,8 +120,6 @@ void FlightDeckBehaviorModuleData::buildFieldParse(MultiIniFieldParse& p)
 		{ "LowerRampDelay",					INI::parseDurationUnsignedInt,		nullptr, offsetof( FlightDeckBehaviorModuleData, m_lowerRampFrames ) },
 		{ "CatapultFireDelay",			INI::parseDurationUnsignedInt,		nullptr, offsetof( FlightDeckBehaviorModuleData, m_catapultFireFrames ) },
 		{ "MovingCarrier",					INI::parseBool,										nullptr, offsetof( FlightDeckBehaviorModuleData, m_movingCarrier) },
-		{ "HasHelicopterRepairPoint",	INI::parseBool,										nullptr, offsetof( FlightDeckBehaviorModuleData, m_hasHelicopterRepairPoint) },
-		{ "HelicopterRepairPointOffset",INI::parseCoord3D,									nullptr, offsetof( FlightDeckBehaviorModuleData, m_helicopterRepairPointOffset) },
 
 		{ nullptr, nullptr, nullptr, 0 }
 	};
@@ -140,7 +136,6 @@ FlightDeckBehavior::FlightDeckBehavior( Thing *thing, const ModuleData* moduleDa
 	m_hasPreviousCarrierTransform = FALSE;
 	m_previousCarrierOrientation = 0.0f;
 	m_hasPreviousCarrierTransform = FALSE;
-	m_helicopterRepairObjectID = INVALID_ID;
 
 	m_nextHealFrame = FOREVER;
 	setWakeFrame(getObject(), UPDATE_SLEEP_NONE);
@@ -580,116 +575,8 @@ void FlightDeckBehavior::updateMovingCarrierDeckAircraft()
 		}
 	}
 
-	// Reborn: Helicopter repair uses a dedicated slot outside the fixed-wing parking grid.
-	Object* repairHelicopter = TheGameLogic->findObjectByID(m_helicopterRepairObjectID);
-	if (repairHelicopter && !repairHelicopter->isEffectivelyDead())
-	{
-		// Reborn: Use the same single carrier-transform propagation as parked aircraft to avoid jitter.
-		transformObjectWithMovingCarrier(repairHelicopter, *currentCarrierTransform, inversePreviousCarrierTransform, orientationDelta);
-	}
-
 	m_previousCarrierTransform = *currentCarrierTransform;
 	m_previousCarrierOrientation = currentCarrierOrientation;
-}
-
-//-------------------------------------------------------------------------------------------------
-void FlightDeckBehavior::transformObjectWithMovingCarrier(Object* object, const Matrix3D& currentCarrierTransform, const Matrix3D& inversePreviousCarrierTransform, Real orientationDelta)
-{
-	if (!object)
-		return;
-
-	Vector3 localPosition(object->getPosition()->x, object->getPosition()->y, object->getPosition()->z);
-	Matrix3D::Transform_Vector(inversePreviousCarrierTransform, localPosition, &localPosition);
-
-	Vector3 newWorldPosition;
-	Matrix3D::Transform_Vector(currentCarrierTransform, localPosition, &newWorldPosition);
-
-	Coord3D newPosition;
-	newPosition.x = newWorldPosition.X;
-	newPosition.y = newWorldPosition.Y;
-	newPosition.z = newWorldPosition.Z;
-	object->setPosition(&newPosition);
-	object->setOrientation(object->getOrientation() + orientationDelta);
-
-	AIUpdateInterface* ai = object->getAI();
-	Path* path = ai ? ai->friend_getPath() : nullptr;
-	if (!path)
-		return;
-
-	// Reborn: Keep the helicopter's active approach path in the carrier coordinate system.
-	for (PathNode* node = path->getFirstNode(); node; node = node->getNext())
-	{
-		Vector3 localNode(node->getPosition()->x, node->getPosition()->y, node->getPosition()->z);
-		Matrix3D::Transform_Vector(inversePreviousCarrierTransform, localNode, &localNode);
-
-		Vector3 newWorldNode;
-		Matrix3D::Transform_Vector(currentCarrierTransform, localNode, &newWorldNode);
-
-		Coord3D newNodePosition;
-		newNodePosition.x = newWorldNode.X;
-		newNodePosition.y = newWorldNode.Y;
-		newNodePosition.z = newWorldNode.Z;
-		node->setPosition(&newNodePosition);
-	}
-
-	for (PathNode* node = path->getFirstNode(); node; node = node->getNext())
-	{
-		PathNode* nextOptimized = node->getNextOptimized();
-		node->setNextOptimized(nextOptimized);
-	}
-}
-
-//-------------------------------------------------------------------------------------------------
-Bool FlightDeckBehavior::isHelicopterRepairPointAvailable(ObjectID id) const
-{
-	return m_helicopterRepairObjectID == INVALID_ID || m_helicopterRepairObjectID == id;
-}
-
-//-------------------------------------------------------------------------------------------------
-Bool FlightDeckBehavior::reserveHelicopterRepairPoint(ObjectID id, Coord3D* position)
-{
-	if (!hasHelicopterRepairPoint() || !isHelicopterRepairPointAvailable(id))
-		return FALSE;
-
-	m_helicopterRepairObjectID = id;
-
-	// Reborn: Make the INI-defined carrier repair point a real deck surface for locomotor and physics.
-	Object* helicopter = TheGameLogic->findObjectByID(id);
-	if (helicopter)
-		helicopter->setStatus(MAKE_OBJECT_STATUS_MASK(OBJECT_STATUS_DECK_HEIGHT_OFFSET));
-
-	return getHelicopterRepairPoint(id, position);
-}
-
-//-------------------------------------------------------------------------------------------------
-Bool FlightDeckBehavior::getHelicopterRepairPoint(ObjectID id, Coord3D* position) const
-{
-	if (!hasHelicopterRepairPoint() || !position || m_helicopterRepairObjectID != id)
-		return FALSE;
-
-	const Coord3D& offset = getFlightDeckBehaviorModuleData()->m_helicopterRepairPointOffset;
-	Vector3 localPoint(offset.x, offset.y, offset.z);
-	Vector3 worldPoint;
-	Matrix3D::Transform_Vector(*getObject()->getTransformMatrix(), localPoint, &worldPoint);
-
-	position->x = worldPoint.X;
-	position->y = worldPoint.Y;
-	position->z = worldPoint.Z;
-	return TRUE;
-}
-
-//-------------------------------------------------------------------------------------------------
-void FlightDeckBehavior::releaseHelicopterRepairPoint(ObjectID id)
-{
-	if (m_helicopterRepairObjectID == id)
-	{
-		// Reborn: The helicopter is leaving the repair point, so terrain becomes its surface again.
-		Object* helicopter = TheGameLogic->findObjectByID(id);
-		if (helicopter)
-			helicopter->clearStatus(MAKE_OBJECT_STATUS_MASK(OBJECT_STATUS_DECK_HEIGHT_OFFSET));
-
-		m_helicopterRepairObjectID = INVALID_ID;
-	}
 }
 
 void FlightDeckBehavior::updateMovingCarrierParkedJets()
@@ -729,14 +616,6 @@ void FlightDeckBehavior::updateMovingCarrierParkedJets()
 void FlightDeckBehavior::purgeDead()
 {
 	buildInfo();
-
-	// Reborn: A dead or removed helicopter must not keep the single repair slot reserved.
-	if (m_helicopterRepairObjectID != INVALID_ID)
-	{
-		Object* helicopter = TheGameLogic->findObjectByID(m_helicopterRepairObjectID);
-		if (!helicopter || helicopter->isEffectivelyDead())
-			m_helicopterRepairObjectID = INVALID_ID;
-	}
 
 	for (std::vector<FlightDeckInfo>::iterator it = m_spaces.begin(); it != m_spaces.end(); ++it)
 	{
@@ -804,10 +683,6 @@ Bool FlightDeckBehavior::hasReservedSpace(ObjectID id) const
 
 	if (id == INVALID_ID)	// shouldn't call this way, but Weapon mistakenly does sometimes, so check for it
 		return false;
-
-	// Reborn: The exclusive helicopter repair point is a real parking reservation too.
-	if (m_helicopterRepairObjectID == id)
-		return true;
 
 	for (std::vector<FlightDeckInfo>::const_iterator it = m_spaces.begin(); it != m_spaces.end(); ++it)
 	{
@@ -1532,12 +1407,6 @@ void FlightDeckBehavior::killAllParkedUnits()
 		}
 	}
 
-	// Reborn: The reserved repair helicopter is attached to the moving carrier as well.
-	Object* repairHelicopter = TheGameLogic->findObjectByID(m_helicopterRepairObjectID);
-	if (repairHelicopter && !repairHelicopter->isEffectivelyDead())
-		repairHelicopter->kill();
-	m_helicopterRepairObjectID = INVALID_ID;
-
 	purgeDead();
 }
 
@@ -2079,29 +1948,19 @@ void FlightDeckBehavior::crc( Xfer *xfer )
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
 	* Version Info:
-	* 1: Initial version
-	* 2: Reborn: Save the helicopter repair slot reservation. */
+	* 1: Initial version */
 // ------------------------------------------------------------------------------------------------
 void FlightDeckBehavior::xfer( Xfer *xfer )
 {
 	Int i;
 
 	// version
-#if RETAIL_COMPATIBLE_XFER_SAVE
 	const XferVersion currentVersion = 1;
-#else
-	const XferVersion currentVersion = 2;
-#endif
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
 	// extend base class
 	AIUpdateInterface::xfer( xfer );
-
-	if (version >= 2)
-		xfer->xferObjectID(&m_helicopterRepairObjectID);
-	else if (xfer->getXferMode() == XFER_LOAD)
-		m_helicopterRepairObjectID = INVALID_ID;
 
 	if( xfer->getXferMode() == XFER_LOAD )
 	{

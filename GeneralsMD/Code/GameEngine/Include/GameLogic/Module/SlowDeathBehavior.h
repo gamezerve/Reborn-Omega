@@ -81,7 +81,6 @@ public:
 	UnsignedInt				m_destructionDelay;
 	UnsignedInt				m_destructionDelayVariance;
 	UnsignedInt				m_visionRetentionDuration;	///< Reborn: Duration that this dying object continues to reveal shroud.
-	Bool						m_releasePowerOnDeath;		///< Reborn: Remove this object's energy influence when slow death begins.
 	FXListVec					m_fx[SD_PHASE_COUNT];
 	OCLVec						m_ocls[SD_PHASE_COUNT];
 	WeaponTemplateVec	m_weapons[SD_PHASE_COUNT];
@@ -120,7 +119,6 @@ public:
 	virtual Int getProbabilityModifier( const DamageInfo *damageInfo ) const = 0;
 	virtual Bool isDieApplicable(const DamageInfo *damageInfo) const = 0;
 	virtual Bool shouldRetainVisionWhileDying() const = 0; // Reborn: Allow configured slow deaths to keep revealing shroud temporarily.
-	virtual Bool hasReleasedPowerWhileDying() const = 0; // Reborn: Prevent the final object deletion from removing energy twice.
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -157,7 +155,6 @@ public:
 	virtual Int getProbabilityModifier( const DamageInfo *damageInfo ) const override;
 	virtual Bool isDieApplicable(const DamageInfo *damageInfo) const override { return getSlowDeathBehaviorModuleData()->m_dieMuxData.isDieApplicable(getObject(), damageInfo); }
 	virtual Bool shouldRetainVisionWhileDying() const override; // Reborn: Report whether the configured vision retention period is still active.
-	virtual Bool hasReleasedPowerWhileDying() const override; // Reborn: Report an early energy-influence release during slow death.
 
 protected:
 
@@ -173,8 +170,7 @@ private:
 		MIDPOINT_EXECUTED,
 		FLUNG_INTO_AIR,
 		BOUNCED,
-		VISION_RETENTION_EXPIRED, // Reborn: Ensure shroud maintenance runs only once when retained vision expires.
-		POWER_RELEASED_EARLY // Reborn: Ensure death-start and final deletion cannot both remove energy.
+		VISION_RETENTION_EXPIRED // Reborn: Ensure shroud maintenance runs only once when retained vision expires.
 	};
 
 	UnsignedInt m_sinkFrame;							///< Frame to be sunken into the ground on

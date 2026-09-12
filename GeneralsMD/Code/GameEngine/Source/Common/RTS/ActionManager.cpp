@@ -49,7 +49,6 @@
 
 #include "GameLogic/Object.h"
 #include "GameLogic/PartitionManager.h"
-#include "GameLogic/Module/BehaviorModule.h"
 #include "GameLogic/Module/BodyModule.h"
 #include "GameLogic/Module/ContainModule.h"
 #include "GameLogic/Module/CollideModule.h"
@@ -174,14 +173,6 @@ Bool ActionManager::canGetRepairedAt( const Object *obj, const Object *repairDes
 	if( obj->isKindOf( KINDOF_VEHICLE ) == FALSE )
 		return FALSE;
 
-	ParkingPlaceBehaviorInterface* parkingPlace = nullptr;
-	for (BehaviorModule** i = repairDest->getBehaviorModules(); *i; ++i)
-	{
-		parkingPlace = (*i)->getParkingPlaceBehaviorInterface();
-		if (parkingPlace)
-			break;
-	}
-
 	// vehicles can only be repaired at something that is designated as a repair pad
 	if (obj->isKindOf( KINDOF_AIRCRAFT ))
 	{
@@ -189,19 +180,9 @@ Bool ActionManager::canGetRepairedAt( const Object *obj, const Object *repairDes
 		if( !obj->isAboveTerrain() ||
 					repairDest->isKindOf( KINDOF_FS_AIRFIELD ) == FALSE )
 			return FALSE;
-
-		// Reborn: Moving carrier helicopter repair points have one exclusive slot.
-		if (obj->isKindOf(KINDOF_PRODUCED_AT_HELIPAD) &&
-			parkingPlace && parkingPlace->hasHelicopterRepairPoint() &&
-			!parkingPlace->isHelicopterRepairPointAvailable(obj->getID()))
-			return FALSE;
 	}
 	else
 	{
-		// Reborn: The carrier repair point is intentionally helicopter-only.
-		if (parkingPlace && parkingPlace->hasHelicopterRepairPoint())
-			return FALSE;
-
 		if( repairDest->isKindOf( KINDOF_REPAIR_PAD ) == FALSE )
 			return FALSE;
 	}

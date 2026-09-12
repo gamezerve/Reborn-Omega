@@ -119,8 +119,6 @@ public:
 	const Coord3D& friend_getLandingPosForHelipadStuff() const { return m_landingPosForHelipadStuff; }
 	void friend_enableAfterburners(Bool v);
 	void friend_setAllowAirLoco(Bool a);
-	// Reborn: Carrier helicopter states need to clear the real locomotor goal without the normal landing fly-through behavior.
-	void friend_clearLocomotorGoalForCarrierRepair() { AIUpdateInterface::setLocomotorGoalNone(); }
 	Bool friend_isTakeoffOrLandingInProgress() const
 	{
 		return (getFlag(TAKEOFF_IN_PROGRESS) || getFlag(LANDING_IN_PROGRESS));

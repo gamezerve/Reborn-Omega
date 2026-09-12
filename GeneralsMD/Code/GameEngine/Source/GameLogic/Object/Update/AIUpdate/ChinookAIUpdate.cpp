@@ -187,8 +187,6 @@ public:
 EMPTY_DTOR(ChinookHeadOffMapState)
 
 //-------------------------------------------------------------------------------------------------
-static ParkingPlaceBehaviorInterface* getPP(ObjectID id);
-
 class ChinookTakeoffOrLandingState : public State
 {
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(ChinookTakeoffOrLandingState, "ChinookTakeoffOrLandingState")
@@ -250,15 +248,7 @@ public:
 		const Bool onlyHealthyBridges = true;	// ignore dead bridges.
 		PathfindLayerEnum layerAtDest = TheTerrainLogic->getHighestLayerForDestination(&m_destLoc, onlyHealthyBridges);
 		m_destLoc.z = TheTerrainLogic->getLayerHeight(m_destLoc.x, m_destLoc.y, layerAtDest);
-		ParkingPlaceBehaviorInterface* repairPP = m_landing ? getPP(ai->friend_getAirfieldForHealing()) : nullptr;
-		if (repairPP && repairPP->getHelicopterRepairPoint(obj->getID(), &m_destLoc))
-		{
-			// Reborn: Carrier repair uses the exact INI point instead of a nearby ground position.
-			// Reborn: Ignore the carrier collision while descending through its deck geometry.
-			ai->ignoreObstacleID(ai->friend_getAirfieldForHealing());
-			obj->setLayer(LAYER_GROUND);
-		}
-		else if (m_landing)
+		if (m_landing)
 		{
 			Coord3D tmp;
 			FindPositionOptions options;
@@ -297,93 +287,6 @@ public:
 			return STATE_FAILURE;
 
 		ChinookAIUpdate* ai = (ChinookAIUpdate*)obj->getAIUpdateInterface();
-		Bool carrierRepairLanding = FALSE;
-
-		if (!m_landing)
-		{
-			ParkingPlaceBehaviorInterface* pp = getPP(ai->friend_getAirfieldForHealing());
-			Coord3D repairPoint;
-			if (pp && pp->getHelicopterRepairPoint(obj->getID(), &repairPoint))
-			{
-				// Reborn: Take off vertically from the moving carrier instead of returning to terrain height over water.
-				const Real carrierTakeoffSpeed = 30.0f;
-				const Real maxTakeoffStep = carrierTakeoffSpeed * SECONDS_PER_LOGICFRAME_REAL;
-				Coord3D takeoffPoint = repairPoint;
-				takeoffPoint.z += pp->getApproachHeight();
-
-				Coord3D position = *obj->getPosition();
-				position.x = repairPoint.x;
-				position.y = repairPoint.y;
-				const Real zDelta = takeoffPoint.z - position.z;
-
-				ai->setLocomotorGoalNone();
-				obj->getPhysics()->scrubVelocity2D(0);
-				obj->getPhysics()->scrubVelocityZ(0);
-
-				if (fabs(zDelta) <= maxTakeoffStep)
-				{
-					position.z = takeoffPoint.z;
-					obj->setPosition(&position);
-					return STATE_SUCCESS;
-				}
-
-				position.z += zDelta > 0.0f ? maxTakeoffStep : -maxTakeoffStep;
-				obj->setPosition(&position);
-				return STATE_CONTINUE;
-			}
-		}
-
-		if (m_landing)
-		{
-			ParkingPlaceBehaviorInterface* pp = getPP(ai->friend_getAirfieldForHealing());
-			Coord3D repairPoint;
-			if (pp && pp->getHelicopterRepairPoint(obj->getID(), &repairPoint))
-			{
-				// Reborn: Keep the vertical landing target attached to the moving carrier.
-				m_destLoc = repairPoint;
-				carrierRepairLanding = TRUE;
-			}
-		}
-
-		if (carrierRepairLanding)
-		{
-			// Reborn: Finish carrier landing independently of terrain and air-locomotor preferred height.
-			const Real carrierLandingSpeed = 20.0f;
-			const Real maxLandingStep = carrierLandingSpeed * SECONDS_PER_LOGICFRAME_REAL;
-			Coord3D position = *obj->getPosition();
-			Real xDelta = m_destLoc.x - position.x;
-			Real yDelta = m_destLoc.y - position.y;
-			Real zDelta = m_destLoc.z - position.z;
-			Real horizontalDistance = sqrtf(xDelta * xDelta + yDelta * yDelta);
-
-			// Reborn: Converge on the repair point instead of snapping sideways at touchdown.
-			if (horizontalDistance > maxLandingStep)
-			{
-				position.x += xDelta * maxLandingStep / horizontalDistance;
-				position.y += yDelta * maxLandingStep / horizontalDistance;
-			}
-			else
-			{
-				position.x = m_destLoc.x;
-				position.y = m_destLoc.y;
-			}
-
-			ai->setLocomotorGoalNone();
-			if (fabs(zDelta) <= maxLandingStep && horizontalDistance <= maxLandingStep)
-			{
-				position.z = m_destLoc.z;
-				obj->getPhysics()->resetDynamicPhysics();
-				obj->setPosition(&position);
-				ai->setLocomotorGoalNone();
-				return STATE_SUCCESS;
-			}
-
-			position.z += zDelta > 0.0f ? maxLandingStep : -maxLandingStep;
-			obj->getPhysics()->scrubVelocity2D(0);
-			obj->getPhysics()->scrubVelocityZ(0);
-			obj->setPosition(&position);
-			return STATE_CONTINUE;
-		}
 
 		ai->setLocomotorGoalPositionExplicit(m_destLoc);
 
@@ -424,10 +327,6 @@ public:
 			// when takeoff is complete, always go back to layer-ground, rather than
 			// some bridge layer.
 			obj->setLayer(LAYER_GROUND);
-			// Reborn: Release the carrier deck only after the helicopter has completed takeoff.
-			ai->friend_setAirfieldForHealing(INVALID_ID);
-			// Reborn: Restore normal carrier collision after the helicopter has cleared the deck.
-			ai->ignoreObstacleID(INVALID_ID);
 		}
 
 
@@ -435,65 +334,6 @@ public:
 
 };
 EMPTY_DTOR(ChinookTakeoffOrLandingState)
-
-//-------------------------------------------------------------------------------------------------
-class ChinookMoveToRepairPointState : public AIMoveToState
-{
-	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE(ChinookMoveToRepairPointState, "ChinookMoveToRepairPointState")
-
-private:
-	Bool refreshRepairGoal()
-	{
-		Object* helicopter = getMachineOwner();
-		ChinookAIUpdate* ai = (ChinookAIUpdate*)helicopter->getAIUpdateInterface();
-		ParkingPlaceBehaviorInterface* pp = ai ? getPP(ai->friend_getAirfieldForHealing()) : nullptr;
-		Coord3D repairPoint;
-		if (!pp || !pp->getHelicopterRepairPoint(helicopter->getID(), &repairPoint))
-			return FALSE;
-
-		// Reborn: Keep the horizontal approach goal attached to the carrier-local repair point.
-		m_goalPosition = repairPoint;
-		m_goalPosition.z = helicopter->getPosition()->z;
-		getMachine()->setGoalPosition(&m_goalPosition);
-		return TRUE;
-	}
-
-public:
-	ChinookMoveToRepairPointState(StateMachine* machine) : AIMoveToState(machine) {}
-
-	virtual StateReturnType onEnter() override
-	{
-		if (refreshRepairGoal())
-		{
-			setAdjustsDestination(false);
-			return AIInternalMoveToState::onEnter();
-		}
-
-		return AIMoveToState::onEnter();
-	}
-
-	virtual StateReturnType update() override
-	{
-		if (refreshRepairGoal())
-		{
-			const Coord3D* position = getMachineOwner()->getPosition();
-			const Real dx = m_goalPosition.x - position->x;
-			const Real dy = m_goalPosition.y - position->y;
-			const Real horizontalThreshold = 10.0f;
-			if (dx * dx + dy * dy <= horizontalThreshold * horizontalThreshold)
-			{
-				// Reborn: Z is handled exclusively by the following carrier landing state.
-				getMachineOwner()->getPhysics()->scrubVelocity2D(0);
-				return STATE_SUCCESS;
-			}
-
-			return AIInternalMoveToState::update();
-		}
-
-		return AIMoveToState::update();
-	}
-};
-EMPTY_DTOR(ChinookMoveToRepairPointState)
 
 //-------------------------------------------------------------------------------------------------
 class ChinookCombatDropState : public State
@@ -1013,7 +853,7 @@ ChinookAIStateMachine::ChinookAIStateMachine(Object *owner, AsciiString name) : 
 	defineState( MOVE_TO_COMBAT_DROP, newInstance(ChinookMoveToBldgState)( this ), DO_COMBAT_DROP, AI_IDLE );
 	defineState( DO_COMBAT_DROP, newInstance(ChinookCombatDropState)( this ), AI_IDLE, AI_IDLE );
 
-	defineState( MOVE_TO_AND_LAND, newInstance(ChinookMoveToRepairPointState)( this ), LANDING, AI_IDLE );
+	defineState( MOVE_TO_AND_LAND, newInstance(AIMoveToState)( this ), LANDING, AI_IDLE );
 
 	defineState( MOVE_TO_AND_EVAC, newInstance(AIMoveToState)( this ), LAND_AND_EVAC, AI_IDLE );
 	defineState( LAND_AND_EVAC, newInstance(ChinookTakeoffOrLandingState)( this, true ), EVAC_AND_TAKEOFF, AI_IDLE );
@@ -1140,15 +980,6 @@ void ChinookAIUpdate::setAirfieldForHealing(ObjectID id)
 		if (pp != nullptr)
 		{
 			pp->setHealee(getObject(), false);
-			// Reborn: Cancelling or finishing repair also frees the carrier's exclusive slot.
-			pp->releaseHelicopterRepairPoint(getObject()->getID());
-			if (pp->hasHelicopterRepairPoint() &&
-				m_flightStatus != CHINOOK_LANDED &&
-				m_flightStatus != CHINOOK_TAKING_OFF)
-			{
-				// Reborn: An approach cancelled before landing must restore carrier collision immediately.
-				ignoreObstacleID(INVALID_ID);
-			}
 		}
 	}
 	m_airfieldForHealing = id;
@@ -1261,14 +1092,12 @@ UpdateSleepTime ChinookAIUpdate::update()
 				getObject()->getBodyModule()->getHealth() == getObject()->getBodyModule()->getMaxHealth())
 		{
 			// we're completely healed, so take off again
-			const ObjectID healedAtAirfield = m_airfieldForHealing;
 			pp->setHealee(getObject(), false);
-			// Reborn: Keep the carrier repair reservation until takeoff has cleared the deck.
 			setMyState(TAKING_OFF, nullptr, nullptr, CMD_FROM_AI);
 
 #if !RETAIL_COMPATIBLE_CRC
 			// TheSuperHackers @bugfix arcticdolphin 02/03/2026 Move healed Chinook to rally point if present.
-			if (Object *airfield = TheGameLogic->findObjectByID( healedAtAirfield ))
+			if (Object *airfield = TheGameLogic->findObjectByID( m_airfieldForHealing ))
 			{
 				if (ExitInterface *exitInterface = airfield->getObjectExitInterface())
 				{
@@ -1383,22 +1212,7 @@ UpdateSleepTime ChinookAIUpdate::update()
 
 
 
-	UpdateSleepTime result = SupplyTruckAIUpdate::update();
-
-	if (m_flightStatus == CHINOOK_LANDED)
-	{
-		ParkingPlaceBehaviorInterface* repairPP = getPP(m_airfieldForHealing);
-		Coord3D repairPoint;
-		if (repairPP && repairPP->getHelicopterRepairPoint(getObject()->getID(), &repairPoint))
-		{
-			// Reborn: Remove residual taxi-locomotor drift while the helicopter is being repaired.
-			AIUpdateInterface::setLocomotorGoalNone();
-			getObject()->getPhysics()->scrubVelocity2D(0);
-			getObject()->getPhysics()->scrubVelocityZ(0);
-		}
-	}
-
-	return result;
+	return SupplyTruckAIUpdate::update();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1425,26 +1239,14 @@ void ChinookAIUpdate::privateGetRepaired( Object *repairDepot, CommandSourceType
 	if( TheActionManager->canGetRepairedAt( getObject(), repairDepot, cmdSource ) == FALSE )
 		return;
 
-	Coord3D pos = *repairDepot->getPosition();
-
-	ParkingPlaceBehaviorInterface* pp = getPP(repairDepot->getID());
-	if (pp && pp->hasHelicopterRepairPoint())
-	{
-		// Reborn: Reserve the carrier point before beginning the approach.
-		if (!pp->reserveHelicopterRepairPoint(getObject()->getID(), &pos))
-			return;
-		getObject()->setProducer(repairDepot);
-	}
-	else
-	{
-		Coord3D tmp;
-		FindPositionOptions options;
-		options.maxRadius = repairDepot->getGeometryInfo().getBoundingCircleRadius() * 100.0f;
-		if (ThePartitionManager->findPositionAround(&pos, &options, &tmp))
-			pos = tmp;
-	}
-
 	setAirfieldForHealing(repairDepot->getID());
+
+	Coord3D pos = *repairDepot->getPosition();
+	Coord3D tmp;
+	FindPositionOptions options;
+	options.maxRadius = repairDepot->getGeometryInfo().getBoundingCircleRadius() * 100.0f;
+	if (ThePartitionManager->findPositionAround(&pos, &options, &tmp))
+		pos = tmp;
 
 	setMyState(MOVE_TO_AND_LAND, nullptr, &pos, cmdSource);
 
@@ -1490,8 +1292,7 @@ void ChinookAIUpdate::aiDoCommand(const AICommandParms* parms)
 	setAirfieldForHealing(INVALID_ID);
 #else
 	// TheSuperHackers @bugfix Stubbjax 31/10/2025 Don't leave healing state for evacuation commands.
-	if (parms->m_cmd != AICMD_EVACUATE && parms->m_cmd != AICMD_EXIT &&
-		m_flightStatus != CHINOOK_LANDING)
+	if (parms->m_cmd != AICMD_EVACUATE && parms->m_cmd != AICMD_EXIT)
 		setAirfieldForHealing(INVALID_ID);
 #endif
 
