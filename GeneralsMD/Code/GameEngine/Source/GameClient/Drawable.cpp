@@ -1094,7 +1094,34 @@ void Drawable::reactToBodyDamageStateChange(BodyDamageType newState)
   // When loading map, ambient sound starting is handled by onLevelStart(), so that we can
   // correctly react to customizations
   if ( !TheGameLogic->isLoadingMap() )
- 	  startAmbientSound(newState, TheGlobalData->m_timeOfDay);
+  {
+    Bool ambientSoundAlreadyMatches = FALSE;
+    if ( m_ambientSound && m_ambientSound->isCurrentlyPlaying() )
+    {
+      AsciiString desiredEventName;
+
+      if ( newState != BODY_RUBBLE && m_customSoundAmbientInfo != nullptr )
+      {
+        if ( m_customSoundAmbientInfo != getNoSoundMarker() )
+          desiredEventName = m_customSoundAmbientInfo->m_audioName;
+      }
+      else
+      {
+        const AudioEventRTS& desiredAudio = getAmbientSoundByDamage(newState);
+        desiredEventName = desiredAudio.getEventName();
+
+        if ( desiredEventName.isEmpty() && newState != BODY_PRISTINE && newState != BODY_RUBBLE )
+          desiredEventName = getAmbientSoundByDamage(BODY_PRISTINE).getEventName();
+      }
+
+      ambientSoundAlreadyMatches = desiredEventName.isNotEmpty() &&
+        m_ambientSound->getEventName().compareNoCase(desiredEventName) == 0;
+    }
+
+    // Reborn: Preserve an already-playing loop when a repaired object returns to the same ambient sound.
+    if ( !ambientSoundAlreadyMatches )
+      startAmbientSound(newState, TheGlobalData->m_timeOfDay);
+  }
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -306,7 +306,7 @@ public:
 			if (pp && pp->getHelicopterRepairPoint(obj->getID(), &repairPoint))
 			{
 				// Reborn: Take off vertically from the moving carrier instead of returning to terrain height over water.
-				const Real carrierTakeoffSpeed = 30.0f;
+				const Real carrierTakeoffSpeed = 40.0f;
 				const Real maxTakeoffStep = carrierTakeoffSpeed * SECONDS_PER_LOGICFRAME_REAL;
 				Coord3D takeoffPoint = repairPoint;
 				takeoffPoint.z += pp->getApproachHeight();
@@ -1489,9 +1489,20 @@ void ChinookAIUpdate::aiDoCommand(const AICommandParms* parms)
 	// this gets reset every time a command is issued.
 	setAirfieldForHealing(INVALID_ID);
 #else
+	Bool preserveCarrierRepairForTakeoff = FALSE;
+	if (m_flightStatus == CHINOOK_LANDED)
+	{
+		ParkingPlaceBehaviorInterface* pp = getPP(m_airfieldForHealing);
+		Coord3D repairPoint;
+		preserveCarrierRepairForTakeoff =
+			pp && pp->getHelicopterRepairPoint(getObject()->getID(), &repairPoint);
+	}
+
 	// TheSuperHackers @bugfix Stubbjax 31/10/2025 Don't leave healing state for evacuation commands.
 	if (parms->m_cmd != AICMD_EVACUATE && parms->m_cmd != AICMD_EXIT &&
-		m_flightStatus != CHINOOK_LANDING)
+		m_flightStatus != CHINOOK_LANDING &&
+		// Reborn: Keep the carrier repair point while a landed helicopter begins an ordered takeoff.
+		!preserveCarrierRepairForTakeoff)
 		setAirfieldForHealing(INVALID_ID);
 #endif
 

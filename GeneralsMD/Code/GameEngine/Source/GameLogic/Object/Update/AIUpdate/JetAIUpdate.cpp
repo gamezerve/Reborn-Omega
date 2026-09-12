@@ -1396,7 +1396,7 @@ public:
 			if (pp && pp->getHelicopterRepairPoint(jet->getID(), &repairPoint))
 			{
 				// Reborn: Take off vertically from the moving carrier instead of resolving a ground path over water.
-				const Real carrierTakeoffSpeed = 30.0f;
+				const Real carrierTakeoffSpeed = 40.0f;
 				const Real maxTakeoffStep = carrierTakeoffSpeed * SECONDS_PER_LOGICFRAME_REAL;
 				Coord3D takeoffPoint = repairPoint;
 				takeoffPoint.z += pp->getApproachHeight();
@@ -2563,7 +2563,9 @@ UpdateSleepTime JetAIUpdate::update()
 		}
 		else if (getFlag(HAS_PENDING_COMMAND)
 			// srj sez: if we are reloading ammo, wait will we are done before processing the pending command.
-			&& getStateMachine()->getCurrentStateID() != RELOAD_AMMO)
+			&& (getStateMachine()->getCurrentStateID() != RELOAD_AMMO ||
+				// Reborn: A carrier helicopter must honor an order queued during landing without waiting for full repair.
+				(jet->isKindOf(KINDOF_PRODUCED_AT_HELIPAD) && pp->hasHelicopterRepairPoint())))
 		{
 			m_returnToBaseFrame = 0;
 
