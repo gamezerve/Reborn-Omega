@@ -106,6 +106,10 @@ public:
 
 	void recordOriginalPosition( const Coord3D &pos ) { m_originalPos.set( pos ); }
 	const Coord3D* getOriginalPosition() const { return &m_originalPos; }
+	// Reborn: Expose the active repair airfield to moving-carrier landing states.
+	ObjectID friend_getAirfieldForHealing() const { return m_airfieldForHealing; }
+	// Reborn: Allow the takeoff state to release a carrier repair reservation after clearing the deck.
+	void friend_setAirfieldForHealing(ObjectID id) { setAirfieldForHealing(id); }
 
 	virtual Int getUpgradedSupplyBoost() const override;
 
