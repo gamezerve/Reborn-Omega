@@ -3565,7 +3565,22 @@ void ControlBar::applyNoSuperweaponRestriction()
 		for (Int slot = 0; slot < MAX_COMMANDS_PER_SET; ++slot)
 		{
 			const CommandButton* commandButton = commandSet->getCommandButton(slot);
-			if (!commandButton || commandButton->getCommandType() != GUI_COMMAND_DOZER_CONSTRUCT)
+			if (!commandButton)
+				continue;
+
+			const GUICommandType commandType = commandButton->getCommandType();
+			const Bool isSpecialPowerShortcut = commandType == GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT ||
+				commandType == GUI_COMMAND_SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT;
+			const SpecialPowerTemplate* specialPower = commandButton->getSpecialPowerTemplate();
+			if (isSpecialPowerShortcut && specialPower && specialPower->hasPublicTimer())
+			{
+				// Reborn: Remove disabled superweapons from the global shortcut command set as well.
+				// Selecting another unit repopulates this bar, so hiding only the current window is not persistent.
+				TheGameLogic->setControlBarOverride(commandSet->getName(), slot, nullptr);
+				continue;
+			}
+
+			if (commandType != GUI_COMMAND_DOZER_CONSTRUCT)
 				continue;
 
 			const ThingTemplate* thingTemplate = commandButton->getThingTemplate();
