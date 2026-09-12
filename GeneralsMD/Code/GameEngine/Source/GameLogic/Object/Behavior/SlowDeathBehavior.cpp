@@ -66,6 +66,7 @@ SlowDeathBehaviorModuleData::SlowDeathBehaviorModuleData()
 	m_destructionDelay = 0;
 	m_destructionDelayVariance = 0;
 	m_visionRetentionDuration = 0; // Reborn: Disabled by default to preserve existing object behavior.
+	m_releasePowerOnDeath = false; // Reborn: Existing slow deaths keep their original energy timing by default.
 	m_destructionAltitude = -10;
 	m_maskOfLoadedEffects = 0; //assume no ocl, fx, or weapons.
 	m_flingForce = 0;
@@ -135,6 +136,7 @@ static void parseWeapon( INI* ini, void *instance, void * /*store*/, const void*
 		{ "DestructionDelay",									INI::parseDurationUnsignedInt,		nullptr, offsetof( SlowDeathBehaviorModuleData, m_destructionDelay ) },
 		{ "DestructionDelayVariance",					INI::parseDurationUnsignedInt,		nullptr, offsetof( SlowDeathBehaviorModuleData, m_destructionDelayVariance ) },
 		{ "VisionRetentionDuration",					INI::parseDurationUnsignedInt,		nullptr, offsetof( SlowDeathBehaviorModuleData, m_visionRetentionDuration ) }, // Reborn: Keep shroud vision for a configured portion of slow death.
+		{ "ReleasePowerOnDeath",						INI::parseBool,								nullptr, offsetof( SlowDeathBehaviorModuleData, m_releasePowerOnDeath ) }, // Reborn: Release energy as soon as slow death starts.
 		{ "DestructionAltitude",							INI::parseReal,										nullptr, offsetof( SlowDeathBehaviorModuleData, m_destructionAltitude ) },
 		{ "FX",																parseFX,													nullptr, 0 },
 		{ "OCL",															parseOCL,													nullptr, 0 },
@@ -337,6 +339,13 @@ void SlowDeathBehavior::beginSlowDeath(const DamageInfo *damageInfo)
 		if (m_visionRetentionEndFrame > 0)
 			m_visionRetentionEndFrame += now; // Reborn: Convert the configured duration to an absolute frame.
 
+		if (d->m_releasePowerOnDeath && obj->getControllingPlayer())
+		{
+			// Reborn: Slow-death visuals may persist, but a dead object must stop affecting energy immediately.
+			obj->friend_adjustPowerForPlayer(FALSE);
+			m_flags |= (1<<POWER_RELEASED_EARLY);
+		}
+
 		m_flags |= (1<<SLOW_DEATH_ACTIVATED);
 
 		doPhaseStuff(SDPHASE_INITIAL);
@@ -351,6 +360,13 @@ Bool SlowDeathBehavior::shouldRetainVisionWhileDying() const
 	return isSlowDeathActivated()
 		&& m_visionRetentionEndFrame > 0
 		&& TheGameLogic->getFrame() < m_visionRetentionEndFrame;
+}
+
+//-------------------------------------------------------------------------------------------------
+Bool SlowDeathBehavior::hasReleasedPowerWhileDying() const
+{
+	// Reborn: This flag is serialized with the existing SlowDeathBehavior flags.
+	return (m_flags & (1<<POWER_RELEASED_EARLY)) != 0;
 }
 
 //-------------------------------------------------------------------------------------------------

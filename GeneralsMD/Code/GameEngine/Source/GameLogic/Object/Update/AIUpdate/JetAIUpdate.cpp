@@ -1389,6 +1389,96 @@ public:
 		if( !jetAI )
 			return STATE_FAILURE;
 
+		if (!m_landing && jet->isKindOf(KINDOF_PRODUCED_AT_HELIPAD))
+		{
+			ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID());
+			Coord3D repairPoint;
+			if (pp && pp->getHelicopterRepairPoint(jet->getID(), &repairPoint))
+			{
+				// Reborn: Take off vertically from the moving carrier instead of resolving a ground path over water.
+				const Real carrierTakeoffSpeed = 30.0f;
+				const Real maxTakeoffStep = carrierTakeoffSpeed * SECONDS_PER_LOGICFRAME_REAL;
+				Coord3D takeoffPoint = repairPoint;
+				takeoffPoint.z += pp->getApproachHeight();
+
+				Coord3D position = *jet->getPosition();
+				position.x = repairPoint.x;
+				position.y = repairPoint.y;
+				const Real zDelta = takeoffPoint.z - position.z;
+
+				jetAI->friend_clearLocomotorGoalForCarrierRepair();
+				jet->getPhysics()->scrubVelocity2D(0);
+				jet->getPhysics()->scrubVelocityZ(0);
+
+				if (fabs(zDelta) <= maxTakeoffStep)
+				{
+					position.z = takeoffPoint.z;
+					jet->setPosition(&position);
+					return STATE_SUCCESS;
+				}
+
+				position.z += zDelta > 0.0f ? maxTakeoffStep : -maxTakeoffStep;
+				jet->setPosition(&position);
+				return STATE_CONTINUE;
+			}
+		}
+
+		Bool carrierRepairLanding = FALSE;
+		if (m_landing && jet->isKindOf(KINDOF_PRODUCED_AT_HELIPAD))
+		{
+			ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID());
+			Coord3D repairPoint;
+			if (pp && pp->getHelicopterRepairPoint(jet->getID(), &repairPoint))
+			{
+				// Reborn: Refresh both legs of the vertical landing path as the carrier moves.
+				m_parkingLoc = repairPoint;
+				m_path[1] = repairPoint;
+				m_path[0] = repairPoint;
+				m_path[0].z += pp->getApproachHeight() + pp->getLandingDeckHeightOffset();
+				carrierRepairLanding = TRUE;
+			}
+		}
+
+		if (carrierRepairLanding)
+		{
+			// Reborn: Finish carrier landing independently of terrain and air-locomotor preferred height.
+			const Real carrierLandingSpeed = 20.0f;
+			const Real maxLandingStep = carrierLandingSpeed * SECONDS_PER_LOGICFRAME_REAL;
+			Coord3D position = *jet->getPosition();
+			Real xDelta = m_parkingLoc.x - position.x;
+			Real yDelta = m_parkingLoc.y - position.y;
+			Real zDelta = m_parkingLoc.z - position.z;
+			Real horizontalDistance = sqrtf(xDelta * xDelta + yDelta * yDelta);
+
+			// Reborn: Converge on the repair point instead of snapping sideways at touchdown.
+			if (horizontalDistance > maxLandingStep)
+			{
+				position.x += xDelta * maxLandingStep / horizontalDistance;
+				position.y += yDelta * maxLandingStep / horizontalDistance;
+			}
+			else
+			{
+				position.x = m_parkingLoc.x;
+				position.y = m_parkingLoc.y;
+			}
+
+			jetAI->setLocomotorGoalNone();
+			if (fabs(zDelta) <= maxLandingStep && horizontalDistance <= maxLandingStep)
+			{
+				position.z = m_parkingLoc.z;
+				jet->getPhysics()->resetDynamicPhysics();
+				jet->setPosition(&position);
+				jetAI->setLocomotorGoalNone();
+				return STATE_SUCCESS;
+			}
+
+			position.z += zDelta > 0.0f ? maxLandingStep : -maxLandingStep;
+			jet->getPhysics()->scrubVelocity2D(0);
+			jet->getPhysics()->scrubVelocityZ(0);
+			jet->setPosition(&position);
+			return STATE_CONTINUE;
+		}
+
 // I have disabled this because it is no longer necessary and is a bit funky lookin' (srj)
 #ifdef NOT_IN_USE
 		// magically position it correctly.
@@ -1465,8 +1555,15 @@ public:
 				loco->setMaxLift(BIGNUM);
 		}
 
-		jetAI->ignoreObstacleID(INVALID_ID);
 		ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID());
+		Bool keepCarrierCollisionIgnored = FALSE;
+		if (m_landing && pp && pp->hasHelicopterRepairPoint())
+		{
+			Coord3D repairPoint;
+			keepCarrierCollisionIgnored = pp->getHelicopterRepairPoint(jet->getID(), &repairPoint);
+		}
+		if (!keepCarrierCollisionIgnored)
+			jetAI->ignoreObstacleID(INVALID_ID);
 		if (m_landing)
 		{
 			jetAI->friend_setAllowAirLoco(false);
@@ -1474,6 +1571,9 @@ public:
 		}
 		else
 		{
+			// Reborn: Keep the carrier deck surface until helicopter takeoff has fully completed.
+			if (pp)
+				pp->releaseHelicopterRepairPoint(jet->getID());
 			if (pp && !jetAI->friend_keepsParkingSpaceWhenAirborne())
 				pp->releaseSpace(jet->getID());
 		}
@@ -2065,6 +2165,13 @@ public:
 		if (jet->isKindOf(KINDOF_PRODUCED_AT_HELIPAD))
 		{
 			m_goalPosition = jetAI->friend_getLandingPosForHelipadStuff();
+			Coord3D repairPoint;
+			if (pp->getHelicopterRepairPoint(jet->getID(), &repairPoint))
+			{
+				// Reborn: Approach the moving carrier horizontally before beginning the dedicated descent.
+				m_goalPosition = repairPoint;
+				m_goalPosition.z = jet->getPosition()->z;
+			}
 		}
 		else
 		{
@@ -2077,6 +2184,34 @@ public:
 		setAdjustsDestination(false);		// precision is necessary
 
 		return AIInternalMoveToState::onEnter();
+	}
+
+	virtual StateReturnType update() override
+	{
+		Object* jet = getMachineOwner();
+		if (jet->isKindOf(KINDOF_PRODUCED_AT_HELIPAD))
+		{
+			ParkingPlaceBehaviorInterface* pp = getPP(jet->getProducerID());
+			Coord3D repairPoint;
+			if (pp && pp->getHelicopterRepairPoint(jet->getID(), &repairPoint))
+			{
+				// Reborn: Keep the approach goal attached to the moving carrier repair point.
+				m_goalPosition = repairPoint;
+				m_goalPosition.z = jet->getPosition()->z;
+
+				const Real dx = repairPoint.x - jet->getPosition()->x;
+				const Real dy = repairPoint.y - jet->getPosition()->y;
+				const Real horizontalThreshold = 10.0f;
+				if (dx * dx + dy * dy <= horizontalThreshold * horizontalThreshold)
+				{
+					// Reborn: Z is handled exclusively by the following carrier landing state.
+					jet->getPhysics()->scrubVelocity2D(0);
+					return STATE_SUCCESS;
+				}
+			}
+		}
+
+		return AIInternalMoveToState::update();
 	}
 };
 EMPTY_DTOR(JetOrHeliReturnForLandingState)
@@ -2310,7 +2445,11 @@ void JetAIUpdate::onDelete()
 	AIUpdateInterface::onDelete();
 	ParkingPlaceBehaviorInterface* pp = getPP(getObject()->getProducerID());
 	if (pp)
+	{
 		pp->releaseSpace(getObject()->getID());
+		// Reborn: Deleting a helicopter must release its carrier repair reservation immediately.
+		pp->releaseHelicopterRepairPoint(getObject()->getID());
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2384,6 +2523,7 @@ UpdateSleepTime JetAIUpdate::update()
 			{
 				// we're completely healed, so take off again
 				pp->setHealee(jet, false);
+				// Reborn: The carrier repair slot and deck surface remain reserved through takeoff.
 				friend_setAllowAirLoco(true);
 				getStateMachine()->clear();
 				setLastCommandSource( CMD_FROM_AI );
@@ -2596,6 +2736,19 @@ UpdateSleepTime JetAIUpdate::update()
 
 
 	/*UpdateSleepTime ret =*/ AIUpdateInterface::update();
+
+	if (!getFlag(ALLOW_AIR_LOCO) && jet->isKindOf(KINDOF_PRODUCED_AT_HELIPAD))
+	{
+		Coord3D repairPoint;
+		if (pp && pp->getHelicopterRepairPoint(jet->getID(), &repairPoint))
+		{
+			// Reborn: Remove residual taxi-locomotor drift while the helicopter is being repaired.
+			AIUpdateInterface::setLocomotorGoalNone();
+			jet->getPhysics()->scrubVelocity2D(0);
+			jet->getPhysics()->scrubVelocityZ(0);
+		}
+	}
+
 	//return (mine < ret) ? mine : ret;
 	/// @todo srj -- someday, make sleepy. for now, must not sleep.
 	return UPDATE_SLEEP_NONE;
@@ -2623,6 +2776,16 @@ Bool JetAIUpdate::chooseLocomotorSet(LocomotorSetType wst)
 //-------------------------------------------------------------------------------------------------
 void JetAIUpdate::setLocomotorGoalNone()
 {
+	ParkingPlaceBehaviorInterface* pp = getPP(getObject()->getProducerID());
+	Coord3D helicopterRepairPoint;
+	if (!getFlag(TAKEOFF_IN_PROGRESS) &&
+		pp && pp->getHelicopterRepairPoint(getObject()->getID(), &helicopterRepairPoint))
+	{
+		// Reborn: Carrier repair landing needs a true stop, not the normal 1000-unit forward landing goal.
+		AIUpdateInterface::setLocomotorGoalNone();
+		return;
+	}
+
 	if ((getFlag(TAKEOFF_IN_PROGRESS) || getFlag(LANDING_IN_PROGRESS))
 			&& getFlag(ALLOW_AIR_LOCO) && !getFlag(ALLOW_CIRCLING))
 	{
@@ -2882,6 +3045,13 @@ void JetAIUpdate::doLandingCommand(Object *airfield, CommandSourceType cmdSource
 		if (getObject()->isKindOf(KINDOF_PRODUCED_AT_HELIPAD) ||
 				pp->reserveSpace(getObject()->getID(), friend_getParkingOffset(), nullptr))
 		{
+			if (getObject()->isKindOf(KINDOF_PRODUCED_AT_HELIPAD) && pp->hasHelicopterRepairPoint())
+			{
+				// Reborn: Reserve and use the carrier's exact INI-defined repair point.
+				if (!pp->reserveHelicopterRepairPoint(getObject()->getID(), &m_landingPosForHelipadStuff))
+					return;
+			}
+
 			// if we had a space at another airfield, release it
 			ParkingPlaceBehaviorInterface* oldPP = getPP(getObject()->getProducerID());
 			if (oldPP != nullptr && oldPP != pp)
@@ -2973,6 +3143,18 @@ void JetAIUpdate::aiDoCommand(const AICommandParms* parms)
 
 	// note that we always store this, even if nothing will be "pending".
 	m_mostRecentCommand.store(*parms);
+
+	if (!getFlag(TAKEOFF_IN_PROGRESS) && !getFlag(LANDING_IN_PROGRESS) &&
+		parms->m_cmd != AICMD_GET_REPAIRED &&
+		getObject()->isKindOf(KINDOF_PRODUCED_AT_HELIPAD))
+	{
+		ParkingPlaceBehaviorInterface* pp = getPP(getObject()->getProducerID());
+		if (pp && getFlag(ALLOW_AIR_LOCO))
+		{
+			// Reborn: Cancel an airborne approach immediately, but keep a parked repair reservation through takeoff.
+			pp->releaseHelicopterRepairPoint(getObject()->getID());
+		}
+	}
 
 	if (getFlag(TAKEOFF_IN_PROGRESS) || getFlag(LANDING_IN_PROGRESS))
 	{

@@ -461,6 +461,7 @@ static PoolSizeRec PoolSizes[] =
 	{ "AIWanderState", 600, 32 },
 	{ "AIPanicState", 600, 32 },
 	{ "ChinookMoveToBldgState", 32, 32 },
+	{ "ChinookMoveToRepairPointState", 32, 32 },
 	{ "ChinookRecordCreationState", 32, 32 },
 	{ "ScienceInfo", 96, 32 },
 	{ "RankInfo", 32, 32 },

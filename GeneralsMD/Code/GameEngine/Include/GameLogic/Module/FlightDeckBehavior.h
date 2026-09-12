@@ -69,9 +69,11 @@ public:
 	Real					m_healAmount;
 	Real					m_approachHeight;
 	Real					m_landingDeckHeightOffset;
+	Coord3D				m_helicopterRepairPointOffset;
 	Int						m_numRows;
 	Int						m_numCols;
 	Int						m_movingCarrier;
+	Bool					m_hasHelicopterRepairPoint;
 	UnsignedInt		m_cleanupFrames;
 	UnsignedInt		m_humanFollowFrames;
 	UnsignedInt		m_replacementFrames;
@@ -144,6 +146,11 @@ public:
 	virtual Real getApproachHeight() const override { return getFlightDeckBehaviorModuleData()->m_approachHeight; }
 	virtual Real getLandingDeckHeightOffset() const override { return getFlightDeckBehaviorModuleData()->m_landingDeckHeightOffset; }
 	virtual Bool useDynamicDeckHeight() const override { return getFlightDeckBehaviorModuleData()->m_movingCarrier; }
+	virtual Bool hasHelicopterRepairPoint() const override { return getFlightDeckBehaviorModuleData()->m_hasHelicopterRepairPoint; }
+	virtual Bool isHelicopterRepairPointAvailable(ObjectID id) const override;
+	virtual Bool reserveHelicopterRepairPoint(ObjectID id, Coord3D* position) override;
+	virtual Bool getHelicopterRepairPoint(ObjectID id, Coord3D* position) const override;
+	virtual void releaseHelicopterRepairPoint(ObjectID id) override;
 	virtual void setHealee(Object* healee, Bool add) override;
 	virtual void killAllParkedUnits() override;
 	virtual void defectAllParkedUnits(Team* newTeam, UnsignedInt detectionTime) override;
@@ -205,6 +212,7 @@ private:
 	void refreshMovingCarrierGeometry();
 	void updateMovingCarrierParkedJets();
 	void updateMovingCarrierDeckAircraft();
+	void transformObjectWithMovingCarrier(Object* object, const Matrix3D& currentCarrierTransform, const Matrix3D& inversePreviousCarrierTransform, Real orientationDelta);
 	void purgeDead();
 	void resetWakeFrame();
 	FlightDeckInfo* findPPI(ObjectID id);
@@ -232,6 +240,7 @@ private:
 	Matrix3D											m_previousCarrierTransform;
 	Real													m_previousCarrierOrientation;
 	Bool													m_hasPreviousCarrierTransform;
+	ObjectID										m_helicopterRepairObjectID;
 
 	Bool													m_rampUp[ MAX_RUNWAYS ];
 
