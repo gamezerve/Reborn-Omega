@@ -1159,6 +1159,10 @@ UPGRADE:FlakCannonUpgrade1
 "Scrap Upgrade"
 END
 
+CONTROLBAR:FlakCannonUpgrade1
+"Scrap &Upgrade"
+END
+
 CONTROLBAR:ToolTipChinaBuildTripleBarrelInfernoCannon
 "Creates a fire-storm in large groups \n \n Strong vs. base defenses, infantry \n Weak vs. tanks, aircraft"
 END
