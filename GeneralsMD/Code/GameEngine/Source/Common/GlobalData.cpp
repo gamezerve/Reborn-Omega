@@ -1435,7 +1435,9 @@ AsciiString GlobalData::BuildUserDataPathFromRegistry()
 			CoTaskMemFree(pszPath);
 		}
 	}
-	else {
+
+	if (myDocumentsDirectory.isEmpty())
+	{
 		char temp[_MAX_PATH + 1];
 		if (SHGetSpecialFolderPath(nullptr, temp, CSIDL_PERSONAL, true)) {
 			myDocumentsDirectory = temp;

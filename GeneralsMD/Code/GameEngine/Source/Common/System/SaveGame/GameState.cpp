@@ -600,7 +600,9 @@ SaveResult GameState::saveGame( AsciiString filename, UnicodeString desc,
 		else
 		{
 			REBORN_LOG(
-				"GameState::saveGame - Failed to create save directory, error=%lu",
+				"GameState::saveGame - Failed to create save directory. UserData='%s' SaveDirectory='%s' error=%lu",
+				TheGlobalData->getPath_UserData().str(),
+				saveDirectory.str(),
 				error);
 		}
 	}
@@ -642,6 +644,16 @@ SaveResult GameState::saveGame( AsciiString filename, UnicodeString desc,
 			"GameState::saveGame - FAILED opening save file '%s', GetLastError=%lu",
 			filepath.str(),
 			error);
+
+		AsciiString userDataPath = TheGlobalData->getPath_UserData();
+		AsciiString saveDirectory = getSaveDirectory();
+
+		REBORN_LOG(
+			"GameState::saveGame - Failed to open save file. UserData='%s' SaveDirectory='%s' FilePath='%s' useBase=%d",
+			userDataPath.str(),
+			saveDirectory.str(),
+			filepath.str(),
+			m_useBaseSaveDirectory);
 
 		return SaveResult( SC_UNABLE_TO_OPEN_FILE, filename );
 	}
@@ -1443,7 +1455,19 @@ void GameState::iterateSaveFiles( IterateSaveFileCallback callback, void *userDa
 	GetCurrentDirectory( _MAX_PATH, currentDirectory );
 
 	// switch into the save directory
-	SetCurrentDirectory( getSaveDirectory().str() );
+	AsciiString saveDirectory = getSaveDirectory();
+
+	if (!SetCurrentDirectory(saveDirectory.str()))
+	{
+		REBORN_LOG(
+			"GameState::iterateSaveFiles - Failed to access save directory. UserData='%s' SaveDirectory='%s' error=%lu useBase=%d",
+			TheGlobalData->getPath_UserData().str(),
+			saveDirectory.str(),
+			GetLastError(),
+			m_useBaseSaveDirectory);
+
+		return;
+	}
 
 	// iterate all items in the directory
 	WIN32_FIND_DATA item;  // search item
