@@ -512,8 +512,17 @@ AsciiString GameState::findNextSaveFilename( UnicodeString desc )
 			// construct full path to file given the filename
 			fullPath = getFilePathInSaveDirectory(filename);
 
+			REBORN_LOG(
+				"GameState::findNextSaveFilename - Checking '%s'",
+				fullPath.str());
+
 			// if file does not exist we're all good
 			if( _access( fullPath.str(), 0 ) == -1 )
+
+				REBORN_LOG(
+					"GameState::findNextSaveFilename - Selected filename '%s'",
+					filename.str());
+
 				return filename;
 
 			// test the text filename
@@ -547,12 +556,25 @@ AsciiString GameState::findNextSaveFilename( UnicodeString desc )
 SaveResult GameState::saveGame( AsciiString filename, UnicodeString desc,
 													SaveFileType saveType, SnapshotType which )
 {
+	REBORN_LOG(
+		"GameState::saveGame - BEGIN filename='%s' saveType=%d snapshotType=%d",
+		filename.str(),
+		saveType,
+		which);
 
 	// if there is no filename, this is a new file being created, find an appropriate filename
 	if( filename.isEmpty() )
 		filename = findNextSaveFilename( desc );
+
+	REBORN_LOG(
+		"GameState::saveGame - Generated filename='%s'",
+		filename.str());
+
 	if( filename.isEmpty() )
 	{
+
+		REBORN_LOG(
+			"GameState::saveGame - FAILED: Unable to find valid save filename");
 
 		DEBUG_CRASH(( "GameState::saveGame - Unable to find valid filename for save game" ));
 		return SaveResult( SC_NO_FILE_AVAILABLE );
@@ -560,10 +582,40 @@ SaveResult GameState::saveGame( AsciiString filename, UnicodeString desc,
 	}
 
 	// make absolutely sure the save directory exists
-	CreateDirectory( getSaveDirectory().str(), nullptr );
+	AsciiString saveDirectory = getSaveDirectory();
+
+	REBORN_LOG(
+		"GameState::saveGame - Save directory: '%s'",
+		saveDirectory.str());
+
+	if (!CreateDirectory(saveDirectory.str(), nullptr))
+	{
+		DWORD error = GetLastError();
+
+		if (error == ERROR_ALREADY_EXISTS)
+		{
+			REBORN_LOG(
+				"GameState::saveGame - Save directory already exists");
+		}
+		else
+		{
+			REBORN_LOG(
+				"GameState::saveGame - Failed to create save directory, error=%lu",
+				error);
+		}
+	}
+	else
+	{
+		REBORN_LOG(
+			"GameState::saveGame - Save directory created successfully");
+	}
 
 	// construct path to file
 	AsciiString filepath = getFilePathInSaveDirectory(filename);
+
+	REBORN_LOG(
+		"GameState::saveGame - Save filepath='%s'",
+		filepath.str());
 
 	// save description as current description in the game state
 	m_gameInfo.description = desc;
@@ -571,9 +623,26 @@ SaveResult GameState::saveGame( AsciiString filename, UnicodeString desc,
 	// open the save file
 	XferSave xferSave;
 	try {
+
+		REBORN_LOG(
+			"GameState::saveGame - Opening save file '%s'",
+			filepath.str());
+
 		xferSave.open( filepath );
+
+		REBORN_LOG(
+			"GameState::saveGame - Save file opened successfully");
+
 	} catch(...) {
 		DEBUG_LOG(( "Error opening file '%s'", filepath.str() ));
+
+		DWORD error = GetLastError();
+
+		REBORN_LOG(
+			"GameState::saveGame - FAILED opening save file '%s', GetLastError=%lu",
+			filepath.str(),
+			error);
+
 		return SaveResult( SC_UNABLE_TO_OPEN_FILE, filename );
 	}
 
@@ -594,16 +663,30 @@ SaveResult GameState::saveGame( AsciiString filename, UnicodeString desc,
 	// write the save file
 	try
 	{
+		REBORN_LOG(
+			"GameState::saveGame - Starting xferSaveData for '%s'",
+			filepath.str());
 
 		// save file
 		xferSaveData( &xferSave, which );
 
+		REBORN_LOG(
+			"GameState::saveGame - xferSaveData completed successfully");
+
 	}
 	catch( ... )
 	{
+		REBORN_LOG(
+			"GameState::saveGame - FAILED during xferSaveData for '%s'",
+			filepath.str());
 
 		// close the file and get out of here
 		xferSave.close();
+
+		REBORN_LOG(
+			"GameState::saveGame - SUCCESS '%s'",
+			filepath.str());
+
 		return SaveResult( SC_ERROR, filename );
 
 	}

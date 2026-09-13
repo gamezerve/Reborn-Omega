@@ -209,18 +209,11 @@ void RebornLog::Write(
 	SYSTEMTIME time;
 	GetLocalTime(&time);
 
-	char newLogPath[MAX_PATH] = {};
-	buildLogPath(newLogPath, ARRAY_SIZE(newLogPath), time);
-
-	if (g_logPath[0] != '\0' && strcmp(g_logPath, newLogPath) != 0)
+	if (g_logPath[0] == '\0')
 	{
-		MoveFileExA(
-			g_logPath,
-			newLogPath,
-			MOVEFILE_REPLACE_EXISTING);
+		buildLogPath(g_logPath, ARRAY_SIZE(g_logPath), time);
+		deleteOldLogs();
 	}
-
-	strcpy_s(g_logPath, ARRAY_SIZE(g_logPath), newLogPath);
 
 	char message[4096] = {};
 
@@ -273,5 +266,4 @@ void RebornLog::Write(
 
 	FlushFileBuffers(file);
 	CloseHandle(file);
-	deleteOldLogs();
 }
