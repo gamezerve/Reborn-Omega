@@ -1037,7 +1037,8 @@ GlobalData::GlobalData()
 #endif
 
 #if defined(GENERALS_ONLINE)
-	m_playSizzle = FALSE;
+	//m_playSizzle = FALSE;
+	m_playSizzle = TRUE; // Reborn: We want to play the sizzle sound in Generals Online, so that the game doesn't feel like a stripped down version of the original.
 #else
 	m_playSizzle = TRUE;
 #endif
