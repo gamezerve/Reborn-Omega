@@ -177,7 +177,9 @@ void updateLocalPlayerScores(AsciiString name, const WOL::Ladder *ladder, const 
 static void enableControls( Bool state )
 {
 	if (buttonQuickMatch)
-		buttonQuickMatch->winEnable(state);
+		//buttonQuickMatch->winEnable(state);
+				// Reborn: Disable Quick Match until it is adapted for Generals Online.
+		buttonQuickMatch->winEnable(FALSE);
 	if (buttonLobby)
 		buttonLobby->winEnable(state);
 }
