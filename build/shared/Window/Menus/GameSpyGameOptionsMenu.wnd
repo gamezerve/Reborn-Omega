@@ -932,7 +932,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = CHECKBOX;
       SCREENRECT = UPPERLEFT: 380 312,
-                   BOTTOMRIGHT: 433 336,
+                   BOTTOMRIGHT: 473 336,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyGameOptionsMenu.wnd:CheckMaxCameraHeight";
       STATUS = ENABLED+IMAGE+BORDER;

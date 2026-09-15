@@ -82,6 +82,30 @@
 ///////////////////////////////////////////////////////////////////////////////
 void HideListBox(GameWindow * window);
 
+static void CenterGameOptionsComboBoxOnOpen(GameWindow* comboBox)
+{
+	static const Int comboBoxIDs[] =
+	{
+		TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:ComboBoxStartingCash"),
+		TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:ComboBoxResourceMultiplier"),
+		TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:ComboBoxStartingCash"),
+		TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:ComboBoxResourceMultiplier"),
+		TheNameKeyGenerator->nameToKey("SkirmishGameOptionsMenu.wnd:ComboBoxStartingCash"),
+		TheNameKeyGenerator->nameToKey("SkirmishGameOptionsMenu.wnd:ComboBoxResourceMultiplier")
+	};
+
+	const Int id = comboBox->winGetWindowId();
+
+	for (Int comboBoxID : comboBoxIDs)
+	{
+		if (id == comboBoxID)
+		{
+			GadgetComboBoxCenterSelectedEntry(comboBox);
+			return;
+		}
+	}
+}
+
 // GadgetComboBoxInput =========================================================
 /** Handle input for Combo box */
 //=============================================================================
@@ -168,6 +192,9 @@ WindowMsgHandledType GadgetComboBoxInput( GameWindow *window, UnsignedInt msg,
 					if(listBox->winIsHidden())
 					{
 						listBox->winHide(FALSE);
+
+						CenterGameOptionsComboBoxOnOpen(window);
+
 						window->winGetSize(&winSize.x, &winSize.y);
 						WinInstanceData *listInstData = listBox->winGetInstanceData();
 						ListboxData *listData = (ListboxData *)listBox->winGetUserData();
@@ -650,6 +677,9 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 					if(listBox->winIsHidden())
 					{
 						listBox->winHide(FALSE);
+
+						CenterGameOptionsComboBoxOnOpen(window);
+
 						window->winGetSize(&winSize.x, &winSize.y);
 						WinInstanceData *listInstData = listBox->winGetInstanceData();
 						ListboxData *listData = (ListboxData *)listBox->winGetUserData();

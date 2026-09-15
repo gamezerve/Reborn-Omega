@@ -755,7 +755,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = CHECKBOX;
       SCREENRECT = UPPERLEFT: 377 333,
-                   BOTTOMRIGHT: 430 357,
+                   BOTTOMRIGHT: 469 357,
                    CREATIONRESOLUTION: 800 600;
       NAME = "LanGameOptionsMenu.wnd:CheckMaxCameraHeight";
       STATUS = ENABLED+IMAGE+BORDER;
