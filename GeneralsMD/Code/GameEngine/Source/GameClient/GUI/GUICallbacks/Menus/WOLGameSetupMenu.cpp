@@ -984,9 +984,24 @@ static void handleOnlineMaxCameraHeightChanged(Bool clampText)
 
 	if (enabled)
 	{
-		AsciiString text;
-		text.translate(GadgetTextEntryGetText(textEntryMaxCameraHeight));
-		value = clamp(310, atoi(text.str()), 750);
+		UnicodeString text = GadgetTextEntryGetText(textEntryMaxCameraHeight);
+
+		if (clampText && text.getLength() < 3)
+			return;
+
+		AsciiString asciiText;
+		asciiText.translate(text);
+		value = atoi(asciiText.str());
+
+		if (!clampText)
+		{
+			if (text.getLength() < 3 || value < 310 || value > 750)
+				return;
+		}
+		else
+		{
+			value = clamp(310, value, 750);
+		}
 	}
 
 	Bool valueChanged = TheNGMPGame->getUseCustomMaxCameraHeight() != enabled || TheNGMPGame->getLanMaxCameraHeight() != value;
@@ -1005,14 +1020,15 @@ static void handleOnlineMaxCameraHeightChanged(Bool clampText)
 		clampedText.format(L"%d", value);
 		GadgetTextEntrySetText(textEntryMaxCameraHeight, clampedText);
 
-		// Reborn: Announce the clamped GO camera height once, and only when its effective value changes.
-		if (lastAnnouncedOnlineMaxCameraHeight != value)
-		{
-			UnicodeString strInform;
-			strInform.format(L"The host has set the maximum camera height to %d.", value);
-			pLobbyInterface->SendAnnouncementMessageToCurrentLobby(strInform, true);
-			lastAnnouncedOnlineMaxCameraHeight = value;
-		}
+	}
+
+	// Reborn: Announce the clamped GO camera height once, and only when its effective value changes.
+	if (valueChanged && lastAnnouncedOnlineMaxCameraHeight != value)
+	{
+		UnicodeString strInform;
+		strInform.format(L"The host has set the maximum camera height to %d.", value);
+		pLobbyInterface->SendAnnouncementMessageToCurrentLobby(strInform, true);
+		lastAnnouncedOnlineMaxCameraHeight = value;
 	}
 
 	// Reborn: Release keyboard focus before disabling the text entry so it cannot keep receiving characters.
