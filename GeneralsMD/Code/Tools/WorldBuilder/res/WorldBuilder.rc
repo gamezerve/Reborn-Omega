@@ -442,7 +442,7 @@ BEGIN
         LTEXT "WorldBuilder Version 0.8", IDC_STATIC, 179, 31, 90, 8,
         SS_NOPREFIX
 
-        LTEXT "Reborn Omega 1.06", IDC_STATIC, 179, 41, 90, 8,
+        LTEXT "Reborn Omega 1.07", IDC_STATIC, 179, 41, 90, 8,
         SS_NOPREFIX
 
         LTEXT "by Gamezerve", IDC_STATIC, 179, 51, 90, 8,
