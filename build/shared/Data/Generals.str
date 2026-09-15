@@ -16290,6 +16290,10 @@ GUI:RandomMap
 "Random Map"
 END
 
+TOOLTIP:RandomMap
+"Select a random map"
+END
+
 GUI:AcceptSm
 "ACCEPT"
 END
@@ -19476,6 +19480,10 @@ END
 
 GUI:ResourceMultiplier
 "Cash Multiplier"
+END
+
+TOOLTIP:ResourceMultiplier
+"Increase or decrease the cash earned by this amount for all players"
 END
 
 GUI:StartingMoneyFormat

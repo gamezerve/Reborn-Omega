@@ -587,7 +587,7 @@ WINDOW
       DRAWCALLBACK = "[None]";
       FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
       HEADERTEMPLATE = "TextEntry";
-      TOOLTIPTEXT = "TOOLTIP:StartingMoney";
+      TOOLTIPTEXT = "TOOLTIP:ResourceMultiplier";
       TOOLTIPDELAY = -1;
       TEXT = "GUI:ResourceMultiplier";
       TEXTCOLOR = ENABLED:  254 254 254 255, ENABLEDBORDER:  0 0 0 255,
@@ -637,6 +637,7 @@ WINDOW
       DRAWCALLBACK = "[None]";
       FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
       HEADERTEMPLATE = "ComboBoxEntry";
+      TOOLTIPTEXT = "TOOLTIP:LimitSuperweapons";
       TOOLTIPDELAY = -1;
       TEXTCOLOR = ENABLED:  255 254 254 255, ENABLEDBORDER:  0 0 0 255,
                   DISABLED: 122 48 1 255, DISABLEDBORDER: 64 64 64 255,
@@ -878,7 +879,7 @@ WINDOW
       DRAWCALLBACK = "[None]";
       FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
       HEADERTEMPLATE = "TextEntry";
-      TOOLTIPTEXT = "TOOLTIP:StartingMoney";
+      TOOLTIPTEXT = "TOOLTIP:LimitSuperweapons";
       TOOLTIPDELAY = -1;
       TEXT = "GUI:LimitSuperweapons";
       TEXTCOLOR = ENABLED:  254 254 254 255, ENABLEDBORDER:  0 0 0 255,
@@ -928,6 +929,7 @@ WINDOW
       DRAWCALLBACK = "[None]";
       FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
       HEADERTEMPLATE = "ComboBoxEntry";
+      TOOLTIPTEXT = "TOOLTIP:ResourceMultiplier";
       TOOLTIPDELAY = -1;
       TEXTCOLOR = ENABLED:  255 254 254 255, ENABLEDBORDER:  0 0 0 255,
                   DISABLED: 122 48 1 255, DISABLEDBORDER: 64 64 64 255,
