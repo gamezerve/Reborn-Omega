@@ -8670,18 +8670,24 @@ void ScriptActions::executeAction( ScriptAction *pAction )
 			doSetStoppingDistance(pAction->getParameter(0)->getString(), pAction->getParameter(1)->getReal());
 			return;
 		case ScriptAction::SET_FPS_LIMIT:
-			if (!pAction->getParameter(0)->getInt())
+		{
+			const Int scriptedFps = pAction->getParameter(0)->getInt();
+
+			if (scriptedFps == 0)
 			{
-				TheFramePacer->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
+				TheFramePacer->setFramesPerSecondLimit(60);
+				TheFramePacer->setLogicTimeScaleFps(LOGICFRAMES_PER_SECOND);
+				TheFramePacer->enableLogicTimeScale(TRUE);
 			}
 			else
 			{
-				TheFramePacer->setFramesPerSecondLimit(pAction->getParameter(0)->getInt());
+				TheFramePacer->setFramesPerSecondLimit(scriptedFps);
+				TheFramePacer->enableLogicTimeScale(FALSE);
 			}
 			// Setting the fps limit doesn't do much good if we don't use it.  jba.
 			TheWritableGlobalData->m_useFpsLimit = true;
 			return;
-
+		}
 		case ScriptAction::DISABLE_SPECIAL_POWER_DISPLAY:
 			doDisableSpecialPowerDisplay();
 			return;

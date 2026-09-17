@@ -16,6 +16,8 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+// FILE: FramePacer.h ///////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include "Common/FrameRateLimit.h"
