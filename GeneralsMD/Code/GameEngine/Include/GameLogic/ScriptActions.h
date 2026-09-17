@@ -86,6 +86,7 @@ protected:
 
 	Bool m_suppressNewWindows;
 	AsciiString m_unnamedUnit;
+	Real m_rebornSavedMaxCameraHeight;
 
 protected: // helper functions
 	void changeObjectPanelFlagForSingleObject(Object *obj, const AsciiString& flagToChange, Bool newVal );

@@ -737,7 +737,7 @@ Real W3DView::getMaxHeight(Real x, Real y) const
 #if PRESERVE_RETAIL_SCRIPTED_CAMERA
 	if (!m_isUserControlled)
 	{
-		return getHeightAroundPos(x, y) + m_maxHeightAboveGround;
+		return getHeightAroundPos(x, y) + ViewDefaultMaxHeightAboveTerrain;
 	}
 #endif
 

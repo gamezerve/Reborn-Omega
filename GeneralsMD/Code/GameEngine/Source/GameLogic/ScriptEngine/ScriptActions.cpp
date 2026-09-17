@@ -130,6 +130,7 @@ ScriptActions::ScriptActions()
 {
 	m_suppressNewWindows = FALSE;
 	m_unnamedUnit = AsciiString::TheEmptyString;
+	m_rebornSavedMaxCameraHeight = 0.0f;
 
 }
 
@@ -4123,6 +4124,11 @@ void ScriptActions::doDisableInput()
 		TheControlBar->deleteBuildTooltipLayout();
 		TheLookAtTranslator->resetModes();
 		g_useLegacyForwardSpeed2D = true; // Reborn: Enable Legacy Forward Speed 2D when input is disabled, to avoid camera issues with the new system.
+		if (TheTacticalView)
+		{
+			m_rebornSavedMaxCameraHeight = TheTacticalView->getMaxHeightAboveGround();
+			TheTacticalView->setMaxHeightAboveGround(ViewDefaultMaxHeightAboveTerrain);
+		}
 	}
 }
 
@@ -4134,6 +4140,11 @@ void ScriptActions::doEnableInput()
 	TheInGameUI->setInputEnabled(true);
 	TheMouse->setVisibility(true);
 	g_useLegacyForwardSpeed2D = false; // Reborn: Disable Legacy Forward Speed 2D when input is enabled, to restore the fixed movement behavior.
+	if (TheTacticalView && m_rebornSavedMaxCameraHeight > 0.0f)
+	{
+		TheTacticalView->setMaxHeightAboveGround(m_rebornSavedMaxCameraHeight);
+		m_rebornSavedMaxCameraHeight = 0.0f;
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
