@@ -314,7 +314,7 @@ UpdateSleepTime HelicopterSlowDeathBehavior::update()
 			{
 
 				// we're going towards the max self spin, increase it
-				m_selfSpin += modData->m_selfSpinUpdateAmount / LOGICFRAMES_PER_SECOND;
+				m_selfSpin += modData->m_selfSpinUpdateAmount / (Real)LOGICFRAMES_PER_SECOND;
 				if( m_selfSpin > modData->m_maxSelfSpin )
 				{
 
@@ -328,7 +328,7 @@ UpdateSleepTime HelicopterSlowDeathBehavior::update()
 			{
 
 				// we're going towards the min self spin, decrease it
-				m_selfSpin -= modData->m_selfSpinUpdateAmount / LOGICFRAMES_PER_SECOND;
+				m_selfSpin -= modData->m_selfSpinUpdateAmount / (Real)LOGICFRAMES_PER_SECOND;
 				if( m_selfSpin < modData->m_minSelfSpin )
 				{
 

@@ -802,7 +802,7 @@ UpdateSleepTime WaveGuideUpdate::update()
 	}
 
 	// every half second we try to play a random splash sound
-	if( TheGameLogic->getFrame() - m_splashSoundFrame > LOGICFRAMES_PER_SECOND / 2.0f )
+	if( TheGameLogic->getFrame() - m_splashSoundFrame > (Real)LOGICFRAMES_PER_SECOND / 2.0f )
 	{
 
 		// mark that we've had the opportunity to play

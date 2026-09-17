@@ -217,7 +217,7 @@ UpdateSleepTime StructureToppleUpdate::update()
 	// when it starts toppling over.
 	if (m_toppleState == TOPPLESTATE_WAITINGFORTOPPLESTART) {
 		UnsignedInt now = TheGameLogic->getFrame();
-		if (now >= m_nextBurstFrame) {
+		if (now >= (UnsignedInt)m_nextBurstFrame) {
 			doToppleDelayBurstFX();
 			// This uses a game client random value because the delay bursts are purely visual and aural effects.
 			m_nextBurstFrame = now + GameClientRandomValue(d->m_minToppleBurstDelay, d->m_maxToppleBurstDelay);
@@ -265,7 +265,7 @@ UpdateSleepTime StructureToppleUpdate::update()
 			m_toppleFrame = TheGameLogic->getFrame();
 		}
 
-		if (now >= m_nextBurstFrame) {
+		if (now >= (UnsignedInt)m_nextBurstFrame) {
 			doToppleDelayBurstFX();
 			// This uses a game client random value because the delay bursts are purely visual and aural effects.
 			m_nextBurstFrame = now + GameClientRandomValue(d->m_minToppleBurstDelay, d->m_maxToppleBurstDelay);

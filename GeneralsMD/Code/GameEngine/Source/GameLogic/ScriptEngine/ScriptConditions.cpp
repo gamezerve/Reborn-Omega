@@ -460,7 +460,7 @@ Bool ScriptConditions::evaluatePlayerHasUnitTypeInArea(Condition *pCondition, Pa
 		}
 	}
 
-	if (TheScriptEngine->getFrameObjectCountChanged() > pCondition->getCustomFrame()) {
+	if (TheScriptEngine->getFrameObjectCountChanged() > (UnsignedInt)pCondition->getCustomFrame()) {
 		anyChanges = true; // Objects were added/deleted last frame, so count could have changed.  jba.
 	}
 
@@ -553,7 +553,7 @@ Bool ScriptConditions::evaluatePlayerHasUnitKindInArea(Condition *pCondition, Pa
 			}
 		}
 	}
-	if (TheScriptEngine->getFrameObjectCountChanged() > pCondition->getCustomFrame()) {
+	if (TheScriptEngine->getFrameObjectCountChanged() > (UnsignedInt)pCondition->getCustomFrame()) {
 		anyChanges = true; // Objects were added/deleted since we cached, so count could have changed.  jba.
 	}
 	if (!anyChanges) {
@@ -970,11 +970,11 @@ Bool ScriptConditions::evaluatePlayerHasCredits(Parameter *pCreditsParm, Paramet
 	if (pPlayer && pPlayer->getMoney()) {
 		switch (pComparisonParm->getInt())
 		{
-			case Parameter::LESS_THAN :			return (pCreditsParm->getInt() < pPlayer->getMoney()->countMoney()); break;
-			case Parameter::LESS_EQUAL :		return (pCreditsParm->getInt() <= pPlayer->getMoney()->countMoney()); break;
+		  case Parameter::LESS_THAN :     return ((UnsignedInt)pCreditsParm->getInt() < pPlayer->getMoney()->countMoney()); break;
+		  case Parameter::LESS_EQUAL :    return ((UnsignedInt)pCreditsParm->getInt() <= pPlayer->getMoney()->countMoney()); break;
 			case Parameter::EQUAL :					return (pCreditsParm->getInt() == pPlayer->getMoney()->countMoney()); break;
-			case Parameter::GREATER_EQUAL :	return (pCreditsParm->getInt() >= pPlayer->getMoney()->countMoney()); break;
-			case Parameter::GREATER :				return (pCreditsParm->getInt() > pPlayer->getMoney()->countMoney()); break;
+			case Parameter::GREATER_EQUAL : return ((UnsignedInt)pCreditsParm->getInt() >= pPlayer->getMoney()->countMoney()); break;
+			case Parameter::GREATER:       return ((UnsignedInt)pCreditsParm->getInt() > pPlayer->getMoney()->countMoney()); break;
 			case Parameter::NOT_EQUAL :			return (pCreditsParm->getInt() != pPlayer->getMoney()->countMoney()); break;
 		}
 	}
@@ -1893,7 +1893,7 @@ Bool ScriptConditions::evaluatePlayerHasComparisonValueExcessPower(Parameter *pP
 Bool ScriptConditions::evaluateSkirmishSpecialPowerIsReady(Parameter *pSkirmishPlayerParm, Parameter *pPower)
 {
 	if (pPower->getInt() == -1) return false;
-	if (pPower->getInt()>0 && pPower->getInt()>TheGameLogic->getFrame()) {
+	if (pPower->getInt() > 0 && (UnsignedInt)pPower->getInt() > TheGameLogic->getFrame()) {
 		return false;
 	}
 	Int nextFrame = TheGameLogic->getFrame() + 10*LOGICFRAMES_PER_SECOND;
@@ -1927,7 +1927,8 @@ Bool ScriptConditions::evaluateSkirmishSpecialPowerIsReady(Parameter *pSkirmishP
 					}
 					found = true;
 					if (mod->isReady()) return true;
-					if (mod->getReadyFrame()<nextFrame) nextFrame = mod->getReadyFrame();
+					if (mod->getReadyFrame() < (UnsignedInt)nextFrame)
+						nextFrame = mod->getReadyFrame();
 				}
 
 			}
@@ -2512,7 +2513,7 @@ Bool ScriptConditions::evaluateSkirmishPlayerHasUnitsInArea(Condition *pConditio
 		}
 	}
 
-	if (TheScriptEngine->getFrameObjectCountChanged() > pCondition->getCustomFrame()) {
+	if (TheScriptEngine->getFrameObjectCountChanged() > (UnsignedInt)pCondition->getCustomFrame()) {
 		anyChanges = true; // Objects were added/deleted last frame, so count could have changed.  jba.
 	}
 
@@ -2560,7 +2561,7 @@ Bool ScriptConditions::evaluateSkirmishPlayerHasUnitsInArea(Condition *pConditio
 Bool ScriptConditions::evaluateSkirmishSupplySourceSafe(Condition *pCondition, Parameter *pSkirmishPlayerParm, Parameter *pMinSupplyAmount )
 {
 	// Trigger every 2*LOGICFRAMES_PER_SECOND. jba.
-	Bool anyChanges = (TheGameLogic->getFrame() > pCondition->getCustomFrame());
+	Bool anyChanges = (TheGameLogic->getFrame() > (UnsignedInt)pCondition->getCustomFrame());
 	if (!anyChanges) {
 		if (pCondition->getCustomData()==-1) return false;
 		if (pCondition->getCustomData()==1) return true;

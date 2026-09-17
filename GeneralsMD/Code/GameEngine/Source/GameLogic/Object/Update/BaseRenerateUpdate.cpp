@@ -138,7 +138,7 @@ UpdateSleepTime BaseRegenerateUpdate::update()
 
 		// do some healing
 		Real amount = HEAL_RATE * (body->getMaxHealth() * TheGlobalData->m_baseRegenHealthPercentPerSecond) /
-														 LOGICFRAMES_PER_SECOND;
+			(Real)LOGICFRAMES_PER_SECOND;
 		me->attemptHealing(amount, me);
 
 		return UPDATE_SLEEP(HEAL_RATE);

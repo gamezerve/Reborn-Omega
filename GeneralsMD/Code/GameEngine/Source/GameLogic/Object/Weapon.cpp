@@ -1305,7 +1305,7 @@ void WeaponTemplate::processHistoricDamage(const Object* source, const Coord3D* 
 		++m_historicDamageTriggerId;
 
 		const Int requiredCount = m_historicBonusCount - 1; // minus 1 since we include ourselves implicitly
-		if (m_historicDamage.size() >= requiredCount)
+		if (m_historicDamage.size() >= (size_t)requiredCount)
 		{
 			const Real radSqr = m_historicBonusRadius * m_historicBonusRadius;
 			Int count = 0;
@@ -1956,7 +1956,7 @@ void Weapon::setClipPercentFull(Real percent, Bool allowReduction)
 		return;
 
 	Int ammo = REAL_TO_INT_FLOOR(m_template->getClipSize() * percent);
-	if (ammo > m_ammoInClip || (allowReduction && ammo < m_ammoInClip))
+	if ((UnsignedInt)ammo > m_ammoInClip || (allowReduction && (UnsignedInt)ammo < m_ammoInClip))
 	{
 		m_ammoInClip = ammo;
 		m_status = m_ammoInClip ? OUT_OF_AMMO : READY_TO_FIRE;
@@ -2933,7 +2933,7 @@ Int Weapon::getPreAttackDelay( const Object *source, const Object *victim ) cons
 	WeaponPrefireType type = m_template->getPrefireType();
 	if( type == PREFIRE_PER_CLIP )
 	{
-		if( m_template->getClipSize() > 0  &&  m_ammoInClip < m_template->getClipSize() )
+		if (m_template->getClipSize() > 0 && m_ammoInClip < (UnsignedInt)m_template->getClipSize())
 			return 0;// I only delay once a clip, and this is not the first shot
 	}
 	else if( type == PREFIRE_PER_ATTACK )
@@ -3384,7 +3384,7 @@ void Weapon::crc( Xfer *xfer )
 #endif // DEBUG_CRC
 
 	// scatter targets unused
-	UnsignedShort scatterCount = m_scatterTargetsUnused.size();
+	UnsignedShort scatterCount = (UnsignedShort)m_scatterTargetsUnused.size();
 	xfer->xferUnsignedShort( &scatterCount );
 #ifdef DEBUG_CRC
 	if (doLogging)
@@ -3520,7 +3520,7 @@ void Weapon::xfer( Xfer *xfer )
 	xfer->xferInt( &m_numShotsForCurBarrel );
 
 	// scatter targets unused
-	UnsignedShort scatterCount = m_scatterTargetsUnused.size();
+	UnsignedShort scatterCount = (UnsignedShort)m_scatterTargetsUnused.size();
 	xfer->xferUnsignedShort( &scatterCount );
 	Int intData;
 	if( xfer->getXferMode() == XFER_SAVE )

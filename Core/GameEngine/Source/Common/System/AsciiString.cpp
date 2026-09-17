@@ -477,7 +477,7 @@ void AsciiString::truncateBy(const Int charCount)
 		{
 			ensureUniqueBufferOfSize(len + 1, true, nullptr, nullptr);
 			size_t count = charCount;
-			if (charCount > len)
+			if ((size_t)charCount > len)
 			{
 				count = len;
 			}
@@ -494,7 +494,7 @@ void AsciiString::truncateTo(const Int maxLength)
 	if (m_data)
 	{
 		const size_t len = strlen(peek());
-		if (len > maxLength)
+		if (len > (size_t)maxLength)
 		{
 			ensureUniqueBufferOfSize(len + 1, true, nullptr, nullptr);
 			peek()[maxLength] = 0;

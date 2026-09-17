@@ -29,7 +29,7 @@ static std::vector<void*> g_pendingConnSignalingDeletions;
 
 // Clean up pending ConnectionSignaling objects that were deferred during Release()
 // Forward declaration needed since ConnectionSignaling is nested inside CSignalingClient
-struct ISteamNetworkingConnectionSignaling;
+class ISteamNetworkingConnectionSignaling;
 
 static void CleanupPendingConnSignalingDeletions()
 {
@@ -1334,7 +1334,7 @@ void PlayerConnection::UpdateLatencyHistogram()
 	const int connectionHistoryLength = histogram_duration / 33; // ~20 sec worth of frames at 30fps (default)
 #endif
 
-	if (m_vecLatencyHistory.size() >= connectionHistoryLength)
+	if (m_vecLatencyHistory.size() >= (size_t)connectionHistoryLength)
 	{
 		m_vecLatencyHistory.erase(m_vecLatencyHistory.begin());
 	}
@@ -1365,7 +1365,7 @@ void PlayerConnection::UpdateLatencyHistogram()
 
 			if (sample >= 0.0f)
 			{
-				if (m_vecQualityHistory.size() >= connectionHistoryLength)
+				if (m_vecQualityHistory.size() >= (size_t)connectionHistoryLength)
 					m_vecQualityHistory.erase(m_vecQualityHistory.begin());
 				m_vecQualityHistory.push_back(sample);
 			}

@@ -598,7 +598,7 @@ TheInGameUI->DEBUG_addFloatingText("entering regrouping state", getMachineOwner(
 		return STATE_FAILURE;
 	}
 
-	if( ThePartitionManager->getDistanceSquared(owner, destinationObject, FROM_BOUNDINGSPHERE_2D) < REGROUP_SUCCESS_DISTANCE_SQUARED )
+	if (ThePartitionManager->getDistanceSquared(owner, destinationObject, FROM_BOUNDINGSPHERE_2D) <	(Real)REGROUP_SUCCESS_DISTANCE_SQUARED)
 		return STATE_CONTINUE; // Don't say Success so we don't spin the machine.  After one update we'll go back.
 
 	Coord3D destination;

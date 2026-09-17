@@ -2421,7 +2421,7 @@ Bool INI::isEndOfBlock( char *bufferToCheck )
 	// it is important to get through all the checks.
 
 	static const char* endString = "End";
-	int endStringLength = strlen(endString);
+	size_t endStringLength = strlen(endString);
 	char restoreChar;
 	char *tempBuff = bufferToCheck;
 

@@ -141,9 +141,10 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 
 	while (true)
 	{
-		int i;
-		for (i = 0; i < processes.size(); i++)
+		for (size_t i = 0; i < processes.size(); ++i)
+		{
 			processes[i].update();
+		}
 
 		// Get result of finished processes and print output in order
 		while (!processes.empty())
@@ -164,7 +165,7 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 		int numProcessesRunning = countProcessesRunning(processes);
 
 		// Add new processes when we are below the limit and there are replays left
-		while (numProcessesRunning < maxProcesses && filenamePositionStarted < filenames.size())
+		while (numProcessesRunning < maxProcesses && (size_t)filenamePositionStarted < filenames.size())
 		{
 			UnicodeString filenameWide;
 			filenameWide.translate(filenames[filenamePositionStarted]);

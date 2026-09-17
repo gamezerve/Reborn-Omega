@@ -7060,7 +7060,7 @@ void ScriptActions::doTeamEmoticon(const AsciiString& teamName, const AsciiStrin
 	theTeam->getTeamAsAIGroup(theGroup.Peek());
 #endif
 
-	Int frames = (Int)( duration * LOGICFRAMES_PER_SECOND );
+	Int frames = (Int)( duration * (Real)LOGICFRAMES_PER_SECOND );
 	theGroup->groupSetEmoticon( emoticonName, frames );
 }
 
@@ -7073,7 +7073,7 @@ void ScriptActions::doNamedEmoticon(const AsciiString& unitName, const AsciiStri
 		Drawable *draw = obj->getDrawable();
 		if( draw )
 		{
-			Int frames = (Int)( duration * LOGICFRAMES_PER_SECOND );
+			Int frames = (Int)( duration * (Real)LOGICFRAMES_PER_SECOND );
 			draw->setEmoticon( emoticonName, frames );
 		}
 	}
@@ -7137,7 +7137,7 @@ void ScriptActions::doOverrideHulkLifetime( Real seconds )
 	else
 	{
 		// Convert real seconds into frames.
-		Int frames = (Int)(seconds * LOGICFRAMES_PER_SECOND);
+		Int frames = (Int)(seconds * (Real)LOGICFRAMES_PER_SECOND);
 		TheGameLogic->setHulkMaxLifetimeOverride(frames);
 	}
 }

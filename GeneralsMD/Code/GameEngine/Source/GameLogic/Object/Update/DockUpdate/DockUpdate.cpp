@@ -147,7 +147,7 @@ Bool DockUpdate::reserveApproachPosition( Object* docker, Coord3D *position, Int
 	ObjectID dockerID = docker->getID();
 
 	Int positionIndex = 0;
-	for( ; positionIndex < m_approachPositionOwners.size(); ++positionIndex )
+	for (; (size_t)positionIndex < m_approachPositionOwners.size(); ++positionIndex)
 	{
 		if( m_approachPositionOwners[positionIndex] == dockerID )
 		{

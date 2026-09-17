@@ -357,7 +357,7 @@ void CreditsManager::draw()
 		if(cLine->m_pos.y < heightChunk || cLine->m_pos.y > heightChunk * 2)
 		{
 			// adjust the color
-			if( cLine->m_pos.y < 0 || cLine->m_pos.y > TheDisplay->getHeight())
+			if (cLine->m_pos.y < 0 || (UnsignedInt)cLine->m_pos.y > TheDisplay->getHeight())
 				perc = 0.0f;
 			else if( cLine->m_pos.y < heightChunk)
 				perc = INT_TO_REAL(cLine->m_pos.y) / heightChunk;

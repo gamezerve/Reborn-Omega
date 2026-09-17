@@ -966,7 +966,7 @@ Bool Object::checkAndDetonateBoobyTrap(const Object *victim)
 	filters[1] = &filterMapStatus;
 	filters[2] = nullptr;
 
-	ObjectIterator *iter = ThePartitionManager->iterateObjectsInRange( getPosition(), BOOBY_TRAP_SCAN_RANGE + getGeometryInfo().getBoundingCircleRadius(),
+	ObjectIterator *iter = ThePartitionManager->iterateObjectsInRange( getPosition(), (Real)BOOBY_TRAP_SCAN_RANGE + getGeometryInfo().getBoundingCircleRadius(),
 		FROM_CENTER_2D, filters, ITER_SORTED_NEAR_TO_FAR );
 	MemoryPoolObjectHolder hold(iter);// This is the magic thing that frees the dynamically made iter in its destructor
 

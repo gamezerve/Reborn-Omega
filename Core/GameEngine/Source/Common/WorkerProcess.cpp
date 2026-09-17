@@ -167,9 +167,11 @@ bool WorkerProcess::fetchStdOutput()
 		DEBUG_ASSERTCRASH(readBytes != 0, ("expected readBytes to be non null"));
 
 		// Remove \r, otherwise each new line is doubled when we output it again
-		for (int i = 0; i < readBytes; i++)
+		for (DWORD i = 0; i < readBytes; i++)
+		{
 			if (buffer[i] == '\r')
 				buffer[i] = ' ';
+		}
 		buffer[readBytes] = 0;
 		m_stdOutput.concat(buffer);
 	}

@@ -2064,7 +2064,7 @@ public:
 				Int needed = clipSize - remaining;
 				rt = (rt * needed) / clipSize;
 			}
-			if (rt > m_reloadTime)
+			if ((UnsignedInt)rt > m_reloadTime)
 				m_reloadTime = rt;
 		}
 

@@ -693,7 +693,7 @@ Locomotor::Locomotor(const LocomotorTemplate* tmpl)
 	m_angleOffset = GameLogicRandomValueRealUnchanged(-PI/6, PI/6);
 	m_offsetIncrement = (PI/40) * (GameLogicRandomValueRealUnchanged(0.8f, 1.2f)/m_template->m_wanderLengthFactor);
 	setFlag(OFFSET_INCREASING, GameLogicRandomValueUnchanged(0,1));
-	m_donutTimer = TheGameLogic->getFrame()+DONUT_TIME_DELAY_SECONDS*LOGICFRAMES_PER_SECOND;
+	m_donutTimer = TheGameLogic->getFrame() + DONUT_TIME_DELAY_SECONDS * (Real)LOGICFRAMES_PER_SECOND;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -802,7 +802,7 @@ void Locomotor::loadPostProcess()
 void Locomotor::startMove()
 {
 	// Reset the donut timer.
-	m_donutTimer = TheGameLogic->getFrame()+DONUT_TIME_DELAY_SECONDS*LOGICFRAMES_PER_SECOND;
+	m_donutTimer = TheGameLogic->getFrame() + DONUT_TIME_DELAY_SECONDS * (Real)LOGICFRAMES_PER_SECOND;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -1177,7 +1177,7 @@ void Locomotor::locoUpdate_moveTowardsPosition(Object* obj, const Coord3D& goalP
 
 	if (wasBraking)
 	{
-	#define MIN_VEL (PATHFIND_CELL_SIZE_F/(LOGICFRAMES_PER_SECOND))
+	#define MIN_VEL (PATHFIND_CELL_SIZE_F/(Real)LOGICFRAMES_PER_SECOND)
 
 		Coord3D pos = *obj->getPosition();
 		if (obj->isKindOf(KINDOF_PROJECTILE))
@@ -1489,7 +1489,7 @@ void Locomotor::moveTowardsPositionWheels(Object* obj, PhysicsBehavior *physics,
 	}
 
  	if (onPathDistToGoal > DONUT_DISTANCE) {
-		m_donutTimer = TheGameLogic->getFrame()+DONUT_TIME_DELAY_SECONDS*LOGICFRAMES_PER_SECOND;
+		m_donutTimer = TheGameLogic->getFrame() + DONUT_TIME_DELAY_SECONDS * (Real)LOGICFRAMES_PER_SECOND;
 	} else {
 		if (m_donutTimer < TheGameLogic->getFrame()) {
 			setFlag(IS_BRAKING, true);
@@ -2514,7 +2514,7 @@ Bool Locomotor::locoUpdate_maintainCurrentPosition(Object* obj)
 		setFlag(MAINTAIN_POS_IS_VALID, true);
 	}
 
-	m_donutTimer = TheGameLogic->getFrame()+DONUT_TIME_DELAY_SECONDS*LOGICFRAMES_PER_SECOND;
+	m_donutTimer = TheGameLogic->getFrame() + DONUT_TIME_DELAY_SECONDS * (Real)LOGICFRAMES_PER_SECOND;
 	setFlag(IS_BRAKING, false);
 	PhysicsBehavior *physics = obj->getPhysics();
 	if (physics == nullptr)
@@ -2733,7 +2733,7 @@ void LocomotorSet::xfer( Xfer *xfer )
 	xfer->xferVersion( &version, currentVersion );
 
 	// count of vector
-	UnsignedShort count = m_locomotors.size();
+	UnsignedShort count = (UnsignedShort)m_locomotors.size();
 	xfer->xferUnsignedShort( &count );
 
 	// data
