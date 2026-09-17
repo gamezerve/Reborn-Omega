@@ -511,7 +511,7 @@ static Bool getSupplyDropZoneIncomeForTooltip(
 		totalAmount = (totalAmount * g_resourceMultiplierPercent) / 100;
 	}
 
-	Int seconds = REAL_TO_INT_FLOOR((Real)oclData->m_minDelay / LOGICFRAMES_PER_SECOND + 0.5f);
+	Int seconds = REAL_TO_INT_FLOOR((Real)oclData->m_minDelay / (Real)LOGICFRAMES_PER_SECOND + 0.5f);
 	Real incomePerSecond = (seconds > 0) ? ((Real)totalAmount / (Real)seconds) : 0.0f;
 
 	UnicodeString multiplierText = UnicodeString::TheEmptyString;
@@ -931,7 +931,7 @@ static Bool getDisplaySpeedForLocomotorSet(const ThingTemplate* thingTemplate, L
 		return FALSE;
 
 	Real speed = tempLocomotor->getMaxSpeedForCondition(BODY_PRISTINE);
-	Real displaySpeed = speed * LOGICFRAMES_PER_SECOND;
+	Real displaySpeed = speed * (Real)LOGICFRAMES_PER_SECOND;
 
 	deleteInstance(tempLocomotor);
 
@@ -986,7 +986,7 @@ static Bool getDisplaySpeedForLocomotorSetAndCondition(
 		return FALSE;
 
 	Real speed = tempLocomotor->getMaxSpeedForCondition(damageType);
-	Real displaySpeed = speed * LOGICFRAMES_PER_SECOND;
+	Real displaySpeed = speed * (Real)LOGICFRAMES_PER_SECOND;
 
 	deleteInstance(tempLocomotor);
 
@@ -1790,7 +1790,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 					displayBoostAmount = (displayBoostAmount * g_resourceMultiplierPercent) / 100;
 				}
 
-				Int seconds = REAL_TO_INT_FLOOR((Real)autoDepositData->m_depositFrame / LOGICFRAMES_PER_SECOND + 0.5f);
+				Int seconds = REAL_TO_INT_FLOOR((Real)autoDepositData->m_depositFrame / (Real)LOGICFRAMES_PER_SECOND + 0.5f);
 				Real incomePerSecond = (seconds > 0) ? ((Real)displayAmount / (Real)seconds) : 0.0f;
 
 				UnicodeString multiplierText = UnicodeString::TheEmptyString;
@@ -1853,7 +1853,7 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 					heroicAmount = (heroicAmount * g_resourceMultiplierPercent) / 100;
 				}
 
-				Int seconds = REAL_TO_INT_FLOOR((Real)hackInternetData->m_cashUpdateDelay / LOGICFRAMES_PER_SECOND + 0.5f);
+				Int seconds = REAL_TO_INT_FLOOR((Real)hackInternetData->m_cashUpdateDelay / (Real)LOGICFRAMES_PER_SECOND + 0.5f);
 				Real incomePerSecond = (seconds > 0) ? ((Real)regularAmount / (Real)seconds) : 0.0f;
 
 				UnicodeString multiplierText = UnicodeString::TheEmptyString;
@@ -2913,7 +2913,7 @@ if (obj &&
 		if (vel)
 		{
 			Real currentSpeed = sqrt((vel->x * vel->x) + (vel->y * vel->y));
-			currentDisplaySpeed = REAL_TO_INT_FLOOR((currentSpeed * LOGICFRAMES_PER_SECOND) + 0.5f);
+			currentDisplaySpeed = REAL_TO_INT_FLOOR((currentSpeed * (Real)LOGICFRAMES_PER_SECOND) + 0.5f);
 			hasCurrentSpeed = TRUE;
 		}
 	}
@@ -3040,7 +3040,7 @@ if (obj &&
 						displayBoostAmount = (displayBoostAmount * g_resourceMultiplierPercent) / 100;
 					}
 
-					Int seconds = REAL_TO_INT_FLOOR((Real)autoData->m_depositFrame / LOGICFRAMES_PER_SECOND + 0.5f);
+					Int seconds = REAL_TO_INT_FLOOR((Real)autoData->m_depositFrame / (Real)LOGICFRAMES_PER_SECOND + 0.5f);
 
 					Real incomePerSecond = (seconds > 0) ? ((Real)displayAmount / (Real)seconds) : 0.0f;
 
@@ -3118,7 +3118,7 @@ if (obj &&
 				if (g_resourceMultiplierPercent != 100)
 					amount = (amount * g_resourceMultiplierPercent) / 100;
 
-				Int seconds = REAL_TO_INT_FLOOR((Real)hackInternet->getCashUpdateDelay() / LOGICFRAMES_PER_SECOND + 0.5f);
+				Int seconds = REAL_TO_INT_FLOOR((Real)hackInternet->getCashUpdateDelay() / (Real)LOGICFRAMES_PER_SECOND + 0.5f);
 				Real incomePerSecond = (seconds > 0) ? ((Real)amount / (Real)seconds) : 0.0f;
 
 				UnicodeString multiplierText = UnicodeString::TheEmptyString;
@@ -3142,7 +3142,7 @@ if (obj &&
 
 				if (getInternetCenterContainedHackIncomeForTooltip(obj, hackerCount, totalAmount, delayFrames))
 				{
-					Int seconds = REAL_TO_INT_FLOOR((Real)delayFrames / LOGICFRAMES_PER_SECOND + 0.5f);
+					Int seconds = REAL_TO_INT_FLOOR((Real)delayFrames / (Real)LOGICFRAMES_PER_SECOND + 0.5f);
 					Real incomePerSecond = (seconds > 0) ? ((Real)totalAmount / (Real)seconds) : 0.0f;
 
 					UnicodeString multiplierText = UnicodeString::TheEmptyString;

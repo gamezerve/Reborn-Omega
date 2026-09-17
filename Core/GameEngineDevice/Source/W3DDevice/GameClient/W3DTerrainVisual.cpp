@@ -129,8 +129,8 @@ class TestSeismicFilter : public SeismicSimulationFilterBase
       }
 
       // stuff the values from the workspace into the heightmap's velocities
-      for (x = 0; x < workspaceWidth; ++x)
-        for (Int y = 0; y < workspaceWidth; ++y)
+			for (x = 0; (UnsignedInt)x < workspaceWidth; ++x)
+				for (Int y = 0; (UnsignedInt)y < workspaceWidth; ++y)
     			heightMap->setSeismicZVelocity( centerX - radius + x, centerY - radius + y,  workspace[  x + workspaceWidth * y ]  );
 
       delete [] workspace;

@@ -101,7 +101,7 @@ void Anim2DTemplate::parseNumImages( INI *ini, void *instance, void *store, cons
 	Anim2DTemplate *animTemplate = (Anim2DTemplate *)instance;
 
 	// animations must have a minimum # of frames
-	Int minimumFrames = 1;
+	const UnsignedInt minimumFrames = 1;
 	if( numFrames < minimumFrames )
 	{
 

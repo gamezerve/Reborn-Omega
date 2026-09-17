@@ -515,8 +515,8 @@ void MetaEventTranslator::onMouseEvent(const GameMessage *msg)
 
 			IRegion2D pixelRegion;
 			buildRegion( &m_mouseDownPosition[index], &location, &pixelRegion );
-			if (abs(pixelRegion.hi.x - pixelRegion.lo.x) < TheMouse->m_dragTolerance &&
-					abs(pixelRegion.hi.y - pixelRegion.lo.y) < TheMouse->m_dragTolerance)
+			if ((UnsignedInt)abs(pixelRegion.hi.x - pixelRegion.lo.x) < TheMouse->m_dragTolerance &&
+				(UnsignedInt)abs(pixelRegion.hi.y - pixelRegion.lo.y) < TheMouse->m_dragTolerance)
 			{
 				pixelRegion.hi.x = pixelRegion.lo.x;
 				pixelRegion.hi.y = pixelRegion.lo.y;

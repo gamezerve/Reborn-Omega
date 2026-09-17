@@ -125,8 +125,8 @@ void FrameMetrics::init() {
 	for (i = 0; i < TheGlobalData->m_networkLatencyHistoryLength; ++i)
 	{
 #if defined(USE_NEW_FRAMEMETRIC_LOGIC)
-		m_mapLatenciesLookup[i] = 0.2;
-		m_mapLatenciesSorted[i] = 0.2;
+		m_mapLatenciesLookup[i] = 0.2f;
+		m_mapLatenciesSorted[i] = 0.2f;
 #else
 		m_latencyList[i] = (Real)0.2;
 #endif

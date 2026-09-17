@@ -689,7 +689,7 @@ void NGMP_OnlineServices_LobbyInterface::SearchForLobbies(std::function<void()> 
 					}
 				}
 
-				int latencyIndex = 0;
+				size_t latencyIndex = 0;
 			for (const auto& lobbyEntryIter : jsonObject["lobbies"])
 			{
 				LobbyEntry lobbyEntry;

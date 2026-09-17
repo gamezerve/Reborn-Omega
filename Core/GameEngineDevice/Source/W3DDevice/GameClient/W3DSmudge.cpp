@@ -180,7 +180,7 @@ Int copyRect(unsigned char *buf, Int bufSize, int oX, int oY, int width, int hei
 
  	tempSurface->GetDesc(&desc);
 
-	if (desc.Size < bufSize)
+	if (desc.Size < (UnsignedInt)bufSize)
 		bufSize = desc.Size;
 
 	memcpy(buf,lrect.pBits,bufSize);

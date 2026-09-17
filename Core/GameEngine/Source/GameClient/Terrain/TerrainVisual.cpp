@@ -160,10 +160,10 @@ SeismicSimulationFilterBase::SeismicSimStatusCode DomeStyleSeismicFilter::filter
 
     for ( Real *t = workspace; t < workspaceEnd; ++t ) *t = 0.0f;// clear the workspace
 
-    Int x, y;
-    for (x = 0; x < radius; ++x)
+    UnsignedInt x, y;
+    for (x = 0; x < (UnsignedInt)radius; ++x)
     {
-      for (y = 0; y < radius; ++y)
+      for (y = 0; y < (UnsignedInt)radius; ++y)
       {
 
         Real distance = sqrt( sqr(x) + sqr(y) );//Pythagoras

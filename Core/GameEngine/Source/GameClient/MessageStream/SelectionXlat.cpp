@@ -694,7 +694,7 @@ GameMessageDisposition SelectionTranslator::onRawMousePosition(MAYBE_UNUSED cons
 		delta.y = abs(pixel.y - m_leftMouseDownAnchor.y);
 
 		// if mouse has moved while left button is down, begin drag selection
-		if (delta.x > TheMouse->m_dragTolerance || delta.y > TheMouse->m_dragTolerance)
+		if ((UnsignedInt)delta.x > TheMouse->m_dragTolerance ||	(UnsignedInt)delta.y > TheMouse->m_dragTolerance)
 		{
 			if (m_dragSelecting == false)
 			{

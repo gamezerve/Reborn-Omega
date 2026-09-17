@@ -128,7 +128,7 @@ void RankInfoStore::friend_parseRankDefinition( INI* ini )
 		if (ini->getLoadType() == INI_LOAD_CREATE_OVERRIDES)
 		{
 			// we aren't allowed to add ranks in overrides, only to override existing ones.
-			if (rank < 1 || rank > TheRankInfoStore->m_rankInfos.size())
+			if (rank < 1 || (size_t)rank > TheRankInfoStore->m_rankInfos.size())
 			{
 				DEBUG_CRASH(("Rank not found in map.ini"));
 

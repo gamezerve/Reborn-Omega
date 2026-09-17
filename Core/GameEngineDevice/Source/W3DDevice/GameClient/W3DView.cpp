@@ -838,7 +838,7 @@ void W3DView::updateCameraClipPlanes(const Matrix3D &transform)
 	}
 	else
 	{
-		farZ = WorldHeightMap::NORMAL_DRAW_WIDTH * MAP_XY_FACTOR;
+		farZ = (Real)WorldHeightMap::NORMAL_DRAW_WIDTH * MAP_XY_FACTOR;
 	}
 
 	if (m_useRealZoomCam)	//WST 10.19.2002

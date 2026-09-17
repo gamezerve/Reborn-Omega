@@ -1513,7 +1513,7 @@ void ConnectionManager::updateRunAhead(Int oldRunAhead, Int frameRate, Bool didS
 			// didn't change for the first time till frame 31.  This creates an extra command
 			// for frame 56 that isn't accounted for in the frame command count that is sent
 			// out in the NetFrameCommandMsg.  sheesh.
-			if (nextExecutionFrame > (TheGameLogic->getFrame() + oldRunAhead)) {
+			if ((UnsignedInt)nextExecutionFrame > (TheGameLogic->getFrame() + (UnsignedInt)oldRunAhead)) {
 				msg->setExecutionFrame(nextExecutionFrame);
 			}
 			else {
@@ -1560,7 +1560,7 @@ void ConnectionManager::updateRunAhead(Int oldRunAhead, Int frameRate, Bool didS
 				 //				msg2->setID(GenerateNextCommandID());
 				msg2->setID(msg->getID());
 			}
-			if (nextExecutionFrame > (TheGameLogic->getFrame() + oldRunAhead)) {
+			if ((UnsignedInt)nextExecutionFrame > (TheGameLogic->getFrame() + (UnsignedInt)oldRunAhead)) {
 				msg2->setExecutionFrame(nextExecutionFrame);
 			}
 			else {
@@ -1575,7 +1575,7 @@ void ConnectionManager::updateRunAhead(Int oldRunAhead, Int frameRate, Bool didS
 			}
 
 
-			if (newMinFps > TheNetwork->getFrameRate()) {
+			if ((UnsignedInt)newMinFps > TheNetwork->getFrameRate()) {
 				newMinFps = TheNetwork->getFrameRate(); // Cap FPS to network frame rate.
 			}
 			msg2->setRunAhead(newRunAhead);

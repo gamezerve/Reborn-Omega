@@ -338,8 +338,8 @@ Int W3DTreeBuffer::getPartitionBucket(const Coord3D &pos) const
 	if (y<m_bounds.lo.y) y = m_bounds.lo.y;
 	if (x>m_bounds.hi.x) x = m_bounds.hi.x;
 	if (y>m_bounds.hi.y) y = m_bounds.hi.y;
-	Int xIndex = REAL_TO_INT_FLOOR ( (x/(m_bounds.hi.x-m_bounds.lo.x)) * (PARTITION_WIDTH_HEIGHT-0.1f) );
-	Int yIndex = REAL_TO_INT_FLOOR ( (y/(m_bounds.hi.y-m_bounds.lo.y)) * (PARTITION_WIDTH_HEIGHT-0.1f) );
+	Int xIndex = REAL_TO_INT_FLOOR ( (x/(m_bounds.hi.x-m_bounds.lo.x)) * ((Real)PARTITION_WIDTH_HEIGHT-0.1f) );
+	Int yIndex = REAL_TO_INT_FLOOR ( (y/(m_bounds.hi.y-m_bounds.lo.y)) * ((Real)PARTITION_WIDTH_HEIGHT-0.1f) );
 	DEBUG_ASSERTCRASH(xIndex>=0 && yIndex>=0 && xIndex<PARTITION_WIDTH_HEIGHT && yIndex<PARTITION_WIDTH_HEIGHT, ("Invalid range."));
 	return yIndex*PARTITION_WIDTH_HEIGHT + xIndex;
 }

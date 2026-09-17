@@ -461,7 +461,7 @@ Int GameSpyConfig::getPointsForRank(Int rank)
 
 Bool GameSpyConfig::getManglerLocation(Int index, AsciiString& host, UnsignedShort& port)
 {
-	if (index < 0 || index >= m_manglerHosts.size())
+	if (index < 0 || (size_t)index >= m_manglerHosts.size())
 	{
 		return FALSE;
 	}

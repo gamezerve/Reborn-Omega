@@ -67,13 +67,13 @@ Bool CaveSystem::canSwitchIndexToIndex( Int oldIndex, Int newIndex )
 	// When I grant permission, you need to do it.  ie call Unregister and then re-register with the new number
 	TunnelTracker *oldTracker = nullptr;
 	TunnelTracker *newTracker = nullptr;
-	if( m_tunnelTrackerVector.size() > oldIndex )
+	if( m_tunnelTrackerVector.size() > (size_t)oldIndex )
 	{
 		oldTracker = m_tunnelTrackerVector[oldIndex];
 		if( oldTracker && oldTracker->getContainCount() > 0 )
 			return FALSE;// You can't switch a connection if one of the two is non empty
 	}
-	if( m_tunnelTrackerVector.size() > newIndex )
+	if( m_tunnelTrackerVector.size() > (size_t)newIndex )
 	{
 		newTracker = m_tunnelTrackerVector[newIndex];
 		if( newTracker && newTracker->getContainCount() > 0 )
@@ -89,10 +89,10 @@ Bool CaveSystem::canSwitchIndexToIndex( Int oldIndex, Int newIndex )
 void CaveSystem::registerNewCave( Int theIndex )
 {
 	Bool needToCreate = FALSE;
-	if( theIndex >= m_tunnelTrackerVector.size() )
+	if((size_t)theIndex >= m_tunnelTrackerVector.size() )
 	{
 		// You are new and off the edge, so I will fill NULLs up to you and then make a newTracker at that spot
-		while( theIndex >= m_tunnelTrackerVector.size() )
+		while((size_t)theIndex >= m_tunnelTrackerVector.size() )
 			m_tunnelTrackerVector.push_back( nullptr );
 
 		needToCreate = TRUE;
@@ -118,7 +118,7 @@ void CaveSystem::unregisterCave( Int theIndex )
 TunnelTracker *CaveSystem::getTunnelTrackerForCaveIndex( Int theIndex )
 {
 	TunnelTracker *theTracker = nullptr;
-	if( theIndex < m_tunnelTrackerVector.size() )
+	if((size_t)theIndex < m_tunnelTrackerVector.size() )
 	{
 		theTracker = m_tunnelTrackerVector[theIndex];
 	}
@@ -142,7 +142,7 @@ void CaveSystem::xfer( Xfer *xfer )
 	xfer->xferVersion( &version, currentVersion );
 
 	// tunnel tracker size and data
-	UnsignedShort count = m_tunnelTrackerVector.size();
+	UnsignedShort count = (UnsignedShort)m_tunnelTrackerVector.size();
 	xfer->xferUnsignedShort( &count );
 	TunnelTracker *tracker;
 	if( xfer->getXferMode() == XFER_SAVE )

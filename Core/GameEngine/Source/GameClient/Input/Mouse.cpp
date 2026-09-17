@@ -396,7 +396,7 @@ Bool Mouse::isClick(
 	// if the mouse hasn't moved further than the tolerance distance
 	// or the click took less than the tolerance duration
 	// TheSuperHackers @bugfix Now compares the distance in a circle instead of a rectangle.
-	if ( timeMsDelta > m_dragToleranceMS || mouseAnchorDelta.lengthSqr() > sqr(m_dragTolerance) )
+	if (timeMsDelta > m_dragToleranceMS || (UnsignedInt)mouseAnchorDelta.lengthSqr() > sqr(m_dragTolerance))
 	{
 		return FALSE;
 	}
@@ -715,7 +715,7 @@ void Mouse::createStreamMessages()
 		delay = 0;
 	}
 
-	if( now - m_stillTime >= delay )
+	if (now - m_stillTime >= (UnsignedInt)delay)
 	{
 		if (!m_displayTooltip)
 		{
@@ -877,7 +877,7 @@ void Mouse::setCursorTooltip( UnicodeString tooltip, Int delay, const RGBColor *
 		{
 			widthInPixels = 120;
 		}
-		else if (widthInPixels > TheDisplay->getWidth())
+		else if ((UnsignedInt)widthInPixels > TheDisplay->getWidth())
 		{
 			widthInPixels = TheDisplay->getWidth();
 		}

@@ -863,7 +863,7 @@ Bool NAT::allConnectionsDone() {
 		return FALSE;
 	}
 	const Int requiredRounds = (m_numNodes & 1) ? m_numNodes : m_numNodes - 1;
-	return m_connectionRound >= requiredRounds;
+	return m_connectionRound >= (UnsignedInt)requiredRounds;
 }
 
 Bool NAT::allConnectionsDoneThisRound() {

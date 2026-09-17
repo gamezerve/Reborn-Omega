@@ -355,8 +355,8 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 
 			m_currentPos = msg->getArgument( 0 )->pixel;
 
-			UnsignedInt height = TheDisplay->getHeight();
-			UnsignedInt width  = TheDisplay->getWidth();
+			Int height = (Int)TheDisplay->getHeight();
+			Int width = (Int)TheDisplay->getWidth();
 
 			if (TheInGameUI->getInputEnabled() == FALSE) {
 				// We don't care how we're scrolling, just stop.
@@ -445,7 +445,7 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 			const Real minHeight = TheTacticalView->getMinHeightAboveGround();
 			const Real maxHeight = TheTacticalView->getMaxHeightAboveGround();
 			const Real zoomScale = (maxHeight - minHeight) / (ViewDefaultMaxHeightAboveTerrain - minHeight);
-			const Real zoom = -spin * View::ZoomHeightPerSecond * zoomScale;
+			const Real zoom = -spin * (Real)View::ZoomHeightPerSecond * zoomScale;
 			TheTacticalView->userZoom(zoom);
 
 			break;
@@ -538,7 +538,7 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 						{
 							offset.y -= TheGlobalData->m_verticalScrollSpeedFactor * fpsRatio * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
 						}
-						if (m_currentPos.y >= height-edgeScrollSize)
+						if ((UnsignedInt)m_currentPos.y >= height - (UnsignedInt)edgeScrollSize)
 						{
 							offset.y += TheGlobalData->m_verticalScrollSpeedFactor * fpsRatio * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
 						}
@@ -546,7 +546,7 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 						{
 							offset.x -= TheGlobalData->m_horizontalScrollSpeedFactor * fpsRatio * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
 						}
-						if (m_currentPos.x >= width-edgeScrollSize)
+						if ((UnsignedInt)m_currentPos.x >= width - (UnsignedInt)edgeScrollSize)
 						{
 							offset.x += TheGlobalData->m_horizontalScrollSpeedFactor * fpsRatio * SCROLL_AMT * TheGlobalData->m_keyboardScrollFactor;
 						}

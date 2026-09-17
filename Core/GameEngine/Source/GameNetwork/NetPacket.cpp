@@ -249,7 +249,7 @@ Bool NetPacket::addCommand(NetCommandRef *msg) {
 	if (ackRepeat || frameRepeat)
 	{
 		// Is there enough room in the packet for this message?
-		if (NetPacketRepeatCommand::getSize() > (MAX_PACKET_SIZE - m_packetLen)) {
+		if (NetPacketRepeatCommand::getSize() > (size_t)(MAX_PACKET_SIZE - m_packetLen)) {
 			return FALSE;
 		}
 
@@ -275,7 +275,7 @@ Bool NetPacket::addCommand(NetCommandRef *msg) {
 		const size_t msglen = cmdMsg->getSizeForSmallNetPacket(&select);
 
 		// Is there enough room in the packet for this message?
-		if (msglen > (MAX_PACKET_SIZE - m_packetLen)) {
+		if (msglen > (size_t)(MAX_PACKET_SIZE - m_packetLen)) {
 			return FALSE;
 		}
 
@@ -414,7 +414,7 @@ NetCommandList * NetPacket::getCommandList() {
 	Int i = 0;
 	NetPacketBuf buf(m_packet, m_packetLen);
 
-	while (i < buf.size())
+	while ((size_t)i < buf.size())
 	{
 		const Bool isRepeat = m_packet[i] == NetPacketFieldTypes::Repeat;
 

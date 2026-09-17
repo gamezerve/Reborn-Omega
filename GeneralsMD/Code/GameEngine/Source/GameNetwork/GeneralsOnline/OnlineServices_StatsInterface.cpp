@@ -70,6 +70,7 @@ void NGMP_OnlineServices_StatsInterface::GetGlobalStats(std::function<void(Globa
 #define PROCESS_JSON_PER_GENERAL_RESULT(name) i = 0; for (const auto& iter : jsonObjectRoot[#name]) { iter.get_to(stats.##name[i++]); }
 					PROCESS_JSON_PER_GENERAL_RESULT(wins);
 					PROCESS_JSON_PER_GENERAL_RESULT(matches);
+#undef PROCESS_JSON_PER_GENERAL_RESULT
 				}
 			}
 			catch (...)
@@ -164,6 +165,7 @@ void NGMP_OnlineServices_StatsInterface::findPlayerStatsByID(int64_t userID, std
 							PROCESS_JSON_PER_GENERAL_RESULT(gamesOf8p);
 							PROCESS_JSON_PER_GENERAL_RESULT(customGames);
 							PROCESS_JSON_PER_GENERAL_RESULT(QMGames);
+#undef PROCESS_JSON_PER_GENERAL_RESULT
 
 #define PROCESS_JSON_STANDARD_RESULT(name) jsonObjectRoot[#name].get_to(stats.##name)
 							PROCESS_JSON_STANDARD_RESULT(locale);
@@ -190,6 +192,7 @@ void NGMP_OnlineServices_StatsInterface::findPlayerStatsByID(int64_t userID, std
 							PROCESS_JSON_STANDARD_RESULT(builtSCUD);
 							PROCESS_JSON_STANDARD_RESULT(lastLadderPort);
 							PROCESS_JSON_STANDARD_RESULT(lastLadderHost);
+#undef PROCESS_JSON_STANDARD_RESULT
 
 							if (stats.id != userID)
 							{
@@ -348,6 +351,7 @@ void NGMP_OnlineServices_StatsInterface::findPlayerStatsByBatch(std::vector<int6
 							PROCESS_JSON_STANDARD_RESULT(builtSCUD);
 							PROCESS_JSON_STANDARD_RESULT(lastLadderPort);
 							PROCESS_JSON_STANDARD_RESULT(lastLadderHost);
+#undef PROCESS_JSON_STANDARD_RESULT
 
 							auto revisionIt = cacheRevisions.find(stats.id);
 							if (revisionIt == cacheRevisions.end())

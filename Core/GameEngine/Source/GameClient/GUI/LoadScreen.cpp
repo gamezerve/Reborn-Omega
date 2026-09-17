@@ -1830,7 +1830,7 @@ GameSlot *lSlot = game->getSlot(game->getLocalSlotNum());
 		GadgetStaticTextSetText(m_playerWinLosses[netSlot], formatString);
 		m_playerWinLosses[netSlot]->winSetEnabledTextColors(houseColor, m_playerWinLosses[netSlot]->winGetEnabledTextBorderColor());
 		// favoriteFaction
-			Int numGames = 0;
+		UnsignedInt numGames = 0;
 		Int favorite = 0;
 		for(it =stats.games.begin(); it != stats.games.end(); ++it)
 		{

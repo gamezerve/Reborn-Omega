@@ -1719,7 +1719,7 @@ void ControlBarArrowTransition::init( GameWindow *win )
 	m_isFinished = FALSE;
 	m_isForward = TRUE;
 
-	m_percent = 1.0f / CONTROLBARARROWTRANSITION_BEGIN_FADE;
+	m_percent = 1.0f / (Real)CONTROLBARARROWTRANSITION_BEGIN_FADE;
 	m_fadePercent = 1.0f/ (CONTROLBARARROWTRANSITION_END - CONTROLBARARROWTRANSITION_BEGIN_FADE);
 
 	m_arrowImage = TheControlBar->getArrowImage();

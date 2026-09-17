@@ -1909,7 +1909,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 	else
 	{
 		Int progressCount = LOAD_PROGRESS_LOOP_ALL_THE_FREAKN_OBJECTS;
-		Int timer = timeGetTime();
+		DWORD timer = timeGetTime();
 		for (MapObject *pMapObj = MapObject::getFirstMapObject(); pMapObj; pMapObj = pMapObj->getNext())
 		{
 
@@ -2746,7 +2746,7 @@ void GameLogic::processCommandList( CommandList *list )
 					++numPlayers;
 			}
 
-			if (m_cachedCRCs.size() < numPlayers)
+			if (m_cachedCRCs.size() < (size_t)numPlayers)
 			{
 				DEBUG_CRASH(("Not enough CRCs!"));
 				sawCRCMismatch = TRUE;
@@ -3215,7 +3215,7 @@ void GameLogic::friend_awakenUpdateModule(Object* obj, UpdateModulePtr u, Unsign
 	Int idx = u->friend_getIndexInLogic();
 	if (obj->isInList(&m_objList))
 	{
-		if (idx < 0 || idx >= m_sleepyUpdates.size())
+		if (idx < 0 || (size_t)idx >= m_sleepyUpdates.size())
 		{
 			RELEASE_CRASH("fatal error! sleepy update module illegal index.");
 			return;
@@ -4079,7 +4079,7 @@ void GameLogic::addObjectToLookupTable( Object *obj )
 	// add to lookup
 //	m_objHash[ obj->getID() ] = obj;
 	ObjectID newID = obj->getID();
-	while( newID >= m_objVector.size() ) // Fail case is hella rare, so faster to double up on size() call
+	while(static_cast<size_t>(newID) >= m_objVector.size() ) // Fail case is hella rare, so faster to double up on size() call
 		m_objVector.resize(m_objVector.size() * 2, nullptr);
 
 	m_objVector[ newID ] = obj;
