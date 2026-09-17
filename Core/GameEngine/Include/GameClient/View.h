@@ -211,6 +211,8 @@ public:
 	virtual Real getHeightAboveGround() { return m_heightAboveGround; }
 	virtual void setHeightAboveGround(Real z);
 	virtual void setMaxHeightAboveGround(Real z) { m_maxHeightAboveGround = z; }
+	virtual Real getMinHeightAboveGround() { return m_minHeightAboveGround; }
+	virtual Real getMaxHeightAboveGround() { return m_maxHeightAboveGround; }
 	virtual void zoom( Real height ); ///< Zoom in/out, closer to the ground, limit to min, or farther away from the ground, limit to max
 	virtual void setZoomToDefault() { m_zoom  = 1.0f; } ///< Set zoom to default value
 	virtual void setOkToAdjustHeight( Bool val ) { m_okToAdjustHeight = val; }	///< Set this to adjust camera height

@@ -438,8 +438,14 @@ GameMessageDisposition LookAtTranslator::translateGameMessage(const GameMessage 
 		{
 			m_lastMouseMoveTimeMsec = timeGetTime();
 
-			const Real spin = msg->getArgument( 1 )->real;
-			const Real zoom = -spin * View::ZoomHeightPerSecond;
+			//const Real spin = msg->getArgument( 1 )->real;
+			//const Real zoom = -spin * View::ZoomHeightPerSecond;
+			//TheTacticalView->userZoom(zoom);
+			const Real spin = msg->getArgument(1)->real;
+			const Real minHeight = TheTacticalView->getMinHeightAboveGround();
+			const Real maxHeight = TheTacticalView->getMaxHeightAboveGround();
+			const Real zoomScale = (maxHeight - minHeight) / (ViewDefaultMaxHeightAboveTerrain - minHeight);
+			const Real zoom = -spin * View::ZoomHeightPerSecond * zoomScale;
 			TheTacticalView->userZoom(zoom);
 
 			break;
