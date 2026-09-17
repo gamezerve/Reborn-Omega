@@ -52,7 +52,7 @@ public:
 
 	PlaylistEntry GetCachedPlaylistFromIndex(int index) const
 	{
-		if (index < m_vecCachedPlaylists.size())
+		if ((size_t)index < m_vecCachedPlaylists.size())
 		{
 			return m_vecCachedPlaylists.at(index);
 		}

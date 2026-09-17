@@ -184,7 +184,7 @@ public:
 
 	NetworkRoomMember* GetRoomMemberFromIndex(int index)
 	{
-		if (m_mapMembers.size() > index)
+		if (m_mapMembers.size() > (size_t)index)
 		{
 			auto it = m_mapMembers.begin();
 			std::advance(it, index);

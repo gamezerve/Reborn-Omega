@@ -326,7 +326,7 @@ void StartPressed()
 			}
 		}
 	}
-	if (numRandom + teams.size() < TheGlobalData->m_netMinPlayers)
+	if (numRandom + (Int)teams.size() < TheGlobalData->m_netMinPlayers)
 	{
 		if (TheLAN->AmIHost())
 		{
@@ -337,7 +337,7 @@ void StartPressed()
 		return;
 	}
 
-	if (numRandom + teams.size() < 2)
+	if (numRandom + (Int)teams.size() < 2)
 	{
 		UnicodeString text;
 		text.format(TheGameText->fetch("GUI:SandboxMode"));

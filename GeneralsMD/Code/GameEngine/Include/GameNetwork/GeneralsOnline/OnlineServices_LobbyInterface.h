@@ -24,7 +24,7 @@ struct LobbyMemberEntry : public NetworkMemberBase
 	int startpos = -1;
 	bool has_map = false;
 
-	uint16_t m_SlotIndex = 999999;
+	uint16_t m_SlotIndex = (uint16_t)99999;
 	uint16_t m_SlotState = SlotState::SLOT_OPEN;
 
 	std::string region;
@@ -364,7 +364,7 @@ public:
 	LobbyMemberEntry GetRoomMemberFromIndex(int index)
 	{
 		// TODO_NGMP: Optimize data structure
-		if (index < m_CurrentLobby.members.size())
+		if ((size_t)index < m_CurrentLobby.members.size())
 		{
 			return m_CurrentLobby.members.at(index);
 		}

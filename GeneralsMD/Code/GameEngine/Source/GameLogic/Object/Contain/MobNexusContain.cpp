@@ -187,7 +187,7 @@ Bool MobNexusContain::isValidContainerFor(const Object* rider, Bool checkCapacit
 
 	if (checkCapacity)
 	{
-		return (m_extraSlotsInUse + getContainCount() + mobNexusSlotCount <= getContainMax());
+		return ((UnsignedInt)(m_extraSlotsInUse + mobNexusSlotCount) + getContainCount() <= (UnsignedInt)getContainMax());
 	}
 	else
 	{

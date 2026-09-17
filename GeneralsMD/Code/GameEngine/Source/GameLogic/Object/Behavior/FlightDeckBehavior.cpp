@@ -2110,7 +2110,7 @@ void FlightDeckBehavior::xfer( Xfer *xfer )
 	}
 
 	// spaces info count and data
-	UnsignedByte spacesCount = m_spaces.size();
+	UnsignedByte spacesCount = (UnsignedByte)m_spaces.size();
 	xfer->xferUnsignedByte( &spacesCount );
 	if( xfer->getXferMode() == XFER_SAVE )
 	{
@@ -2150,7 +2150,7 @@ void FlightDeckBehavior::xfer( Xfer *xfer )
 	}
 
 	// runways count and info
-	UnsignedByte runwaysCount = m_runways.size();
+	UnsignedByte runwaysCount = (UnsignedByte)m_runways.size();
 	xfer->xferUnsignedByte( &runwaysCount );
 	if( xfer->getXferMode() == XFER_SAVE )
 	{
@@ -2198,7 +2198,7 @@ void FlightDeckBehavior::xfer( Xfer *xfer )
 	}
 
 	// healees
-	UnsignedByte healCount = m_healing.size();
+	UnsignedByte healCount = (UnsignedByte)m_healing.size();
 	xfer->xferUnsignedByte( &healCount );
 	if( xfer->getXferMode() == XFER_SAVE )
 	{

@@ -324,7 +324,7 @@ void SlowDeathBehavior::beginSlowDeath(const DamageInfo *damageInfo)
 		{
 			// we don't need to wake up immediately, but only when the first of these
 			// counters wants to trigger....
-			Int whenToWakeTime = m_sinkFrame;
+			UnsignedInt whenToWakeTime = m_sinkFrame;
 			if (whenToWakeTime > m_destructionFrame)
 				whenToWakeTime = m_destructionFrame;
 			if (whenToWakeTime > m_midpointFrame)

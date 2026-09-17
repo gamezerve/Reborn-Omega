@@ -412,7 +412,7 @@ static void playerTooltip(GameWindow *window,
 							Int favorite = 0;
 							for (auto it = stats.games.begin(); it != stats.games.end(); ++it)
 							{
-								if (it->second >= mostGames)
+								if (it->second >= (UnsignedInt)mostGames)
 								{
 									mostGames = it->second;
 									favorite = it->first;
@@ -448,9 +448,9 @@ static void playerTooltip(GameWindow *window,
 							int maxLossesInRow = 0;
 							int maxDCInRow = 0;
 
-							for (int i = 0; i < stats.wins.size(); ++i) { totalWins += stats.wins[i]; }
-							for (int i = 0; i < stats.losses.size(); ++i) { totalLosses += stats.losses[i]; }
-							for (int i = 0; i < stats.discons.size(); ++i) { totalDC += stats.discons[i]; }
+							for (size_t i = 0; i < stats.wins.size(); ++i) { totalWins += stats.wins[i]; }
+							for (size_t i = 0; i < stats.losses.size(); ++i) { totalLosses += stats.losses[i]; }
+							for (size_t i = 0; i < stats.discons.size(); ++i) { totalDC += stats.discons[i]; }
 
                             totalWinsInRow = stats.winsInARow;
                             totalLossesInRow = stats.lossesInARow;
@@ -1028,7 +1028,7 @@ void PopulateLobbyPlayerListbox()
 						Int favorite = 0;
 						for (it = stats.games.begin(); it != stats.games.end(); ++it)
 						{
-							if (it->second >= numGamesThisArmy)
+							if (it->second >= (UnsignedInt)numGamesThisArmy)
 							{
 								numGamesThisArmy = it->second;
 								favorite = it->first;
@@ -2811,9 +2811,9 @@ WindowMsgHandledType WOLLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 								rcMenu->winGetSize(&rcSize.x, &rcSize.y);
 								rcPos.x = rc->mouseX;
 								rcPos.y = rc->mouseY;
-								if (rc->mouseX + rcSize.x > TheDisplay->getWidth())
+								if ((UnsignedInt)(rc->mouseX + rcSize.x) > TheDisplay->getWidth())
 									rcPos.x = TheDisplay->getWidth() - rcSize.x;
-								if (rc->mouseY + rcSize.y > TheDisplay->getHeight())
+								if ((UnsignedInt)(rc->mouseY + rcSize.y) > TheDisplay->getHeight())
 									rcPos.y = TheDisplay->getHeight() - rcSize.y;
 								rcMenu->winSetPosition(rcPos.x, rcPos.y);
 

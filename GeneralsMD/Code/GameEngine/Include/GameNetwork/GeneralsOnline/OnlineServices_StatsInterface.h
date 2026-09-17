@@ -462,7 +462,7 @@ public:
 			{RANK_COMMANDER_IN_CHIEF, 2000}
 		};
 
-		if (rank < mapRankToXP.size())
+		if ((size_t)rank < mapRankToXP.size())
 		{
 			return mapRankToXP[rank];
 		}

@@ -209,7 +209,7 @@ void Squad::xfer( Xfer *xfer )
 	xfer->xferVersion( &version, currentVersion );
 
 	// length of object ID list
-	UnsignedShort objectCount = m_objectIDs.size();
+	UnsignedShort objectCount = (UnsignedShort)m_objectIDs.size();
 	xfer->xferUnsignedShort( &objectCount );
 
 	// object id elements

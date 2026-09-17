@@ -1508,7 +1508,7 @@ void ThingTemplate::resolveNames()
 	}
 
 
-	Int i, j;
+	Int j;
 
 	//Kris: July 31, 2003
 	//NOTE: Make sure that all code in this function supports caching properly. For example,
@@ -1524,14 +1524,14 @@ void ThingTemplate::resolveNames()
 	//      the object had. So be sure to make sure all string lookups don't blindly lookup things -- check
 	//      if the string isNotEmpty first!
 
-	for (i = 0; i < m_prereqInfo.size(); i++)
+	for (size_t prereqIndex = 0; prereqIndex < m_prereqInfo.size(); ++prereqIndex)
 	{
-		m_prereqInfo[i].resolveNames();
+		m_prereqInfo[prereqIndex].resolveNames();
 
 		// Reborn: Automatically mark every object referenced as a prerequisite.
-		for (j = 0; j < m_prereqInfo[i].getNumUnitPrereqs(); ++j)
+		for (j = 0; j < m_prereqInfo[prereqIndex].getNumUnitPrereqs(); ++j)
 		{
-			const ThingTemplate* prereqTemplate = m_prereqInfo[i].getUnitPrereq(j);
+			const ThingTemplate* prereqTemplate = m_prereqInfo[prereqIndex].getUnitPrereq(j);
 			if (prereqTemplate)
 			{
 				ThingTemplate* mutablePrereqTemplate = const_cast<ThingTemplate*>(prereqTemplate);
@@ -1546,9 +1546,9 @@ void ThingTemplate::resolveNames()
 
 	const Int MAX_BF = 32;
 	const ThingTemplate* tmpls[MAX_BF];
-	for (i = 0; i < m_prereqInfo.size(); i++)
+	for (size_t prereqIndex = 0; prereqIndex < m_prereqInfo.size(); ++prereqIndex)
 	{
-		Int count = m_prereqInfo[i].getAllPossibleBuildFacilityTemplates(tmpls, MAX_BF);
+		Int count = m_prereqInfo[prereqIndex].getAllPossibleBuildFacilityTemplates(tmpls, MAX_BF);
 		for (j = 0; j < count; j++)
 		{
 			// casting const away is a little evil, but justified in this case:
@@ -1818,7 +1818,7 @@ Int ThingTemplate::calcCostToBuild( const Player* player) const
 //-------------------------------------------------------------------------------------------------
 Int ThingTemplate::calcTimeToBuild( const Player* player) const
 {
-	Int buildTime = getBuildTime() * LOGICFRAMES_PER_SECOND;
+	Int buildTime = getBuildTime() * (Real)LOGICFRAMES_PER_SECOND;
 	buildTime *= player->getHandicap()->getHandicap(Handicap::BUILDTIME, this);
 
 	Real factionModifier = 1 + player->getProductionTimeChangePercent( getName() );
@@ -1874,7 +1874,7 @@ Int ThingTemplate::calcTimeToBuild( const Player* player) const
 //-------------------------------------------------------------------------------------------------
 ModuleData* ModuleInfo::friend_getNthData(Int i)
 {
-	if (i >= 0 && i < m_info.size())
+	if (i >= 0 && (size_t)i < m_info.size())
 	{
 		// This is kinda naughty, but its necessary.
 		return const_cast<ModuleData*>(m_info[i].second);

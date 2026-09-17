@@ -527,7 +527,7 @@ StateReturnType AIRappelState::onEnter()
 		obj->setLayer(layerAtDest);
 
 	AIUpdateInterface *ai = obj->getAI();
-	Real MAX_RAPPEL_RATE = fabs(TheGlobalData->m_gravity) * LOGICFRAMES_PER_SECOND * 2.5f;
+	Real MAX_RAPPEL_RATE = fabs(TheGlobalData->m_gravity) * (Real)LOGICFRAMES_PER_SECOND * 2.5f;
 	m_rappelRate = -min(ai->getDesiredSpeed(), MAX_RAPPEL_RATE);
 
 	return STATE_CONTINUE;
@@ -988,7 +988,7 @@ void AIStateMachine::addToGoalPath( const Coord3D *pathPoint)
  */
 const Coord3D *AIStateMachine::getGoalPathPosition( Int i ) const
 {
-	if (i < 0 || i >= m_goalPath.size())
+	if (i < 0 || (size_t)i >= m_goalPath.size())
 		return nullptr;
 
 	return &m_goalPath[i];
@@ -3932,7 +3932,7 @@ StateReturnType AIAttackMoveToState::update()
 		if (m_retryCount<1) return ret;
 		/* check for close enough. */
 		Real distSqr = sqr(owner->getPosition()->x - m_pathGoalPosition.x) + sqr(owner->getPosition()->y-m_pathGoalPosition.y);
-		if (distSqr < sqr(ATTACK_CLOSE_ENOUGH_CELLS*PATHFIND_CELL_SIZE_F)) {
+		if (distSqr < sqr((Real)ATTACK_CLOSE_ENOUGH_CELLS * PATHFIND_CELL_SIZE_F)) {
 			return ret;
 		}
 		DEBUG_LOG(("AIAttackMoveToState::update Distance from goal %f, retrying.", sqrt(distSqr)));

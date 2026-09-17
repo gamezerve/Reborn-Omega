@@ -588,7 +588,7 @@ UpdateSleepTime DumbProjectileBehavior::update()
 	}
 
 	// TheSuperHackers @info This check also covers the case where the flight path consists of zero curve points.
-	if( m_currentFlightPathStep >= m_flightPath.size() )
+	if ((size_t)m_currentFlightPathStep >= m_flightPath.size())
 	{
 		// No more steps to use. Would go out of bounds on vector, so have to do something.
 		// We could allow physics to take over and make us fall, but the point of this whole task

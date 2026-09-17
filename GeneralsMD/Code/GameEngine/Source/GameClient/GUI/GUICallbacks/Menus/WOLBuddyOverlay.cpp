@@ -272,9 +272,9 @@ WindowMsgHandledType BuddyControlSystem( GameWindow *window, UnsignedInt msg,
 					rcMenu->winGetSize(&rcSize.x, &rcSize.y);
 					rcPos.x = rc->mouseX;
 					rcPos.y = rc->mouseY;
-					if(rc->mouseX + rcSize.x > TheDisplay->getWidth())
+					if ((UnsignedInt)(rc->mouseX + rcSize.x) > TheDisplay->getWidth())
 						rcPos.x = TheDisplay->getWidth() - rcSize.x;
-					if(rc->mouseY + rcSize.y > TheDisplay->getHeight())
+					if ((UnsignedInt)(rc->mouseY + rcSize.y) > TheDisplay->getHeight())
 						rcPos.y = TheDisplay->getHeight() - rcSize.y;
 					rcMenu->winSetPosition(rcPos.x, rcPos.y);
 

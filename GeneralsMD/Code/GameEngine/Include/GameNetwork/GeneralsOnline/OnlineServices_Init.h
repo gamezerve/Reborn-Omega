@@ -444,48 +444,8 @@ public:
 
 	void GetAndParseServiceConfig(std::function<void(void)> cbOnDone);
 
-	~NGMP_OnlineServicesManager()
-	{
-		if (m_pAuthInterface != nullptr)
-		{
-			delete m_pAuthInterface;
-			m_pAuthInterface = nullptr;
-		}
-
-		if (m_pStatsInterface != nullptr)
-		{
-			delete m_pStatsInterface;
-			m_pStatsInterface = nullptr;
-		}
-
-		if (m_pLobbyInterface != nullptr)
-		{
-			delete m_pLobbyInterface;
-			m_pLobbyInterface = nullptr;
-		}
-
-		if (m_pRoomInterface != nullptr)
-		{
-			delete m_pRoomInterface;
-			m_pRoomInterface = nullptr;
-		}
-
-		if (m_pSocialInterface != nullptr)
-		{
-			delete m_pSocialInterface;
-			m_pSocialInterface = nullptr;
-		}
-
-		if (m_pHTTPManager != nullptr)
-		{
-			delete m_pHTTPManager;
-			m_pHTTPManager = nullptr;
-		}
-
-		// Reset shared_ptr, which will delete WebSocket only when all references are released
-		m_pWebSocket.reset();
-	}
-
+	~NGMP_OnlineServicesManager(); // Reborn: Moved to OnlineServices_Init.cpp 
+	
 	void StartVersionCheck(std::function<void(bool bSuccess, bool bNeedsUpdate)> fnCallback);
 
 	std::shared_ptr<WebSocket> Internal_GetWebSocket() const { return m_pWebSocket; }

@@ -244,7 +244,7 @@ void PlayerRelationMap::xfer( Xfer *xfer )
 
 	// player relation count
 	PlayerRelationMapType::iterator playerRelationIt;
-	UnsignedShort playerRelationCount = m_map.size();
+	UnsignedShort playerRelationCount = (UnsignedShort)m_map.size();
 	xfer->xferUnsignedShort( &playerRelationCount );
 
 	// player relations
@@ -3169,7 +3169,7 @@ Bool Player::canAffordBuild( const ThingTemplate *whatToBuild ) const
 {
 	// make sure we have enough money to build this
 	const Money *money = getMoney();
-	if( whatToBuild->calcCostToBuild( this ) <= money->countMoney() )
+	if ((UnsignedInt)whatToBuild->calcCostToBuild(this) <= money->countMoney())
 	{
 		return true;
 	}
@@ -4329,7 +4329,7 @@ void Player::xfer( Xfer *xfer )
 	// team prototypes ... this is only the fact that team prototypes are on this player
 	// it is not the team prototype data itself
 	//
-	UnsignedShort prototypeCount = m_playerTeamPrototypes.size();
+	UnsignedShort prototypeCount = (UnsignedShort)m_playerTeamPrototypes.size();
 	xfer->xferUnsignedShort( &prototypeCount );
 	TeamPrototypeID prototypeID;
 	TeamPrototype *prototype;
@@ -4494,7 +4494,7 @@ void Player::xfer( Xfer *xfer )
 			This code is WRONG WRONG WRONG and must not be used or mimicked; it
 			is present for backwards "compatibility" only. (srj)
 		*/
-		UnsignedShort scienceCount = m_sciences.size();
+		UnsignedShort scienceCount = (UnsignedShort)m_sciences.size();
 		xfer->xferUnsignedShort( &scienceCount );
 		ScienceType science;
 		if( xfer->getXferMode() == XFER_SAVE )
@@ -4583,7 +4583,7 @@ void Player::xfer( Xfer *xfer )
 	xfer->xferSnapshot( &m_scoreKeeper );
 
 	// size of and data for kindof percent production change list
-	UnsignedShort percentProductionChangeCount = m_kindOfPercentProductionChangeList.size();
+	UnsignedShort percentProductionChangeCount = (UnsignedShort)m_kindOfPercentProductionChangeList.size();
 	xfer->xferUnsignedShort( &percentProductionChangeCount );
 	KindOfPercentProductionChange *entry;
 	if( xfer->getXferMode() == XFER_SAVE )
@@ -4652,7 +4652,7 @@ void Player::xfer( Xfer *xfer )
 	}
 	else
 	{
-		UnsignedShort timerListSize = m_specialPowerReadyTimerList.size();
+		UnsignedShort timerListSize = (UnsignedShort)m_specialPowerReadyTimerList.size();
 		xfer->xferUnsignedShort( &timerListSize );// HANDY LITTLE SHORT TO SIZE MY LIST
 		if( xfer->getXferMode() == XFER_SAVE )
 		{

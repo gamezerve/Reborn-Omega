@@ -2011,7 +2011,7 @@ void InGameUI::update()
 	for( i = MAX_UI_MESSAGES - 1; i >= 0; i-- )
 	{
 
-		if( currLogicFrame - m_uiMessages[ i ].timestamp > messageTimeout )
+		if (currLogicFrame - m_uiMessages[i].timestamp > (UnsignedInt)messageTimeout)
 		{
 
 			// get the current color of this text
@@ -2125,7 +2125,7 @@ void InGameUI::update()
 				}
 				// increment the index
 				m_militarySubtitle->index++;
-				if(m_militarySubtitle->index >= m_militarySubtitle->subtitle.getLength())
+				if (m_militarySubtitle->index >= (UnsignedInt)m_militarySubtitle->subtitle.getLength())
 				{
 					// We're at the end of the subtitle, set everything to persist till the subtitle has expired
 					m_militarySubtitle->incrementOnFrame = m_militarySubtitle->lifetime + 1;
@@ -4293,7 +4293,7 @@ void InGameUI::postDraw()
 								  {
 									  if ( m_superweaponFlashDuration != 0.0f )
 									  {
-										  if ( TheGameLogic->getFrame() >= m_superweaponLastFlashFrame + (Int)(m_superweaponFlashDuration) )
+											if (TheGameLogic->getFrame() >= (UnsignedInt)(m_superweaponLastFlashFrame + (Int)m_superweaponFlashDuration))
 										  {
 											  m_superweaponUsedFlashColor = !m_superweaponUsedFlashColor;
 											  m_superweaponLastFlashFrame = TheGameLogic->getFrame();
@@ -4412,7 +4412,7 @@ void InGameUI::postDraw()
 				{
 					if ( m_namedTimerFlashDuration != 0.0f )
 					{
-						if ( TheGameLogic->getFrame() >= m_namedTimerLastFlashFrame + (Int)(m_namedTimerFlashDuration) )
+						if (TheGameLogic->getFrame() >= (UnsignedInt)(m_namedTimerLastFlashFrame + (Int)m_namedTimerFlashDuration))
 						{
 							m_namedTimerUsedFlashColor = !m_namedTimerUsedFlashColor;
 							m_namedTimerLastFlashFrame = TheGameLogic->getFrame();
@@ -5709,7 +5709,7 @@ void InGameUI::updateFloatingText()
 		++ftd->m_frameCount;
 
 		// fade the text
-		if( currLogicFrame > ftd->m_frameTimeOut)
+		if (currLogicFrame > (UnsignedInt)ftd->m_frameTimeOut)
 		{
 			// modify the color
 			GameGetColorComponents(ftd->m_color, &r, &g, &b, &a);
@@ -5935,7 +5935,7 @@ void InGameUI::addWorldAnimation( Anim2DTemplate *animTemplate,
 
 	// assign all data
 	wad->m_anim = anim;
-	wad->m_expireFrame = TheGameLogic->getFrame() + (durationInSeconds * LOGICFRAMES_PER_SECOND);
+	wad->m_expireFrame = TheGameLogic->getFrame() + (durationInSeconds * (Real)LOGICFRAMES_PER_SECOND);
 	wad->m_options = options;
 	wad->m_worldPos = *pos;
 	wad->m_zRisePerSecond = zRisePerSecond;
@@ -6006,7 +6006,7 @@ void InGameUI::updateAndDrawWorldAnimations()
 		// update the Z value
 		if( wad->m_zRisePerSecond )
 		{
-			wad->m_worldPos.z += wad->m_zRisePerSecond / LOGICFRAMES_PER_SECOND * zRiseTimeScale;
+			wad->m_worldPos.z += wad->m_zRisePerSecond / (Real)LOGICFRAMES_PER_SECOND * zRiseTimeScale;
 		}
 
 		//

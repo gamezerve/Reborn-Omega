@@ -97,7 +97,7 @@ void TeamRelationMap::xfer( Xfer *xfer )
 
 	// team relation count
 	TeamRelationMapType::iterator teamRelationIt;
-	UnsignedShort prototypeCount = (UnsignedShort)m_prototypes.size();
+	UnsignedShort teamRelationCount = (UnsignedShort)m_map.size();
 	xfer->xferUnsignedShort( &teamRelationCount );
 
 	// team relations

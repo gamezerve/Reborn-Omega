@@ -525,7 +525,7 @@ Object *AIPlayer::buildStructureWithDozer(const ThingTemplate *bldgPlan, BuildLi
 	}
 	// Check available funds.
 	Money *money = m_player->getMoney();
-	if (money->countMoney()<bldgPlan->calcCostToBuild(m_player)) {
+	if (money->countMoney() < (UnsignedInt)bldgPlan->calcCostToBuild(m_player)) {
 		return nullptr;
 	}
 	// construct the building
@@ -804,11 +804,12 @@ void AIPlayer::processBaseBuilding()
 						info->decrementNumRebuilds();
 
 						m_readyToBuildStructure = false;
-						m_structureTimer = TheAI->getAiData()->m_structureSeconds*LOGICFRAMES_PER_SECOND;
-						if (m_player->getMoney()->countMoney() < TheAI->getAiData()->m_resourcesPoor) {
-							m_structureTimer = m_structureTimer/TheAI->getAiData()->m_structuresPoorMod;
-						}	else if (m_player->getMoney()->countMoney() > TheAI->getAiData()->m_resourcesWealthy) {
-							m_structureTimer = m_structureTimer/TheAI->getAiData()->m_structuresWealthyMod;
+						m_structureTimer = TheAI->getAiData()->m_structureSeconds * (Real)LOGICFRAMES_PER_SECOND;
+						if (m_player->getMoney()->countMoney() < (UnsignedInt)TheAI->getAiData()->m_resourcesPoor) {
+							m_structureTimer = m_structureTimer / TheAI->getAiData()->m_structuresPoorMod;
+						}
+						else if (m_player->getMoney()->countMoney() > (UnsignedInt)TheAI->getAiData()->m_resourcesWealthy) {
+							m_structureTimer = m_structureTimer / TheAI->getAiData()->m_structuresWealthyMod;
 						}
 						m_frameLastBuildingBuilt = TheGameLogic->getFrame();
 						// only build one building per delay loop
@@ -1498,7 +1499,7 @@ Bool AIPlayer::isPossibleToBuildTeam( TeamPrototype *proto, Bool requireIdleFact
 		}
 	}
 	cost *= TheAI->getAiData()->m_teamResourcesToBuild;
-	if (m_player->getMoney()->countMoney() < cost)	{
+	if (m_player->getMoney()->countMoney() < (UnsignedInt)cost) {
 		notEnoughMoney = true;
 		return false; // too expensive
 	}
@@ -1750,9 +1751,9 @@ Bool AIPlayer::selectTeamToBuild()
 		buildSpecificAITeam(teamProto, false);
 		m_readyToBuildTeam = false;
 		m_teamTimer = m_teamSeconds*LOGICFRAMES_PER_SECOND;
-		if (m_player->getMoney()->countMoney() < TheAI->getAiData()->m_resourcesPoor) {
+		if (m_player->getMoney()->countMoney() < (UnsignedInt)TheAI->getAiData()->m_resourcesPoor) {
 			m_teamTimer = m_teamTimer/TheAI->getAiData()->m_teamPoorMod;
-		}	else if (m_player->getMoney()->countMoney() > TheAI->getAiData()->m_resourcesWealthy) {
+		}	else if (m_player->getMoney()->countMoney() > (UnsignedInt)TheAI->getAiData()->m_resourcesWealthy) {
 			m_teamTimer = m_teamTimer/TheAI->getAiData()->m_teamWealthyMod;
 		}
 		return true;
@@ -2949,7 +2950,7 @@ void AIPlayer::checkReadyTeams()
 		{
 			TeamInQueue *team = iter.cur();
 			// If 60 seconds passed, start anyway.
-			Bool timeExpired = team->m_frameStarted+60*LOGICFRAMES_PER_SECOND < TheGameLogic->getFrame();
+			Bool timeExpired = (UnsignedInt)(team->m_frameStarted + 60 * LOGICFRAMES_PER_SECOND) < TheGameLogic->getFrame();
 			Bool allIdle=TRUE;
 			Bool anyIdle = FALSE;
 			if (team->m_reinforcement) {
@@ -3707,7 +3708,7 @@ Bool TeamInQueue::isBuildTimeExpired()
 	if (m_team->getPrototype()->getTemplateInfo()->m_initialIdleFrames<1) {
 		return false; // Unlimited time.
 	}
-	if (TheGameLogic->getFrame() > m_frameStarted + m_team->getPrototype()->getTemplateInfo()->m_initialIdleFrames) {
+	if (TheGameLogic->getFrame() > (UnsignedInt)(m_frameStarted + m_team->getPrototype()->getTemplateInfo()->m_initialIdleFrames)) {
 		return true;
 	}
 	return false;

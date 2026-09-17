@@ -399,7 +399,7 @@ static void updateOverallStats()
 			int totalGames = 0;
 			s_totalWinPercent = 0.f;
 
-			for (int i = 0; i < stats.matches.size(); ++i)
+			for (size_t i = 0; i < stats.matches.size(); ++i)
 			{
 				totalWins += stats.wins[i];
 				totalGames += stats.matches[i];
@@ -415,7 +415,7 @@ static void updateOverallStats()
 
 			//std::map<AsciiString, float>::iterator it;
 			//for (it = s_winStats.begin(); it != s_winStats.end(); ++it)
-			for (int i = 0; i < stats.matches.size(); ++i)
+			for (size_t i = 0; i < stats.matches.size(); ++i)
 			{
 				int wins = stats.wins[i];
 				int matches = stats.matches[i];

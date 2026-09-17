@@ -2,7 +2,7 @@
 #include "GameNetwork/GameInfo.h"
 #include <chrono>
 
-class LobbyEntry;
+struct LobbyEntry;
 
 class NGMPGameSlot : public GameSlot
 {

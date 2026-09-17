@@ -480,7 +480,7 @@ static void playerTooltip(GameWindow *window,
 		totalDiscons += it->second;
 	}
 	UnicodeString favoriteSide;
-	Int numGames = 0;
+	UnsignedInt numGames = 0;
 	Int favorite = 0;
 	for(it = stats.games.begin(); it != stats.games.end(); ++it)
 	{
@@ -494,7 +494,7 @@ static void playerTooltip(GameWindow *window,
 	}
 	if(numGames == 0)
 		favoriteSide = TheGameText->fetch("GUI:None");
-	else if( stats.gamesAsRandom >= numGames )
+	else if ((UnsignedInt)stats.gamesAsRandom >= numGames)
 		favoriteSide = TheGameText->fetch("GUI:Random");
 	else
 	{
@@ -1164,7 +1164,7 @@ static void StartPressed()
 		}
 	}
 
-	if (pMesh->GetAllConnections().size() < numHumanPlayers - 1)
+	if (pMesh->GetAllConnections().size() < (size_t)(numHumanPlayers - 1))
 	{
 		UnicodeString text(L"Connections: Some players are still connecting. Try again shortly:");
 		GadgetListBoxAddEntryText(listboxGameSetupChat, text, GameMakeColor(255, 194, 15, 255), -1, -1);
@@ -1288,7 +1288,7 @@ static void StartPressed()
 			}
 		}
 	}
-	if (numRandom + teams.size() < TheGlobalData->m_netMinPlayers)
+	if (numRandom + (Int)teams.size() < TheGlobalData->m_netMinPlayers)
 	{
 		if (myGame->amIHost())
 		{

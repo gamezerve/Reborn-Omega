@@ -1460,7 +1460,7 @@ void BridgeBehavior::xfer( Xfer *xfer )
 
 	// scaffold object id list
 	UnsignedShort scaffoldObjectCount = 0;
-	scaffoldObjectCount = m_scaffoldObjectIDList.size();
+	scaffoldObjectCount = (UnsignedShort)m_scaffoldObjectIDList.size();
 	xfer->xferUnsignedShort( &scaffoldObjectCount );
 	ObjectID scaffoldObjectID;
 	if( xfer->getXferMode() == XFER_SAVE )

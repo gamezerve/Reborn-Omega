@@ -925,7 +925,7 @@ void GameClient::addDrawableToLookupTable(Drawable *draw )
 	// add to lookup
 //	m_drawableHash[ draw->getID() ] = draw;
 	DrawableID newID = draw->getID();
-	while( newID >= m_drawableVector.size() ) // Fail case is hella rare, so faster to double up on size() call
+	while((size_t)newID >= m_drawableVector.size() ) // Fail case is hella rare, so faster to double up on size() call
 		m_drawableVector.resize(m_drawableVector.size() * 2, nullptr);
 
 	m_drawableVector[ newID ] = draw;

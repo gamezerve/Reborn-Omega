@@ -487,8 +487,8 @@ void ResetBattleHonorInsertion()
 }
 void InsertBattleHonor(GameWindow *list, const Image *image, Bool enabled, Int itemData, Int& row, Int& column, UnicodeString text = UnicodeString::TheEmptyString, Int extra = 0)
 {
-	Int width = MAX_BATTLE_HONOR_IMAGE_WIDTH * (TheDisplay->getWidth() / (Real)DEFAULT_DISPLAY_WIDTH);
-	Int height = MAX_BATTLE_HONOR_IMAGE_HEIGHT * (TheDisplay->getHeight() / (Real)DEFAULT_DISPLAY_HEIGHT);
+	Int width = (Real)MAX_BATTLE_HONOR_IMAGE_WIDTH * (TheDisplay->getWidth() / (Real)DEFAULT_DISPLAY_WIDTH);
+	Int height = (Real)MAX_BATTLE_HONOR_IMAGE_HEIGHT * (TheDisplay->getHeight() / (Real)DEFAULT_DISPLAY_HEIGHT);
 
 	static Int enabledColor = 0xFFFFFFFF;
 	static Int disabledColor = GameMakeColor(80, 80, 80, 255);
@@ -755,7 +755,7 @@ Int GetFavoriteSide( const PSPlayerStats& stats )
 	Int favorite = 0;
 	for(it =stats.games.begin(); it != stats.games.end(); ++it)
 	{
-		if(it->second >= numGames)
+		if (it->second >= (UnsignedInt)numGames)
 		{
 			numGames = it->second;
 			favorite = it->first;
@@ -1076,7 +1076,7 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 		Int favorite = 0;
 		for(it =stats.games.begin(); it != stats.games.end(); ++it)
 		{
-			if(it->second >= mostGames)
+			if(it->second >= (UnsignedInt)mostGames)
 			{
 				mostGames = it->second;
 				favorite = it->first;
@@ -1224,7 +1224,7 @@ void HandlePersistentStorageResponses()
 						Int favorite = 0;
 						for(it =resp.player.games.begin(); it != resp.player.games.end(); ++it)
 						{
-							if(it->second >= numGames)
+							if(it->second >= (UnsignedInt)numGames)
 							{
 								numGames = it->second;
 								favorite = it->first;
@@ -1278,7 +1278,7 @@ void HandlePersistentStorageResponses()
 							Int favorite = 0;
 							for(it = resp.player.games.begin(); it != resp.player.games.end(); ++it)
 							{
-								if(it->second >= numGames)
+								if(it->second >= (UnsignedInt)numGames)
 								{
 									numGames = it->second;
 									favorite = it->first;
