@@ -591,12 +591,12 @@ void GameEngine::init()
 		if (e.mFailureMessage)
 			RELEASE_CRASH((e.mFailureMessage));
 		else
-			RELEASE_CRASH(("Uncaught Exception during initialization."));
+			RELEASE_CRASH(("INIException during initialization without failure message."));
 
 	}
 	catch (...)
 	{
-		RELEASE_CRASH(("Uncaught Exception during initialization."));
+		RELEASE_CRASH(("Unknown exception during initialization."));
 	}
 
 	resetSubsystems();
