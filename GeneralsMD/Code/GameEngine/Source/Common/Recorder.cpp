@@ -926,7 +926,7 @@ Bool RecorderClass::readReplayHeader(ReplayHeader& header, const AsciiString& fi
 	}
 
 	// Reborn: only start/apply GameInfo when actually playing the replay, not when ReplayMenu reads metadata
-	if (header.forPlayback)
+	if (forPlayback)
 	{
 		m_gameInfo.startGame(0);
 	}
@@ -940,7 +940,7 @@ Bool RecorderClass::readReplayHeader(ReplayHeader& header, const AsciiString& fi
 		DEBUG_LOG(("RecorderClass::readReplayHeader - invalid local slot number."));
 
 		// Reborn: only end GameInfo if it was started for real replay playback
-		if (header.forPlayback)
+		if (forPlayback)
 			m_gameInfo.endGame();
 
 		m_gameInfo.reset();
