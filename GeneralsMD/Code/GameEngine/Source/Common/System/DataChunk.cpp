@@ -131,7 +131,7 @@ UnsignedInt CachedFileInputStream::tell()
 Bool CachedFileInputStream::absoluteSeek(UnsignedInt pos)
 {
 	if (pos<0) return false;
-	if (pos>m_size) {
+	if (pos > (UnsignedInt)m_size) {
 		pos=m_size;
 	}
 	m_pos=pos;

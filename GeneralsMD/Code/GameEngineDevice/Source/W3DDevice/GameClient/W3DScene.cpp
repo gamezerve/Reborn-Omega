@@ -415,7 +415,7 @@ void RTS3DScene::Visibility_Check(CameraClass * camera)
 	Reborn_Clear_Underwater_Render_Objects();
 
 	Int currentFrame = TheGameLogic ? TheGameLogic->getFrame() : 0;
-	if (currentFrame <= TheGlobalData->m_defaultOcclusionDelay)
+	if (currentFrame <= (Int)TheGlobalData->m_defaultOcclusionDelay)
 		currentFrame = TheGlobalData->m_defaultOcclusionDelay+1;	//make sure occlusion is enabled when game starts (frame 0).
 
 	if (ShaderClass::Is_Backface_Culling_Inverted())
@@ -567,8 +567,8 @@ void RTS3DScene::Visibility_Check(CameraClass * camera)
 								drawInfo->m_flags |= DrawableInfo::ERF_POTENTIAL_OCCLUDER;
 							}
 							else if (draw->getObject() &&
-									(draw->isKindOf(KINDOF_SCORE) || draw->isKindOf(KINDOF_SCORE_CREATE) || draw->isKindOf(KINDOF_SCORE_DESTROY) || draw->isKindOf(KINDOF_MP_COUNT_FOR_VICTORY)) &&
-									(draw->getObject()->getSafeOcclusionFrame()) <= currentFrame && m_numPotentialOccludees < TheGlobalData->m_maxVisibleOccludeeObjects)
+								(draw->isKindOf(KINDOF_SCORE) || draw->isKindOf(KINDOF_SCORE_CREATE) || draw->isKindOf(KINDOF_SCORE_DESTROY) || draw->isKindOf(KINDOF_MP_COUNT_FOR_VICTORY)) &&
+								(Int)(draw->getObject()->getSafeOcclusionFrame()) <= currentFrame && m_numPotentialOccludees < TheGlobalData->m_maxVisibleOccludeeObjects)
 							{
 								//object which could be occluded but still needs to be visible.
 								//We process translucent units twice (also in m_translucentObjectsBuffer) because we need to see them when occluded.

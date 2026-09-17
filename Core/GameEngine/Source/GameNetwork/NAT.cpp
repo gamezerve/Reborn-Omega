@@ -530,9 +530,17 @@ void NAT::establishConnectionPaths() {
 #endif
 
 	// find the local node number.
-	for (i = 0; i < m_numNodes; ++i) {
-		if (m_connectionNodes[i].m_slotIndex == TheGameSpyGame->getLocalSlotNum()) {
-			m_localNodeNumber = i;
+	//for (i = 0; i < m_numNodes; ++i) {
+	//	if (m_connectionNodes[i].m_slotIndex == TheGameSpyGame->getLocalSlotNum()) {
+	//		m_localNodeNumber = i;
+	//		DEBUG_LOG(("NAT::establishConnectionPaths - local node is %d", m_localNodeNumber));
+	//		break;
+	//	}
+	//}
+	// find the local node number.
+	for (UnsignedInt node = 0; node < m_numNodes; ++node) {
+		if (m_connectionNodes[node].m_slotIndex == TheGameSpyGame->getLocalSlotNum()) {
+			m_localNodeNumber = node;
 			DEBUG_LOG(("NAT::establishConnectionPaths - local node is %d", m_localNodeNumber));
 			break;
 		}
@@ -616,20 +624,21 @@ void NAT::doThisConnectionRound() {
 	m_beenProbed = FALSE;
 	m_numRetries = 0;
 
-	for (i = 0; i < m_numNodes; ++i) {
-		Int targetNodeNumber = m_connectionPairs[m_connectionPairIndex][m_connectionRound][i];
-		DEBUG_LOG(("NAT::doThisConnectionRound - node %d needs to connect to node %d", i, targetNodeNumber));
+	//for (i = 0; i < m_numNodes; ++i) {
+	for (UnsignedInt node = 0; node < m_numNodes; ++node) {
+		Int targetNodeNumber = m_connectionPairs[m_connectionPairIndex][m_connectionRound][node];
+		DEBUG_LOG(("NAT::doThisConnectionRound - node %d needs to connect to node %d", node, targetNodeNumber));
 		if (targetNodeNumber != -1) {
-			if (i == m_localNodeNumber) {
+			if (node == m_localNodeNumber) {
 				m_targetNodeNumber = targetNodeNumber;
 				DEBUG_LOG(("NAT::doThisConnectionRound - Local node is connecting to node %d", m_targetNodeNumber));
 #if defined(DEBUG_LOGGING) || defined(DEBUG_CRASHING)
-				UnsignedInt targetSlotIndex = m_connectionNodes[(m_connectionPairs[m_connectionPairIndex][m_connectionRound][i])].m_slotIndex;
+				UnsignedInt targetSlotIndex = m_connectionNodes[(m_connectionPairs[m_connectionPairIndex][m_connectionRound][node])].m_slotIndex;
 				GameSlot *targetSlot = m_slotList[targetSlotIndex];
 				GameSlot *localSlot = m_slotList[m_connectionNodes[m_localNodeNumber].m_slotIndex];
 
 				DEBUG_ASSERTCRASH(localSlot != nullptr, ("local slot is null"));
-				DEBUG_ASSERTCRASH(targetSlot != nullptr, ("trying to negotiate with a null target slot, slot is %d", m_connectionPairs[m_connectionPairIndex][m_connectionRound][i]));
+				DEBUG_ASSERTCRASH(targetSlot != nullptr, ("trying to negotiate with a null target slot, slot is %d", m_connectionPairs[m_connectionPairIndex][m_connectionRound][node]));
 				DEBUG_LOG(("NAT::doThisConnectionRound - Target slot index = %d (%ls)", targetSlotIndex, m_slotList[targetSlotIndex]->getName().str()));
 				DEBUG_LOG(("NAT::doThisConnectionRound - Target slot has NAT behavior 0x%8X, local slot has NAT behavior 0x%8X", targetSlot->getNATBehavior(), localSlot->getNATBehavior()));
 				DEBUG_LOG(("NAT::doThisConnectionRound - Target slot has IP %d.%d.%d.%d  Local slot has IP %d.%d.%d.%d",
@@ -649,12 +658,12 @@ void NAT::doThisConnectionRound() {
 			} else {
 				// this is someone else that needs to connect to someone, so wait till they tell us
 				// that they're done.
-				setConnectionState(i, NATCONNECTIONSTATE_WAITINGFORRESPONSE);
+				setConnectionState(node, NATCONNECTIONSTATE_WAITINGFORRESPONSE);
 			}
 		} else {
 			// no one to connect to, so this one is done.
-			DEBUG_LOG(("NAT::doThisConnectionRound - node %d has no one to connect to, so they're done", i));
-			setConnectionState(i, NATCONNECTIONSTATE_DONE);
+			DEBUG_LOG(("NAT::doThisConnectionRound - node %d has no one to connect to, so they're done", node));
+			setConnectionState(node, NATCONNECTIONSTATE_DONE);
 		}
 	}
 }
@@ -825,9 +834,9 @@ void NAT::processManglerResponse(UnsignedShort mangledPort) {
 	}
 
 	// This bit is probably doomed.
-	if (returnPort > 65535) {
-		returnPort -= 65535;
-	}
+	//if (returnPort > 65535) {
+	//	returnPort -= 65535;
+	//}
 	if (returnPort < 1024) {
 		returnPort += 1024;
 	}
@@ -1116,7 +1125,7 @@ void NAT::processGlobalMessage(Int slotNum, const char *options) {
 		if (m_connectionPairs[m_connectionPairIndex][m_connectionRound][node] == sendingNode) {
 //			Int node = atoi(ptr + strlen("CONNDONE"));
 			DEBUG_LOG(("NAT::processGlobalMessage - got a CONNDONE message for node %d", node));
-			if ((node >= 0) && (node <= m_numNodes)) {
+			if ((node >= 0) && (node <= static_cast<Int>(m_numNodes))) {
 				DEBUG_LOG(("NAT::processGlobalMessage - node %d's connection is complete, setting connection state to done", node));
 				setConnectionState(node, NATCONNECTIONSTATE_DONE);
 			}
@@ -1128,7 +1137,7 @@ void NAT::processGlobalMessage(Int slotNum, const char *options) {
 		// we should get the node number of the player who's connection failed from the options
 		// and mark that down as part of the connectionStates.
 		Int node = atoi(ptr + strlen("CONNFAILED"));
-		if ((node >= 0) && (node < m_numNodes)) {
+		if ((node >= 0) && (node < static_cast<Int>(m_numNodes))) {
 			DEBUG_LOG(("NAT::processGlobalMessage - node %d's connection failed, setting connection state to failed", node));
 			setConnectionState(node, NATCONNECTIONSTATE_FAILED);
 		}
@@ -1153,7 +1162,7 @@ void NAT::processGlobalMessage(Int slotNum, const char *options) {
 		DEBUG_LOG(("NAT::processGlobalMessage - got port message from node %d, port: %d, internal address: %d.%d.%d.%d", node, port,
 								PRINTF_IP_AS_4_INTS(addr)));
 
-		if ((node >= 0) && (node < m_numNodes)) {
+		if ((node >= 0) && (node < static_cast<Int>(m_numNodes))) {
 			if (port < 1024) {
 				// it has to be less than 65535 cause its a short duh.
 				DEBUG_ASSERTCRASH(port >= 1024, ("Was passed an invalid port number"));

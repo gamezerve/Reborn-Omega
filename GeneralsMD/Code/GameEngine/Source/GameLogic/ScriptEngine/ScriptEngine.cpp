@@ -8637,7 +8637,7 @@ static void xferListAsciiString( Xfer *xfer, ListAsciiString *list )
 	xfer->xferVersion( &version, currentVersion );
 
 	// size of list
-	UnsignedShort count = list->size();
+	UnsignedShort count = (UnsignedShort)list->size();
 	xfer->xferUnsignedShort( &count );
 
 	// list data
@@ -8700,7 +8700,7 @@ static void xferListAsciiStringUINT( Xfer *xfer, ListAsciiStringUINT *list )
 	xfer->xferVersion( &version, currentVersion );
 
 	// size of list
-	UnsignedShort count = list->size();
+	UnsignedShort count = (UnsignedShort)list->size();
 	xfer->xferUnsignedShort( &count );
 
 	// list data
@@ -8775,7 +8775,7 @@ static void xferListAsciiStringObjectID( Xfer *xfer, ListAsciiStringObjectID *li
 	xfer->xferVersion( &version, currentVersion );
 
 	// size of list
-	UnsignedShort count = list->size();
+	UnsignedShort count = (UnsignedShort)list->size();
 	xfer->xferUnsignedShort( &count );
 
 	// list data
@@ -8850,7 +8850,7 @@ static void xferListAsciiStringCoord3D( Xfer *xfer, ListAsciiStringCoord3D *list
 	xfer->xferVersion( &version, currentVersion );
 
 	// size of list
-	UnsignedShort count = list->size();
+	UnsignedShort count = (UnsignedShort)list->size();
 	xfer->xferUnsignedShort( &count );
 
 	// list data
@@ -8937,7 +8937,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 	xfer->xferVersion( &version, currentVersion );
 
 	// sequential script count and data
-	UnsignedShort sequentialScriptCount = m_sequentialScripts.size();
+	UnsignedShort sequentialScriptCount = (UnsignedShort)m_sequentialScripts.size();
 	xfer->xferUnsignedShort( &sequentialScriptCount );
 	SequentialScript *sequentialScript;
 	if( xfer->getXferMode() == XFER_SAVE )
@@ -9063,7 +9063,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 	xfer->xferInt( &m_closeWindowTimer );
 
 	// named objects
-	UnsignedShort namedObjectsCount = m_namedObjects.size();
+	UnsignedShort namedObjectsCount = (UnsignedShort)m_namedObjects.size();
 	xfer->xferUnsignedShort( &namedObjectsCount );
 	AsciiString namedObjectName;
 	Object *obj;
@@ -9253,7 +9253,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 	{
 
 		// number of entries in named reveals
-		UnsignedShort namedRevealCount = m_namedReveals.size();
+		UnsignedShort namedRevealCount = (UnsignedShort)m_namedReveals.size();
 		xfer->xferUnsignedShort( &namedRevealCount );
 
 		// named reveal data
@@ -9317,7 +9317,7 @@ void ScriptEngine::xfer( Xfer *xfer )
 		}
 
 		// all object type lists size
-		UnsignedShort allObjectTypesCount = m_allObjectTypeLists.size();
+		UnsignedShort allObjectTypesCount = (UnsignedShort)m_allObjectTypeLists.size();
 		xfer->xferUnsignedShort( &allObjectTypesCount );
 
 		// all object type lists data

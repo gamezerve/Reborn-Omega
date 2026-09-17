@@ -291,7 +291,7 @@ void PlayerTemplateStore::update()
 
 Int PlayerTemplateStore::getTemplateNumByName(AsciiString name) const
 {
-	for (Int num = 0; num < m_playerTemplates.size(); num++)
+	for (Int num = 0; num < (Int)m_playerTemplates.size(); num++)
 	{
 		if (m_playerTemplates[num].getName().compareNoCase(name.str()) == 0)
 			return num;
@@ -347,7 +347,7 @@ const PlayerTemplate* PlayerTemplateStore::findPlayerTemplate(NameKeyType nameke
 //-----------------------------------------------------------------------------
 const PlayerTemplate* PlayerTemplateStore::getNthPlayerTemplate(Int i) const
 {
-	if (i >= 0 && i < m_playerTemplates.size())
+	if (i >= 0 && i < (Int)m_playerTemplates.size())
 		return &m_playerTemplates[i];
 
 	return nullptr;

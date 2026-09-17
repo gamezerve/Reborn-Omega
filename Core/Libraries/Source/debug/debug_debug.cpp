@@ -773,9 +773,9 @@ Debug& Debug::operator<<(const char *str)
   unsigned len=strlen(str);
 
   // forced width?
-  if (len<m_width)
+  if (len < (unsigned)m_width)
   {
-    for (unsigned k=len;k<m_width;k++)
+    for (unsigned k = len; k < (unsigned)m_width; k++)
       AddOutput(&m_fillChar,1);
   }
 

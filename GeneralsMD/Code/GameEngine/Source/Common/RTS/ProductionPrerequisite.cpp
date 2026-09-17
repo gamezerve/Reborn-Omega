@@ -155,7 +155,7 @@ Bool ProductionPrerequisite::isSatisfied(const Player *player) const
 		return false;
 
 	// gotta have all the prereq sciences.
-	for (i = 0; i < m_prereqSciences.size(); i++)
+	for (i = 0; i < (Int)m_prereqSciences.size(); i++)
 	{
 		if (!player->hasScience(m_prereqSciences[i]))
 			return false;
@@ -293,7 +293,7 @@ UnicodeString ProductionPrerequisite::getRequiresList(const Player *player) cons
 
 	Bool hasSciences = TRUE;
 	// gotta have all the prereq sciences.
-	for (i = 0; i < m_prereqSciences.size(); i++)
+	for (i = 0; i < (Int)m_prereqSciences.size(); i++)
 	{
 		if (!player->hasScience(m_prereqSciences[i]))
 			hasSciences = FALSE;

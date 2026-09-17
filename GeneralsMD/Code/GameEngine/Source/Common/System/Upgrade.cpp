@@ -506,7 +506,7 @@ Int UpgradeTemplate::calcTimeToBuild( Player *player ) const
 #endif
 
 	///@todo modify this by power state of player
-	return m_buildTime * LOGICFRAMES_PER_SECOND;
+	return m_buildTime * (Real)LOGICFRAMES_PER_SECOND;
 
 }
 
@@ -800,7 +800,7 @@ Bool UpgradeCenter::canAffordUpgrade( Player *player, const UpgradeTemplate *upg
 
 	// money check
 	Money *money = player->getMoney();
-	if( money->countMoney() < upgradeTemplate->calcCostToBuild( player ) )
+	if( (Int)money->countMoney() < upgradeTemplate->calcCostToBuild( player ) )
 	{
 		//Post reason why we can't make upgrade!
 		if( displayReason )

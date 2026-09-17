@@ -3643,7 +3643,7 @@ Bool W3DModelDraw::getProjectileLaunchOffset(
 	}
 	else
 	{
-		if (specificBarrelToUse < 0 || specificBarrelToUse >= wbvec.size())
+		if (specificBarrelToUse < 0 || specificBarrelToUse >= (Int)wbvec.size())
 			specificBarrelToUse = 0;
 
 		if (launchPos)
@@ -4026,7 +4026,7 @@ Bool W3DModelDraw::handleWeaponFireFX(WeaponSlotType wslot, Int specificBarrelTo
 
 	Bool handled = false;
 
-	if (specificBarrelToUse < 0 || specificBarrelToUse > wbvec.size())
+	if (specificBarrelToUse < 0 || specificBarrelToUse >(Int)wbvec.size())
 		specificBarrelToUse = 0;
 
 	const ModelConditionInfo::WeaponBarrelInfo& info = wbvec[specificBarrelToUse];
@@ -4288,7 +4288,7 @@ void W3DModelDraw::doHideShowProjectileObjects( UnsignedInt showCount, UnsignedI
 		for( UnsignedInt projectileIndex = 0; projectileIndex < maxCount; projectileIndex++ )
 		{
 			oneEntry.subObjName.format("%s%02d", m_curState->m_weaponProjectileLaunchBoneName[slot].str(), (projectileIndex + 1));
-			oneEntry.hide = (projectileIndex < hideCount);
+			oneEntry.hide = ((Int)projectileIndex < hideCount);
 			showHideVector.push_back( oneEntry );
 		}
 	}
@@ -4374,7 +4374,7 @@ void W3DModelDraw::xfer( Xfer *xfer )
 	{
 
 		// count of data here
-		recoilInfoCount = m_weaponRecoilInfoVec[ i ].size();
+		recoilInfoCount = (UnsignedByte)m_weaponRecoilInfoVec[i].size();
 		xfer->xferUnsignedByte( &recoilInfoCount );
 		if( xfer->getXferMode() == XFER_SAVE )
 		{
@@ -4427,7 +4427,7 @@ void W3DModelDraw::xfer( Xfer *xfer )
 	}
 
 	// sub object vector
-	UnsignedByte subObjectCount = m_subObjectVec.size();
+	UnsignedByte subObjectCount = (UnsignedByte)m_subObjectVec.size();
 	xfer->xferUnsignedByte( &subObjectCount );
 	ModelConditionInfo::HideShowSubObjInfo hideShowSubObjInfo;
 	if( xfer->getXferMode() == XFER_SAVE )

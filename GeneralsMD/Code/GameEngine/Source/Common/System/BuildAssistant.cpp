@@ -161,8 +161,8 @@ void BuildAssistant::reset()
 
 }
 
-static const Real FRAMES_TO_ALLOW_SCAFFOLD = LOGICFRAMES_PER_SECOND * 1.5f;
-static const Real TOTAL_FRAMES_TO_SELL_OBJECT = LOGICFRAMES_PER_SECOND * 3.0f;
+static const Real FRAMES_TO_ALLOW_SCAFFOLD = (Real)LOGICFRAMES_PER_SECOND * 1.5f;
+static const Real TOTAL_FRAMES_TO_SELL_OBJECT = (Real)LOGICFRAMES_PER_SECOND * 3.0f;
 //-------------------------------------------------------------------------------------------------
 /** Update phase for the build assistant */
 //-------------------------------------------------------------------------------------------------
@@ -1356,7 +1356,7 @@ CanMakeType BuildAssistant::canMakeUnit( Object *builder, const ThingTemplate *w
 
 	// make sure we have enough money to build this
 	Money *money = player->getMoney();
-	if( whatToBuild->calcCostToBuild( player ) > money->countMoney() )
+	if (whatToBuild->calcCostToBuild(player) > (Int)money->countMoney())
 		return CANMAKE_NO_MONEY;
 
 	// get the command set for the producer object

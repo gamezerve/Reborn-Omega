@@ -174,7 +174,7 @@ void StatsCollector::collectUnitCountStats()
 //=============================================================================
 void StatsCollector::update()
 {
-	if(m_lastUpdate + (TheGlobalData->m_playStats * LOGICFRAMES_PER_SECOND) > TheGameLogic->getFrame())
+	if((UnsignedInt)(m_lastUpdate + (TheGlobalData->m_playStats * LOGICFRAMES_PER_SECOND)) > TheGameLogic->getFrame())
 		return;
 
 	collectUnitCountStats();
