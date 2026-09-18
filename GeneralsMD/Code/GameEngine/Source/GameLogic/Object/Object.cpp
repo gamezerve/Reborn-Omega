@@ -1826,7 +1826,6 @@ void Object::reactToTransformChange(const Matrix3D* oldMtx, const Coord3D* oldPo
 	}
 	if (m_drawable)
 	{
-		m_drawable->setLogicTransformForInterpolation(this->getTransformMatrix());
 		m_drawable->setTransformMatrix(this->getTransformMatrix());
 	}
 

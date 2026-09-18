@@ -373,6 +373,8 @@ Drawable::Drawable( const ThingTemplate *thingTemplate, DrawableStatusBits statu
   m_ambientSoundEnabledFromScript = true;
 
 	m_logicTransformInterpolationInitialized = FALSE;
+	m_logicTransformInterpolationFrame = 0;
+	m_logicPositionInterpolationInitialized = FALSE;
 
 	m_decalOpacityFadeTarget = 0;
 	m_decalOpacityFadeRate = 0;
@@ -2680,8 +2682,35 @@ void Drawable::draw()
 #endif
 
 	// call the database defined draw action method
-	Matrix3D transformMtx;
-	getInterpolatedRenderTransform(&transformMtx);
+	Matrix3D transformMtx = *getTransformMatrix();
+
+	if (m_logicPositionInterpolationInitialized)
+	{
+		const Int logicFps = TheFramePacer->getActualLogicTimeScaleFps();
+
+		if (logicFps > 0 &&
+			TheFramePacer->getActualFramesPerSecondLimit() > logicFps)
+		{
+			const Real alpha = TheGameEngine->getLogicInterpolationAlpha();
+
+			const Real x =
+				m_previousLogicPosition.x +
+				(m_currentLogicPosition.x - m_previousLogicPosition.x) * alpha;
+
+			const Real y =
+				m_previousLogicPosition.y +
+				(m_currentLogicPosition.y - m_previousLogicPosition.y) * alpha;
+
+			const Real z =
+				m_previousLogicPosition.z +
+				(m_currentLogicPosition.z - m_previousLogicPosition.z) * alpha;
+
+			transformMtx.Set_X_Translation(x);
+			transformMtx.Set_Y_Translation(y);
+			transformMtx.Set_Z_Translation(z);
+		}
+	}
+
 	if (!isInstanceIdentity())
 	{
 #ifdef ALLOW_TEMPORARIES
@@ -5571,16 +5600,32 @@ void TintEnvelope::setDecayFrames( UnsignedInt frames )
 
 void Drawable::setLogicTransformForInterpolation(const Matrix3D* transform)
 {
+	const UnsignedInt logicFrame = TheGameLogic->getFrame();
+
 	if (!m_logicTransformInterpolationInitialized)
 	{
 		m_previousLogicTransform = *transform;
 		m_currentLogicTransform = *transform;
+		m_logicTransformInterpolationFrame = logicFrame;
 		m_logicTransformInterpolationInitialized = TRUE;
 		return;
 	}
 
-	m_previousLogicTransform = m_currentLogicTransform;
-	m_currentLogicTransform = *transform;
+	if (m_logicTransformInterpolationFrame != logicFrame)
+	{
+		m_previousLogicTransform = m_currentLogicTransform;
+		m_currentLogicTransform = *transform;
+		m_logicTransformInterpolationFrame = logicFrame;
+	}
+	else
+	{
+		//
+		// The object can receive multiple transform changes during the same
+		// logic frame. Keep the previous logic-frame transform intact and
+		// only update the current state.
+		//
+		m_currentLogicTransform = *transform;
+	}
 }
 
 void Drawable::getInterpolatedRenderTransform(Matrix3D* transform) const
@@ -5608,15 +5653,27 @@ void Drawable::getInterpolatedRenderTransform(Matrix3D* transform) const
 	const Vector3& currentPos = m_currentLogicTransform.Get_Translation();
 
 	Vector3 interpolatedPos;
-
-	interpolatedPos.X =
-		previousPos.X + (currentPos.X - previousPos.X) * alpha;
-	interpolatedPos.Y =
-		previousPos.Y + (currentPos.Y - previousPos.Y) * alpha;
-	interpolatedPos.Z =
-		previousPos.Z + (currentPos.Z - previousPos.Z) * alpha;
+	interpolatedPos.X = previousPos.X + (currentPos.X - previousPos.X) * alpha;
+	interpolatedPos.Y = previousPos.Y + (currentPos.Y - previousPos.Y) * alpha;
+	interpolatedPos.Z = previousPos.Z + (currentPos.Z - previousPos.Z) * alpha;
 
 	transform->Set_Translation(interpolatedPos);
+}
+
+void Drawable::snapshotLogicPositionForInterpolation()
+{
+	const Coord3D pos = *getPosition();
+
+	if (!m_logicPositionInterpolationInitialized)
+	{
+		m_previousLogicPosition = pos;
+		m_currentLogicPosition = pos;
+		m_logicPositionInterpolationInitialized = TRUE;
+		return;
+	}
+
+	m_previousLogicPosition = m_currentLogicPosition;
+	m_currentLogicPosition = pos;
 }
 
 //-------------------------------------------------------------------------------------------------

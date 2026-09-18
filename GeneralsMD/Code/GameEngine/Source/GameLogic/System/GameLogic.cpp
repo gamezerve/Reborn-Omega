@@ -4031,9 +4031,15 @@ void GameLogic::update()
 		}
 	}
 
+	for (Object* obj = m_objList; obj; obj = obj->getNextObject())
+	{
+		Drawable* draw = obj->getDrawable();
 
-
-
+		if (draw)
+		{
+			draw->snapshotLogicPositionForInterpolation();
+		}
+	}
 
 	// increment world time
 	if (!m_startNewGame)

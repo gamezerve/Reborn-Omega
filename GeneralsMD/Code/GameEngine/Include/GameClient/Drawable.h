@@ -589,6 +589,8 @@ public:
   Real friend_getExplicitOpacity() { return m_explicitOpacity; }
   Real friend_getEffectiveStealthOpacity() { return m_effectiveStealthOpacity; }
 
+	void snapshotLogicPositionForInterpolation();
+
 protected:
 
 	// snapshot methods
@@ -712,6 +714,10 @@ private:
 	Matrix3D m_previousLogicTransform;
 	Matrix3D m_currentLogicTransform;
 	Bool m_logicTransformInterpolationInitialized;
+	UnsignedInt m_logicTransformInterpolationFrame;
+	Coord3D m_previousLogicPosition;
+	Coord3D m_currentLogicPosition;
+	Bool m_logicPositionInterpolationInitialized;
 
 	DrawableInfo				m_drawableInfo;		///< structure pointed to by W3D render objects so they know which drawable they belong to.
 

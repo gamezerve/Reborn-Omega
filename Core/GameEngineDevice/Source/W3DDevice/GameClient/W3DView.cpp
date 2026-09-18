@@ -1673,25 +1673,7 @@ void W3DView::update()
 			}
 			else
 			{
-				Coord3D objpos;
-
-				Drawable* cameraLockDrawable = cameraLockObj->getDrawable();
-
-				if (cameraLockDrawable != nullptr)
-				{
-					Matrix3D interpolatedTransform;
-					cameraLockDrawable->getInterpolatedRenderTransform(&interpolatedTransform);
-
-					const Vector3& interpolatedPosition = interpolatedTransform.Get_Translation();
-
-					objpos.x = interpolatedPosition.X;
-					objpos.y = interpolatedPosition.Y;
-					objpos.z = interpolatedPosition.Z;
-				}
-				else
-				{
-					objpos = *cameraLockObj->getPosition();
-				}
+				Coord3D objpos = *cameraLockObj->getPosition();
 				Coord3D curpos = getPosition();
 				// don't "snap" directly to the pos, but move there smoothly.
 				Real snapThreshSqr = sqr(TheGlobalData->m_partitionCellSize);
