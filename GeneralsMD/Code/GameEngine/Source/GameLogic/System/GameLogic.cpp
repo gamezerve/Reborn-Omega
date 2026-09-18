@@ -266,6 +266,7 @@ GameLogic::GameLogic()
 
 	m_frame = 0;
 	m_hasUpdated = FALSE;
+	m_hasScheduledUpdate = FALSE;
 	m_frameObjectsChangedTriggerAreas = 0;
 	m_width = 0;
 	m_height = 0;
@@ -470,6 +471,7 @@ void GameLogic::reset()
 
 	m_frame = 0;
 	m_hasUpdated = FALSE;
+	m_hasScheduledUpdate = FALSE;
 	m_width = DEFAULT_WORLD_WIDTH;
 	m_height = DEFAULT_WORLD_HEIGHT;
 	m_objList = nullptr;
@@ -1163,6 +1165,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 	// reset the frame counter
 	m_frame = 0;
 	m_hasUpdated = FALSE;
+	m_hasScheduledUpdate = FALSE;
 
 #ifdef DEBUG_CRC
 	// TheSuperHackers @info helmutbuhler 04/09/2025
@@ -3788,6 +3791,8 @@ void GameLogic::update()
 	USE_PERF_TIMER(GameLogic_update)
 	PROFILER_SECTION_COLOR(0x4CAF50);
 
+	m_hasScheduledUpdate = TRUE;
+
 	LatchRestore<Bool> inUpdateLatch(m_isInUpdate, TRUE);
 #ifdef DO_UNIT_TIMINGS
 	unitTimings();
@@ -4043,6 +4048,7 @@ void GameLogic::update()
 void GameLogic::preUpdate()
 {
 	m_hasUpdated = FALSE;
+	m_hasScheduledUpdate = FALSE;
 
 	if (m_pauseFrame == m_frame && m_pauseFrame != 0)
 	{

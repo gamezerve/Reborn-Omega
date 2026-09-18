@@ -138,6 +138,7 @@ public:
 
 	Bool isInGameLogicUpdate() const { return m_isInUpdate; }
 	Bool hasUpdated() const { return m_hasUpdated; } ///< Returns true if the logic frame has advanced in the current client/render update
+	Bool hasScheduledUpdate() const { return m_hasScheduledUpdate; }
 	UnsignedInt getFrame();										///< Returns the current simulation frame number
 	UnsignedInt getCRC( Int mode = CRC_CACHED, AsciiString deepCRCFileName = AsciiString::TheEmptyString );		///< Returns the CRC
 
@@ -408,6 +409,7 @@ private:
 
 	Bool m_isInUpdate;
 	Bool m_hasUpdated;
+	Bool m_hasScheduledUpdate;
 
 	Int m_rankPointsToAddAtGameStart;
 

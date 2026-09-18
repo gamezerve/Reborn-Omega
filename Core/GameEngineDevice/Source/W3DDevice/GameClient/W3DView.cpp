@@ -1716,7 +1716,7 @@ void W3DView::update()
 
 	if (!(TheScriptEngine->isTimeFrozenDebug()/* || TheScriptEngine->isTimeFrozenScript()*/) && !TheGameLogic->isGamePaused()) {
 		// If we aren't frozen for debug, allow the camera to follow scripted movements.
-		if (TheGameLogic->hasUpdated() && updateCameraMovements()) {
+		if (TheGameLogic->hasScheduledUpdate() && updateCameraMovements()) {
 			didScriptedMovement = true;
 			m_recalcCamera = true;
 		}
