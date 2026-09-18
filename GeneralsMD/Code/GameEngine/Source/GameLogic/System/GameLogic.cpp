@@ -2170,6 +2170,13 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 	TheTacticalView->setPitchToDefault();
 	TheTacticalView->setZoomToDefault();
 
+#if PRESERVE_RETAIL_SCRIPTED_CAMERA
+	if (m_gameMode == GAME_SHELL)
+	{
+		TheTacticalView->setUserControlled(false);
+	}
+#endif
+
 	// Reborn: GLA05 Intro Initial Camera Fix
 	if (TheGlobalData->m_mapName.compareNoCase("Maps\\GLA05\\GLA05.map") == 0)
 	{

@@ -723,7 +723,15 @@ Real W3DView::getDesiredHeight(Real x, Real y) const
 	// terrain height because the ground level is not updated for it.
 	if (!m_isUserControlled)
 	{
-		return getHeightAroundPos(x, y) + m_heightAboveGround;
+		Real heightAboveGround = m_heightAboveGround;
+
+		if (m_maxHeightAboveGround > 0.0f)
+		{
+			heightAboveGround *=
+				ViewDefaultMaxHeightAboveTerrain / m_maxHeightAboveGround;
+		}
+
+		return getHeightAroundPos(x, y) + heightAboveGround;
 	}
 #endif
 
@@ -1694,11 +1702,15 @@ void W3DView::update()
 
 	if (!(TheScriptEngine->isTimeFrozenDebug()/* || TheScriptEngine->isTimeFrozenScript()*/) && !TheGameLogic->isGamePaused()) {
 		// If we aren't frozen for debug, allow the camera to follow scripted movements.
-		if (updateCameraMovements()) {
+		if (TheGameLogic->hasUpdated() && updateCameraMovements()) {
 			didScriptedMovement = true;
 			m_recalcCamera = true;
 		}
-	} else {
+		else if (isDoingScriptedCamera()) {
+			didScriptedMovement = true;
+		}
+	}
+	else {
 		if (isDoingScriptedCamera()) {
 			didScriptedMovement = true; // don't mess up the scripted movement
 		}
@@ -1741,6 +1753,25 @@ void W3DView::update()
 
 	m_terrainHeightAtPivot = getHeightAroundPos(m_pos.x, m_pos.y);
 	m_currentHeightAboveGround = getCameraOffsetZ() * m_zoom - m_terrainHeightAtPivot;
+
+	if (!TheGlobalData->m_mapName.compareNoCase("Maps\\ShellMapMD\\ShellMapMD.map"))
+	{
+		DEBUG_LOG((
+			"CAM MD CAMERA UPDATE: user=%d scripted=%d "
+			"pos=(%.2f, %.2f, %.2f) zoom=%.4f "
+			"heightAboveGround=%.2f currentHeightAboveGround=%.2f "
+			"maxHeightAboveGround=%.2f terrainHeight=%.2f",
+			m_isUserControlled,
+			isDoingScriptedCamera(),
+			m_pos.x,
+			m_pos.y,
+			m_pos.z,
+			m_zoom,
+			m_heightAboveGround,
+			m_currentHeightAboveGround,
+			m_maxHeightAboveGround,
+			m_terrainHeightAtPivot));
+	}
 
 	if (m_okToAdjustHeight)
 	{
@@ -2973,6 +3004,18 @@ void W3DView::zoomCamera( Real finalZoom, Int milliseconds, Real easeIn, Real ea
 	m_zcInfo.startZoom = m_zoom;
 	m_zcInfo.endZoom = finalZoom;
 	m_zcInfo.ease.setEaseTimes(easeIn/milliseconds, easeOut/milliseconds);
+	DEBUG_LOG((
+		"CAM ZOOM START: map=%s finalZoom=%.4f currentZoom=%.4f "
+		"milliseconds=%d userControlled=%d heightAboveGround=%.2f "
+		"desiredZoom=%.4f maxZoom=%.4f",
+		TheGlobalData->m_mapName.str(),
+		finalZoom,
+		m_zoom,
+		milliseconds,
+		m_isUserControlled,
+		m_heightAboveGround,
+		getDesiredZoom(m_pos.x, m_pos.y),
+		getMaxZoom(m_pos.x, m_pos.y)));
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -3626,10 +3669,33 @@ void W3DView::setUserControlled(Bool value)
 {
 	if (m_isUserControlled != value)
 	{
+		DEBUG_LOG((
+			"CAM USER CONTROL BEFORE: map=%s old=%d new=%d "
+			"zoom=%.4f heightAboveGround=%.2f maxHeightAboveGround=%.2f "
+			"pos=(%.2f, %.2f, %.2f)",
+			TheGlobalData->m_mapName.str(),
+			m_isUserControlled,
+			value,
+			m_zoom,
+			m_heightAboveGround,
+			m_maxHeightAboveGround,
+			m_pos.x,
+			m_pos.y,
+			m_pos.z));
 		m_isUserControlled = value;
 #if PRESERVE_RETAIL_SCRIPTED_CAMERA
 		m_zoom = getDesiredZoom(m_pos.x, m_pos.y);
 #endif
+		DEBUG_LOG((
+			"CAM USER CONTROL AFTER: map=%s controlled=%d "
+			"zoom=%.4f desiredZoom=%.4f maxZoom=%.4f "
+			"heightAboveGround=%.2f",
+			TheGlobalData->m_mapName.str(),
+			m_isUserControlled,
+			m_zoom,
+			getDesiredZoom(m_pos.x, m_pos.y),
+			getMaxZoom(m_pos.x, m_pos.y),
+			m_heightAboveGround));
 	}
 }
 
