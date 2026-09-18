@@ -8675,15 +8675,22 @@ void ScriptActions::executeAction( ScriptAction *pAction )
 
 			if (scriptedFps == 0)
 			{
+				// Temporary test setup:
+				// Gameplay renders at 60 FPS while logic remains at the retail 30 FPS.
 				TheFramePacer->setFramesPerSecondLimit(60);
 				TheFramePacer->setLogicTimeScaleFps(LOGICFRAMES_PER_SECOND);
 				TheFramePacer->enableLogicTimeScale(TRUE);
 			}
 			else
 			{
-				TheFramePacer->setFramesPerSecondLimit(scriptedFps);
-				TheFramePacer->enableLogicTimeScale(FALSE);
+				// Temporary test setup:
+				// Cinematics render at 60 FPS while preserving the FPS/timing
+				// requested by the original mission script.
+				TheFramePacer->setFramesPerSecondLimit(60);
+				TheFramePacer->setLogicTimeScaleFps(scriptedFps);
+				TheFramePacer->enableLogicTimeScale(TRUE);
 			}
+
 			// Setting the fps limit doesn't do much good if we don't use it.  jba.
 			TheWritableGlobalData->m_useFpsLimit = true;
 			return;

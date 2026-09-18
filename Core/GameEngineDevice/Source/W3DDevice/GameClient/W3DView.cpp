@@ -1466,9 +1466,11 @@ Bool W3DView::updateCameraMovements()
 	else if (hasScriptedState(Scripted_MoveOnWaypointPath))
 	{
 		m_previousLookAtPosition = getPosition();
-		// TheSuperHackers @tweak The scripted camera movement is now decoupled from the render update.
-		// The scripted camera will still move when the time is frozen, but not when the game is halted.
-		moveAlongWaypointPath(TheFramePacer->getLogicTimeStepMilliseconds(FramePacer::IgnoreFrozenTime));
+
+		// TheSuperHackers @tweak The scripted camera movement is decoupled from
+		// the render update and advances once per logic frame.
+		moveAlongWaypointPath(MSEC_PER_LOGICFRAME_REAL);
+
 		didUpdate = true;
 	}
 	if (hasScriptedState(Scripted_CameraLock))

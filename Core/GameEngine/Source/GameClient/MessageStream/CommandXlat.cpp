@@ -22,7 +22,7 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-// CommandXlat.cpp
+// CommandXlat.cpp 
 // Translate raw input events into tactical commands
 // Author: Michael S. Booth, February 2001
 
