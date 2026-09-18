@@ -303,6 +303,7 @@ private:
 	Real m_shellMapHeightPreviewStartHeight;
 	Real m_shellMapHeightPreviewHeight;
 	Int m_shellMapHeightPreviewFrame;
+	Real m_shellMapHeightPreviewUnderlyingZoom;
 
 	Region2D m_cameraAreaConstraints; ///< Camera should be constrained to be within this area
 	Bool m_cameraAreaConstraintsValid; ///< If false, recalculates the camera area constraints in the next render update

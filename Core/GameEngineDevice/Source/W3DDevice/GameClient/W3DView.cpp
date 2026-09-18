@@ -982,6 +982,7 @@ void W3DView::reset()
 	m_shellMapHeightPreviewStartHeight = ViewDefaultMaxHeightAboveTerrain;
 	m_shellMapHeightPreviewHeight = ViewDefaultMaxHeightAboveTerrain;
 	m_shellMapHeightPreviewFrame = 0;
+	m_shellMapHeightPreviewUnderlyingZoom = 1.0f;
 
 	// Just in case...
 	setTimeMultiplier(1); // Set time rate back to 1.
@@ -1729,6 +1730,11 @@ void W3DView::update()
 
 	if (m_shellMapHeightPreviewActive)
 	{
+		if (TheGameLogic->hasUpdated() && hasScriptedState(Scripted_Zoom))
+		{
+			m_shellMapHeightPreviewUnderlyingZoom = m_zoom;
+		}
+
 		updateShellMapCameraHeightPreview();
 	}
 
@@ -3673,6 +3679,11 @@ void W3DView::previewShellMapCameraHeight(Real height)
 		max(ViewDefaultMaxHeightAboveTerrain, currentHeight);
 
 	m_shellMapHeightPreviewHeight = height;
+
+	// Preserve the ShellMap's natural zoom. If its own Scripted_Zoom
+	// continues running during the preview, this value will be updated.
+	m_shellMapHeightPreviewUnderlyingZoom = m_zoom;
+
 	m_shellMapHeightPreviewFrame = 0;
 	m_shellMapHeightPreviewActive = true;
 
@@ -3695,17 +3706,21 @@ void W3DView::updateShellMapCameraHeightPreview()
 		return;
 	}
 
-	// 30 logic frames per second:
-	// 30 frames: zoom out to the selected height
-	// 60 frames: hold the selected height
-	// 60 frames: return to the retail ShellMap height
 	const Int ZOOM_OUT_FRAMES = 30;
 	const Int HOLD_FRAMES = 150;
 	const Int RETURN_FRAMES = 150;
 
 	++m_shellMapHeightPreviewFrame;
 
-	Real height = ViewDefaultMaxHeightAboveTerrain;
+	const Real terrainHeight =
+		getHeightAroundPos(m_pos.x, m_pos.y);
+
+	const Real underlyingHeight =
+		getCameraOffsetZ() *
+		m_shellMapHeightPreviewUnderlyingZoom -
+		terrainHeight;
+
+	Real height = underlyingHeight;
 
 	if (m_shellMapHeightPreviewFrame <= ZOOM_OUT_FRAMES)
 	{
@@ -3736,15 +3751,19 @@ void W3DView::updateShellMapCameraHeightPreview()
 
 		factor = clamp(0.0f, factor, 1.0f);
 
+		// Return to the height currently requested by the ShellMap's
+		// own scripted camera instead of always returning to 310.
 		height = WWMath::Lerp(
 			m_shellMapHeightPreviewHeight,
-			ViewDefaultMaxHeightAboveTerrain,
+			underlyingHeight,
 			factor);
 
 		if (returnFrame >= RETURN_FRAMES)
 		{
-			height = ViewDefaultMaxHeightAboveTerrain;
+			m_zoom = m_shellMapHeightPreviewUnderlyingZoom;
 			m_shellMapHeightPreviewActive = false;
+			m_recalcCamera = true;
+			return;
 		}
 	}
 
@@ -3753,7 +3772,7 @@ void W3DView::updateShellMapCameraHeightPreview()
 	if (cameraOffset > 0.0f)
 	{
 		m_zoom =
-			(getHeightAroundPos(m_pos.x, m_pos.y) + height) /
+			(terrainHeight + height) /
 			cameraOffset;
 
 		m_recalcCamera = true;
