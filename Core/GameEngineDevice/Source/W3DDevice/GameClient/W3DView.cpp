@@ -795,30 +795,11 @@ void W3DView::updateCameraTransform()
 	//
 	const Int logicFps = TheFramePacer->getActualLogicTimeScaleFps();
 
-	if (!m_isUserControlled && logicFps > 0 &&
+	if (!m_isUserControlled &&
+		m_scriptedCameraInterpolationInitialized &&
+		logicFps > 0 &&
 		TheFramePacer->getActualFramesPerSecondLimit() > logicFps)
 	{
-		if (!m_scriptedCameraInterpolationInitialized)
-		{
-			m_previousScriptedCameraSource = sourcePos;
-			m_previousScriptedCameraTarget = targetPos;
-			m_currentScriptedCameraSource = sourcePos;
-			m_currentScriptedCameraTarget = targetPos;
-			m_scriptedCameraInterpolationInitialized = true;
-		}
-
-		//
-		// A scheduled update means that the authoritative scripted camera
-		// state has just advanced to its next logic-frame state.
-		//
-		if (TheGameLogic->hasScheduledUpdate())
-		{
-			m_previousScriptedCameraSource = m_currentScriptedCameraSource;
-			m_previousScriptedCameraTarget = m_currentScriptedCameraTarget;
-
-			m_currentScriptedCameraSource = sourcePos;
-			m_currentScriptedCameraTarget = targetPos;
-		}
 
 		const Real alpha = TheGameEngine->getLogicInterpolationAlpha();
 
@@ -841,10 +822,6 @@ void W3DView::updateCameraTransform()
 		targetPos.Z =
 			m_previousScriptedCameraTarget.Z +
 			(m_currentScriptedCameraTarget.Z - m_previousScriptedCameraTarget.Z) * alpha;
-	}
-	else
-	{
-		m_scriptedCameraInterpolationInitialized = false;
 	}
 
 	const Bool clipCameraAboveTerrain = m_isUserControlled;
@@ -1798,11 +1775,17 @@ void W3DView::update()
 	if (!(TheScriptEngine->isTimeFrozenDebug()/* || TheScriptEngine->isTimeFrozenScript()*/) && !TheGameLogic->isGamePaused()) {
 		// If we aren't frozen for debug, allow the camera to follow scripted movements.
 		if (TheGameLogic->hasScheduledUpdate() && updateCameraMovements()) {
+			updateScriptedCameraInterpolationState();
 			didScriptedMovement = true;
 			m_recalcCamera = true;
 		}
 		else if (isDoingScriptedCamera()) {
 			didScriptedMovement = true;
+		}
+
+		if (!isDoingScriptedCamera() && getCameraLock() == INVALID_ID)
+		{
+			m_scriptedCameraInterpolationInitialized = false;
 		}
 	}
 	else {
@@ -1952,7 +1935,17 @@ void W3DView::update()
 	}
 
 	// (gth) C&C3 if m_isCameraSlaved then force the camera to update each frame
-	if (m_recalcCamera || m_isCameraSlaved)
+	Bool updateInterpolatedScriptedCamera = false;
+
+	const Int logicFps = TheFramePacer->getActualLogicTimeScaleFps();
+
+	updateInterpolatedScriptedCamera =
+		!m_isUserControlled &&
+		m_scriptedCameraInterpolationInitialized &&
+		logicFps > 0 &&
+		TheFramePacer->getActualFramesPerSecondLimit() > logicFps;
+
+	if (m_recalcCamera || m_isCameraSlaved || updateInterpolatedScriptedCamera)
 	{
 		updateCameraTransform();
 		m_recalcCamera = false;
@@ -4275,6 +4268,29 @@ bool W3DView::getDesiredTerrainDrawSize(ICoord2D &dimensions) const
 	dimensions.x = WorldHeightMap::LOW_ANGLE_DRAW_WIDTH;
 	dimensions.y = WorldHeightMap::LOW_ANGLE_DRAW_HEIGHT;
 	return true;
+}
+
+void W3DView::updateScriptedCameraInterpolationState()
+{
+	Vector3 sourcePos;
+	Vector3 targetPos;
+	buildCameraPosition(sourcePos, targetPos);
+
+	if (!m_scriptedCameraInterpolationInitialized)
+	{
+		m_previousScriptedCameraSource = sourcePos;
+		m_previousScriptedCameraTarget = targetPos;
+		m_currentScriptedCameraSource = sourcePos;
+		m_currentScriptedCameraTarget = targetPos;
+		m_scriptedCameraInterpolationInitialized = true;
+		return;
+	}
+
+	m_previousScriptedCameraSource = m_currentScriptedCameraSource;
+	m_previousScriptedCameraTarget = m_currentScriptedCameraTarget;
+
+	m_currentScriptedCameraSource = sourcePos;
+	m_currentScriptedCameraTarget = targetPos;
 }
 
 void W3DView::updateTerrain()

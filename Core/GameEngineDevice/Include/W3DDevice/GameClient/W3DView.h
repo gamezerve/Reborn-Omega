@@ -346,6 +346,7 @@ private:
 	void zoomCameraOneFrame();							///< Do one frame of a zoom camera movement.
 
 	void updateShellMapCameraHeightPreview();
+	void updateScriptedCameraInterpolationState();
 
 	void pitchCameraOneFrame();							///< Do one frame of a pitch camera movement.
 	void getAxisAlignedViewRegion(Region3D &axisAlignedRegion);	///< Find 3D Region enclosing all possible drawables.
