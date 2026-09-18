@@ -635,8 +635,16 @@ static void saveOptions()
 			if (oldValue != value && TheTacticalView)
 			{
 				TheTacticalView->setMaxHeightAboveGround(value);
-				TheTacticalView->setHeightAboveGround(value);
-				TheTacticalView->setZoom(1.0f);
+
+				if (TheGameLogic && TheGameLogic->getGameMode() == GAME_SHELL)
+				{
+					TheTacticalView->previewShellMapCameraHeight(value);
+				}
+				else
+				{
+					TheTacticalView->setHeightAboveGround(value);
+					TheTacticalView->setZoom(1.0f);
+				}
 			}
 
 			AsciiString prefString;
@@ -666,8 +674,16 @@ static void saveOptions()
 			if (oldValue != value && TheTacticalView)
 			{
 				TheTacticalView->setMaxHeightAboveGround(value);
-				TheTacticalView->setHeightAboveGround(value);
-				TheTacticalView->setZoom(1.0f);
+
+				if (TheGameLogic && TheGameLogic->getGameMode() == GAME_SHELL)
+				{
+					TheTacticalView->previewShellMapCameraHeight(value);
+				}
+				else
+				{
+					TheTacticalView->setHeightAboveGround(value);
+					TheTacticalView->setZoom(1.0f);
+				}
 			}
 
 			UnicodeString uStr;

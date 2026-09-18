@@ -218,6 +218,8 @@ public:
 	virtual void setZoom(Real z) override;
 	virtual void setZoomToDefault() override;									///< Set zoom to default value
 
+	void previewShellMapCameraHeight(Real height);
+
 	virtual void setFieldOfView( Real angle ) override;							///< Set the horizontal field of view angle
 
   virtual WorldToScreenReturn worldToScreenTriReturn( const Coord3D *w, ICoord2D *s ) override;	///< Transform world coordinate "w" into screen coordinate "s"
@@ -295,6 +297,13 @@ private:
 	Real m_initialGroundLevel;
 #endif
 
+	// Reborn: Temporarily previews a custom camera height in the ShellMap
+	// without interrupting its scripted camera movements.	Bool m_shellMapHeightPreviewActive;
+	Bool m_shellMapHeightPreviewActive;
+	Real m_shellMapHeightPreviewStartHeight;
+	Real m_shellMapHeightPreviewHeight;
+	Int m_shellMapHeightPreviewFrame;
+
 	Region2D m_cameraAreaConstraints; ///< Camera should be constrained to be within this area
 	Bool m_cameraAreaConstraintsValid; ///< If false, recalculates the camera area constraints in the next render update
 	Bool m_recalcCameraConstraintsAfterScrolling; ///< Recalculates the camera area constraints after the user has moved the camera
@@ -328,6 +337,9 @@ private:
 	void setupWaypointPath(Bool orient);					///< Calculates distances & angles for moving along a waypoint path.
 	void rotateCameraOneFrame();							///< Do one frame of a rotate camera movement.
 	void zoomCameraOneFrame();							///< Do one frame of a zoom camera movement.
+
+	void updateShellMapCameraHeightPreview();
+
 	void pitchCameraOneFrame();							///< Do one frame of a pitch camera movement.
 	void getAxisAlignedViewRegion(Region3D &axisAlignedRegion);	///< Find 3D Region enclosing all possible drawables.
 	void calcDeltaScroll(Coord2D &screenDelta);

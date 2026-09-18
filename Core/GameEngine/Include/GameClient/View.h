@@ -282,6 +282,8 @@ public:
 	virtual void forceCameraAreaConstraintRecalc() {}
 	virtual void setGuardBandBias( const Coord2D *gb ) = 0;
 
+	virtual void previewShellMapCameraHeight(Real height) {}
+
 protected:
 
 	friend class Display;

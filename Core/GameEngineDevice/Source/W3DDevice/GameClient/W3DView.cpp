@@ -189,6 +189,12 @@ W3DView::W3DView()
 	m_recalcCamera = false;
 
 	m_rebornCutsceneWidescreenFix = FALSE;
+
+	m_shellMapHeightPreviewActive = false;
+	m_shellMapHeightPreviewStartHeight = ViewDefaultMaxHeightAboveTerrain;
+	m_shellMapHeightPreviewHeight = ViewDefaultMaxHeightAboveTerrain;
+	m_shellMapHeightPreviewFrame = 0;
+
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -972,6 +978,11 @@ void W3DView::reset()
 {
 	View::reset();
 
+	m_shellMapHeightPreviewActive = false;
+	m_shellMapHeightPreviewStartHeight = ViewDefaultMaxHeightAboveTerrain;
+	m_shellMapHeightPreviewHeight = ViewDefaultMaxHeightAboveTerrain;
+	m_shellMapHeightPreviewFrame = 0;
+
 	// Just in case...
 	setTimeMultiplier(1); // Set time rate back to 1.
 
@@ -1714,6 +1725,11 @@ void W3DView::update()
 		if (isDoingScriptedCamera()) {
 			didScriptedMovement = true; // don't mess up the scripted movement
 		}
+	}
+
+	if (m_shellMapHeightPreviewActive)
+	{
+		updateShellMapCameraHeightPreview();
 	}
 
 	if (!m_isUserControlled)
@@ -3638,6 +3654,110 @@ void W3DView::zoomCameraOneFrame()
 	}
 
 	//DEBUG_LOG(("W3DView::zoomCameraOneFrame() - m_zoom = %g", m_zoom));
+}
+
+// ------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
+void W3DView::previewShellMapCameraHeight(Real height)
+{
+	height = clamp(
+		ViewDefaultMaxHeightAboveTerrain,
+		height,
+		TheGlobalData->m_maxCameraHeight);
+
+	const Real terrainHeight = getHeightAroundPos(m_pos.x, m_pos.y);
+	const Real currentHeight =
+		getCameraOffsetZ() * m_zoom - terrainHeight;
+
+	m_shellMapHeightPreviewStartHeight =
+		max(ViewDefaultMaxHeightAboveTerrain, currentHeight);
+
+	m_shellMapHeightPreviewHeight = height;
+	m_shellMapHeightPreviewFrame = 0;
+	m_shellMapHeightPreviewActive = true;
+
+	m_recalcCamera = true;
+}
+
+// ------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
+void W3DView::updateShellMapCameraHeightPreview()
+{
+	if (!m_shellMapHeightPreviewActive)
+	{
+		return;
+	}
+
+	// Advance only with the fixed game logic update so the preview timing
+	// does not depend on the render frame rate.
+	if (!TheGameLogic->hasUpdated())
+	{
+		return;
+	}
+
+	// 30 logic frames per second:
+	// 30 frames: zoom out to the selected height
+	// 60 frames: hold the selected height
+	// 60 frames: return to the retail ShellMap height
+	const Int ZOOM_OUT_FRAMES = 30;
+	const Int HOLD_FRAMES = 150;
+	const Int RETURN_FRAMES = 150;
+
+	++m_shellMapHeightPreviewFrame;
+
+	Real height = ViewDefaultMaxHeightAboveTerrain;
+
+	if (m_shellMapHeightPreviewFrame <= ZOOM_OUT_FRAMES)
+	{
+		Real factor =
+			(Real)m_shellMapHeightPreviewFrame /
+			(Real)ZOOM_OUT_FRAMES;
+
+		height = WWMath::Lerp(
+			m_shellMapHeightPreviewStartHeight,
+			m_shellMapHeightPreviewHeight,
+			factor);
+	}
+	else if (m_shellMapHeightPreviewFrame <=
+		ZOOM_OUT_FRAMES + HOLD_FRAMES)
+	{
+		height = m_shellMapHeightPreviewHeight;
+	}
+	else
+	{
+		Int returnFrame =
+			m_shellMapHeightPreviewFrame -
+			ZOOM_OUT_FRAMES -
+			HOLD_FRAMES;
+
+		Real factor =
+			(Real)returnFrame /
+			(Real)RETURN_FRAMES;
+
+		factor = clamp(0.0f, factor, 1.0f);
+
+		height = WWMath::Lerp(
+			m_shellMapHeightPreviewHeight,
+			ViewDefaultMaxHeightAboveTerrain,
+			factor);
+
+		if (returnFrame >= RETURN_FRAMES)
+		{
+			height = ViewDefaultMaxHeightAboveTerrain;
+			m_shellMapHeightPreviewActive = false;
+		}
+	}
+
+	const Real cameraOffset = getCameraOffsetZ();
+
+	if (cameraOffset > 0.0f)
+	{
+		m_zoom =
+			(getHeightAroundPos(m_pos.x, m_pos.y) + height) /
+			cameraOffset;
+
+		m_recalcCamera = true;
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
