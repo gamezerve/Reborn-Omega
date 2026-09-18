@@ -709,6 +709,10 @@ private:
 	Matrix3D m_instance;				///< The instance matrix that holds the initial/default position & orientation
 	Real m_instanceScale;				///< the uniform scale factor applied to the instance matrix before it is sent to W3D.
 
+	Matrix3D m_previousLogicTransform;
+	Matrix3D m_currentLogicTransform;
+	Bool m_logicTransformInterpolationInitialized;
+
 	DrawableInfo				m_drawableInfo;		///< structure pointed to by W3D render objects so they know which drawable they belong to.
 
 	ModelConditionFlags	m_conditionState;				///< The Drawables current behavior state
@@ -740,6 +744,9 @@ private:
 	//Perhaps we can move this out of Drawable???
 public:
 	static void killStaticImages();
+
+	void setLogicTransformForInterpolation(const Matrix3D* transform);
+	void getInterpolatedRenderTransform(Matrix3D* transform) const;
 
 #ifdef DIRTY_CONDITION_FLAGS
 	// only for StDrawableDirtyStuffLocker!

@@ -928,6 +928,21 @@ Bool GameEngine::canUpdateNetworkGameLogic()
 	return false;
 }
 
+Real GameEngine::getLogicInterpolationAlpha() const
+{
+	const Int logicFps = TheFramePacer->getActualLogicTimeScaleFps();
+
+	if (logicFps <= 0)
+		return 1.0f;
+
+	const Real targetFrameTime = 1.0f / logicFps;
+
+	if (targetFrameTime <= 0.0f)
+		return 1.0f;
+
+	return min(1.0f, m_logicTimeAccumulator / targetFrameTime);
+}
+
 /// -----------------------------------------------------------------------------------------------
 Bool GameEngine::canUpdateRegularGameLogic(UnsignedInt logicTimeQueryFlags)
 {

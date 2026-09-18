@@ -269,6 +269,12 @@ private:
 	Real m_shakeIntensity;													///< the intensity of the oscillation
 	Vector3 m_shakerAngles;													//WST 11/12/2002 new multiple instance camera shaker system
 
+	Vector3 m_previousScriptedCameraSource;
+	Vector3 m_previousScriptedCameraTarget;
+	Vector3 m_currentScriptedCameraSource;
+	Vector3 m_currentScriptedCameraTarget;
+	Bool m_scriptedCameraInterpolationInitialized;
+
 	ScriptedState m_scriptedState; ///< Flags for scripted camera movements. Use functions addScriptedState, removeScriptedState for write.
 
 	TRotateCameraInfo m_rcInfo;

@@ -41,6 +41,7 @@
 
 #include "Common/BuildAssistant.h"
 #include "Common/FramePacer.h"
+#include "Common/GameEngine.h"
 #include "Common/GameUtility.h"
 #include "Common/GlobalData.h"
 #include "Common/Module.h"
@@ -184,6 +185,8 @@ W3DView::W3DView()
 	m_shakerAngles.X =0.0f;							// Proper camera shake generator & sources
 	m_shakerAngles.Y =0.0f;
 	m_shakerAngles.Z =0.0f;
+
+	m_scriptedCameraInterpolationInitialized = false;
 
 	m_cameraAreaConstraints.zero();
 	m_recalcCamera = false;
@@ -785,6 +788,65 @@ void W3DView::updateCameraTransform()
 	buildCameraPosition(sourcePos, targetPos);
 
 #if PRESERVE_RETAIL_SCRIPTED_CAMERA
+	//
+	// Scripted camera state advances at the logic rate. Keep the authoritative
+	// camera state at that rate, but interpolate its rendered position and
+	// orientation when rendering faster than the logic update.
+	//
+	const Int logicFps = TheFramePacer->getActualLogicTimeScaleFps();
+
+	if (!m_isUserControlled && logicFps > 0 &&
+		TheFramePacer->getActualFramesPerSecondLimit() > logicFps)
+	{
+		if (!m_scriptedCameraInterpolationInitialized)
+		{
+			m_previousScriptedCameraSource = sourcePos;
+			m_previousScriptedCameraTarget = targetPos;
+			m_currentScriptedCameraSource = sourcePos;
+			m_currentScriptedCameraTarget = targetPos;
+			m_scriptedCameraInterpolationInitialized = true;
+		}
+
+		//
+		// A scheduled update means that the authoritative scripted camera
+		// state has just advanced to its next logic-frame state.
+		//
+		if (TheGameLogic->hasScheduledUpdate())
+		{
+			m_previousScriptedCameraSource = m_currentScriptedCameraSource;
+			m_previousScriptedCameraTarget = m_currentScriptedCameraTarget;
+
+			m_currentScriptedCameraSource = sourcePos;
+			m_currentScriptedCameraTarget = targetPos;
+		}
+
+		const Real alpha = TheGameEngine->getLogicInterpolationAlpha();
+
+		sourcePos.X =
+			m_previousScriptedCameraSource.X +
+			(m_currentScriptedCameraSource.X - m_previousScriptedCameraSource.X) * alpha;
+		sourcePos.Y =
+			m_previousScriptedCameraSource.Y +
+			(m_currentScriptedCameraSource.Y - m_previousScriptedCameraSource.Y) * alpha;
+		sourcePos.Z =
+			m_previousScriptedCameraSource.Z +
+			(m_currentScriptedCameraSource.Z - m_previousScriptedCameraSource.Z) * alpha;
+
+		targetPos.X =
+			m_previousScriptedCameraTarget.X +
+			(m_currentScriptedCameraTarget.X - m_previousScriptedCameraTarget.X) * alpha;
+		targetPos.Y =
+			m_previousScriptedCameraTarget.Y +
+			(m_currentScriptedCameraTarget.Y - m_previousScriptedCameraTarget.Y) * alpha;
+		targetPos.Z =
+			m_previousScriptedCameraTarget.Z +
+			(m_currentScriptedCameraTarget.Z - m_previousScriptedCameraTarget.Z) * alpha;
+	}
+	else
+	{
+		m_scriptedCameraInterpolationInitialized = false;
+	}
+
 	const Bool clipCameraAboveTerrain = m_isUserControlled;
 #else
 	const Bool clipCameraAboveTerrain = true;
@@ -1633,7 +1695,26 @@ void W3DView::update()
 				}
 			}
 			else
-			{	Coord3D objpos = *cameraLockObj->getPosition();
+			{
+				Coord3D objpos;
+
+				Drawable* cameraLockDrawable = cameraLockObj->getDrawable();
+
+				if (cameraLockDrawable != nullptr)
+				{
+					Matrix3D interpolatedTransform;
+					cameraLockDrawable->getInterpolatedRenderTransform(&interpolatedTransform);
+
+					const Vector3& interpolatedPosition = interpolatedTransform.Get_Translation();
+
+					objpos.x = interpolatedPosition.X;
+					objpos.y = interpolatedPosition.Y;
+					objpos.z = interpolatedPosition.Z;
+				}
+				else
+				{
+					objpos = *cameraLockObj->getPosition();
+				}
 				Coord3D curpos = getPosition();
 				// don't "snap" directly to the pos, but move there smoothly.
 				Real snapThreshSqr = sqr(TheGlobalData->m_partitionCellSize);
@@ -3584,12 +3665,29 @@ void W3DView::rotateCameraOneFrame()
 	{
 		if (m_rcInfo.curFrame <= m_rcInfo.numFrames + m_rcInfo.numHoldFrames)
 		{
-			const Object *obj = TheGameLogic->findObjectByID(m_rcInfo.target.targetObjectID);
+			const Object* obj = TheGameLogic->findObjectByID(m_rcInfo.target.targetObjectID);
 			if (obj)
 			{
-				// object has not been destroyed
-				m_rcInfo.target.targetObjectPos = *obj->getPosition();
+				const Drawable* drawable = obj->getDrawable();
+
+				if (drawable != nullptr)
+				{
+					Matrix3D interpolatedTransform;
+					drawable->getInterpolatedRenderTransform(&interpolatedTransform);
+
+					const Vector3& interpolatedPosition = interpolatedTransform.Get_Translation();
+
+					m_rcInfo.target.targetObjectPos.x = interpolatedPosition.X;
+					m_rcInfo.target.targetObjectPos.y = interpolatedPosition.Y;
+					m_rcInfo.target.targetObjectPos.z = interpolatedPosition.Z;
+				}
+				else
+				{
+					// object has not been destroyed
+					m_rcInfo.target.targetObjectPos = *obj->getPosition();
+				}
 			}
+
 
 			const Vector2 dir(m_rcInfo.target.targetObjectPos.x - m_pos.x, m_rcInfo.target.targetObjectPos.y - m_pos.y);
 			const Real dirLength = dir.Length();

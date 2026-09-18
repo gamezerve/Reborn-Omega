@@ -38,6 +38,7 @@
 #include "Common/DrawModule.h"
 #include "Common/FramePacer.h"
 #include "Common/GameAudio.h"
+#include "Common/GameEngine.h"
 #include "Common/GameLOD.h"
 #include "Common/GameState.h"
 #include "Common/GameUtility.h"
@@ -370,6 +371,8 @@ Drawable::Drawable( const ThingTemplate *thingTemplate, DrawableStatusBits statu
 	m_ambientSound = nullptr;
   m_ambientSoundEnabled = true;
   m_ambientSoundEnabledFromScript = true;
+
+	m_logicTransformInterpolationInitialized = FALSE;
 
 	m_decalOpacityFadeTarget = 0;
 	m_decalOpacityFadeRate = 0;
@@ -2677,7 +2680,8 @@ void Drawable::draw()
 #endif
 
 	// call the database defined draw action method
-	Matrix3D transformMtx = *getTransformMatrix();
+	Matrix3D transformMtx;
+	getInterpolatedRenderTransform(&transformMtx);
 	if (!isInstanceIdentity())
 	{
 #ifdef ALLOW_TEMPORARIES
@@ -5563,6 +5567,56 @@ void TintEnvelope::setDecayFrames( UnsignedInt frames )
 	Real recipFrames = ( -1.0f ) / (Real)MAX(1,frames);
 	m_decayRate.Set( m_peakColor );
 	m_decayRate.Scale( Vector3(recipFrames, recipFrames, recipFrames) );
+}
+
+void Drawable::setLogicTransformForInterpolation(const Matrix3D* transform)
+{
+	if (!m_logicTransformInterpolationInitialized)
+	{
+		m_previousLogicTransform = *transform;
+		m_currentLogicTransform = *transform;
+		m_logicTransformInterpolationInitialized = TRUE;
+		return;
+	}
+
+	m_previousLogicTransform = m_currentLogicTransform;
+	m_currentLogicTransform = *transform;
+}
+
+void Drawable::getInterpolatedRenderTransform(Matrix3D* transform) const
+{
+	const Object* object = getObject();
+
+	// Immobile objects do not need render interpolation.
+	if (object == nullptr || object->isKindOf(KINDOF_IMMOBILE))
+	{
+		*transform = *getTransformMatrix();
+		return;
+	}
+
+	if (!m_logicTransformInterpolationInitialized)
+	{
+		*transform = *getTransformMatrix();
+		return;
+	}
+
+	const Real alpha = TheGameEngine->getLogicInterpolationAlpha();
+
+	*transform = m_currentLogicTransform;
+
+	const Vector3& previousPos = m_previousLogicTransform.Get_Translation();
+	const Vector3& currentPos = m_currentLogicTransform.Get_Translation();
+
+	Vector3 interpolatedPos;
+
+	interpolatedPos.X =
+		previousPos.X + (currentPos.X - previousPos.X) * alpha;
+	interpolatedPos.Y =
+		previousPos.Y + (currentPos.Y - previousPos.Y) * alpha;
+	interpolatedPos.Z =
+		previousPos.Z + (currentPos.Z - previousPos.Z) * alpha;
+
+	transform->Set_Translation(interpolatedPos);
 }
 
 //-------------------------------------------------------------------------------------------------

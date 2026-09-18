@@ -81,6 +81,8 @@ public:
 	virtual Bool isActive() {return m_isActive;}	///< returns whether app has OS focus.
 	virtual void setIsActive(Bool isActive) { m_isActive = isActive; };
 
+	Real getLogicInterpolationAlpha() const;
+
 protected:
 
 	virtual void resetSubsystems();
