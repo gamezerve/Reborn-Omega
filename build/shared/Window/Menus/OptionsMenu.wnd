@@ -2079,8 +2079,8 @@ WINDOW
         CHILD
         WINDOW
           WINDOWTYPE = ENTRYFIELD;
-          SCREENRECT = UPPERLEFT: 344 156,
-                       BOTTOMRIGHT: 381 180,
+          SCREENRECT = UPPERLEFT: 344 184,
+                       BOTTOMRIGHT: 381 208,
                        CREATIONRESOLUTION: 800 600;
           NAME = "OptionsMenu.wnd:TextEntryMaxCameraHeight";
           STATUS = ENABLED+IMAGE;
@@ -2133,8 +2133,8 @@ WINDOW
         CHILD
         WINDOW
           WINDOWTYPE = CHECKBOX;
-          SCREENRECT = UPPERLEFT: 160 156,
-                       BOTTOMRIGHT: 344 180,
+          SCREENRECT = UPPERLEFT: 160 184,
+                       BOTTOMRIGHT: 344 208,
                        CREATIONRESOLUTION: 800 600;
           NAME = "OptionsMenu.wnd:CheckMaxCameraHeight";
           STATUS = ENABLED+IMAGE+BORDER;
@@ -5939,8 +5939,8 @@ WINDOW
         CHILD
         WINDOW
           WINDOWTYPE = PUSHBUTTON;
-          SCREENRECT = UPPERLEFT: 295 521,
-                       BOTTOMRIGHT: 454 553,
+          SCREENRECT = UPPERLEFT: 396 521,
+                       BOTTOMRIGHT: 506 553,
                        CREATIONRESOLUTION: 800 600;
           NAME = "OptionsMenu.wnd:ButtonAdvancedSettingsAccept";
           STATUS = ENABLED+IMAGE;
@@ -5988,8 +5988,8 @@ WINDOW
         CHILD
         WINDOW
           WINDOWTYPE = PUSHBUTTON;
-          SCREENRECT = UPPERLEFT: 466 521,
-                       BOTTOMRIGHT: 625 553,
+          SCREENRECT = UPPERLEFT: 514 521,
+                       BOTTOMRIGHT: 624 553,
                        CREATIONRESOLUTION: 800 600;
           NAME = "OptionsMenu.wnd:ButtonAdvancedSettingsBack";
           STATUS = ENABLED+IMAGE;
@@ -6182,10 +6182,10 @@ WINDOW
           WINDOW
             WINDOWTYPE = CHECKBOX;
             SCREENRECT = UPPERLEFT: 384 168,
-                         BOTTOMRIGHT: 615 192,
+                         BOTTOMRIGHT: 600 192,
                          CREATIONRESOLUTION: 800 600;
-            NAME = "OptionsMenu.wnd:AdvancedSettings_CheckShowProps";
-            STATUS = HIDDEN+ENABLED+IMAGE+BORDER;
+            NAME = "OptionsMenu.wnd:CheckChallenge60FPS";
+            STATUS = ENABLED+IMAGE+BORDER;
             STYLE = CHECKBOX+MOUSETRACK;
             SYSTEMCALLBACK = "[None]";
             INPUTCALLBACK = "[None]";
@@ -6193,9 +6193,9 @@ WINDOW
             DRAWCALLBACK = "[None]";
             FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
             HEADERTEMPLATE = "LabelRegular";
-            TOOLTIPTEXT = "TOOLTIP:ShowProps";
+            TOOLTIPTEXT = "TOOLTIP:Challenge60FPS";
             TOOLTIPDELAY = -1;
-            TEXT = "GUI:ShowProps";
+            TEXT = "GUI:Challenge60FPS";
             TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
                         DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                         HILITE:   168 255 12 255, HILITEBORDER:   0 0 0 255;
@@ -6280,10 +6280,10 @@ WINDOW
           WINDOW
             WINDOWTYPE = CHECKBOX;
             SCREENRECT = UPPERLEFT: 168 168,
-                         BOTTOMRIGHT: 368 193,
+                         BOTTOMRIGHT: 368 192,
                          CREATIONRESOLUTION: 800 600;
-            NAME = "OptionsMenu.wnd:AdvancedSettings_Check2DShadows";
-            STATUS = HIDDEN+ENABLED+IMAGE+BORDER;
+            NAME = "OptionsMenu.wnd:CheckSkirmish60FPS";
+            STATUS = ENABLED+IMAGE+BORDER;
             STYLE = CHECKBOX+MOUSETRACK;
             SYSTEMCALLBACK = "[None]";
             INPUTCALLBACK = "[None]";
@@ -6291,9 +6291,9 @@ WINDOW
             DRAWCALLBACK = "[None]";
             FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
             HEADERTEMPLATE = "LabelRegular";
-            TOOLTIPTEXT = "TOOLTIP:Shadows2D";
+            TOOLTIPTEXT = "TOOLTIP:Skirmish60FPS";
             TOOLTIPDELAY = -1;
-            TEXT = "GUI:Shadows2D";
+            TEXT = "GUI:Skirmish60FPS";
             TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
                         DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                         HILITE:   168 255 12 255, HILITEBORDER:   0 0 0 255;
@@ -7505,8 +7505,8 @@ WINDOW
         CHILD
         WINDOW
           WINDOWTYPE = PUSHBUTTON;
-          SCREENRECT = UPPERLEFT: 124 521,
-                       BOTTOMRIGHT: 283 553,
+          SCREENRECT = UPPERLEFT: 278 521,
+                       BOTTOMRIGHT: 388 553,
                        CREATIONRESOLUTION: 800 600;
           NAME = "OptionsMenu.wnd:ButtonCheckUpdates";
           STATUS = ENABLED+IMAGE;
@@ -7520,6 +7520,55 @@ WINDOW
           TOOLTIPTEXT = "TOOLTIP:CheckForUpdates";
           TOOLTIPDELAY = -1;
           TEXT = "GUI:CheckForUpdates";
+          TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
+                      DISABLED: 62 64 92 255, DISABLEDBORDER: 31 32 47 255,
+                      HILITE:   186 255 12 255, HILITEBORDER:   0 2 0 255;
+          ENABLEDDRAWDATA = IMAGE: Buttons-Left, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
+                            IMAGE: NoImage, COLOR: 47 55 168 255, BORDERCOLOR: 254 254 254 255,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: Buttons-Middle, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: Buttons-Right, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                            IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+          DISABLEDDRAWDATA = IMAGE: Buttons-Disabled-Left, COLOR: 128 128 128 255, BORDERCOLOR: 192 192 192 255,
+                             IMAGE: NoImage, COLOR: 192 192 192 255, BORDERCOLOR: 128 128 128 255,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: Buttons-Disabled-Middle, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: Buttons-Disabled-Right, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+          HILITEDRAWDATA = IMAGE: Buttons-HiLite-Left, COLOR: 209 253 4 255, BORDERCOLOR: 59 60 52 255,
+                           IMAGE: Buttons-Pushed-Left, COLOR: 47 55 168 255, BORDERCOLOR: 254 254 254 255,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: Buttons-Pushed-Middle, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: Buttons-Pushed-Right, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: Buttons-HiLite-Middle, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: Buttons-HiLite-Right, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                           IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+        END
+        CHILD
+        WINDOW
+          WINDOWTYPE = PUSHBUTTON;
+          SCREENRECT = UPPERLEFT: 160 521,
+                       BOTTOMRIGHT: 270 553,
+                       CREATIONRESOLUTION: 800 600;
+          NAME = "OptionsMenu.wnd:ButtonAdvancedSettingsDefaults";
+          STATUS = ENABLED+IMAGE;
+          STYLE = PUSHBUTTON+MOUSETRACK;
+          SYSTEMCALLBACK = "[None]";
+          INPUTCALLBACK = "[None]";
+          TOOLTIPCALLBACK = "[None]";
+          DRAWCALLBACK = "[None]";
+          FONT = NAME: "Generals", SIZE: 15, BOLD: 0;
+          HEADERTEMPLATE = "MainButton";
+          TOOLTIPTEXT = "TOOLTIP:OptionsDefaults";
+          TOOLTIPDELAY = -1;
+          TEXT = "GUI:Defaults";
           TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
                       DISABLED: 62 64 92 255, DISABLEDBORDER: 31 32 47 255,
                       HILITE:   186 255 12 255, HILITEBORDER:   0 2 0 255;

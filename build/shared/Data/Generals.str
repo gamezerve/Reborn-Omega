@@ -184,11 +184,19 @@ GUI:UpdateSettings
 END
 
 GUI:CampaignGameplay60FPS
-"60 FPS Campaign Gameplay"
+"60 FPS Campaign Gameplay Rendering"
 END
 
 GUI:CampaignCinematic60FPS
-"60 FPS Campaign Cinematics"
+"60 FPS Campaign Cinematics Rendering"
+END
+
+GUI:Skirmish60FPS
+"60 FPS Skirmish Rendering"
+END
+
+GUI:Challenge60FPS
+"60 FPS Challenge Rendering"
 END
 
 TOOLTIP:CheckForUpdates
@@ -205,6 +213,14 @@ END
 
 TOOLTIP:CampaignCinematic60FPS
 "Render campaign cinematics at 60 FPS while preserving the frame rate and timing requested by mission scripts. This provides smoother camera movement and animations without altering their intended timing. This feature is experimental and may cause visual issues. Disable it for the original campaign experience."
+END
+
+TOOLTIP:Skirmish60FPS
+"Render skirmish matches at 60 FPS while the Game Speed setting controls only the simulation rate."
+END
+
+TOOLTIP:Challenge60FPS
+"Render General's Challenge matches at 60 FPS while preserving the original 30 FPS simulation rate."
 END
 
 GUI:GLA08

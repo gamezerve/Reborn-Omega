@@ -8674,9 +8674,12 @@ void ScriptActions::executeAction( ScriptAction *pAction )
 			const Int scriptedFps = pAction->getParameter(0)->getInt();
 			const Int logicFps = scriptedFps == 0 ? LOGICFRAMES_PER_SECOND : scriptedFps;
 			const Bool isGameplay = scriptedFps == 0;
-			const Bool use60FpsRendering = logicFps <= LOGICFRAMES_PER_SECOND &&
-				((isGameplay && TheGlobalData->m_campaignGameplay60Fps) ||
-				(!isGameplay && TheGlobalData->m_campaignCinematic60Fps));
+			const Bool gameplay60Fps = TheGlobalData->m_campaignGameplay60Fps;
+			const Bool cinematic60Fps = TheGlobalData->m_campaignCinematic60Fps;
+			const Bool use60FpsRendering =
+				(gameplay60Fps && cinematic60Fps) ||
+				(gameplay60Fps && isGameplay && logicFps <= LOGICFRAMES_PER_SECOND) ||
+				(cinematic60Fps && !isGameplay);
 
 			TheFramePacer->setFramesPerSecondLimit(use60FpsRendering ? 60 : logicFps);
 			TheFramePacer->setLogicTimeScaleFps(logicFps);

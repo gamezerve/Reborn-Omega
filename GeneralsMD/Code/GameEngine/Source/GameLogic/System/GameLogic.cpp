@@ -1238,6 +1238,14 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 	Campaign* currentCampaign = TheCampaignManager->getCurrentCampaign();
 	Bool isChallengeCampaign = m_gameMode == GAME_SINGLE_PLAYER && currentCampaign && currentCampaign->m_isChallengeCampaign;
 
+	if (isChallengeCampaign && TheGlobalData->m_challenge60Fps)
+	{
+		TheFramePacer->setFramesPerSecondLimit(60);
+		TheFramePacer->setLogicTimeScaleFps(LOGICFRAMES_PER_SECOND);
+		TheFramePacer->enableLogicTimeScale(TRUE);
+		TheWritableGlobalData->m_useFpsLimit = TRUE;
+	}
+
 	// Fill in the game color and Factions before we do the Load Screen
 	TheGameInfo = nullptr;
 	if (TheNetwork)

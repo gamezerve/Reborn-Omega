@@ -174,16 +174,23 @@ static GameWindow *   ButtonAdvancedCancel				= nullptr;
 
 static NameKeyType WinAdvancedSettingsID = NAMEKEY_INVALID;
 static GameWindow* WinAdvancedSettings = nullptr;
+static NameKeyType ButtonAdvancedSettingsDefaultsID = NAMEKEY_INVALID;
 static NameKeyType ButtonAdvancedSettingsAcceptID = NAMEKEY_INVALID;
 static NameKeyType ButtonAdvancedSettingsBackID = NAMEKEY_INVALID;
 static NameKeyType checkCampaignGameplay60FpsID = NAMEKEY_INVALID;
 static GameWindow* checkCampaignGameplay60Fps = nullptr;
 static NameKeyType checkCampaignCinematic60FpsID = NAMEKEY_INVALID;
 static GameWindow* checkCampaignCinematic60Fps = nullptr;
+static NameKeyType checkSkirmish60FpsID = NAMEKEY_INVALID;
+static GameWindow* checkSkirmish60Fps = nullptr;
+static NameKeyType checkChallenge60FpsID = NAMEKEY_INVALID;
+static GameWindow* checkChallenge60Fps = nullptr;
 static Bool advancedSettingsOriginalZoomFactor = FALSE;
 static Bool advancedSettingsOriginalAutomaticUpdates = FALSE;
 static Bool advancedSettingsOriginalGameplay60Fps = FALSE;
 static Bool advancedSettingsOriginalCinematic60Fps = FALSE;
+static Bool advancedSettingsOriginalSkirmish60Fps = FALSE;
+static Bool advancedSettingsOriginalChallenge60Fps = FALSE;
 
 static NameKeyType    sliderTextureResolutionID = NAMEKEY_INVALID;
 static GameWindow *   sliderTextureResolution = nullptr;
@@ -459,6 +466,57 @@ static void clampOptionsMaxCameraHeightText()
 	GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
 }
 
+static void saveAdvancedSettings()
+{
+	UserPreferences rebornPreferences;
+	LoadRebornOmegaPreferences(rebornPreferences);
+
+	if (checkZoomFactor)
+	{
+		const Bool enabled = GadgetCheckBoxIsChecked(checkZoomFactor);
+		rebornPreferences["UseMiddleMouseCameraZoomOut"] = enabled ? "yes" : "no";
+		TheWritableGlobalData->m_middleMouseCameraZoomOut = enabled;
+	}
+
+	const Bool canChangeGameFps = !TheGameLogic->isInInteractiveGame();
+
+	if (canChangeGameFps && checkCampaignGameplay60Fps)
+	{
+		const Bool enabled = GadgetCheckBoxIsChecked(checkCampaignGameplay60Fps);
+		rebornPreferences["CampaignGameplay60FPS"] = enabled ? "yes" : "no";
+		TheWritableGlobalData->m_campaignGameplay60Fps = enabled;
+	}
+
+	if (canChangeGameFps && checkCampaignCinematic60Fps)
+	{
+		const Bool enabled = GadgetCheckBoxIsChecked(checkCampaignCinematic60Fps);
+		rebornPreferences["CampaignCinematic60FPS"] = enabled ? "yes" : "no";
+		TheWritableGlobalData->m_campaignCinematic60Fps = enabled;
+	}
+
+	if (canChangeGameFps && checkSkirmish60Fps)
+	{
+		const Bool enabled = GadgetCheckBoxIsChecked(checkSkirmish60Fps);
+		rebornPreferences["Skirmish60FPS"] = enabled ? "yes" : "no";
+		TheWritableGlobalData->m_skirmish60Fps = enabled;
+	}
+
+	if (canChangeGameFps && checkChallenge60Fps)
+	{
+		const Bool enabled = GadgetCheckBoxIsChecked(checkChallenge60Fps);
+		rebornPreferences["Challenge60FPS"] = enabled ? "yes" : "no";
+		TheWritableGlobalData->m_challenge60Fps = enabled;
+	}
+
+	WriteRebornOmegaPreferences(rebornPreferences);
+
+	if (checkAutomaticUpdateChecks)
+	{
+		SetRebornOmegaAutomaticUpdateChecksEnabled(
+			GadgetCheckBoxIsChecked(checkAutomaticUpdateChecks));
+	}
+}
+
 static void saveOptions()
 {
 	Int index;
@@ -716,35 +774,7 @@ static void saveOptions()
 		WriteRebornOmegaPreferences(rebornPreferences);
 	}
 
-	if (checkZoomFactor)
-	{
-		Bool enabled = GadgetCheckBoxIsChecked(checkZoomFactor);
-
-		UserPreferences rebornPreferences;
-		LoadRebornOmegaPreferences(rebornPreferences);
-
-		rebornPreferences["UseMiddleMouseCameraZoomOut"] =
-			enabled ? "yes" : "no";
-
-		WriteRebornOmegaPreferences(rebornPreferences);
-
-		TheWritableGlobalData->m_middleMouseCameraZoomOut = enabled;
-	}
-
-	if (checkCampaignGameplay60Fps && checkCampaignCinematic60Fps)
-	{
-		const Bool gameplay60Fps = GadgetCheckBoxIsChecked(checkCampaignGameplay60Fps);
-		const Bool cinematic60Fps = GadgetCheckBoxIsChecked(checkCampaignCinematic60Fps);
-
-		UserPreferences rebornPreferences;
-		LoadRebornOmegaPreferences(rebornPreferences);
-		rebornPreferences["CampaignGameplay60FPS"] = gameplay60Fps ? "yes" : "no";
-		rebornPreferences["CampaignCinematic60FPS"] = cinematic60Fps ? "yes" : "no";
-		WriteRebornOmegaPreferences(rebornPreferences);
-
-		TheWritableGlobalData->m_campaignGameplay60Fps = gameplay60Fps;
-		TheWritableGlobalData->m_campaignCinematic60Fps = cinematic60Fps;
-	}
+	saveAdvancedSettings();
 
 	//-------------------------------------------------------------------------------------------------
 	// antialiasing
@@ -1061,15 +1091,6 @@ static void saveOptions()
 	}
 
 	//-------------------------------------------------------------------------------------------------
-  // Set Reborn Omega AutoUpdate Checker Preferences
-	if (checkAutomaticUpdateChecks)
-	{
-		SetRebornOmegaAutomaticUpdateChecksEnabled(
-			GadgetCheckBoxIsChecked(
-				checkAutomaticUpdateChecks));
-	}
-
-	//-------------------------------------------------------------------------------------------------
 	// Resolution
 	//
 	// TheSuperHackers @bugfix xezon 12/06/2025 Now performs the resolution change at the very end of
@@ -1159,14 +1180,40 @@ static void showAdvancedSettings()
 		checkCampaignGameplay60Fps && GadgetCheckBoxIsChecked(checkCampaignGameplay60Fps);
 	advancedSettingsOriginalCinematic60Fps =
 		checkCampaignCinematic60Fps && GadgetCheckBoxIsChecked(checkCampaignCinematic60Fps);
+	advancedSettingsOriginalSkirmish60Fps =
+		checkSkirmish60Fps && GadgetCheckBoxIsChecked(checkSkirmish60Fps);
+	advancedSettingsOriginalChallenge60Fps =
+		checkChallenge60Fps && GadgetCheckBoxIsChecked(checkChallenge60Fps);
 
 	WinAdvancedSettings->winHide(FALSE);
 }
 
 static void acceptAdvancedSettings()
 {
+	saveAdvancedSettings();
+
 	if (WinAdvancedSettings)
 		WinAdvancedSettings->winHide(TRUE);
+}
+
+static void setAdvancedSettingsDefaults()
+{
+	if (checkAutomaticUpdateChecks)
+		GadgetCheckBoxSetChecked(checkAutomaticUpdateChecks, TRUE);
+	if (checkZoomFactor)
+		GadgetCheckBoxSetChecked(checkZoomFactor, FALSE);
+
+	if (!TheGameLogic->isInInteractiveGame())
+	{
+		if (checkCampaignGameplay60Fps)
+			GadgetCheckBoxSetChecked(checkCampaignGameplay60Fps, FALSE);
+		if (checkCampaignCinematic60Fps)
+			GadgetCheckBoxSetChecked(checkCampaignCinematic60Fps, FALSE);
+		if (checkSkirmish60Fps)
+			GadgetCheckBoxSetChecked(checkSkirmish60Fps, FALSE);
+		if (checkChallenge60Fps)
+			GadgetCheckBoxSetChecked(checkChallenge60Fps, FALSE);
+	}
 }
 
 static void cancelAdvancedSettings()
@@ -1179,6 +1226,10 @@ static void cancelAdvancedSettings()
 		GadgetCheckBoxSetChecked(checkCampaignGameplay60Fps, advancedSettingsOriginalGameplay60Fps);
 	if (checkCampaignCinematic60Fps)
 		GadgetCheckBoxSetChecked(checkCampaignCinematic60Fps, advancedSettingsOriginalCinematic60Fps);
+	if (checkSkirmish60Fps)
+		GadgetCheckBoxSetChecked(checkSkirmish60Fps, advancedSettingsOriginalSkirmish60Fps);
+	if (checkChallenge60Fps)
+		GadgetCheckBoxSetChecked(checkChallenge60Fps, advancedSettingsOriginalChallenge60Fps);
 
 	if (WinAdvancedSettings)
 		WinAdvancedSettings->winHide(TRUE);
@@ -1242,10 +1293,13 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 
 	checkAutomaticUpdateChecksID = GetOptionsMenuChildKey("CheckAutomaticUpdateChecksAdvanced");
 	WinAdvancedSettingsID = GetOptionsMenuChildKey("WinAdvancedSettings");
+	ButtonAdvancedSettingsDefaultsID = GetOptionsMenuChildKey("ButtonAdvancedSettingsDefaults");
 	ButtonAdvancedSettingsAcceptID = GetOptionsMenuChildKey("ButtonAdvancedSettingsAccept");
 	ButtonAdvancedSettingsBackID = GetOptionsMenuChildKey("ButtonAdvancedSettingsBack");
 	checkCampaignGameplay60FpsID = GetOptionsMenuChildKey("CheckCampaignGameplay60FPS");
 	checkCampaignCinematic60FpsID = GetOptionsMenuChildKey("CheckCampaignCinematic60FPS");
+	checkSkirmish60FpsID = GetOptionsMenuChildKey("CheckSkirmish60FPS");
+	checkChallenge60FpsID = GetOptionsMenuChildKey("CheckChallenge60FPS");
 
 	checkDrawAnchorID = GetOptionsMenuChildKey("CheckBoxDrawAnchor");
 	checkMoveAnchorID = GetOptionsMenuChildKey("CheckBoxMoveAnchor");
@@ -1295,6 +1349,8 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 		TheWindowManager->winGetWindowFromId(nullptr, checkCampaignGameplay60FpsID);
 	checkCampaignCinematic60Fps =
 		TheWindowManager->winGetWindowFromId(nullptr, checkCampaignCinematic60FpsID);
+	checkSkirmish60Fps = TheWindowManager->winGetWindowFromId(nullptr, checkSkirmish60FpsID);
+	checkChallenge60Fps = TheWindowManager->winGetWindowFromId(nullptr, checkChallenge60FpsID);
 
 	//checkDoubleClickAttackMoveID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckDoubleClickAttackMove" );
 	checkDoubleClickAttackMove   = TheWindowManager->winGetWindowFromId( nullptr, checkDoubleClickAttackMoveID );
@@ -1413,7 +1469,17 @@ if (checkSendDelayLocal)
 	GameWindow* advancedUpdateButton =
 		TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("ButtonCheckUpdates"));
 	if (advancedUpdateButton)
-		advancedUpdateButton->winHide(TheGameLogic->isInInteractiveGame());
+		advancedUpdateButton->winEnable(!TheGameLogic->isInInteractiveGame());
+
+	const Bool canChangeGameFps = !TheGameLogic->isInInteractiveGame();
+	if (checkCampaignGameplay60Fps)
+		checkCampaignGameplay60Fps->winEnable(canChangeGameFps);
+	if (checkCampaignCinematic60Fps)
+		checkCampaignCinematic60Fps->winEnable(canChangeGameFps);
+	if (checkSkirmish60Fps)
+		checkSkirmish60Fps->winEnable(canChangeGameFps);
+	if (checkChallenge60Fps)
+		checkChallenge60Fps->winEnable(canChangeGameFps);
 
 	Color color =  GameMakeColor(255,255,255,255);
 
@@ -1561,10 +1627,16 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 
 	Bool campaignGameplay60Fps = rebornPreferences["CampaignGameplay60FPS"] == "yes";
 	Bool campaignCinematic60Fps = rebornPreferences["CampaignCinematic60FPS"] == "yes";
+	Bool skirmish60Fps = rebornPreferences["Skirmish60FPS"] == "yes";
+	Bool challenge60Fps = rebornPreferences["Challenge60FPS"] == "yes";
 	if (checkCampaignGameplay60Fps)
 		GadgetCheckBoxSetChecked(checkCampaignGameplay60Fps, campaignGameplay60Fps);
 	if (checkCampaignCinematic60Fps)
 		GadgetCheckBoxSetChecked(checkCampaignCinematic60Fps, campaignCinematic60Fps);
+	if (checkSkirmish60Fps)
+		GadgetCheckBoxSetChecked(checkSkirmish60Fps, skirmish60Fps);
+	if (checkChallenge60Fps)
+		GadgetCheckBoxSetChecked(checkChallenge60Fps, challenge60Fps);
 
 	// populate anti aliasing modes
 	AsciiString selectedAliasingMode = (*pref)["AntiAliasing"];
@@ -2581,6 +2653,10 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 			else if (controlID == ButtonAdvancedCancelID )
 			{
 				cancelAdvancedOptions();
+			}
+			else if (controlID == ButtonAdvancedSettingsDefaultsID)
+			{
+				setAdvancedSettingsDefaults();
 			}
 			else if (controlID == ButtonAdvancedSettingsAcceptID)
 			{

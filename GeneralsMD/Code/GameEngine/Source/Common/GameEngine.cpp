@@ -1002,17 +1002,19 @@ void GameEngine::update()
 			VERIFY_CRC
 
 #if defined(GENERALS_ONLINE_HIGH_FPS_RENDER)
-			static Bool wasGeneralsOnlineMatch = FALSE;
+			static Bool wasHighFpsNetworkMatch = FALSE;
 			static Bool savedUseFpsLimit = FALSE;
 			static Int savedFpsLimit = 0;
+			const Bool isActiveMatch = TheGameLogic->isInGame() && !TheShell->isShellActive();
 			const Bool isGeneralsOnlineMatch = TheNGMPGame != nullptr
 				&& TheNGMPGame->isGameInProgress()
-				&& TheGameLogic->isInGame()
-				&& !TheShell->isShellActive();
+				&& isActiveMatch;
+			const Bool isLanMatch = TheGameLogic->isInLanGame() && isActiveMatch;
+			const Bool isHighFpsNetworkMatch = isGeneralsOnlineMatch || isLanMatch;
 
-			if (isGeneralsOnlineMatch)
+			if (isHighFpsNetworkMatch)
 			{
-				if (!wasGeneralsOnlineMatch)
+				if (!wasHighFpsNetworkMatch)
 				{
 					savedUseFpsLimit = TheGlobalData->m_useFpsLimit;
 					savedFpsLimit = TheGlobalData->m_framesPerSecondLimit;
@@ -1023,7 +1025,7 @@ void GameEngine::update()
 				TheWritableGlobalData->m_framesPerSecondLimit = GENERALS_ONLINE_HIGH_FPS_LIMIT;
 				TheFramePacer->setFramesPerSecondLimit(GENERALS_ONLINE_HIGH_FPS_LIMIT);
 			}
-			else if (wasGeneralsOnlineMatch)
+			else if (wasHighFpsNetworkMatch)
 			{
 				// Reborn: Restore the user's original Reborn Omega frame pacing outside online matches.
 				TheWritableGlobalData->m_useFpsLimit = savedUseFpsLimit;
@@ -1031,7 +1033,7 @@ void GameEngine::update()
 				TheFramePacer->setFramesPerSecondLimit(savedFpsLimit);
 			}
 
-			wasGeneralsOnlineMatch = isGeneralsOnlineMatch;
+			wasHighFpsNetworkMatch = isHighFpsNetworkMatch;
 #endif
 			
 				TheRadar->UPDATE();

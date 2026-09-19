@@ -211,6 +211,8 @@ public:
 	Bool m_middleMouseCameraZoomOut;
 	Bool m_campaignGameplay60Fps;
 	Bool m_campaignCinematic60Fps;
+	Bool m_skirmish60Fps;
+	Bool m_challenge60Fps;
 	Real m_minCameraHeight;
 	Real m_terrainHeightAtEdgeOfMap;
 	Real m_unitDamagedThresh;

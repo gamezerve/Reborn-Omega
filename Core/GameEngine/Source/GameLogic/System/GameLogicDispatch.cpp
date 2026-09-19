@@ -1351,7 +1351,16 @@ bool GameLogic::onNewGame(MAYBE_UNUSED GameMessage *msg)
 		if (maxFPS < 1 || maxFPS > 1000)
 			maxFPS = TheGlobalData->m_framesPerSecondLimit;
 		DEBUG_LOG(("Setting max FPS limit to %d FPS", maxFPS));
-		TheFramePacer->setFramesPerSecondLimit(maxFPS);
+		if (gameMode == GAME_SKIRMISH && TheGlobalData->m_skirmish60Fps)
+		{
+			TheFramePacer->setFramesPerSecondLimit(60);
+			TheFramePacer->setLogicTimeScaleFps(maxFPS);
+			TheFramePacer->enableLogicTimeScale(TRUE);
+		}
+		else
+		{
+			TheFramePacer->setFramesPerSecondLimit(maxFPS);
+		}
 		TheWritableGlobalData->m_useFpsLimit = true;
 	}
 

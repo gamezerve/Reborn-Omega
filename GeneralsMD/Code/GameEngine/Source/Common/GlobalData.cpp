@@ -861,6 +861,8 @@ GlobalData::GlobalData()
 	m_middleMouseCameraZoomOut = FALSE;
 	m_campaignGameplay60Fps = FALSE;
 	m_campaignCinematic60Fps = FALSE;
+	m_skirmish60Fps = FALSE;
+	m_challenge60Fps = FALSE;
 	m_terrainHeightAtEdgeOfMap = 0.0f;
 
 	m_unitDamagedThresh = 0.5f;

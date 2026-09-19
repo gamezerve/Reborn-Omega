@@ -70,6 +70,10 @@ OptionPreferences::OptionPreferences()
 		(rebornPreferences["CampaignGameplay60FPS"] == "yes");
 	TheWritableGlobalData->m_campaignCinematic60Fps =
 		(rebornPreferences["CampaignCinematic60FPS"] == "yes");
+	TheWritableGlobalData->m_skirmish60Fps =
+		(rebornPreferences["Skirmish60FPS"] == "yes");
+	TheWritableGlobalData->m_challenge60Fps =
+		(rebornPreferences["Challenge60FPS"] == "yes");
 }
 
 OptionPreferences::~OptionPreferences()
