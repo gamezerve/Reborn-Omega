@@ -37,6 +37,7 @@
 
 #include "Common/INI.h"
 #include "Common/RebornLog.h"
+#include "Common/ThingTemplate.h"
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/PartitionManager.h"
 #include "GameLogic/Locomotor.h"
@@ -2269,6 +2270,20 @@ PhysicsTurningType Locomotor::rotateObjAroundLocoPivot(Object* obj, const Coord3
 		} else {
 			turn = TURN_NONE;
 		}
+
+		if (obj->getTemplate()->getName().compare("AmericaVehicleComanche") == 0)
+		{
+			DEBUG_LOG((
+				"COMANCHE TURN id=%u frame=%u angle=%.9f desired=%.9f amount=%.9f turn=%d\n",
+				obj->getID(),
+				TheGameLogic->getFrame(),
+				angle,
+				desiredAngle,
+				amount,
+				(Int)turn
+				));
+		}
+
 		obj->setOrientation( normalizeAngle(angle + amount) );
 	}
 	return turn;
@@ -2421,6 +2436,28 @@ void Locomotor::moveTowardsPositionOther(Object* obj, PhysicsBehavior *physics, 
 
 	Real goalSpeed = desiredSpeed;
 	Real actualSpeed = physics->getForwardSpeed2D();
+	
+	if (obj->getTemplate()->getName().compare("AmericaVehicleComanche") == 0)
+	{
+		const Coord3D* pos = obj->getPosition();
+		const Coord3D* vel = physics->getVelocity();
+		const Coord3D* dir = obj->getUnitDirectionVector2D();
+
+		DEBUG_LOG((
+			"COMANCHE id=%u frame=%u pos=(%.3f %.3f %.3f) "
+			"ori=%.6f dir=(%.6f %.6f) "
+			"vel=(%.6f %.6f %.6f) "
+			"forward=%.6f goal=(%.3f %.3f %.3f)\n",
+			obj->getID(),
+			TheGameLogic->getFrame(),
+			pos->x, pos->y, pos->z,
+			obj->getOrientation(),
+			dir->x, dir->y,
+			vel->x, vel->y, vel->z,
+			actualSpeed,
+			goalPos.x, goalPos.y, goalPos.z
+			));
+	}
 
 	if (obj->isKindOf(KINDOF_MOVES_REVERSE))
 	{

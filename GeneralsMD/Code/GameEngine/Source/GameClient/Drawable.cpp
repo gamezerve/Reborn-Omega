@@ -2693,6 +2693,7 @@ void Drawable::draw()
 		{
 			const Real alpha = TheGameEngine->getLogicInterpolationAlpha();
 
+			// Interpolate position.
 			const Real x =
 				m_previousLogicPosition.x +
 				(m_currentLogicPosition.x - m_previousLogicPosition.x) * alpha;
@@ -2708,6 +2709,27 @@ void Drawable::draw()
 			transformMtx.Set_X_Translation(x);
 			transformMtx.Set_Y_Translation(y);
 			transformMtx.Set_Z_Translation(z);
+
+			// Interpolate orientation using the shortest angular path.
+			Real angleDelta =
+				m_currentLogicOrientation - m_previousLogicOrientation;
+
+			while (angleDelta > PI)
+				angleDelta -= 2.0f * PI;
+
+			while (angleDelta < -PI)
+				angleDelta += 2.0f * PI;
+
+			const Real interpolatedOrientation =
+				m_previousLogicOrientation + angleDelta * alpha;
+
+			const Real currentOrientation =
+				transformMtx.Get_Z_Rotation();
+
+			const Real orientationDelta =
+				interpolatedOrientation - currentOrientation;
+
+			transformMtx.In_Place_Pre_Rotate_Z(orientationDelta);
 		}
 	}
 
@@ -5663,17 +5685,52 @@ void Drawable::getInterpolatedRenderTransform(Matrix3D* transform) const
 void Drawable::snapshotLogicPositionForInterpolation()
 {
 	const Coord3D pos = *getPosition();
+	const Real orientation = getOrientation();
 
 	if (!m_logicPositionInterpolationInitialized)
 	{
 		m_previousLogicPosition = pos;
 		m_currentLogicPosition = pos;
+		m_previousLogicOrientation = orientation;
+		m_currentLogicOrientation = orientation;
 		m_logicPositionInterpolationInitialized = TRUE;
 		return;
 	}
 
 	m_previousLogicPosition = m_currentLogicPosition;
 	m_currentLogicPosition = pos;
+	m_previousLogicOrientation = m_currentLogicOrientation;
+	m_currentLogicOrientation = orientation;
+}
+
+Coord3D Drawable::getInterpolatedRenderPosition() const
+{
+	Coord3D pos = *getPosition();
+
+	if (m_logicPositionInterpolationInitialized)
+	{
+		const Int logicFps = TheFramePacer->getActualLogicTimeScaleFps();
+
+		if (logicFps > 0 &&
+			TheFramePacer->getActualFramesPerSecondLimit() > logicFps)
+		{
+			const Real alpha = TheGameEngine->getLogicInterpolationAlpha();
+
+			pos.x =
+				m_previousLogicPosition.x +
+				(m_currentLogicPosition.x - m_previousLogicPosition.x) * alpha;
+
+			pos.y =
+				m_previousLogicPosition.y +
+				(m_currentLogicPosition.y - m_previousLogicPosition.y) * alpha;
+
+			pos.z =
+				m_previousLogicPosition.z +
+				(m_currentLogicPosition.z - m_previousLogicPosition.z) * alpha;
+		}
+	}
+
+	return pos;
 }
 
 //-------------------------------------------------------------------------------------------------

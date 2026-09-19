@@ -591,6 +591,8 @@ public:
 
 	void snapshotLogicPositionForInterpolation();
 
+	Coord3D getInterpolatedRenderPosition() const;
+
 protected:
 
 	// snapshot methods
@@ -717,6 +719,8 @@ private:
 	UnsignedInt m_logicTransformInterpolationFrame;
 	Coord3D m_previousLogicPosition;
 	Coord3D m_currentLogicPosition;
+	Real m_previousLogicOrientation;
+	Real m_currentLogicOrientation;
 	Bool m_logicPositionInterpolationInitialized;
 
 	DrawableInfo				m_drawableInfo;		///< structure pointed to by W3D render objects so they know which drawable they belong to.
