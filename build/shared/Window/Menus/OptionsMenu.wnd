@@ -2079,8 +2079,8 @@ WINDOW
         CHILD
         WINDOW
           WINDOWTYPE = ENTRYFIELD;
-          SCREENRECT = UPPERLEFT: 344 184,
-                       BOTTOMRIGHT: 381 208,
+          SCREENRECT = UPPERLEFT: 344 178,
+                       BOTTOMRIGHT: 381 202,
                        CREATIONRESOLUTION: 800 600;
           NAME = "OptionsMenu.wnd:TextEntryMaxCameraHeight";
           STATUS = ENABLED+IMAGE;
@@ -2133,8 +2133,8 @@ WINDOW
         CHILD
         WINDOW
           WINDOWTYPE = CHECKBOX;
-          SCREENRECT = UPPERLEFT: 160 184,
-                       BOTTOMRIGHT: 344 208,
+          SCREENRECT = UPPERLEFT: 160 178,
+                       BOTTOMRIGHT: 344 202,
                        CREATIONRESOLUTION: 800 600;
           NAME = "OptionsMenu.wnd:CheckMaxCameraHeight";
           STATUS = ENABLED+IMAGE+BORDER;
@@ -6527,8 +6527,8 @@ WINDOW
             SCREENRECT = UPPERLEFT: 168 192,
                          BOTTOMRIGHT: 368 216,
                          CREATIONRESOLUTION: 800 600;
-            NAME = "OptionsMenu.wnd:AdvancedSettings_CheckCloudShadows";
-            STATUS = HIDDEN+ENABLED+IMAGE+BORDER;
+            NAME = "OptionsMenu.wnd:CheckShellMap60FPS";
+            STATUS = ENABLED+IMAGE+BORDER;
             STYLE = CHECKBOX+MOUSETRACK;
             SYSTEMCALLBACK = "[None]";
             INPUTCALLBACK = "[None]";
@@ -6536,9 +6536,9 @@ WINDOW
             DRAWCALLBACK = "[None]";
             FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
             HEADERTEMPLATE = "LabelRegular";
-            TOOLTIPTEXT = "TOOLTIP:CloudShadows";
+            TOOLTIPTEXT = "TOOLTIP:ShellMap60FPS";
             TOOLTIPDELAY = -1;
-            TEXT = "GUI:CloudShadows";
+            TEXT = "GUI:ShellMap60FPS";
             TEXTCOLOR = ENABLED:  255 255 255 255, ENABLEDBORDER:  0 0 0 255,
                         DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                         HILITE:   168 255 12 255, HILITEBORDER:   0 0 0 255;

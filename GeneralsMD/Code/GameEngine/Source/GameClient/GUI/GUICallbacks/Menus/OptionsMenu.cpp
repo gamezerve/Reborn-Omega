@@ -38,6 +38,7 @@
 #include "Common/AudioSettings.h"
 #include "Common/GameAudio.h"
 #include "Common/GameEngine.h"
+#include "Common/FramePacer.h"
 #include "Common/GameLOD.h"
 #include "Common/OptionPreferences.h"
 #include "Common/PlayerTemplate.h" // Reborn
@@ -185,12 +186,15 @@ static NameKeyType checkSkirmish60FpsID = NAMEKEY_INVALID;
 static GameWindow* checkSkirmish60Fps = nullptr;
 static NameKeyType checkChallenge60FpsID = NAMEKEY_INVALID;
 static GameWindow* checkChallenge60Fps = nullptr;
+static NameKeyType checkShellMap60FpsID = NAMEKEY_INVALID;
+static GameWindow* checkShellMap60Fps = nullptr;
 static Bool advancedSettingsOriginalZoomFactor = FALSE;
 static Bool advancedSettingsOriginalAutomaticUpdates = FALSE;
 static Bool advancedSettingsOriginalGameplay60Fps = FALSE;
 static Bool advancedSettingsOriginalCinematic60Fps = FALSE;
 static Bool advancedSettingsOriginalSkirmish60Fps = FALSE;
 static Bool advancedSettingsOriginalChallenge60Fps = FALSE;
+static Bool advancedSettingsOriginalShellMap60Fps = FALSE;
 
 static NameKeyType    sliderTextureResolutionID = NAMEKEY_INVALID;
 static GameWindow *   sliderTextureResolution = nullptr;
@@ -508,7 +512,30 @@ static void saveAdvancedSettings()
 		TheWritableGlobalData->m_challenge60Fps = enabled;
 	}
 
+	if (canChangeGameFps && checkShellMap60Fps)
+	{
+		const Bool enabled = GadgetCheckBoxIsChecked(checkShellMap60Fps);
+		rebornPreferences["ShellMap60FPS"] = enabled ? "yes" : "no";
+		TheWritableGlobalData->m_shellMap60Fps = enabled;
+	}
+
 	WriteRebornOmegaPreferences(rebornPreferences);
+
+	if (canChangeGameFps && TheGameLogic->getGameMode() == GAME_SHELL)
+	{
+		if (TheGlobalData->m_shellMap60Fps)
+		{
+			TheFramePacer->setFramesPerSecondLimit(60);
+			TheFramePacer->setLogicTimeScaleFps(LOGICFRAMES_PER_SECOND);
+			TheFramePacer->enableLogicTimeScale(TRUE);
+			TheWritableGlobalData->m_useFpsLimit = TRUE;
+		}
+		else
+		{
+			TheFramePacer->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
+			TheFramePacer->enableLogicTimeScale(FALSE);
+		}
+	}
 
 	if (checkAutomaticUpdateChecks)
 	{
@@ -1173,6 +1200,11 @@ static void showAdvancedSettings()
 	if (!WinAdvancedSettings)
 		return;
 
+	GameWindow* advancedSettingsButton = TheWindowManager->winGetWindowFromId(
+		nullptr, GetOptionsMenuChildKey("ButtonAdvancedSettings"));
+	if (advancedSettingsButton)
+		advancedSettingsButton->winHide(TRUE);
+
 	advancedSettingsOriginalZoomFactor = checkZoomFactor && GadgetCheckBoxIsChecked(checkZoomFactor);
 	advancedSettingsOriginalAutomaticUpdates =
 		checkAutomaticUpdateChecks && GadgetCheckBoxIsChecked(checkAutomaticUpdateChecks);
@@ -1184,6 +1216,8 @@ static void showAdvancedSettings()
 		checkSkirmish60Fps && GadgetCheckBoxIsChecked(checkSkirmish60Fps);
 	advancedSettingsOriginalChallenge60Fps =
 		checkChallenge60Fps && GadgetCheckBoxIsChecked(checkChallenge60Fps);
+	advancedSettingsOriginalShellMap60Fps =
+		checkShellMap60Fps && GadgetCheckBoxIsChecked(checkShellMap60Fps);
 
 	WinAdvancedSettings->winHide(FALSE);
 }
@@ -1194,6 +1228,11 @@ static void acceptAdvancedSettings()
 
 	if (WinAdvancedSettings)
 		WinAdvancedSettings->winHide(TRUE);
+
+	GameWindow* advancedSettingsButton = TheWindowManager->winGetWindowFromId(
+		nullptr, GetOptionsMenuChildKey("ButtonAdvancedSettings"));
+	if (advancedSettingsButton)
+		advancedSettingsButton->winHide(FALSE);
 }
 
 static void setAdvancedSettingsDefaults()
@@ -1213,6 +1252,8 @@ static void setAdvancedSettingsDefaults()
 			GadgetCheckBoxSetChecked(checkSkirmish60Fps, FALSE);
 		if (checkChallenge60Fps)
 			GadgetCheckBoxSetChecked(checkChallenge60Fps, FALSE);
+		if (checkShellMap60Fps)
+			GadgetCheckBoxSetChecked(checkShellMap60Fps, FALSE);
 	}
 }
 
@@ -1230,9 +1271,16 @@ static void cancelAdvancedSettings()
 		GadgetCheckBoxSetChecked(checkSkirmish60Fps, advancedSettingsOriginalSkirmish60Fps);
 	if (checkChallenge60Fps)
 		GadgetCheckBoxSetChecked(checkChallenge60Fps, advancedSettingsOriginalChallenge60Fps);
+	if (checkShellMap60Fps)
+		GadgetCheckBoxSetChecked(checkShellMap60Fps, advancedSettingsOriginalShellMap60Fps);
 
 	if (WinAdvancedSettings)
 		WinAdvancedSettings->winHide(TRUE);
+
+	GameWindow* advancedSettingsButton = TheWindowManager->winGetWindowFromId(
+		nullptr, GetOptionsMenuChildKey("ButtonAdvancedSettings"));
+	if (advancedSettingsButton)
+		advancedSettingsButton->winHide(FALSE);
 }
 
 // TheSuperHackers @tweak Now prints additional version information in the version label.
@@ -1300,6 +1348,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	checkCampaignCinematic60FpsID = GetOptionsMenuChildKey("CheckCampaignCinematic60FPS");
 	checkSkirmish60FpsID = GetOptionsMenuChildKey("CheckSkirmish60FPS");
 	checkChallenge60FpsID = GetOptionsMenuChildKey("CheckChallenge60FPS");
+	checkShellMap60FpsID = GetOptionsMenuChildKey("CheckShellMap60FPS");
 
 	checkDrawAnchorID = GetOptionsMenuChildKey("CheckBoxDrawAnchor");
 	checkMoveAnchorID = GetOptionsMenuChildKey("CheckBoxMoveAnchor");
@@ -1351,6 +1400,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 		TheWindowManager->winGetWindowFromId(nullptr, checkCampaignCinematic60FpsID);
 	checkSkirmish60Fps = TheWindowManager->winGetWindowFromId(nullptr, checkSkirmish60FpsID);
 	checkChallenge60Fps = TheWindowManager->winGetWindowFromId(nullptr, checkChallenge60FpsID);
+	checkShellMap60Fps = TheWindowManager->winGetWindowFromId(nullptr, checkShellMap60FpsID);
 
 	//checkDoubleClickAttackMoveID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckDoubleClickAttackMove" );
 	checkDoubleClickAttackMove   = TheWindowManager->winGetWindowFromId( nullptr, checkDoubleClickAttackMoveID );
@@ -1480,6 +1530,8 @@ if (checkSendDelayLocal)
 		checkSkirmish60Fps->winEnable(canChangeGameFps);
 	if (checkChallenge60Fps)
 		checkChallenge60Fps->winEnable(canChangeGameFps);
+	if (checkShellMap60Fps)
+		checkShellMap60Fps->winEnable(canChangeGameFps);
 
 	Color color =  GameMakeColor(255,255,255,255);
 
@@ -1629,6 +1681,7 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 	Bool campaignCinematic60Fps = rebornPreferences["CampaignCinematic60FPS"] == "yes";
 	Bool skirmish60Fps = rebornPreferences["Skirmish60FPS"] == "yes";
 	Bool challenge60Fps = rebornPreferences["Challenge60FPS"] == "yes";
+	Bool shellMap60Fps = rebornPreferences["ShellMap60FPS"] == "yes";
 	if (checkCampaignGameplay60Fps)
 		GadgetCheckBoxSetChecked(checkCampaignGameplay60Fps, campaignGameplay60Fps);
 	if (checkCampaignCinematic60Fps)
@@ -1637,6 +1690,8 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 		GadgetCheckBoxSetChecked(checkSkirmish60Fps, skirmish60Fps);
 	if (checkChallenge60Fps)
 		GadgetCheckBoxSetChecked(checkChallenge60Fps, challenge60Fps);
+	if (checkShellMap60Fps)
+		GadgetCheckBoxSetChecked(checkShellMap60Fps, shellMap60Fps);
 
 	// populate anti aliasing modes
 	AsciiString selectedAliasingMode = (*pref)["AntiAliasing"];

@@ -793,7 +793,12 @@ void W3DView::updateCameraTransform()
 	// camera state at that rate, but interpolate its rendered position and
 	// orientation when rendering faster than the logic update.
 	//
-	const Int logicFps = TheFramePacer->getActualLogicTimeScaleFps();
+	// Script freeze deliberately keeps the script engine and its camera movements
+	// advancing. Use the same frozen-time exception for their render interpolation.
+	const UnsignedInt logicTimeQueryFlags = TheScriptEngine->isTimeFrozenScript()
+		? FramePacer::IgnoreFrozenTime
+		: 0;
+	const Int logicFps = TheFramePacer->getActualLogicTimeScaleFps(logicTimeQueryFlags);
 
 	if (!m_isUserControlled &&
 		m_scriptedCameraInterpolationInitialized &&
@@ -801,7 +806,7 @@ void W3DView::updateCameraTransform()
 		TheFramePacer->getActualFramesPerSecondLimit() > logicFps)
 	{
 
-		const Real alpha = TheGameEngine->getLogicInterpolationAlpha();
+		const Real alpha = TheGameEngine->getLogicInterpolationAlpha(logicTimeQueryFlags);
 
 		sourcePos.X =
 			m_previousScriptedCameraSource.X +
@@ -1933,7 +1938,10 @@ void W3DView::update()
 	// (gth) C&C3 if m_isCameraSlaved then force the camera to update each frame
 	Bool updateInterpolatedScriptedCamera = false;
 
-	const Int logicFps = TheFramePacer->getActualLogicTimeScaleFps();
+	const UnsignedInt logicTimeQueryFlags = TheScriptEngine->isTimeFrozenScript()
+		? FramePacer::IgnoreFrozenTime
+		: 0;
+	const Int logicFps = TheFramePacer->getActualLogicTimeScaleFps(logicTimeQueryFlags);
 
 	updateInterpolatedScriptedCamera =
 		!m_isUserControlled &&

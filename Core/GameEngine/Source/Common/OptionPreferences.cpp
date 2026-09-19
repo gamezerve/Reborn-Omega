@@ -74,6 +74,8 @@ OptionPreferences::OptionPreferences()
 		(rebornPreferences["Skirmish60FPS"] == "yes");
 	TheWritableGlobalData->m_challenge60Fps =
 		(rebornPreferences["Challenge60FPS"] == "yes");
+	TheWritableGlobalData->m_shellMap60Fps =
+		(rebornPreferences["ShellMap60FPS"] == "yes");
 }
 
 OptionPreferences::~OptionPreferences()

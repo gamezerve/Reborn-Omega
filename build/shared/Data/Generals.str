@@ -199,6 +199,10 @@ GUI:Challenge60FPS
 "60 FPS Challenge Rendering"
 END
 
+GUI:ShellMap60FPS
+"60 FPS ShellMap Rendering"
+END
+
 TOOLTIP:CheckForUpdates
 "Check for available Reborn Omega updates."
 END
@@ -221,6 +225,10 @@ END
 
 TOOLTIP:Challenge60FPS
 "Render General's Challenge matches at 60 FPS while preserving the original 30 FPS simulation rate."
+END
+
+TOOLTIP:ShellMap60FPS
+"Render ShellMaps at 60 FPS while preserving the original 30 FPS simulation rate."
 END
 
 GUI:GLA08

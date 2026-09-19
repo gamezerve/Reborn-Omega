@@ -2040,8 +2040,12 @@ void InGameUI::update()
 	//
 	if( m_militarySubtitle )		// if we have a subtitle, work on it
 	{
-		// if the timeis frozen by a script, then we still want the text to display
-		if (TheScriptEngine->isTimeFrozenScript() && !isQuitMenuVisible())
+		// Script-frozen captions still need to advance, but only at the scheduled
+		// logic rate. Updating these counters once per render made the typing run
+		// twice as fast when rendering at 60 FPS.
+		if (TheScriptEngine->isTimeFrozenScript() &&
+			!isQuitMenuVisible() &&
+			TheGameLogic->hasScheduledUpdate())
 		{
 			m_militarySubtitle->lifetime--;
 			m_militarySubtitle->blockBeginFrame--;

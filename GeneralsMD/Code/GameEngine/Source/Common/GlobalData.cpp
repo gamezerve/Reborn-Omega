@@ -863,6 +863,7 @@ GlobalData::GlobalData()
 	m_campaignCinematic60Fps = FALSE;
 	m_skirmish60Fps = FALSE;
 	m_challenge60Fps = FALSE;
+	m_shellMap60Fps = FALSE;
 	m_terrainHeightAtEdgeOfMap = 0.0f;
 
 	m_unitDamagedThresh = 0.5f;

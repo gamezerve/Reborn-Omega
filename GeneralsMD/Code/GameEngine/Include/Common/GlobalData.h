@@ -213,6 +213,7 @@ public:
 	Bool m_campaignCinematic60Fps;
 	Bool m_skirmish60Fps;
 	Bool m_challenge60Fps;
+	Bool m_shellMap60Fps;
 	Real m_minCameraHeight;
 	Real m_terrainHeightAtEdgeOfMap;
 	Real m_unitDamagedThresh;
