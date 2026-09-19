@@ -1676,29 +1676,6 @@ void W3DView::update()
 				Coord3D objpos = *cameraLockObj->getPosition();
 				Coord3D curpos = getPosition();
 
-				if (cameraLockObj->getTemplate()->getName().compare("AmericaVehicleComanche") == 0)
-				{
-					static UnsignedInt renderUpdate = 0;
-					++renderUpdate;
-
-					const Real alpha = TheGameEngine->getLogicInterpolationAlpha();
-
-					DEBUG_LOG((
-						"CAMLOCK update=%u logicFrame=%u id=%u alpha=%.6f "
-						"obj=(%.6f %.6f %.6f) "
-						"camBefore=(%.6f %.6f %.6f) "
-						"lockType=%d snap=%d\n",
-						renderUpdate,
-						TheGameLogic->getFrame(),
-						cameraLockObj->getID(),
-						alpha,
-						objpos.x, objpos.y, objpos.z,
-						curpos.x, curpos.y, curpos.z,
-						(Int)m_lockType,
-						(Int)m_snapImmediate
-						));
-				}
-
 				// don't "snap" directly to the pos, but move there smoothly.
 				Real snapThreshSqr = sqr(TheGlobalData->m_partitionCellSize);
 				Real curDistSqr = sqr(curpos.x - objpos.x) + sqr(curpos.y - objpos.y);
