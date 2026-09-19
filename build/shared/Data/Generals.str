@@ -163,8 +163,48 @@ GUI:CheckForUpdates
 "UPDATE"
 END
 
+GUI:AdvancedSettings
+"ADVANCED"
+END
+
+GUI:AdvancedSettingsTitle
+"ADVANCED SETTINGS"
+END
+
+GUI:GraphicsSettings
+"GRAPHICS SETTINGS"
+END
+
+GUI:AccessibilitySettings
+"ACCESSIBILITY"
+END
+
+GUI:UpdateSettings
+"UPDATES"
+END
+
+GUI:CampaignGameplay60FPS
+"60 FPS Campaign Gameplay"
+END
+
+GUI:CampaignCinematic60FPS
+"60 FPS Campaign Cinematics"
+END
+
 TOOLTIP:CheckForUpdates
 "Check for available Reborn Omega updates."
+END
+
+TOOLTIP:AdvancedSettings
+"Open advanced accessibility, update, and campaign graphics settings."
+END
+
+TOOLTIP:CampaignGameplay60FPS
+"Render campaign gameplay at 60 FPS while preserving the original 30 FPS simulation rate. This provides smoother visuals and camera movement without speeding up gameplay. This feature is experimental and may cause visual issues. Disable it for the original campaign experience."
+END
+
+TOOLTIP:CampaignCinematic60FPS
+"Render campaign cinematics at 60 FPS while preserving the frame rate and timing requested by mission scripts. This provides smoother camera movement and animations without altering their intended timing. This feature is experimental and may cause visual issues. Disable it for the original campaign experience."
 END
 
 GUI:GLA08

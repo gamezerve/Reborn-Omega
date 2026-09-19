@@ -172,6 +172,19 @@ static GameWindow *   ButtonAdvancedAccept				= nullptr;
 static NameKeyType    ButtonAdvancedCancelID      = NAMEKEY_INVALID;
 static GameWindow *   ButtonAdvancedCancel				= nullptr;
 
+static NameKeyType WinAdvancedSettingsID = NAMEKEY_INVALID;
+static GameWindow* WinAdvancedSettings = nullptr;
+static NameKeyType ButtonAdvancedSettingsAcceptID = NAMEKEY_INVALID;
+static NameKeyType ButtonAdvancedSettingsBackID = NAMEKEY_INVALID;
+static NameKeyType checkCampaignGameplay60FpsID = NAMEKEY_INVALID;
+static GameWindow* checkCampaignGameplay60Fps = nullptr;
+static NameKeyType checkCampaignCinematic60FpsID = NAMEKEY_INVALID;
+static GameWindow* checkCampaignCinematic60Fps = nullptr;
+static Bool advancedSettingsOriginalZoomFactor = FALSE;
+static Bool advancedSettingsOriginalAutomaticUpdates = FALSE;
+static Bool advancedSettingsOriginalGameplay60Fps = FALSE;
+static Bool advancedSettingsOriginalCinematic60Fps = FALSE;
+
 static NameKeyType    sliderTextureResolutionID = NAMEKEY_INVALID;
 static GameWindow *   sliderTextureResolution = nullptr;
 
@@ -718,6 +731,21 @@ static void saveOptions()
 		TheWritableGlobalData->m_middleMouseCameraZoomOut = enabled;
 	}
 
+	if (checkCampaignGameplay60Fps && checkCampaignCinematic60Fps)
+	{
+		const Bool gameplay60Fps = GadgetCheckBoxIsChecked(checkCampaignGameplay60Fps);
+		const Bool cinematic60Fps = GadgetCheckBoxIsChecked(checkCampaignCinematic60Fps);
+
+		UserPreferences rebornPreferences;
+		LoadRebornOmegaPreferences(rebornPreferences);
+		rebornPreferences["CampaignGameplay60FPS"] = gameplay60Fps ? "yes" : "no";
+		rebornPreferences["CampaignCinematic60FPS"] = cinematic60Fps ? "yes" : "no";
+		WriteRebornOmegaPreferences(rebornPreferences);
+
+		TheWritableGlobalData->m_campaignGameplay60Fps = gameplay60Fps;
+		TheWritableGlobalData->m_campaignCinematic60Fps = cinematic60Fps;
+	}
+
 	//-------------------------------------------------------------------------------------------------
 	// antialiasing
   GadgetComboBoxGetSelectedPos(comboBoxAntiAliasing, &index);
@@ -1119,6 +1147,43 @@ static void cancelAdvancedOptions()
 	WinAdvancedDisplay->winHide(TRUE);
 }
 
+static void showAdvancedSettings()
+{
+	if (!WinAdvancedSettings)
+		return;
+
+	advancedSettingsOriginalZoomFactor = checkZoomFactor && GadgetCheckBoxIsChecked(checkZoomFactor);
+	advancedSettingsOriginalAutomaticUpdates =
+		checkAutomaticUpdateChecks && GadgetCheckBoxIsChecked(checkAutomaticUpdateChecks);
+	advancedSettingsOriginalGameplay60Fps =
+		checkCampaignGameplay60Fps && GadgetCheckBoxIsChecked(checkCampaignGameplay60Fps);
+	advancedSettingsOriginalCinematic60Fps =
+		checkCampaignCinematic60Fps && GadgetCheckBoxIsChecked(checkCampaignCinematic60Fps);
+
+	WinAdvancedSettings->winHide(FALSE);
+}
+
+static void acceptAdvancedSettings()
+{
+	if (WinAdvancedSettings)
+		WinAdvancedSettings->winHide(TRUE);
+}
+
+static void cancelAdvancedSettings()
+{
+	if (checkZoomFactor)
+		GadgetCheckBoxSetChecked(checkZoomFactor, advancedSettingsOriginalZoomFactor);
+	if (checkAutomaticUpdateChecks)
+		GadgetCheckBoxSetChecked(checkAutomaticUpdateChecks, advancedSettingsOriginalAutomaticUpdates);
+	if (checkCampaignGameplay60Fps)
+		GadgetCheckBoxSetChecked(checkCampaignGameplay60Fps, advancedSettingsOriginalGameplay60Fps);
+	if (checkCampaignCinematic60Fps)
+		GadgetCheckBoxSetChecked(checkCampaignCinematic60Fps, advancedSettingsOriginalCinematic60Fps);
+
+	if (WinAdvancedSettings)
+		WinAdvancedSettings->winHide(TRUE);
+}
+
 // TheSuperHackers @tweak Now prints additional version information in the version label.
 static void initLabelVersion()
 {
@@ -1164,7 +1229,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	checkRetaliationID = GetOptionsMenuChildKey("Retaliation");
 	checkMaxCameraHeightID = GetOptionsMenuChildKey("CheckMaxCameraHeight");
 	textEntryMaxCameraHeightID = GetOptionsMenuChildKey("TextEntryMaxCameraHeight");
-	checkZoomFactorID = GetOptionsMenuChildKey("CheckZoomFactor");
+	checkZoomFactorID = GetOptionsMenuChildKey("CheckZoomFactorAdvanced");
 	checkDoubleClickAttackMoveID = GetOptionsMenuChildKey("CheckDoubleClickAttackMove");
 	sliderScrollSpeedID = GetOptionsMenuChildKey("SliderScrollSpeed");
 	comboBoxAntiAliasingID = GetOptionsMenuChildKey("ComboBoxAntiAliasing");
@@ -1175,56 +1240,12 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	//checkSendDelayID = GetOptionsMenuChildKey("CheckSendDelay");
 	buttonFirewallRefreshID = GetOptionsMenuChildKey("ButtonFirewallRefresh");
 
-	GameWindow* checkUpdatesButton =
-		TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("ButtonCheckUpdates"));
-	GameWindow* defaultsButton =
-		TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("ButtonDefaults"));
-	GameWindow* acceptButton =
-		TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("ButtonAccept"));
-	GameWindow* backButton =
-		TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("ButtonBack"));
-
-	checkAutomaticUpdateChecksID = GetOptionsMenuChildKey("CheckAutomaticUpdateChecks");
-
-	if (checkUpdatesButton)
-	{
-		Bool inInteractiveGame = TheGameLogic->isInInteractiveGame();
-		checkUpdatesButton->winHide(inInteractiveGame);
-
-		if (inInteractiveGame && defaultsButton && acceptButton && backButton)
-		{
-			ICoord2D defaultsPos;
-			ICoord2D defaultsSize;
-			ICoord2D backPos;
-			ICoord2D backSize;
-
-			defaultsButton->winGetPosition(&defaultsPos.x, &defaultsPos.y);
-			defaultsButton->winGetSize(&defaultsSize.x, &defaultsSize.y);
-			backButton->winGetPosition(&backPos.x, &backPos.y);
-			backButton->winGetSize(&backSize.x, &backSize.y);
-
-			Real scaleX =
-				(Real)(backPos.x + backSize.x - defaultsPos.x) / 483.0f;
-
-			defaultsButton->winSetSize(
-				(Int)(156.0f * scaleX + 0.5f),
-				defaultsSize.y);
-
-			acceptButton->winSetPosition(
-				defaultsPos.x + (Int)(160.0f * scaleX + 0.5f),
-				defaultsPos.y);
-			acceptButton->winSetSize(
-				(Int)(159.0f * scaleX + 0.5f),
-				defaultsSize.y);
-
-			backButton->winSetPosition(
-				defaultsPos.x + (Int)(324.0f * scaleX + 0.5f),
-				defaultsPos.y);
-			backButton->winSetSize(
-				(Int)(159.0f * scaleX + 0.5f),
-				defaultsSize.y);
-		}
-	}
+	checkAutomaticUpdateChecksID = GetOptionsMenuChildKey("CheckAutomaticUpdateChecksAdvanced");
+	WinAdvancedSettingsID = GetOptionsMenuChildKey("WinAdvancedSettings");
+	ButtonAdvancedSettingsAcceptID = GetOptionsMenuChildKey("ButtonAdvancedSettingsAccept");
+	ButtonAdvancedSettingsBackID = GetOptionsMenuChildKey("ButtonAdvancedSettingsBack");
+	checkCampaignGameplay60FpsID = GetOptionsMenuChildKey("CheckCampaignGameplay60FPS");
+	checkCampaignCinematic60FpsID = GetOptionsMenuChildKey("CheckCampaignCinematic60FPS");
 
 	checkDrawAnchorID = GetOptionsMenuChildKey("CheckBoxDrawAnchor");
 	checkMoveAnchorID = GetOptionsMenuChildKey("CheckBoxMoveAnchor");
@@ -1269,6 +1290,11 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	checkMaxCameraHeight = TheWindowManager->winGetWindowFromId(nullptr, checkMaxCameraHeightID);
 	textEntryMaxCameraHeight = TheWindowManager->winGetWindowFromId(nullptr, textEntryMaxCameraHeightID);
 	checkZoomFactor = TheWindowManager->winGetWindowFromId(nullptr, checkZoomFactorID);
+	WinAdvancedSettings = TheWindowManager->winGetWindowFromId(nullptr, WinAdvancedSettingsID);
+	checkCampaignGameplay60Fps =
+		TheWindowManager->winGetWindowFromId(nullptr, checkCampaignGameplay60FpsID);
+	checkCampaignCinematic60Fps =
+		TheWindowManager->winGetWindowFromId(nullptr, checkCampaignCinematic60FpsID);
 
 	//checkDoubleClickAttackMoveID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckDoubleClickAttackMove" );
 	checkDoubleClickAttackMove   = TheWindowManager->winGetWindowFromId( nullptr, checkDoubleClickAttackMoveID );
@@ -1381,6 +1407,13 @@ if (checkSendDelayLocal)
 
 	if (WinAdvancedDisplay)
 		WinAdvancedDisplay->winHide(TRUE);
+	if (WinAdvancedSettings)
+		WinAdvancedSettings->winHide(TRUE);
+
+	GameWindow* advancedUpdateButton =
+		TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("ButtonCheckUpdates"));
+	if (advancedUpdateButton)
+		advancedUpdateButton->winHide(TheGameLogic->isInInteractiveGame());
 
 	Color color =  GameMakeColor(255,255,255,255);
 
@@ -1525,6 +1558,13 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 
 	if (checkZoomFactor)
 		GadgetCheckBoxSetChecked(checkZoomFactor, useZoomFactor);
+
+	Bool campaignGameplay60Fps = rebornPreferences["CampaignGameplay60FPS"] == "yes";
+	Bool campaignCinematic60Fps = rebornPreferences["CampaignCinematic60FPS"] == "yes";
+	if (checkCampaignGameplay60Fps)
+		GadgetCheckBoxSetChecked(checkCampaignGameplay60Fps, campaignGameplay60Fps);
+	if (checkCampaignCinematic60Fps)
+		GadgetCheckBoxSetChecked(checkCampaignCinematic60Fps, campaignCinematic60Fps);
 
 	// populate anti aliasing modes
 	AsciiString selectedAliasingMode = (*pref)["AntiAliasing"];
@@ -1915,7 +1955,7 @@ static void RebornOmegaUpdateAccepted()
 	GameWindow* optionsMenuWindow =
 		TheWindowManager->winGetWindowFromId(
 			nullptr,
-			NAMEKEY("OptionsMenu.wnd:"));
+			GetOptionsMenuChildKey(""));
 
 	if (optionsMenuWindow)
 	{
@@ -1970,7 +2010,7 @@ Bool RebornOmegaUpdateAcceptedFromChangeLog(
 	GameWindow* optionsMenuWindow =
 		TheWindowManager->winGetWindowFromId(
 			nullptr,
-			NAMEKEY("OptionsMenu.wnd:"));
+			GetOptionsMenuChildKey(""));
 
 	if (optionsMenuWindow)
 	{
@@ -2003,7 +2043,7 @@ static void RebornOmegaShowChangeLog()
 	GameWindow* optionsMenuWindow =
 		TheWindowManager->winGetWindowFromId(
 			nullptr,
-			NAMEKEY("OptionsMenu.wnd:"));
+			GetOptionsMenuChildKey(""));
 
 	Bool fromOptions =
 		optionsMenuWindow != nullptr;
@@ -2336,6 +2376,10 @@ WindowMsgHandledType OptionsMenuInput( GameWindow *window, UnsignedInt msg,
 					{
 						//NameKeyType buttonID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:ButtonBack" );
 						NameKeyType buttonID = GetOptionsMenuChildKey("ButtonBack");
+						if (WinAdvancedSettings && !WinAdvancedSettings->winIsHidden())
+							buttonID = ButtonAdvancedSettingsBackID;
+						else if (WinAdvancedDisplay && !WinAdvancedDisplay->winIsHidden())
+							buttonID = ButtonAdvancedCancelID;
 						GameWindow *button = TheWindowManager->winGetWindowFromId( window, buttonID );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,
@@ -2376,6 +2420,7 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 	static NameKeyType buttonAccept = NAMEKEY_INVALID;
 	static NameKeyType buttonReplayMenu = NAMEKEY_INVALID;
 	static NameKeyType buttonKeyboardOptionsMenu = NAMEKEY_INVALID;
+	static NameKeyType buttonAdvancedSettings = NAMEKEY_INVALID;
 	static NameKeyType buttonCheckUpdates = NAMEKEY_INVALID; // Reborn: Mod update check button
 
 	switch( msg )
@@ -2394,6 +2439,7 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 			buttonDefaults = GetOptionsMenuChildKey("ButtonDefaults");
 			buttonAccept = GetOptionsMenuChildKey("ButtonAccept");
 			buttonKeyboardOptionsMenu = GetOptionsMenuChildKey("ButtonKeyboardOptions");
+			buttonAdvancedSettings = GetOptionsMenuChildKey("ButtonAdvancedSettings");
 			buttonCheckUpdates = GetOptionsMenuChildKey("ButtonCheckUpdates");
 
 			break;
@@ -2501,6 +2547,10 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 			{
 				setDefaults();
 			}
+			else if (controlID == buttonAdvancedSettings)
+			{
+				showAdvancedSettings();
+			}
 			else if (controlID == buttonCheckUpdates)
 			{
 				if (GetRebornOmegaUpdateCheckState() == REBORN_UPDATE_CHECKING)
@@ -2531,6 +2581,14 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 			else if (controlID == ButtonAdvancedCancelID )
 			{
 				cancelAdvancedOptions();
+			}
+			else if (controlID == ButtonAdvancedSettingsAcceptID)
+			{
+				acceptAdvancedSettings();
+			}
+			else if (controlID == ButtonAdvancedSettingsBackID)
+			{
+				cancelAdvancedSettings();
 			}
 			else if ( controlID == buttonKeyboardOptionsMenu )
 			{

@@ -8672,24 +8672,15 @@ void ScriptActions::executeAction( ScriptAction *pAction )
 		case ScriptAction::SET_FPS_LIMIT:
 		{
 			const Int scriptedFps = pAction->getParameter(0)->getInt();
+			const Int logicFps = scriptedFps == 0 ? LOGICFRAMES_PER_SECOND : scriptedFps;
+			const Bool isGameplay = scriptedFps == 0;
+			const Bool use60FpsRendering = logicFps <= LOGICFRAMES_PER_SECOND &&
+				((isGameplay && TheGlobalData->m_campaignGameplay60Fps) ||
+				(!isGameplay && TheGlobalData->m_campaignCinematic60Fps));
 
-			if (scriptedFps == 0)
-			{
-				// Temporary test setup:
-				// Gameplay renders at 60 FPS while logic remains at the retail 30 FPS.
-				TheFramePacer->setFramesPerSecondLimit(60);
-				TheFramePacer->setLogicTimeScaleFps(LOGICFRAMES_PER_SECOND);
-				TheFramePacer->enableLogicTimeScale(TRUE);
-			}
-			else
-			{
-				// Temporary test setup:
-				// Cinematics render at 60 FPS while preserving the FPS/timing
-				// requested by the original mission script.
-				TheFramePacer->setFramesPerSecondLimit(60);
-				TheFramePacer->setLogicTimeScaleFps(scriptedFps);
-				TheFramePacer->enableLogicTimeScale(TRUE);
-			}
+			TheFramePacer->setFramesPerSecondLimit(use60FpsRendering ? 60 : logicFps);
+			TheFramePacer->setLogicTimeScaleFps(logicFps);
+			TheFramePacer->enableLogicTimeScale(TRUE);
 
 			// Setting the fps limit doesn't do much good if we don't use it.  jba.
 			TheWritableGlobalData->m_useFpsLimit = true;

@@ -66,6 +66,10 @@ OptionPreferences::OptionPreferences()
 
 	TheWritableGlobalData->m_middleMouseCameraZoomOut =
 		(rebornPreferences["UseMiddleMouseCameraZoomOut"] == "yes");
+	TheWritableGlobalData->m_campaignGameplay60Fps =
+		(rebornPreferences["CampaignGameplay60FPS"] == "yes");
+	TheWritableGlobalData->m_campaignCinematic60Fps =
+		(rebornPreferences["CampaignCinematic60FPS"] == "yes");
 }
 
 OptionPreferences::~OptionPreferences()
