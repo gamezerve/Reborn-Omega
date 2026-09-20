@@ -4514,6 +4514,7 @@ void InGameUI::createControlBar()
 {
 
 	TheWindowManager->winCreateFromScript( "ControlBar.wnd" );
+	TheWindowManager->winCreateFromScript( "GlobalCommunicatorButton.wnd" );
 	HideControlBar();
 /*
 	// hide all windows created from this layout

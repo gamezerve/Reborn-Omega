@@ -179,6 +179,10 @@ GUI:AccessibilitySettings
 "ACCESSIBILITY"
 END
 
+GUI:ShowCommunicatorButton
+"Show Communicator Button"
+END
+
 GUI:UpdateSettings
 "UPDATES"
 END
@@ -209,6 +213,10 @@ END
 
 TOOLTIP:AdvancedSettings
 "Open advanced accessibility, update, and campaign graphics settings."
+END
+
+TOOLTIP:ShowCommunicatorButton
+"Show a button on the left side of the in-game screen that opens the online Communicator."
 END
 
 TOOLTIP:CampaignGameplay60FPS

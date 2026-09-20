@@ -7038,7 +7038,7 @@ WINDOW
           WINDOW
             WINDOWTYPE = CHECKBOX;
             SCREENRECT = UPPERLEFT: 168 352,
-                         BOTTOMRIGHT: 600 376,
+                         BOTTOMRIGHT: 385 376,
                          CREATIONRESOLUTION: 800 600;
             NAME = "OptionsMenuGen.wnd:CheckZoomFactorAdvanced";
             STATUS = ENABLED+IMAGE+BORDER;
@@ -7052,6 +7052,55 @@ WINDOW
             TOOLTIPTEXT = "TOOLTIP:CheckZoomFactor";
             TOOLTIPDELAY = -1;
             TEXT = "GUI:ZoomFactor";
+            TEXTCOLOR = ENABLED:  221 73 24 255, ENABLEDBORDER:  0 0 0 255,
+                        DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
+                        HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
+            ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
+                              IMAGE: Active-UncheckedGen, COLOR: 255 255 255 0, BORDERCOLOR: 128 128 255 255,
+                              IMAGE: Active-CheckedGen, COLOR: 0 0 255 255, BORDERCOLOR: 128 128 255 255,
+                              IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                              IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                              IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                              IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                              IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                              IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+            DISABLEDDRAWDATA = IMAGE: NoImage, COLOR: 128 128 128 255, BORDERCOLOR: 192 192 192 255,
+                               IMAGE: Disabled-UncheckedGen, COLOR: 255 255 255 0, BORDERCOLOR: 192 192 192 255,
+                               IMAGE: Disabled-CheckedGen, COLOR: 64 64 64 255, BORDERCOLOR: 254 254 254 255,
+                               IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                               IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                               IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                               IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                               IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                               IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+            HILITEDRAWDATA = IMAGE: NoImage, COLOR: 0 255 0 255, BORDERCOLOR: 128 255 128 255,
+                             IMAGE: Active-HiLightedGen, COLOR: 255 255 255 0, BORDERCOLOR: 128 128 255 255,
+                             IMAGE: Active-CheckedGen, COLOR: 255 255 0 255, BORDERCOLOR: 254 254 254 255,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0,
+                             IMAGE: NoImage, COLOR: 255 255 255 0, BORDERCOLOR: 255 255 255 0;
+          END
+          CHILD
+          WINDOW
+            WINDOWTYPE = CHECKBOX;
+            SCREENRECT = UPPERLEFT: 397 352,
+                         BOTTOMRIGHT: 617 376,
+                         CREATIONRESOLUTION: 800 600;
+            NAME = "OptionsMenuGen.wnd:CheckShowCommunicatorButton";
+            STATUS = ENABLED+IMAGE+BORDER;
+            STYLE = CHECKBOX+MOUSETRACK;
+            SYSTEMCALLBACK = "[None]";
+            INPUTCALLBACK = "[None]";
+            TOOLTIPCALLBACK = "[None]";
+            DRAWCALLBACK = "[None]";
+            FONT = NAME: "Arial", SIZE: 10, BOLD: 0;
+            HEADERTEMPLATE = "LabelRegular";
+            TOOLTIPTEXT = "TOOLTIP:ShowCommunicatorButton";
+            TOOLTIPDELAY = -1;
+            TEXT = "GUI:ShowCommunicatorButton";
             TEXTCOLOR = ENABLED:  221 73 24 255, ENABLEDBORDER:  0 0 0 255,
                         DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                         HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;

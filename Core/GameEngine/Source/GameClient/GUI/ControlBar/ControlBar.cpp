@@ -52,6 +52,8 @@
 #include "Common/Upgrade.h"
 #include "Common/Recorder.h"
 #include "Common/BuildAssistant.h"
+#include "Common/RebornOmegaPreferences.h"
+#include "Common/UserPreferences.h"
 
 #include "GameClient/DisconnectMenu.h"
 #include "GameLogic/GameLogic.h"
@@ -2455,6 +2457,20 @@ void ControlBar::init()
 		m_communicatorButton = TheWindowManager->winGetWindowFromId( nullptr, id );
 		setControlCommand(m_communicatorButton, findCommandButton("NonCommand_Communicator") );
 		m_communicatorButton->winSetTooltipFunc(commandButtonTooltip);
+
+		GameWindow *globalCommunicatorButton = TheWindowManager->winGetWindowFromId(
+			nullptr, TheNameKeyGenerator->nameToKey("GlobalCommunicatorButton.wnd:ButtonGlobalCommunicator"));
+		if (globalCommunicatorButton)
+		{
+			setControlCommand(globalCommunicatorButton, findCommandButton("NonCommand_Communicator"));
+			globalCommunicatorButton->winSetTooltipFunc(commandButtonTooltip);
+
+			UserPreferences rebornPreferences;
+			LoadRebornOmegaPreferences(rebornPreferences);
+			GameWindow *globalCommunicatorParent = globalCommunicatorButton->winGetParent();
+			if (globalCommunicatorParent)
+				globalCommunicatorParent->winHide(rebornPreferences["ShowCommunicatorButton"] == "no");
+		}
 
 		GameWindow *win = TheWindowManager->winGetWindowFromId(nullptr,TheNameKeyGenerator->nameToKey("ControlBar.wnd:ButtonOptions"));
 		if(win)

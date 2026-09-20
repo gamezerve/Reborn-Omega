@@ -188,8 +188,11 @@ static NameKeyType checkChallenge60FpsID = NAMEKEY_INVALID;
 static GameWindow* checkChallenge60Fps = nullptr;
 static NameKeyType checkShellMap60FpsID = NAMEKEY_INVALID;
 static GameWindow* checkShellMap60Fps = nullptr;
+static NameKeyType checkShowCommunicatorButtonID = NAMEKEY_INVALID;
+static GameWindow* checkShowCommunicatorButton = nullptr;
 static Bool advancedSettingsOriginalZoomFactor = FALSE;
 static Bool advancedSettingsOriginalAutomaticUpdates = FALSE;
+static Bool advancedSettingsOriginalShowCommunicatorButton = TRUE;
 static Bool advancedSettingsOriginalGameplay60Fps = FALSE;
 static Bool advancedSettingsOriginalCinematic60Fps = FALSE;
 static Bool advancedSettingsOriginalSkirmish60Fps = FALSE;
@@ -480,6 +483,17 @@ static void saveAdvancedSettings()
 		const Bool enabled = GadgetCheckBoxIsChecked(checkZoomFactor);
 		rebornPreferences["UseMiddleMouseCameraZoomOut"] = enabled ? "yes" : "no";
 		TheWritableGlobalData->m_middleMouseCameraZoomOut = enabled;
+	}
+
+	if (checkShowCommunicatorButton)
+	{
+		const Bool enabled = GadgetCheckBoxIsChecked(checkShowCommunicatorButton);
+		rebornPreferences["ShowCommunicatorButton"] = enabled ? "yes" : "no";
+
+		GameWindow *communicatorButton = TheWindowManager->winGetWindowFromId(
+			nullptr, NAMEKEY("GlobalCommunicatorButton.wnd:Parent"));
+		if (communicatorButton)
+			communicatorButton->winHide(!enabled);
 	}
 
 	const Bool canChangeGameFps = !TheGameLogic->isInInteractiveGame();
@@ -1208,6 +1222,8 @@ static void showAdvancedSettings()
 	advancedSettingsOriginalZoomFactor = checkZoomFactor && GadgetCheckBoxIsChecked(checkZoomFactor);
 	advancedSettingsOriginalAutomaticUpdates =
 		checkAutomaticUpdateChecks && GadgetCheckBoxIsChecked(checkAutomaticUpdateChecks);
+	advancedSettingsOriginalShowCommunicatorButton =
+		checkShowCommunicatorButton && GadgetCheckBoxIsChecked(checkShowCommunicatorButton);
 	advancedSettingsOriginalGameplay60Fps =
 		checkCampaignGameplay60Fps && GadgetCheckBoxIsChecked(checkCampaignGameplay60Fps);
 	advancedSettingsOriginalCinematic60Fps =
@@ -1241,6 +1257,8 @@ static void setAdvancedSettingsDefaults()
 		GadgetCheckBoxSetChecked(checkAutomaticUpdateChecks, TRUE);
 	if (checkZoomFactor)
 		GadgetCheckBoxSetChecked(checkZoomFactor, FALSE);
+	if (checkShowCommunicatorButton)
+		GadgetCheckBoxSetChecked(checkShowCommunicatorButton, TRUE);
 
 	if (!TheGameLogic->isInInteractiveGame())
 	{
@@ -1263,6 +1281,8 @@ static void cancelAdvancedSettings()
 		GadgetCheckBoxSetChecked(checkZoomFactor, advancedSettingsOriginalZoomFactor);
 	if (checkAutomaticUpdateChecks)
 		GadgetCheckBoxSetChecked(checkAutomaticUpdateChecks, advancedSettingsOriginalAutomaticUpdates);
+	if (checkShowCommunicatorButton)
+		GadgetCheckBoxSetChecked(checkShowCommunicatorButton, advancedSettingsOriginalShowCommunicatorButton);
 	if (checkCampaignGameplay60Fps)
 		GadgetCheckBoxSetChecked(checkCampaignGameplay60Fps, advancedSettingsOriginalGameplay60Fps);
 	if (checkCampaignCinematic60Fps)
@@ -1349,6 +1369,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	checkSkirmish60FpsID = GetOptionsMenuChildKey("CheckSkirmish60FPS");
 	checkChallenge60FpsID = GetOptionsMenuChildKey("CheckChallenge60FPS");
 	checkShellMap60FpsID = GetOptionsMenuChildKey("CheckShellMap60FPS");
+	checkShowCommunicatorButtonID = GetOptionsMenuChildKey("CheckShowCommunicatorButton");
 
 	checkDrawAnchorID = GetOptionsMenuChildKey("CheckBoxDrawAnchor");
 	checkMoveAnchorID = GetOptionsMenuChildKey("CheckBoxMoveAnchor");
@@ -1401,6 +1422,8 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	checkSkirmish60Fps = TheWindowManager->winGetWindowFromId(nullptr, checkSkirmish60FpsID);
 	checkChallenge60Fps = TheWindowManager->winGetWindowFromId(nullptr, checkChallenge60FpsID);
 	checkShellMap60Fps = TheWindowManager->winGetWindowFromId(nullptr, checkShellMap60FpsID);
+	checkShowCommunicatorButton =
+		TheWindowManager->winGetWindowFromId(nullptr, checkShowCommunicatorButtonID);
 
 	//checkDoubleClickAttackMoveID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckDoubleClickAttackMove" );
 	checkDoubleClickAttackMove   = TheWindowManager->winGetWindowFromId( nullptr, checkDoubleClickAttackMoveID );
@@ -1676,6 +1699,10 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 
 	if (checkZoomFactor)
 		GadgetCheckBoxSetChecked(checkZoomFactor, useZoomFactor);
+
+	const Bool showCommunicatorButton = rebornPreferences["ShowCommunicatorButton"] != "no";
+	if (checkShowCommunicatorButton)
+		GadgetCheckBoxSetChecked(checkShowCommunicatorButton, showCommunicatorButton);
 
 	Bool campaignGameplay60Fps = rebornPreferences["CampaignGameplay60FPS"] == "yes";
 	Bool campaignCinematic60Fps = rebornPreferences["CampaignCinematic60FPS"] == "yes";

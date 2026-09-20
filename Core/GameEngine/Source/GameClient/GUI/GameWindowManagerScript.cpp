@@ -1243,112 +1243,279 @@ static Bool parseTabControlData( const char *token, WinInstanceData *instData,
 // parseDrawData ==============================================================
 /** Parse set of draw data elements */
 //=============================================================================
-static Bool parseDrawData( const char *token, WinInstanceData *instData,
-													 char *buffer, void *data )
+static Bool parseDrawData(const char* token, WinInstanceData* instData,
+	char* buffer, void* data)
 {
 	Int i;
 	UnsignedInt r, g, b, a;
-	WinDrawData *drawData;
+	WinDrawData* drawData;
 	Bool first = TRUE;
-	char *c;
-	const char *seps = " :,\n\r\t";
+	char* c;
+	const char* seps = " :,\n\r\t";
 
-	for( i = 0; i < MAX_DRAW_DATA; i++ )
+	for (i = 0; i < MAX_DRAW_DATA; i++)
 	{
 
 		// get the right draw data
-		if( strcmp( token, "ENABLEDDRAWDATA" ) == 0 )
-			drawData = &instData->m_enabledDrawData[ i ];
-		else if( strcmp( token, "DISABLEDDRAWDATA" ) == 0 )
-			drawData = &instData->m_disabledDrawData[ i ];
-		else if( strcmp( token, "HILITEDRAWDATA" ) == 0 )
-			drawData = &instData->m_hiliteDrawData[ i ];
-		else if( strcmp( token, "LISTBOXENABLEDUPBUTTONDRAWDATA" ) == 0 )
-			drawData = &enabledUpButtonDrawData[ i ];
-		else if( strcmp( token, "LISTBOXDISABLEDUPBUTTONDRAWDATA" ) == 0 )
-			drawData = &disabledUpButtonDrawData[ i ];
-		else if( strcmp( token, "LISTBOXHILITEUPBUTTONDRAWDATA" ) == 0 )
-			drawData = &hiliteUpButtonDrawData[ i ];
-		else if( strcmp( token, "LISTBOXENABLEDDOWNBUTTONDRAWDATA" ) == 0 )
-			drawData = &enabledDownButtonDrawData[ i ];
-		else if( strcmp( token, "LISTBOXDISABLEDDOWNBUTTONDRAWDATA" ) == 0 )
-			drawData = &disabledDownButtonDrawData[ i ];
-		else if( strcmp( token, "LISTBOXHILITEDOWNBUTTONDRAWDATA" ) == 0 )
-			drawData = &hiliteDownButtonDrawData[ i ];
-		else if( strcmp( token, "LISTBOXENABLEDSLIDERDRAWDATA" ) == 0 )
-			drawData = &enabledSliderDrawData[ i ];
-		else if( strcmp( token, "LISTBOXDISABLEDSLIDERDRAWDATA" ) == 0 )
-			drawData = &disabledSliderDrawData[ i ];
-		else if( strcmp( token, "LISTBOXHILITESLIDERDRAWDATA" ) == 0 )
-			drawData = &hiliteSliderDrawData[ i ];
-		else if( strcmp( token, "SLIDERTHUMBENABLEDDRAWDATA" ) == 0 )
-			drawData = &enabledSliderThumbDrawData[ i ];
-		else if( strcmp( token, "SLIDERTHUMBDISABLEDDRAWDATA" ) == 0 )
-			drawData = &disabledSliderThumbDrawData[ i ];
-		else if( strcmp( token, "SLIDERTHUMBHILITEDRAWDATA" ) == 0 )
-			drawData = &hiliteSliderThumbDrawData[ i ];
-		else if( strcmp( token, "COMBOBOXDROPDOWNBUTTONENABLEDDRAWDATA" ) == 0 )
-			drawData = &enabledDropDownButtonDrawData[ i ];
-		else if( strcmp( token, "COMBOBOXDROPDOWNBUTTONDISABLEDDRAWDATA" ) == 0 )
-			drawData = &disabledDropDownButtonDrawData[ i ];
-		else if( strcmp( token, "COMBOBOXDROPDOWNBUTTONHILITEDRAWDATA" ) == 0 )
-			drawData = &hiliteDropDownButtonDrawData[ i ];
-		else if( strcmp( token, "COMBOBOXEDITBOXENABLEDDRAWDATA" ) == 0 )
-			drawData = &enabledEditBoxDrawData[ i ];
-		else if( strcmp( token, "COMBOBOXEDITBOXDISABLEDDRAWDATA" ) == 0 )
-			drawData = &disabledEditBoxDrawData[ i ];
-		else if( strcmp( token, "COMBOBOXEDITBOXHILITEDRAWDATA" ) == 0 )
-			drawData = &hiliteEditBoxDrawData[ i ];
-		else if( strcmp( token, "COMBOBOXLISTBOXENABLEDDRAWDATA" ) == 0 )
-			drawData = &enabledListBoxDrawData[ i ];
-		else if( strcmp( token, "COMBOBOXLISTBOXDISABLEDDRAWDATA" ) == 0 )
-			drawData = &disabledListBoxDrawData[ i ];
-		else if( strcmp( token, "COMBOBOXLISTBOXHILITEDRAWDATA" ) == 0 )
-			drawData = &hiliteListBoxDrawData[ i ];
+		if (strcmp(token, "ENABLEDDRAWDATA") == 0)
+			drawData = &instData->m_enabledDrawData[i];
+		else if (strcmp(token, "DISABLEDDRAWDATA") == 0)
+			drawData = &instData->m_disabledDrawData[i];
+		else if (strcmp(token, "HILITEDRAWDATA") == 0)
+			drawData = &instData->m_hiliteDrawData[i];
+		else if (strcmp(token, "LISTBOXENABLEDUPBUTTONDRAWDATA") == 0)
+			drawData = &enabledUpButtonDrawData[i];
+		else if (strcmp(token, "LISTBOXDISABLEDUPBUTTONDRAWDATA") == 0)
+			drawData = &disabledUpButtonDrawData[i];
+		else if (strcmp(token, "LISTBOXHILITEUPBUTTONDRAWDATA") == 0)
+			drawData = &hiliteUpButtonDrawData[i];
+		else if (strcmp(token, "LISTBOXENABLEDDOWNBUTTONDRAWDATA") == 0)
+			drawData = &enabledDownButtonDrawData[i];
+		else if (strcmp(token, "LISTBOXDISABLEDDOWNBUTTONDRAWDATA") == 0)
+			drawData = &disabledDownButtonDrawData[i];
+		else if (strcmp(token, "LISTBOXHILITEDOWNBUTTONDRAWDATA") == 0)
+			drawData = &hiliteDownButtonDrawData[i];
+		else if (strcmp(token, "LISTBOXENABLEDSLIDERDRAWDATA") == 0)
+			drawData = &enabledSliderDrawData[i];
+		else if (strcmp(token, "LISTBOXDISABLEDSLIDERDRAWDATA") == 0)
+			drawData = &disabledSliderDrawData[i];
+		else if (strcmp(token, "LISTBOXHILITESLIDERDRAWDATA") == 0)
+			drawData = &hiliteSliderDrawData[i];
+		else if (strcmp(token, "SLIDERTHUMBENABLEDDRAWDATA") == 0)
+			drawData = &enabledSliderThumbDrawData[i];
+		else if (strcmp(token, "SLIDERTHUMBDISABLEDDRAWDATA") == 0)
+			drawData = &disabledSliderThumbDrawData[i];
+		else if (strcmp(token, "SLIDERTHUMBHILITEDRAWDATA") == 0)
+			drawData = &hiliteSliderThumbDrawData[i];
+		else if (strcmp(token, "COMBOBOXDROPDOWNBUTTONENABLEDDRAWDATA") == 0)
+			drawData = &enabledDropDownButtonDrawData[i];
+		else if (strcmp(token, "COMBOBOXDROPDOWNBUTTONDISABLEDDRAWDATA") == 0)
+			drawData = &disabledDropDownButtonDrawData[i];
+		else if (strcmp(token, "COMBOBOXDROPDOWNBUTTONHILITEDRAWDATA") == 0)
+			drawData = &hiliteDropDownButtonDrawData[i];
+		else if (strcmp(token, "COMBOBOXEDITBOXENABLEDDRAWDATA") == 0)
+			drawData = &enabledEditBoxDrawData[i];
+		else if (strcmp(token, "COMBOBOXEDITBOXDISABLEDDRAWDATA") == 0)
+			drawData = &disabledEditBoxDrawData[i];
+		else if (strcmp(token, "COMBOBOXEDITBOXHILITEDRAWDATA") == 0)
+			drawData = &hiliteEditBoxDrawData[i];
+		else if (strcmp(token, "COMBOBOXLISTBOXENABLEDDRAWDATA") == 0)
+			drawData = &enabledListBoxDrawData[i];
+		else if (strcmp(token, "COMBOBOXLISTBOXDISABLEDDRAWDATA") == 0)
+			drawData = &disabledListBoxDrawData[i];
+		else if (strcmp(token, "COMBOBOXLISTBOXHILITEDRAWDATA") == 0)
+			drawData = &hiliteListBoxDrawData[i];
 		else
 		{
 
-			DEBUG_LOG(( "ParseDrawData, undefined token '%s'", token ));
-			assert( 0 );
+			DEBUG_LOG((FALSE, ("ParseDrawData: Undefined token '%s'.", token)));
 			return FALSE;
 
 		}
 
 		// IMAGE: X
-		if( first == TRUE )
-			c = strtok( buffer, seps );  // label
+		if (first == TRUE)
+			c = strtok(buffer, seps);  // label
 		else
-			c = strtok( nullptr, seps );  // label
+			c = strtok(nullptr, seps);  // label
 		first = FALSE;
 
-		c = strtok( nullptr, seps );  // value
-		if( strcmp( c, "NoImage" ) != 0 )
-			drawData->image = TheMappedImageCollection->findImageByName( AsciiString( c ) );
+		if (c == nullptr)
+		{
+
+			DEBUG_ASSERTCRASH(FALSE,
+				("ParseDrawData: Window '%s', field '%s' contains only %d of %d required draw data entries.",
+					instData->m_decoratedNameString.str(), token, i, MAX_DRAW_DATA));
+			return FALSE;
+
+		}
+
+		if (stricmp(c, "IMAGE") != 0)
+		{
+
+			DEBUG_ASSERTCRASH(FALSE,
+				("ParseDrawData: Window '%s', field '%s', entry %d: Expected IMAGE, found '%s'.",
+					instData->m_decoratedNameString.str(), token, i + 1, c));
+			return FALSE;
+
+		}
+
+		c = strtok(nullptr, seps);  // value
+		if (c == nullptr)
+		{
+
+			DEBUG_ASSERTCRASH(FALSE,
+				("ParseDrawData: Window '%s', field '%s', entry %d: Missing IMAGE value.",
+					instData->m_decoratedNameString.str(), token, i + 1));
+			return FALSE;
+
+		}
+
+		if (strcmp(c, "NoImage") != 0)
+		{
+
+			drawData->image = TheMappedImageCollection->findImageByName(AsciiString(c));
+
+			if (drawData->image == nullptr)
+			{
+
+				DEBUG_ASSERTCRASH(FALSE,
+					("ParseDrawData: Window '%s', field '%s', entry %d: Unknown IMAGE '%s'.",
+						instData->m_decoratedNameString.str(), token, i + 1, c));
+				return FALSE;
+
+			}
+
+		}
 		else
 			drawData->image = nullptr;
+
 		// COLOR: R G B A
-		c = strtok( nullptr, seps );  // label
-		c = strtok( nullptr, seps );  // value
-		scanUnsignedInt( c, r );
-		c = strtok( nullptr, seps );  // value
-		scanUnsignedInt( c, g );
-		c = strtok( nullptr, seps );  // value
-		scanUnsignedInt( c, b );
-		c = strtok( nullptr, seps );  // value
-		scanUnsignedInt( c, a );
-		drawData->color = GameMakeColor( r, g, b, a );
+		c = strtok(nullptr, seps);  // label
+		if (c == nullptr)
+		{
+
+			DEBUG_ASSERTCRASH(FALSE,
+				("ParseDrawData: Window '%s', field '%s', entry %d: Missing COLOR.",
+					instData->m_decoratedNameString.str(), token, i + 1));
+			return FALSE;
+
+		}
+
+		if (stricmp(c, "COLOR") != 0)
+		{
+
+			DEBUG_ASSERTCRASH(FALSE,
+				("ParseDrawData: Window '%s', field '%s', entry %d: Expected COLOR, found '%s'.",
+					instData->m_decoratedNameString.str(), token, i + 1, c));
+			return FALSE;
+
+		}
+
+		c = strtok(nullptr, seps);  // value
+		if (c == nullptr || scanUnsignedInt(c, r) != 1 || r > 255)
+		{
+
+			DEBUG_ASSERTCRASH(FALSE,
+				("ParseDrawData: Window '%s', field '%s', entry %d: Invalid COLOR red value '%s'.",
+					instData->m_decoratedNameString.str(), token, i + 1, c ? c : "<missing>"));
+			return FALSE;
+
+		}
+
+		c = strtok(nullptr, seps);  // value
+		if (c == nullptr || scanUnsignedInt(c, g) != 1 || g > 255)
+		{
+
+			DEBUG_ASSERTCRASH(FALSE,
+				("ParseDrawData: Window '%s', field '%s', entry %d: Invalid COLOR green value '%s'.",
+					instData->m_decoratedNameString.str(), token, i + 1, c ? c : "<missing>"));
+			return FALSE;
+
+		}
+
+		c = strtok(nullptr, seps);  // value
+		if (c == nullptr || scanUnsignedInt(c, b) != 1 || b > 255)
+		{
+
+			DEBUG_ASSERTCRASH(FALSE,
+				("ParseDrawData: Window '%s', field '%s', entry %d: Invalid COLOR blue value '%s'.",
+					instData->m_decoratedNameString.str(), token, i + 1, c ? c : "<missing>"));
+			return FALSE;
+
+		}
+
+		c = strtok(nullptr, seps);  // value
+		if (c == nullptr || scanUnsignedInt(c, a) != 1 || a > 255)
+		{
+
+			DEBUG_ASSERTCRASH(FALSE,
+				("ParseDrawData: Window '%s', field '%s', entry %d: Invalid COLOR alpha value '%s'.",
+					instData->m_decoratedNameString.str(), token, i + 1, c ? c : "<missing>"));
+			return FALSE;
+
+		}
+
+		drawData->color = GameMakeColor(r, g, b, a);
 
 		// BORDERCOLOR: R G B A
-		c = strtok( nullptr, seps );  // label
-		c = strtok( nullptr, seps );  // value
-		scanUnsignedInt( c, r );
-		c = strtok( nullptr, seps );  // value
-		scanUnsignedInt( c, g );
-		c = strtok( nullptr, seps );  // value
-		scanUnsignedInt( c, b );
-		c = strtok( nullptr, seps );  // value
-		scanUnsignedInt( c, a );
-		drawData->borderColor = GameMakeColor( r, g, b, a );
+		c = strtok(nullptr, seps);  // label
+		if (c == nullptr)
+		{
+
+			DEBUG_ASSERTCRASH(FALSE,
+				("ParseDrawData: Window '%s', field '%s', entry %d: Missing BORDERCOLOR.",
+					instData->m_decoratedNameString.str(), token, i + 1));
+			return FALSE;
+
+		}
+
+		if (stricmp(c, "BORDERCOLOR") != 0)
+		{
+
+			DEBUG_ASSERTCRASH(FALSE,
+				("ParseDrawData: Window '%s', field '%s', entry %d: Expected BORDERCOLOR, found '%s'.",
+					instData->m_decoratedNameString.str(), token, i + 1, c));
+			return FALSE;
+
+		}
+
+		c = strtok(nullptr, seps);  // value
+		if (c == nullptr || scanUnsignedInt(c, r) != 1 || r > 255)
+		{
+
+			DEBUG_ASSERTCRASH(FALSE,
+				("ParseDrawData: Window '%s', field '%s', entry %d: Invalid BORDERCOLOR red value '%s'.",
+					instData->m_decoratedNameString.str(), token, i + 1, c ? c : "<missing>"));
+			return FALSE;
+
+		}
+
+		c = strtok(nullptr, seps);  // value
+		if (c == nullptr || scanUnsignedInt(c, g) != 1 || g > 255)
+		{
+
+			DEBUG_ASSERTCRASH(FALSE,
+				("ParseDrawData: Window '%s', field '%s', entry %d: Invalid BORDERCOLOR green value '%s'.",
+					instData->m_decoratedNameString.str(), token, i + 1, c ? c : "<missing>"));
+			return FALSE;
+
+		}
+
+		c = strtok(nullptr, seps);  // value
+		if (c == nullptr || scanUnsignedInt(c, b) != 1 || b > 255)
+		{
+
+			DEBUG_ASSERTCRASH(FALSE,
+				("ParseDrawData: Window '%s', field '%s', entry %d: Invalid BORDERCOLOR blue value '%s'.",
+					instData->m_decoratedNameString.str(), token, i + 1, c ? c : "<missing>"));
+			return FALSE;
+
+		}
+
+		c = strtok(nullptr, seps);  // value
+		if (c == nullptr || scanUnsignedInt(c, a) != 1 || a > 255)
+		{
+
+			DEBUG_ASSERTCRASH(FALSE,
+				("ParseDrawData: Window '%s', field '%s', entry %d: Invalid BORDERCOLOR alpha value '%s'.",
+					instData->m_decoratedNameString.str(), token, i + 1, c ? c : "<missing>"));
+			return FALSE;
+
+		}
+
+		drawData->borderColor = GameMakeColor(r, g, b, a);
+
+	}
+
+	c = strtok(nullptr, seps);
+	if (c != nullptr)
+	{
+
+		DEBUG_ASSERTCRASH(FALSE,
+			("ParseDrawData: Window '%s', field '%s' contains more than %d draw data entries or unexpected trailing data beginning with '%s'.",
+				instData->m_decoratedNameString.str(), token, MAX_DRAW_DATA, c));
+		return FALSE;
 
 	}
 

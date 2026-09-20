@@ -55,6 +55,8 @@
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/ScriptEngine.h"
 
+#include "GameNetwork/GameSpyOverlay.h"
+
 //external declarations of the Gadgets the callbacks can use
 WindowLayout *popupCommunicatorLayout = nullptr;
 
@@ -392,6 +394,7 @@ WindowMsgHandledType ControlBarSystem( GameWindow *window, UnsignedInt msg,
 																			 WindowMsgData mData1, WindowMsgData mData2 )
 {
 	static NameKeyType buttonCommunicator = NAMEKEY_INVALID;
+	static NameKeyType buttonGlobalCommunicator = NAMEKEY_INVALID;
 	if(TheScriptEngine && TheScriptEngine->isGameEnding())
 		return MSG_IGNORED;
 	switch( msg )
@@ -402,6 +405,7 @@ WindowMsgHandledType ControlBarSystem( GameWindow *window, UnsignedInt msg,
 
 			// get ids for our children controls
 			buttonCommunicator = TheNameKeyGenerator->nameToKey( "ControlBar.wnd:PopupCommunicator" );
+			buttonGlobalCommunicator = TheNameKeyGenerator->nameToKey( "GlobalCommunicatorButton.wnd:ButtonGlobalCommunicator" );
 
 			break;
 
@@ -436,6 +440,10 @@ WindowMsgHandledType ControlBarSystem( GameWindow *window, UnsignedInt msg,
 			if( controlID == buttonCommunicator )
 			{
 				ToggleDiplomacy(FALSE);
+			}
+			else if (controlID == buttonGlobalCommunicator)
+			{
+				GameSpyToggleOverlay(GSOVERLAY_BUDDY);
 			}
 			else if( controlID == beaconPlacementButtonID && TheGameLogic->isInMultiplayerGame() &&
 				ThePlayerList->getLocalPlayer()->isPlayerActive())
