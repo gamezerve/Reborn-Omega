@@ -106,7 +106,8 @@
 #endif
 
 #ifndef RETAIL_COMPATIBLE_DATA
-#define RETAIL_COMPATIBLE_DATA (0) // Game and tool data files are expected to be compatible with retail Generals 1.08 and Zero Hour 1.04
+//#define RETAIL_COMPATIBLE_DATA (1) // Game and tool data files are expected to be compatible with retail Generals 1.08 and Zero Hour 1.04
+#define RETAIL_COMPATIBLE_DATA (0)  // Reborn: Game and tool data files are not expected to remain compatible with retail Zero Hour data.
 #endif
 
 #ifndef RETAIL_COMPATIBLE_XFER_SAVE
