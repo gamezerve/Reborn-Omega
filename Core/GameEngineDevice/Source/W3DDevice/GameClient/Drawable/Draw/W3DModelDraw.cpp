@@ -2300,6 +2300,15 @@ void W3DModelDraw::doDrawModule(const Matrix3D* transformMtx)
 
 		Object* object = getDrawable()->getObject();
 
+		// The model bounds can briefly fall outside the view frustum while the
+		// animated Baikonur missile pitches over during its terminal descent.
+		// Keep this projectile's model and bone-attached effects from popping.
+		if (object != nullptr &&
+			object->getTemplate()->getName().compare("SalvagedBaikonurMissile") == 0)
+		{
+			m_renderObject->Set_Force_Visible(TRUE);
+		}
+
 		if (object != nullptr &&
 			object->getTemplate()->getName().compare("SupW_NeutronMissile") == 0)
 		{

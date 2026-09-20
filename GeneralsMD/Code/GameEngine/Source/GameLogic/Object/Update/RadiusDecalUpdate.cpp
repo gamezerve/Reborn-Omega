@@ -40,6 +40,7 @@ RadiusDecalUpdate::RadiusDecalUpdate( Thing *thing, const ModuleData* moduleData
 {
 	m_deliveryDecal.clear();
 	m_killWhenNoLongerAttacking = false;
+	m_waitForProjectileDeath = false;
 	setWakeFrame(getObject(), UPDATE_SLEEP_FOREVER);
 }
 
@@ -73,8 +74,25 @@ UpdateSleepTime RadiusDecalUpdate::update()
 {
 	if (m_killWhenNoLongerAttacking && !getObject()->testStatus( OBJECT_STATUS_IS_ATTACKING ))
 	{
-		m_deliveryDecal.clear();
-		return UPDATE_SLEEP_FOREVER;
+		Bool projectileInFlight = false;
+		if (m_waitForProjectileDeath)
+		{
+			const ObjectID launcherID = getObject()->getID();
+			for (Object *obj = TheGameLogic->getFirstObject(); obj; obj = obj->getNextObject())
+			{
+				if (obj->getProducerID() == launcherID && obj->isKindOf(KINDOF_PROJECTILE))
+				{
+					projectileInFlight = true;
+					break;
+				}
+			}
+		}
+
+		if (!projectileInFlight)
+		{
+			m_deliveryDecal.clear();
+			return UPDATE_SLEEP_FOREVER;
+		}
 	}
 
 	m_deliveryDecal.update();
@@ -95,13 +113,14 @@ void RadiusDecalUpdate::crc( Xfer *xfer )
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
 	* Version Info:
-	* 1: Initial version */
+	* 1: Initial version
+	* 2: Serialize projectile-lifetime decal behavior */
 // ------------------------------------------------------------------------------------------------
 void RadiusDecalUpdate::xfer( Xfer *xfer )
 {
 
 	// version
-	XferVersion currentVersion = 1;
+	XferVersion currentVersion = 2;
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
@@ -112,6 +131,10 @@ void RadiusDecalUpdate::xfer( Xfer *xfer )
 	m_deliveryDecal.xferRadiusDecal(xfer);
 
 	xfer->xferBool(&m_killWhenNoLongerAttacking);
+	if (version >= 2)
+	{
+		xfer->xferBool(&m_waitForProjectileDeath);
+	}
 
 }
 

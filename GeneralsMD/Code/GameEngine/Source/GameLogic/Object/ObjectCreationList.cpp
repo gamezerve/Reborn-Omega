@@ -175,7 +175,8 @@ public:
 	AttackNugget() :
     m_numberOfShots(1),
 		m_weaponSlot(PRIMARY_WEAPON),
-		m_deliveryDecalRadius(0)
+		m_deliveryDecalRadius(0),
+		m_deliveryDecalWaitForProjectileDeath(false)
 	{
 	}
 
@@ -210,7 +211,7 @@ public:
 		if (rd)
 		{
 			rd->createRadiusDecal(m_deliveryDecalTemplate, m_deliveryDecalRadius, *secondary);
-			rd->killWhenNoLongerAttacking(true);
+			rd->killWhenNoLongerAttacking(true, m_deliveryDecalWaitForProjectileDeath);
 		}
 		return nullptr;
   }
@@ -223,6 +224,7 @@ public:
 			{ "WeaponSlot",			INI::parseLookupList,	TheWeaponSlotTypeNamesLookupList, offsetof( AttackNugget, m_weaponSlot ) },
 			{ "DeliveryDecal",				RadiusDecalTemplate::parseRadiusDecalTemplate,	nullptr, offsetof( AttackNugget, m_deliveryDecalTemplate ) },
 			{ "DeliveryDecalRadius",	INI::parseReal, nullptr, offsetof(AttackNugget, m_deliveryDecalRadius) },
+			{ "DeliveryDecalWaitForProjectileDeath", INI::parseBool, nullptr, offsetof(AttackNugget, m_deliveryDecalWaitForProjectileDeath) },
 			{ nullptr, nullptr, nullptr, 0 }
 		};
 
@@ -236,6 +238,7 @@ private:
 	Real								m_deliveryDecalRadius;
 	Int									m_numberOfShots;
 	WeaponSlotType			m_weaponSlot;
+	Bool								m_deliveryDecalWaitForProjectileDeath;
 };
 EMPTY_DTOR(AttackNugget)
 

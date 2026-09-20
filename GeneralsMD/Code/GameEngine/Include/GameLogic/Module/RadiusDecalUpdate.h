@@ -71,7 +71,11 @@ public:
 
 	//void createRadiusDecal( const Coord3D& pos );
 	void createRadiusDecal( const RadiusDecalTemplate& tmpl, Real radius, const Coord3D& pos );
-	void killWhenNoLongerAttacking(Bool v) { m_killWhenNoLongerAttacking = v; }
+	void killWhenNoLongerAttacking(Bool v, Bool waitForProjectileDeath = false)
+	{
+		m_killWhenNoLongerAttacking = v;
+		m_waitForProjectileDeath = waitForProjectileDeath;
+	}
 	void killRadiusDecal();
 
 	virtual UpdateSleepTime update() override;
@@ -80,4 +84,5 @@ private:
 
 	RadiusDecal m_deliveryDecal;
 	Bool m_killWhenNoLongerAttacking;
+	Bool m_waitForProjectileDeath;
 };

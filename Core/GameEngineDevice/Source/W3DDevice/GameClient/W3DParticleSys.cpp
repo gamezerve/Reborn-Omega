@@ -164,15 +164,17 @@ void W3DParticleSystemManager::doParticles(RenderInfoClass &rinfo)
 
 		// TheSuperHackers @performance Mauller 16/08/2026 Skip processing particle system if no particles are in view.
 		UnsignedInt particleCount = 0;
+		const Bool alwaysRender = sys->getPriority() == ALWAYS_RENDER;
 		for (Particle* vp = sys->getFirstParticle(); vp; vp = vp->m_systemNext)
 		{
 			const Coord3D* pos = vp->getPosition();
 			const Real psize = vp->getSize();
 
 			//Test if particle is at the screen or terrain edges.
-			if (WWMath::Fabs(pos->x - bcX) > (beX + psize) ||
+			if (!alwaysRender &&
+				(WWMath::Fabs(pos->x - bcX) > (beX + psize) ||
 				WWMath::Fabs(pos->y - bcY) > (beY + psize) ||
-				WWMath::Fabs(pos->z - bcZ) > (beZ + psize))
+				WWMath::Fabs(pos->z - bcZ) > (beZ + psize)))
 			{
 				vp->setIsCulled(true);
 				continue;
