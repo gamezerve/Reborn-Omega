@@ -163,7 +163,7 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "WeaponSet",						ThingTemplate::parseWeaponTemplateSet,nullptr, 0, ThingTemplateDeparser::deparseWeaponSets },
 	{ "VisionRange",					INI::parseReal,												nullptr,		offsetof( ThingTemplate, m_visionRange ) },
 	{ "ShroudClearingRange",	INI::parseReal,												nullptr,		offsetof( ThingTemplate, m_shroudClearingRange ) },
-	{ "ShroudRevealToAllRange",	INI::parseReal,											nullptr,		offsetof( ThingTemplate, m_shroudRevealToAllRange ) },
+	{ "ShroudRevealToAllRange",	INI::parseReal,											nullptr,		offsetof( ThingTemplate, m_shroudRevealToAllRange ) }, // Added in Zero Hour
 
 	{ "PlacementViewAngle",		INI::parseAngleReal,									nullptr,		offsetof( ThingTemplate, m_placementViewAngle ) },
 
@@ -174,8 +174,8 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "ExperienceValue",			ThingTemplate::parseIntList,					(void*)LEVEL_COUNT,		offsetof( ThingTemplate, m_experienceValues ), ThingTemplateDeparser::deparseIntList },
 	{ "ExperienceRequired",		ThingTemplate::parseIntList,					(void*)LEVEL_COUNT,		offsetof( ThingTemplate, m_experienceRequired ), ThingTemplateDeparser::deparseIntList },
 	{ "IsTrainable",					INI::parseBool,												nullptr,									offsetof( ThingTemplate, m_isTrainable ) },
-	{ "EnterGuard",						INI::parseBool,												nullptr,									offsetof( ThingTemplate, m_enterGuard ) },
-	{ "HijackGuard",					INI::parseBool,												nullptr,									offsetof( ThingTemplate, m_hijackGuard ) },
+	{ "EnterGuard",						INI::parseBool,												nullptr,									offsetof( ThingTemplate, m_enterGuard ) }, // Added in Zero Hour
+	{ "HijackGuard",					INI::parseBool,												nullptr,									offsetof( ThingTemplate, m_hijackGuard ) }, // Added in Zero Hour
 
 	{ "Side",									INI::parseAsciiString,								nullptr,	offsetof( ThingTemplate, m_defaultOwningSide ) },
 
@@ -247,6 +247,12 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "SoundMoveStartDamaged",INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundMoveStartDamaged]) },
 	{ "SoundMoveLoop",				INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundMoveLoop]) },
 	{ "SoundMoveLoopDamaged",	INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundMoveLoopDamaged]) },
+#if RTS_GENERALS && RETAIL_COMPATIBLE_DATA
+	{ "SoundDie",							INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundDie]) },
+	{ "SoundDieFire",					INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundDieFire ]) },
+	{ "SoundDieToxin",				INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundDieToxin ]) },
+	{ "SoundCrush",						INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundCrush ]) },
+#endif
 	{ "SoundAmbient",					INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundAmbient ]) },
 	{ "SoundAmbientDamaged",	INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundAmbientDamaged ]) },
 	{ "SoundAmbientReallyDamaged",INI::parseDynamicAudioEventRTS,	nullptr,offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundAmbientReallyDamaged ]) },
@@ -285,14 +291,14 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "OverrideModule",				ThingTemplate::parseOverrideModule, nullptr, 0, ThingTemplateDeparser::ignoreFinalizedParseOperation },
 	{ "InheritableModule",		ThingTemplate::parseInheritableModule,	nullptr, 0, ThingTemplateDeparser::ignoreFinalizedParseOperation },
 
-  { "OverrideableByLikeKind",		ThingTemplate::OverrideableByLikeKind,	nullptr, 0, ThingTemplateDeparser::ignoreFinalizedParseOperation },
+    { "OverrideableByLikeKind",		ThingTemplate::OverrideableByLikeKind,	nullptr, 0, ThingTemplateDeparser::ignoreFinalizedParseOperation },
 
 	{ "Locomotor",						AIUpdateModuleData::parseLocomotorSet, nullptr, 0, ThingTemplateDeparser::deparseLocomotorSets },
 	{ "InstanceScaleFuzziness",	INI::parseReal,					nullptr, offsetof(ThingTemplate, m_instanceScaleFuzziness ) },
 	{ "StructureRubbleHeight",	INI::parseUnsignedByte,					nullptr, offsetof(ThingTemplate, m_structureRubbleHeight ) },
 	{ "ThreatValue",						INI::parseUnsignedShort,		nullptr, offsetof(ThingTemplate, m_threatValue ) },
-  { "MaxSimultaneousOfType",	ThingTemplate::parseMaxSimultaneous,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousOfType ), ThingTemplateDeparser::deparseMaxSimultaneous },
-  { "MaxSimultaneousLinkKey",	NameKeyGenerator::parseStringAsNameKeyType,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousLinkKey ), ThingTemplateDeparser::deparseMaxSimultaneousLinkKey },
+    { "MaxSimultaneousOfType",	ThingTemplate::parseMaxSimultaneous,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousOfType ), ThingTemplateDeparser::deparseMaxSimultaneous },
+    { "MaxSimultaneousLinkKey",	NameKeyGenerator::parseStringAsNameKeyType,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousLinkKey ), ThingTemplateDeparser::deparseMaxSimultaneousLinkKey },
 	{ "CrusherLevel",					INI::parseUnsignedByte,			nullptr, offsetof( ThingTemplate, m_crusherLevel ) },
 	{ "CrushableLevel",				INI::parseUnsignedByte,			nullptr, offsetof( ThingTemplate, m_crushableLevel ) },
 
@@ -316,8 +322,8 @@ const FieldParse ThingTemplate::s_objectReskinFieldParseTable[] =
 	{ "FenceXOffset",					INI::parseReal,													nullptr,		offsetof( ThingTemplate, m_fenceXOffset ) },
 
   // Needed to avoid some cheats with the scud storm rebuild hole
-  { "MaxSimultaneousOfType",	ThingTemplate::parseMaxSimultaneous,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousOfType ), ThingTemplateDeparser::deparseMaxSimultaneous },
-  { "MaxSimultaneousLinkKey",	NameKeyGenerator::parseStringAsNameKeyType,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousLinkKey ), ThingTemplateDeparser::deparseMaxSimultaneousLinkKey },
+    { "MaxSimultaneousOfType",	ThingTemplate::parseMaxSimultaneous,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousOfType ), ThingTemplateDeparser::deparseMaxSimultaneous },
+    { "MaxSimultaneousLinkKey",	NameKeyGenerator::parseStringAsNameKeyType,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousLinkKey ), ThingTemplateDeparser::deparseMaxSimultaneousLinkKey },
 
 	{ nullptr, nullptr, nullptr, 0 }
 
@@ -569,6 +575,7 @@ Bool ModuleInfo::clearCopiedFromDefaultEntries(Int interfaceMask, const AsciiStr
 		{
       if ( it->inheritable )
 			{
+#if !(RTS_GENERALS && RETAIL_COMPATIBLE_CRC)
 				if( it->m_moduleTag.compare("ModuleTag_DefaultAutoHealBehavior") == 0  && !fullTemplate->isTrainable() )
 				{
 					// Don't inherit this module if it is entirely useless to us.
@@ -576,6 +583,7 @@ Bool ModuleInfo::clearCopiedFromDefaultEntries(Int interfaceMask, const AsciiStr
 			    ret = true;
 				}
 				else
+#endif
 				{
 					++it;//skip to the next nugget, 'cause we inherit this one
 				}
@@ -1537,6 +1545,12 @@ void ThingTemplate::validateAudio()
 	AUDIO_TEST(SoundMoveStartDamaged)
 	AUDIO_TEST(SoundMoveLoop)
 	AUDIO_TEST(SoundMoveLoopDamaged)
+#if RTS_GENERALS && RETAIL_COMPATIBLE_DATA
+	AUDIO_TEST(SoundDie)
+	AUDIO_TEST(SoundDieFire)
+	AUDIO_TEST(SoundDieToxin)
+	AUDIO_TEST(SoundCrush)
+#endif
 	AUDIO_TEST(SoundAmbient)
 	AUDIO_TEST(SoundAmbientDamaged)
 	AUDIO_TEST(SoundAmbientReallyDamaged)
