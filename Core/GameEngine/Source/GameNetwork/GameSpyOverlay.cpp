@@ -62,8 +62,16 @@ static Bool reOpenPlayerInfoFlag = FALSE;
 #if defined(GENERALS_ONLINE)
 static GameWinMsgBoxFunc buddyLoginCancelFunc = nullptr;
 static Bool buddyLoginInProgress = FALSE;
+static Bool buddyLoginMayOpenOverlay = FALSE;
 static UnsignedInt buddyLoginStartTime = 0;
+static Bool buddyLoginCallbackRegistered = FALSE;
+static const UnsignedInt BUDDY_LOGIN_TIMEOUT = 120000;
 #endif
+
+Bool GameSpyIsBuddyLoginInProgress()
+{
+	return buddyLoginInProgress;
+}
 
 /**
 	* messageBoxOK is called when a message box is destroyed
@@ -291,8 +299,6 @@ static WindowLayout *overlayLayouts[GSOVERLAY_MAX] =
 static Bool buddyOverlayUsesGeneralsTheme = FALSE;
 
 #if defined(GENERALS_ONLINE)
-static Bool buddyLoginCallbackRegistered = FALSE;
-static const UnsignedInt BUDDY_LOGIN_TIMEOUT = 120000;
 
 static void deregisterBuddyLoginCallback()
 {
@@ -341,29 +347,64 @@ void GameSpyContinueBuddyLoginInBackground()
 	// the browser login code and will open the communicator when it succeeds.
 }
 
-void GameSpyCancelBuddyLoginInBackground()
+void GameSpyHandoffBuddyLoginToShell()
 {
 	if (!buddyLoginInProgress)
 		return;
 
-	GameWinMsgBoxFunc authCancelFunc = buddyLoginCancelFunc;
+	NGMP_OnlineServices_AuthInterface* authInterface =
+		NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+
+	if (authInterface != nullptr)
+	{
+		authInterface->DeregisterForLoginCallback();
+	}
+
+	buddyLoginInProgress = FALSE;
+	buddyLoginMayOpenOverlay = FALSE;
+	buddyLoginStartTime = 0;
 	buddyLoginCancelFunc = nullptr;
 
-	if (authCancelFunc != nullptr)
+	ClearGSMessageBoxes();
+}
+
+void GameSpyCancelBuddyLoginInBackground()
+{
+	GameWinMsgBoxFunc authCancelFunc = buddyLoginCancelFunc;
+
+	buddyLoginCancelFunc = nullptr;
+	buddyLoginMayOpenOverlay = FALSE;
+
+	if (authCancelFunc != nullptr &&
+		authCancelFunc != GameSpyCancelBuddyLoginInBackground)
 	{
 		authCancelFunc();
 	}
 
-	resetBuddyLoginAttempt();
+	NGMP_OnlineServices_AuthInterface* authInterface =
+		NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+
+	if (authInterface != nullptr)
+	{
+		authInterface->DeregisterForLoginCallback();
+	}
+
+	buddyLoginInProgress = FALSE;
+	buddyLoginStartTime = 0;
+
+	ClearGSMessageBoxes();
 }
 
 static void buddyLoginComplete(ELoginResult loginResult)
 {
-	if (!buddyLoginInProgress)
+	if (!buddyLoginInProgress || !buddyLoginMayOpenOverlay)
 		return;
 
 	if (loginResult == ELoginResult::Success)
 	{
+		if (!buddyLoginMayOpenOverlay)
+			return;
+
 		deregisterBuddyLoginCallback();
 		ClearGSMessageBoxes();
 		return;
@@ -410,6 +451,7 @@ static Bool ensureBuddyLogin()
 	}
 
 	buddyLoginInProgress = TRUE;
+	buddyLoginMayOpenOverlay = TRUE;
 	buddyLoginStartTime = timeGetTime();
 	ClearGSMessageBoxes();
 	GSMessageBoxNoButtons(UnicodeString(L"Logging In"), UnicodeString(L"Please wait..."), true);
@@ -427,6 +469,11 @@ void GameSpyContinueBuddyLoginInBackground()
 
 void GameSpyCancelBuddyLoginInBackground()
 {
+}
+
+Bool GameSpyIsBuddyLoginInProgress()
+{
+	return FALSE;
 }
 #endif
 
@@ -449,12 +496,19 @@ GSCommunicatorConnectionStatus GameSpyGetCommunicatorConnectionStatus()
 			webSocket != nullptr &&
 			webSocket->IsConnected())
 		{
-			const Bool openBuddyOverlay = buddyLoginInProgress;
+			const Bool openBuddyOverlay =
+				buddyLoginInProgress && buddyLoginMayOpenOverlay;
 
 			if (buddyLoginInProgress)
 			{
-				resetBuddyLoginAttempt();
+				deregisterBuddyLoginCallback();
+				buddyLoginInProgress = FALSE;
+				buddyLoginStartTime = 0;
+				buddyLoginCancelFunc = nullptr;
 			}
+
+			buddyLoginMayOpenOverlay = FALSE;
+			ClearGSMessageBoxes();
 
 			if (openBuddyOverlay && !GameSpyIsOverlayOpen(GSOVERLAY_BUDDY))
 			{

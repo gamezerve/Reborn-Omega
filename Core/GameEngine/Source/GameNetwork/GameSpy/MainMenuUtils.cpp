@@ -50,6 +50,7 @@
 #include "GameNetwork/GameSpy/MainMenuUtils.h"
 #include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/PeerThread.h"
+#include "GameNetwork/GameSpyOverlay.h"
 
 #include "WWDownload/Registry.h"
 #include "WWDownload/urlBuilder.h"
@@ -269,6 +270,11 @@ static void startOnline()
 	}
 	else
 	{
+		if (GameSpyIsBuddyLoginInProgress())
+		{
+			GameSpyHandoffBuddyLoginToShell();
+		}
+
 		TheShell->push(AsciiString("Menus/GameSpyLoginProfile.wnd"));
 	}
 #endif
