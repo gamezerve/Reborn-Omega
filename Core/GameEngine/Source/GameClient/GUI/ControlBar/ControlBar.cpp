@@ -4689,17 +4689,19 @@ void ControlBar::updateGlobalCommunicatorButtonImage()
 	{
 		if (m_globalCommunicatorConnectionStatus != status)
 		{
-			m_globalCommunicatorAnimationFrame = 0;
+			animationFrame = 0;
 			m_globalCommunicatorAnimationTime = now;
 		}
-		else if (now - m_globalCommunicatorAnimationTime >= 300)
+		else
 		{
-			const UnsignedInt elapsedFrames = (now - m_globalCommunicatorAnimationTime) / 300;
-			m_globalCommunicatorAnimationFrame =
-				(m_globalCommunicatorAnimationFrame + elapsedFrames) % 3;
-			m_globalCommunicatorAnimationTime += elapsedFrames * 300;
+			animationFrame = m_globalCommunicatorAnimationFrame;
+			if (now - m_globalCommunicatorAnimationTime >= 300)
+			{
+				const UnsignedInt elapsedFrames = (now - m_globalCommunicatorAnimationTime) / 300;
+				animationFrame = (animationFrame + elapsedFrames) % 3;
+				m_globalCommunicatorAnimationTime += elapsedFrames * 300;
+			}
 		}
-		animationFrame = m_globalCommunicatorAnimationFrame;
 	}
 
 	if (m_globalCommunicatorConnectionStatus == status &&
@@ -4720,6 +4722,7 @@ void ControlBar::updateGlobalCommunicatorButtonImage()
 			"GOCommunicatorConnecting1",
 			"GOCommunicatorConnecting2",
 			"GOCommunicatorConnecting3"
+			"GOCommunicatorConnecting4"
 		};
 		imageName = connectingImages[animationFrame];
 	}

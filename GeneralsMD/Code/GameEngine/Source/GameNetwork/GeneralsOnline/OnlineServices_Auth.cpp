@@ -500,7 +500,7 @@ void NGMP_OnlineServices_AuthInterface::DoFullLoginFlow()
 							GSMessageBoxOkCancelWithLabels(
 								UnicodeString(L"Logging In"),
 								UnicodeString(L"Please continue in your web browser"),
-								UnicodeString(L"Continue to Game"),
+								UnicodeString(L"Continue"),
 								UnicodeString(L"Cancel"),
 								GameSpyContinueBuddyLoginInBackground,
 								cancelLogin);

@@ -35,7 +35,6 @@
 #include "GameClient/GameText.h"
 #include "GameClient/MessageBox.h"
 #include "GameClient/ShellHooks.h"
-#include "GameLogic/GameLogic.h"
 //#include "GameNetwork/GameSpy.h"
 //#include "GameNetwork/GameSpyGP.h"
 
@@ -233,23 +232,11 @@ static Bool buddyOverlayUsesGeneralsTheme = FALSE;
 
 #if defined(GENERALS_ONLINE)
 static Bool buddyLoginInProgress = FALSE;
-static Bool buddyLoginPausedGame = FALSE;
-
-static void restoreGameAfterBuddyLogin()
-{
-	if (buddyLoginPausedGame && TheGameLogic != nullptr && TheGameLogic->isGamePaused())
-	{
-		TheGameLogic->setGamePaused(FALSE);
-	}
-
-	buddyLoginPausedGame = FALSE;
-}
 
 void GameSpyContinueBuddyLoginInBackground()
 {
 	// Keep buddyLoginInProgress set: the auth interface must continue polling
 	// the browser login code and will open the communicator when it succeeds.
-	restoreGameAfterBuddyLogin();
 }
 
 static void buddyLoginComplete(ELoginResult loginResult)
@@ -262,7 +249,6 @@ static void buddyLoginComplete(ELoginResult loginResult)
 	}
 
 	buddyLoginInProgress = FALSE;
-	restoreGameAfterBuddyLogin();
 	ClearGSMessageBoxes();
 
 	if (loginResult == ELoginResult::Success)
@@ -305,13 +291,6 @@ static Bool ensureBuddyLogin()
 	}
 
 	buddyLoginInProgress = TRUE;
-	if (TheGameLogic != nullptr && !TheGameLogic->isInMultiplayerGame() &&
-		!TheGameLogic->isGamePaused())
-	{
-		TheGameLogic->setGamePaused(TRUE);
-		buddyLoginPausedGame = TRUE;
-	}
-
 	ClearGSMessageBoxes();
 	GSMessageBoxNoButtons(UnicodeString(L"Logging In"), UnicodeString(L"Please wait..."), true);
 	authInterface->RegisterForLoginCallback(buddyLoginComplete);
