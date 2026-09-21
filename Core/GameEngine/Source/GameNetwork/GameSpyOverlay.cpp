@@ -58,6 +58,13 @@ static GameWindow *messageBoxWindow = nullptr;
 static GameWinMsgBoxFunc okFunc = nullptr;
 static GameWinMsgBoxFunc cancelFunc = nullptr;
 static Bool reOpenPlayerInfoFlag = FALSE;
+
+#if defined(GENERALS_ONLINE)
+static GameWinMsgBoxFunc buddyLoginCancelFunc = nullptr;
+static Bool buddyLoginInProgress = FALSE;
+static UnsignedInt buddyLoginStartTime = 0;
+#endif
+
 /**
 	* messageBoxOK is called when a message box is destroyed
 	* by way of an OK button, so we can clear our pointers to it.
@@ -77,6 +84,23 @@ static void messageBoxOK()
 void GameSpyCancelBuddyLoginInBackground();
 #endif
 
+static void resetBuddyLoginAttempt()
+{
+	NGMP_OnlineServices_AuthInterface* authInterface =
+		NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+
+	if (authInterface != nullptr)
+	{
+		authInterface->DeregisterForLoginCallback();
+	}
+
+	buddyLoginInProgress = FALSE;
+	buddyLoginStartTime = 0;
+	buddyLoginCancelFunc = nullptr;
+
+	ClearGSMessageBoxes();
+}
+
 /**
 	* messageBoxCancel is called when a message box is destroyed
 	* by way of a Cancel button, so we can clear our pointers to it.
@@ -84,16 +108,26 @@ void GameSpyCancelBuddyLoginInBackground();
 static void messageBoxCancel()
 {
 	DEBUG_ASSERTCRASH(messageBoxWindow, ("Message box window went away without being there in the first place!"));
+
 	messageBoxWindow = nullptr;
-	if (cancelFunc)
-	{
-		cancelFunc();
-		cancelFunc = nullptr;
-	}
+
+	GameWinMsgBoxFunc callback = cancelFunc;
+	cancelFunc = nullptr;
 
 #if defined(GENERALS_ONLINE)
-	GameSpyCancelBuddyLoginInBackground();
+	if (buddyLoginInProgress && callback != nullptr && callback == buddyLoginCancelFunc)
+	{
+		buddyLoginCancelFunc = nullptr;
+		callback();
+		resetBuddyLoginAttempt();
+		return;
+	}
 #endif
+
+	if (callback)
+	{
+		callback();
+	}
 }
 
 /**
@@ -151,6 +185,13 @@ void GSMessageBoxOkCancelWithLabels(
 	GameWinMsgBoxFunc newOkFunc,
 	GameWinMsgBoxFunc newCancelFunc)
 {
+#if defined(GENERALS_ONLINE)
+	if (newOkFunc == GameSpyContinueBuddyLoginInBackground)
+	{
+		buddyLoginCancelFunc = newCancelFunc;
+	}
+#endif
+
 	GSMessageBoxOkCancel(title, message, newOkFunc, newCancelFunc);
 
 	if (messageBoxWindow == nullptr)
@@ -158,15 +199,13 @@ void GSMessageBoxOkCancelWithLabels(
 		return;
 	}
 
-	GameWindow* buttonOk =
-		TheWindowManager->winGetWindowFromId(
-			messageBoxWindow,
-			TheNameKeyGenerator->nameToKey("MessageBox.wnd:ButtonOk"));
+	GameWindow* buttonOk = TheWindowManager->winGetWindowFromId(
+		messageBoxWindow,
+		TheNameKeyGenerator->nameToKey("MessageBox.wnd:ButtonOk"));
 
-	GameWindow* buttonCancel =
-		TheWindowManager->winGetWindowFromId(
-			messageBoxWindow,
-			TheNameKeyGenerator->nameToKey("MessageBox.wnd:ButtonCancel"));
+	GameWindow* buttonCancel = TheWindowManager->winGetWindowFromId(
+		messageBoxWindow,
+		TheNameKeyGenerator->nameToKey("MessageBox.wnd:ButtonCancel"));
 
 	if (buttonOk != nullptr)
 	{
@@ -252,9 +291,7 @@ static WindowLayout *overlayLayouts[GSOVERLAY_MAX] =
 static Bool buddyOverlayUsesGeneralsTheme = FALSE;
 
 #if defined(GENERALS_ONLINE)
-static Bool buddyLoginInProgress = FALSE;
 static Bool buddyLoginCallbackRegistered = FALSE;
-static UnsignedInt buddyLoginStartTime = 0;
 static const UnsignedInt BUDDY_LOGIN_TIMEOUT = 120000;
 
 static void deregisterBuddyLoginCallback()
@@ -271,21 +308,6 @@ static void deregisterBuddyLoginCallback()
 	}
 
 	buddyLoginCallbackRegistered = FALSE;
-}
-
-static void resetBuddyLoginAttempt()
-{
-	NGMP_OnlineServices_AuthInterface* authInterface =
-		NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
-
-	if (authInterface != nullptr)
-	{
-		authInterface->DeregisterForLoginCallback();
-	}
-
-	buddyLoginInProgress = FALSE;
-	buddyLoginStartTime = 0;
-	ClearGSMessageBoxes();
 }
 
 static void stopBuddyLoginAttempt(Bool showFailure)
@@ -323,6 +345,14 @@ void GameSpyCancelBuddyLoginInBackground()
 {
 	if (!buddyLoginInProgress)
 		return;
+
+	GameWinMsgBoxFunc authCancelFunc = buddyLoginCancelFunc;
+	buddyLoginCancelFunc = nullptr;
+
+	if (authCancelFunc != nullptr)
+	{
+		authCancelFunc();
+	}
 
 	resetBuddyLoginAttempt();
 }
@@ -454,7 +484,7 @@ GSCommunicatorConnectionStatus GameSpyGetCommunicatorConnectionStatus()
 	{
 		if (buddyLoginInProgress)
 		{
-			resetBuddyLoginAttempt();
+			GameSpyCancelBuddyLoginInBackground();
 
 			GSMessageBoxOk(
 				TheGameText->fetch("GUI:GPErrorTitle"),
@@ -468,7 +498,7 @@ GSCommunicatorConnectionStatus GameSpyGetCommunicatorConnectionStatus()
 	if (buddyLoginInProgress &&
 		static_cast<UnsignedInt>(now - buddyLoginStartTime) >= BUDDY_LOGIN_TIMEOUT)
 	{
-		resetBuddyLoginAttempt();
+		GameSpyCancelBuddyLoginInBackground();
 
 		GSMessageBoxOk(
 			UnicodeString(L"Logging In"),
