@@ -99,6 +99,7 @@ set(GAMEENGINE_SRC
     Include/Common/Radar.h
     Include/Common/RAMFile.h
     Include/Common/RandomValue.h
+    Include/Common/RebornFAQ.h
     Include/Common/RebornLog.h
     Include/Common/RebornOmegaPreferences.h
 #    Include/Common/Recorder.h
@@ -624,6 +625,7 @@ set(GAMEENGINE_SRC
 #    Source/Common/PartitionSolver.cpp
     Source/Common/PerfTimer.cpp
     Source/Common/RandomValue.cpp
+    Source/Common/RebornFAQ.cpp
     Source/Common/RebornLog.cpp
     Source/Common/RebornOmegaPreferences.cpp
 #    Source/Common/Recorder.cpp

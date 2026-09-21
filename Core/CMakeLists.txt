@@ -17,7 +17,7 @@ target_sources(corei_libraries_include PRIVATE
     Libraries/Include/Lib/trig.h
     Libraries/Include/rts/debug.h
     Libraries/Include/rts/profile.h
-)
+ "GameEngine/Include/Common/RebornFAQ.h" "GameEngine/Source/Common/RebornFAQ.cpp")
 target_link_libraries(corei_always INTERFACE
     core_config
     core_profile_tracy
