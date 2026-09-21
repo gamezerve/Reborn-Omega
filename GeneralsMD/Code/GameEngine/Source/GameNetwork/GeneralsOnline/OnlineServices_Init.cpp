@@ -900,6 +900,14 @@ void NGMP_OnlineServicesManager::OnLogin(ELoginResult loginResult, const char* s
 
 void NGMP_OnlineServicesManager::Init()
 {
+	// The in-game communicator can initialize Generals Online before the Online
+	// menu is ever opened.  Keep the normal Online-menu initialization safe when
+	// it is entered later in the same process.
+	if (m_pAuthInterface != nullptr)
+	{
+		return;
+	}
+
 	g_MainThreadID = std::this_thread::get_id();
 
 	// initialize child classes, these need the platform handle

@@ -46,6 +46,7 @@
 #include "GameClient/Gadget.h"
 #include "GameClient/GameText.h"
 #include "GameClient/Shell.h"
+#include "GameClient/ShellHooks.h"
 #include "GameClient/KeyDefs.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GadgetListBox.h"
@@ -741,6 +742,9 @@ void WOLWelcomeMenuUpdate( WindowLayout * layout, void *userData)
 	// TODO_NGMP: We do this in multiple UIs, we should actually just do it in one place and send an event to every other screen
 	if (NGMP_OnlineServicesManager::GetInstance() != nullptr && NGMP_OnlineServicesManager::GetInstance()->IsPendingFullTeardown())
 	{
+		// Every teardown that removes the Online welcome screen must restore the
+		// shell-map state, including Persona -> Logout and connection failures.
+		SignalUIInteraction(SHELL_SCRIPT_HOOK_GENERALS_ONLINE_LOGOUT);
 		NGMP_OnlineServicesManager::GetInstance()->ConsumePendingFullTeardown();
 
 		buttonPushed = TRUE;
@@ -939,8 +943,17 @@ WindowMsgHandledType WOLWelcomeMenuSystem( GameWindow *window, UnsignedInt msg,
 					//TheGameSpyChat->disconnectFromChat();
 
 #if defined(GENERALS_ONLINE)
-					// NGMP: Don't need to logout here, just kill the WS connection, that triggers a log out
-					NGMP_OnlineServicesManager::GetInstance()->SetPendingFullTeardown(EGOTearDownReason::USER_REQUESTED_SILENT);
+					// Return through one well-defined shutdown path.  Leaving a pending
+					// teardown for WOLWelcomeMenuUpdate caused a second shell pop and could
+					// leave the Online-menu music active on the main menu.
+					NGMP_OnlineServicesManager *onlineServices = NGMP_OnlineServicesManager::GetInstance();
+					if (onlineServices != nullptr)
+					{
+						onlineServices->SetPendingFullTeardown(EGOTearDownReason::USER_REQUESTED_SILENT);
+						onlineServices->ConsumePendingFullTeardown();
+					}
+					SignalUIInteraction(SHELL_SCRIPT_HOOK_GENERALS_ONLINE_LOGOUT);
+					TearDownGeneralsOnline();
 
 					DEBUG_LOG(("Tearing down GeneralsOnline from WOLWelcomeMenuSystem(GBM_SELECTED)\n"));
 #else

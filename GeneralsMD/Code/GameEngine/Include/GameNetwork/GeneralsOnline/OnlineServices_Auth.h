@@ -22,7 +22,8 @@ public:
 	void SendMiddlewareToken(std::string strMWToken);
 
 	void RefreshToken();
-	void BeginLogin();
+	void BeginLogin(bool shellLoginFlow = true);
+	void CancelLogin();
 	void DoFullLoginFlow();
 
 	void Tick();
@@ -49,6 +50,15 @@ public:
 	void LogoutOfMyAccount();
 
 private:
+	void InvokeLoginCallback(ELoginResult loginResult)
+	{
+		std::function<void(ELoginResult)> callback = std::move(m_cb_LoginPendingCallback);
+		if (callback != nullptr)
+		{
+			callback(loginResult);
+		}
+	}
+
 	void LoginAsSecondaryDevAccount();
 
 	void SaveCredentials(const char* szRefreshToken);
@@ -68,6 +78,7 @@ private:
 	std::string m_strDisplayName = "NO_USER";
 
 	std::function<void(ELoginResult)> m_cb_LoginPendingCallback = nullptr;
+	bool m_shellLoginFlow = true;
 
 	std::string m_strRefreshToken = std::string();
 	int64_t m_tokenCreationTime = -1;

@@ -93,6 +93,12 @@ void WindowLayout::hide( Bool hide )
 //-------------------------------------------------------------------------------------------------
 void WindowLayout::addWindow( GameWindow *window )
 {
+	if (window == nullptr)
+	{
+		DEBUG_LOG(("WindowLayout::addWindow - refusing to add a null window"));
+		return;
+	}
+
 	GameWindow *win = findWindow( window );
 
 	// only add window if window is not in this layout already

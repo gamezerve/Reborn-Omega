@@ -92,6 +92,8 @@
 #include "GameClient/GadgetStaticText.h"
 #include "GameClient/GadgetTextEntry.h"
 #include "GameClient/InGameUI.h"
+#include "GameClient/Image.h"
+#include "GameClient/Shell.h"
 #include "GameClient/WindowVideoManager.h"
 #include "GameClient/ControlBarResizer.h"
 #include "GameClient/GadgetListBox.h"
@@ -100,6 +102,7 @@
 #include "GameClient/GUICallbacks.h"
 
 #include "GameNetwork/GameInfo.h"
+#include "GameNetwork/GameSpyOverlay.h"
 
 
 #include "GameLogic/Reborn/ImageUpgradeReborn.h"
@@ -2185,6 +2188,12 @@ ControlBar::ControlBar()
 	}
 	m_rightHUDUnitSelectParent = nullptr;
 	m_communicatorButton = nullptr;
+	m_globalCommunicatorButton = nullptr;
+	m_globalCommunicatorButtonParent = nullptr;
+	m_globalCommunicatorButtonEnabled = TRUE;
+	m_globalCommunicatorConnectionStatus = -1;
+	m_globalCommunicatorAnimationFrame = -1;
+	m_globalCommunicatorAnimationTime = 0;
 	m_currentSelectedDrawable = nullptr;
 	m_currContext = CB_CONTEXT_NONE;
 	m_rallyPointDrawableID = INVALID_DRAWABLE_ID;
@@ -2199,6 +2208,7 @@ ControlBar::ControlBar()
 	m_animateWindowManager = nullptr;
 	m_generalsScreenAnimate = nullptr;
 	m_animateWindowManagerForGenShortcuts = nullptr;
+	m_globalCommunicatorAnimateWindowManager = nullptr;
 	m_flash = FALSE;
 	m_toggleButtonUpIn = nullptr;
 	m_toggleButtonUpOn = nullptr;
@@ -2249,6 +2259,9 @@ ControlBar::~ControlBar()
 
 	delete m_animateWindowManagerForGenShortcuts;
 	m_animateWindowManagerForGenShortcuts = nullptr;
+
+	delete m_globalCommunicatorAnimateWindowManager;
+	m_globalCommunicatorAnimateWindowManager = nullptr;
 
 	delete m_animateWindowManager;
 	m_animateWindowManager = nullptr;
@@ -2464,12 +2477,15 @@ void ControlBar::init()
 		{
 			setControlCommand(globalCommunicatorButton, findCommandButton("NonCommand_Communicator"));
 			globalCommunicatorButton->winSetTooltipFunc(commandButtonTooltip);
+			m_globalCommunicatorAnimateWindowManager = NEW AnimateWindowManager;
 
 			UserPreferences rebornPreferences;
 			LoadRebornOmegaPreferences(rebornPreferences);
-			GameWindow *globalCommunicatorParent = globalCommunicatorButton->winGetParent();
-			if (globalCommunicatorParent)
-				globalCommunicatorParent->winHide(rebornPreferences["ShowCommunicatorButton"] == "no");
+			m_globalCommunicatorButton = globalCommunicatorButton;
+			m_globalCommunicatorButtonParent = globalCommunicatorButton->winGetParent();
+			m_globalCommunicatorButtonEnabled = rebornPreferences["ShowCommunicatorButton"] != "no";
+			updateGlobalCommunicatorButtonImage();
+			updateGlobalCommunicatorButtonVisibility();
 		}
 
 		GameWindow *win = TheWindowManager->winGetWindowFromId(nullptr,TheNameKeyGenerator->nameToKey("ControlBar.wnd:ButtonOptions"));
@@ -2679,6 +2695,15 @@ void ControlBar::update()
 {
 	if (TheGlobalData->m_headless)
 		return;
+
+	updateGlobalCommunicatorButtonImage();
+	updateGlobalCommunicatorButtonVisibility();
+	if (m_globalCommunicatorAnimateWindowManager && m_globalCommunicatorButtonParent &&
+		!m_globalCommunicatorButtonParent->winIsHidden())
+	{
+		m_globalCommunicatorAnimateWindowManager->update();
+	}
+
 	if (s_moneyPopupLayout)
 	{
 		Bool shouldClose = FALSE;
@@ -4627,6 +4652,117 @@ void ControlBar::hideCommunicator( Bool b )
 	//sanity
 	if( m_communicatorButton != nullptr )
 		m_communicatorButton->winHide( b );
+}
+
+// ---------------------------------------------------------------------------------------
+void ControlBar::setGlobalCommunicatorButtonEnabled(Bool enabled)
+{
+	m_globalCommunicatorButtonEnabled = enabled;
+	updateGlobalCommunicatorButtonVisibility();
+}
+
+// ---------------------------------------------------------------------------------------
+Bool ControlBar::canShowGlobalCommunicatorButton() const
+{
+	return m_globalCommunicatorButtonEnabled &&
+		TheGameLogic &&
+		TheInGameUI &&
+		(!TheShell || !TheShell->isShellActive()) &&
+		!TheGameLogic->isLoadingMap() &&
+		!TheGameLogic->isClearingGameData() &&
+		TheGameLogic->isInInteractiveGame() &&
+		(TheInGameUI->getInputEnabled() ||
+			(TheGameLogic->isGamePaused() && TheGameLogic->getInputEnabledMemory()));
+}
+
+// ---------------------------------------------------------------------------------------
+void ControlBar::updateGlobalCommunicatorButtonImage()
+{
+	if (!m_globalCommunicatorButton || !TheMappedImageCollection)
+		return;
+
+	const Int status = GameSpyGetCommunicatorConnectionStatus();
+	Int animationFrame = -1;
+	const UnsignedInt now = timeGetTime();
+
+	if (status == GSCOMMUNICATOR_CONNECTING)
+	{
+		if (m_globalCommunicatorConnectionStatus != status)
+		{
+			m_globalCommunicatorAnimationFrame = 0;
+			m_globalCommunicatorAnimationTime = now;
+		}
+		else if (now - m_globalCommunicatorAnimationTime >= 300)
+		{
+			const UnsignedInt elapsedFrames = (now - m_globalCommunicatorAnimationTime) / 300;
+			m_globalCommunicatorAnimationFrame =
+				(m_globalCommunicatorAnimationFrame + elapsedFrames) % 3;
+			m_globalCommunicatorAnimationTime += elapsedFrames * 300;
+		}
+		animationFrame = m_globalCommunicatorAnimationFrame;
+	}
+
+	if (m_globalCommunicatorConnectionStatus == status &&
+		m_globalCommunicatorAnimationFrame == animationFrame)
+	{
+		return;
+	}
+
+	const char *imageName = "GOCommunicator";
+	if (status == GSCOMMUNICATOR_CONNECTED)
+	{
+		imageName = "GOCommunicatorConnected";
+	}
+	else if (status == GSCOMMUNICATOR_CONNECTING)
+	{
+		static const char *connectingImages[] =
+		{
+			"GOCommunicatorConnecting1",
+			"GOCommunicatorConnecting2",
+			"GOCommunicatorConnecting3"
+		};
+		imageName = connectingImages[animationFrame];
+	}
+
+	const Image *image = TheMappedImageCollection->findImageByName(imageName);
+	if (image)
+	{
+		m_globalCommunicatorButton->winSetEnabledImage(0, image);
+		m_globalCommunicatorButton->winSetDisabledImage(0, image);
+		m_globalCommunicatorButton->winSetHiliteImage(0, image);
+		m_globalCommunicatorButton->winSetHiliteImage(1, image);
+	}
+
+	m_globalCommunicatorConnectionStatus = status;
+	m_globalCommunicatorAnimationFrame = animationFrame;
+}
+
+// ---------------------------------------------------------------------------------------
+void ControlBar::updateGlobalCommunicatorButtonVisibility()
+{
+	if (!m_globalCommunicatorButtonParent)
+		return;
+
+	const Bool shouldHide = !canShowGlobalCommunicatorButton();
+	if (m_globalCommunicatorButtonParent->winIsHidden() == shouldHide)
+		return;
+
+	if (shouldHide)
+	{
+		if (m_globalCommunicatorAnimateWindowManager)
+			m_globalCommunicatorAnimateWindowManager->reset();
+		m_globalCommunicatorButtonParent->winHide(TRUE);
+	}
+	else
+	{
+		m_globalCommunicatorButtonParent->winHide(FALSE);
+		if (m_globalCommunicatorAnimateWindowManager && TheGlobalData->m_animateWindows)
+		{
+			m_globalCommunicatorAnimateWindowManager->reset();
+			m_globalCommunicatorAnimateWindowManager->registerGameWindow(
+				m_globalCommunicatorButtonParent, WIN_ANIMATION_SLIDE_LEFT, TRUE, 1000);
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------------------

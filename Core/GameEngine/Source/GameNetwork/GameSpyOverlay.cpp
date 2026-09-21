@@ -29,17 +29,23 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "Common/AudioEventRTS.h"
 
+#include "GameClient/CampaignManager.h"
 #include "GameClient/GadgetListBox.h"
 #include "GameClient/GadgetPushButton.h"
 #include "GameClient/GameText.h"
 #include "GameClient/MessageBox.h"
 #include "GameClient/ShellHooks.h"
+#include "GameLogic/GameLogic.h"
 //#include "GameNetwork/GameSpy.h"
 //#include "GameNetwork/GameSpyGP.h"
 
 #include "GameNetwork/GameSpyOverlay.h"
 //#include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/BuddyThread.h"
+
+#if defined(GENERALS_ONLINE)
+#include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
+#endif
 
 void deleteNotificationBox();
 static void raiseOverlays();
@@ -223,6 +229,128 @@ static WindowLayout *overlayLayouts[GSOVERLAY_MAX] =
 	nullptr,
 };
 
+static Bool buddyOverlayUsesGeneralsTheme = FALSE;
+
+#if defined(GENERALS_ONLINE)
+static Bool buddyLoginInProgress = FALSE;
+static Bool buddyLoginPausedGame = FALSE;
+
+static void restoreGameAfterBuddyLogin()
+{
+	if (buddyLoginPausedGame && TheGameLogic != nullptr && TheGameLogic->isGamePaused())
+	{
+		TheGameLogic->setGamePaused(FALSE);
+	}
+
+	buddyLoginPausedGame = FALSE;
+}
+
+void GameSpyContinueBuddyLoginInBackground()
+{
+	// Keep buddyLoginInProgress set: the auth interface must continue polling
+	// the browser login code and will open the communicator when it succeeds.
+	restoreGameAfterBuddyLogin();
+}
+
+static void buddyLoginComplete(ELoginResult loginResult)
+{
+	NGMP_OnlineServices_AuthInterface *authInterface =
+		NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+	if (authInterface != nullptr)
+	{
+		authInterface->DeregisterForLoginCallback();
+	}
+
+	buddyLoginInProgress = FALSE;
+	restoreGameAfterBuddyLogin();
+	ClearGSMessageBoxes();
+
+	if (loginResult == ELoginResult::Success)
+	{
+		GameSpyOpenOverlay(GSOVERLAY_BUDDY);
+	}
+	else if (loginResult == ELoginResult::Failed)
+	{
+		GSMessageBoxOk(UnicodeString(L"Logging In"), UnicodeString(L"Login failed."), nullptr);
+	}
+}
+
+static Bool ensureBuddyLogin()
+{
+	NGMP_OnlineServicesManager::CreateInstance();
+	NGMP_OnlineServicesManager *onlineServices = NGMP_OnlineServicesManager::GetInstance();
+	if (onlineServices == nullptr || onlineServices->IsPendingFullTeardown())
+	{
+		return FALSE;
+	}
+
+	NGMP_OnlineServices_AuthInterface *authInterface =
+		NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+	if (authInterface == nullptr)
+	{
+		onlineServices->Init();
+		authInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+	}
+
+	std::shared_ptr<WebSocket> webSocket = NGMP_OnlineServicesManager::GetWebSocket();
+	if (authInterface != nullptr && authInterface->IsLoggedIn() &&
+		webSocket != nullptr && webSocket->IsConnected())
+	{
+		return TRUE;
+	}
+
+	if (authInterface == nullptr || buddyLoginInProgress)
+	{
+		return FALSE;
+	}
+
+	buddyLoginInProgress = TRUE;
+	if (TheGameLogic != nullptr && !TheGameLogic->isInMultiplayerGame() &&
+		!TheGameLogic->isGamePaused())
+	{
+		TheGameLogic->setGamePaused(TRUE);
+		buddyLoginPausedGame = TRUE;
+	}
+
+	ClearGSMessageBoxes();
+	GSMessageBoxNoButtons(UnicodeString(L"Logging In"), UnicodeString(L"Please wait..."), true);
+	authInterface->RegisterForLoginCallback(buddyLoginComplete);
+	authInterface->BeginLogin(false);
+	return FALSE;
+}
+#endif
+
+#if !defined(GENERALS_ONLINE)
+void GameSpyContinueBuddyLoginInBackground()
+{
+}
+#endif
+
+GSCommunicatorConnectionStatus GameSpyGetCommunicatorConnectionStatus()
+{
+#if defined(GENERALS_ONLINE)
+	NGMP_OnlineServicesManager *onlineServices = NGMP_OnlineServicesManager::GetInstance();
+	if (onlineServices != nullptr && !onlineServices->IsPendingFullTeardown())
+	{
+		NGMP_OnlineServices_AuthInterface *authInterface =
+			NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+		std::shared_ptr<WebSocket> webSocket = NGMP_OnlineServicesManager::GetWebSocket();
+		if (authInterface != nullptr && authInterface->IsLoggedIn() &&
+			webSocket != nullptr && webSocket->IsConnected())
+		{
+			return GSCOMMUNICATOR_CONNECTED;
+		}
+	}
+
+	if (buddyLoginInProgress)
+	{
+		return GSCOMMUNICATOR_CONNECTING;
+	}
+#endif
+
+	return GSCOMMUNICATOR_DISCONNECTED;
+}
+
 static void buddyTryReconnect()
 {
 	BuddyRequest req;
@@ -232,6 +360,29 @@ static void buddyTryReconnect()
 
 void GameSpyOpenOverlay( GSOverlayType overlay )
 {
+#if defined(GENERALS_ONLINE)
+	if (overlay == GSOVERLAY_BUDDY && !ensureBuddyLogin())
+	{
+		return;
+	}
+#endif
+
+	const Bool useGeneralsBuddyOverlay = overlay == GSOVERLAY_BUDDY && IsRebornCampaign();
+	const char *overlayFilename = useGeneralsBuddyOverlay
+		? "Menus/WOLBuddyOverlayGen.wnd"
+		: gsOverlays[overlay];
+
+	// Buddy overlays are cached between openings.  Recreate the cached layout
+	// when a later game in the same process uses the other campaign UI theme.
+	if (overlay == GSOVERLAY_BUDDY && overlayLayouts[overlay] &&
+		buddyOverlayUsesGeneralsTheme != useGeneralsBuddyOverlay)
+	{
+		overlayLayouts[overlay]->runShutdown();
+		overlayLayouts[overlay]->destroyWindows();
+		deleteInstance(overlayLayouts[overlay]);
+		overlayLayouts[overlay] = nullptr;
+	}
+
 	if (overlay == GSOVERLAY_BUDDY)
 	{
 #if !defined(GENERALS_ONLINE)
@@ -265,7 +416,15 @@ void GameSpyOpenOverlay( GSOverlayType overlay )
 	}
 	else
 	{
-		overlayLayouts[overlay] = TheWindowManager->winCreateLayout( AsciiString( gsOverlays[overlay] ) );
+		overlayLayouts[overlay] = TheWindowManager->winCreateLayout(AsciiString(overlayFilename));
+		if (!overlayLayouts[overlay])
+		{
+			DEBUG_LOG(("Unable to create GameSpy overlay layout '%s'", overlayFilename));
+			return;
+		}
+		if (overlay == GSOVERLAY_BUDDY)
+			buddyOverlayUsesGeneralsTheme = useGeneralsBuddyOverlay;
+
 		overlayLayouts[overlay]->runInit();
 		overlayLayouts[overlay]->hide( FALSE );
 		overlayLayouts[overlay]->bringForward();

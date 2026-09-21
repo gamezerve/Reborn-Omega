@@ -67,6 +67,13 @@ enum GSOverlayType CPP_11(: Int)
 	GSOVERLAY_MAX
 };
 
+enum GSCommunicatorConnectionStatus CPP_11(: Int)
+{
+	GSCOMMUNICATOR_DISCONNECTED,
+	GSCOMMUNICATOR_CONNECTING,
+	GSCOMMUNICATOR_CONNECTED
+};
+
 void GameSpyOpenOverlay( GSOverlayType );
 void GameSpyCloseOverlay( GSOverlayType );
 void GameSpyCloseAllOverlays();
@@ -75,3 +82,7 @@ void GameSpyToggleOverlay( GSOverlayType );
 void GameSpyUpdateOverlays();
 void ReOpenPlayerInfo();
 void CheckReOpenPlayerInfo();
+GSCommunicatorConnectionStatus GameSpyGetCommunicatorConnectionStatus();
+
+// Close the in-game login prompt without cancelling the pending browser login.
+void GameSpyContinueBuddyLoginInBackground();

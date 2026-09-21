@@ -769,6 +769,7 @@ public:
 	WindowVideoManager *m_videoManager;						///< Video manager to take care of all animations on screen.
 	AnimateWindowManager *m_animateWindowManager; ///< The animate window manager
 	AnimateWindowManager *m_animateWindowManagerForGenShortcuts; ///< The animate window manager
+	AnimateWindowManager *m_globalCommunicatorAnimateWindowManager; ///< Global communicator reveal animation
 	void updatePurchaseScience();
 	AnimateWindowManager *m_generalsScreenAnimate; ///< The animate window manager
 
@@ -821,9 +822,13 @@ public:
 	void triggerRadarAttackGlow();
 
 	void drawSpecialPowerShortcutMultiplierText();
+	void setGlobalCommunicatorButtonEnabled(Bool enabled);
+	Bool canShowGlobalCommunicatorButton() const;
 
 protected:
 	void updateRadarAttackGlow ();
+	void updateGlobalCommunicatorButtonVisibility();
+	void updateGlobalCommunicatorButtonImage();
 
 	void setDefaultControlBarConfig();
 	void setSquishedControlBarConfig();
@@ -949,6 +954,12 @@ protected:
 	GameWindow *m_rightHUDUnitSelectParent;
 
 	GameWindow *m_communicatorButton;             ///< button for the communicator
+	GameWindow *m_globalCommunicatorButton;
+	GameWindow *m_globalCommunicatorButtonParent;
+	Bool m_globalCommunicatorButtonEnabled;
+	Int m_globalCommunicatorConnectionStatus;
+	Int m_globalCommunicatorAnimationFrame;
+	UnsignedInt m_globalCommunicatorAnimationTime;
 
 	WindowLayout *m_scienceLayout;								///< the Science window layout
 	GameWindow *m_sciencePurchaseWindowsRank1[ MAX_PURCHASE_SCIENCE_RANK_1 ];			///< command window controls for easy access

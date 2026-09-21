@@ -34,6 +34,7 @@
 #include "Common/AudioEventRTS.h"
 #include "Common/PlayerList.h"
 #include "Common/Player.h"
+#include "GameClient/CampaignManager.h"
 #include "GameClient/GameText.h"
 #include "GameClient/WindowLayout.h"
 #include "GameClient/Gadget.h"
@@ -79,6 +80,14 @@ static NameKeyType parentBuddiesID = NAMEKEY_INVALID;
 static NameKeyType parentIgnoreID = NAMEKEY_INVALID;
 static NameKeyType listboxIgnoreID = NAMEKEY_INVALID;
 static NameKeyType buttonNotificationID = NAMEKEY_INVALID;
+static const char *buddyOverlayWindowPrefix = "WOLBuddyOverlay.wnd";
+
+static NameKeyType buddyOverlayWindowID(const char *windowName)
+{
+	AsciiString fullName;
+	fullName.format("%s:%s", buddyOverlayWindowPrefix, windowName);
+	return TheNameKeyGenerator->nameToKey(fullName);
+}
 
 
 // Window Pointers ------------------------------------------------------------------------
@@ -183,10 +192,10 @@ void InitBuddyControls(Int type)
 		buddyControls.isInit = FALSE;
 	break;
 	case BUDDY_WINDOW_BUDDIES:
-		buddyControls.textEntryEditID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:TextEntryChat" );
+		buddyControls.textEntryEditID = buddyOverlayWindowID("TextEntryChat");
 		buddyControls.textEntryEdit = TheWindowManager->winGetWindowFromId(nullptr,  buddyControls.textEntryEditID);
-		buddyControls.listboxBuddiesID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:ListboxBuddies" );
-		buddyControls.listboxChatID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:ListboxBuddyChat" );
+		buddyControls.listboxBuddiesID = buddyOverlayWindowID("ListboxBuddies");
+		buddyControls.listboxChatID = buddyOverlayWindowID("ListboxBuddyChat");
 		buddyControls.listboxBuddies = TheWindowManager->winGetWindowFromId( nullptr,  buddyControls.listboxBuddiesID );
 		buddyControls.listboxChat = TheWindowManager->winGetWindowFromId( nullptr,  buddyControls.listboxChatID);
 		SetListBoxRowAnimMode(buddyControls.listboxChat, LIST_ROW_ANIM_SLOT);
@@ -1044,20 +1053,21 @@ void PopulateOldBuddyMessages()
 //-------------------------------------------------------------------------------------------------
 void WOLBuddyOverlayInit( WindowLayout *layout, void *userData )
 {
-	parentID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:BuddyMenuParent" );
-	buttonHideID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:ButtonHide" );
-	buttonAddBuddyID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:ButtonAdd" );
-	buttonDeleteBuddyID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:ButtonDelete" );
+	buddyOverlayWindowPrefix = IsRebornCampaign() ? "WOLBuddyOverlayGen.wnd" : "WOLBuddyOverlay.wnd";
+	parentID = buddyOverlayWindowID("BuddyMenuParent");
+	buttonHideID = buddyOverlayWindowID("ButtonHide");
+	buttonAddBuddyID = buddyOverlayWindowID("ButtonAdd");
+	buttonDeleteBuddyID = buddyOverlayWindowID("ButtonDelete");
 	//textEntryID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:TextEntryChat" );
 	//listboxBuddyID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:ListboxBuddies" );
 	//listboxChatID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:ListboxBuddyChat" );
-	buttonAcceptBuddyID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:ButtonYes" );
-	buttonDenyBuddyID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:ButtonNo" );
-	radioButtonBuddiesID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:RadioButtonBuddies" );
-	radioButtonIgnoreID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:RadioButtonIgnore" );
-	parentBuddiesID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:BuddiesParent" );
-	parentIgnoreID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:IgnoreParent" );
-	listboxIgnoreID = TheNameKeyGenerator->nameToKey( "WOLBuddyOverlay.wnd:ListboxIgnore" );
+	buttonAcceptBuddyID = buddyOverlayWindowID("ButtonYes");
+	buttonDenyBuddyID = buddyOverlayWindowID("ButtonNo");
+	radioButtonBuddiesID = buddyOverlayWindowID("RadioButtonBuddies");
+	radioButtonIgnoreID = buddyOverlayWindowID("RadioButtonIgnore");
+	parentBuddiesID = buddyOverlayWindowID("BuddiesParent");
+	parentIgnoreID = buddyOverlayWindowID("IgnoreParent");
+	listboxIgnoreID = buddyOverlayWindowID("ListboxIgnore");
 
 // TODO_SOCIAL: Lobby sort list by member
 	//

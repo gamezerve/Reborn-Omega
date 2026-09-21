@@ -8,7 +8,7 @@ enum class EOnlineModerationAction
 	KICK
 };
 
-void ShowLoginBanDialog(const std::string& reason);
+void ShowLoginBanDialog(const std::string& reason, bool leaveLoginScreen = true);
 void ShowChatRateLimitNotice(const std::string& reason, const std::string& scopeType);
 void HandleModerationDisconnect(EOnlineModerationAction action, const std::string& reason);
 void HandleModerationNotice(const std::string& actionType, const std::string& reason, const std::string& scopeType);

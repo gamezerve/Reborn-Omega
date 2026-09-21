@@ -48,6 +48,7 @@
 #include "Common/version.h"
 
 #include "GameClient/ClientInstance.h"
+#include "GameClient/ControlBar.h"
 #include "GameClient/GameClient.h"
 #include "GameClient/InGameUI.h"
 #include "GameClient/LookAtXlat.h"
@@ -490,10 +491,8 @@ static void saveAdvancedSettings()
 		const Bool enabled = GadgetCheckBoxIsChecked(checkShowCommunicatorButton);
 		rebornPreferences["ShowCommunicatorButton"] = enabled ? "yes" : "no";
 
-		GameWindow *communicatorButton = TheWindowManager->winGetWindowFromId(
-			nullptr, NAMEKEY("GlobalCommunicatorButton.wnd:Parent"));
-		if (communicatorButton)
-			communicatorButton->winHide(!enabled);
+		if (TheControlBar)
+			TheControlBar->setGlobalCommunicatorButtonEnabled(enabled);
 	}
 
 	const Bool canChangeGameFps = !TheGameLogic->isInInteractiveGame();

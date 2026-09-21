@@ -1358,11 +1358,11 @@ static Bool parseDrawData(const char* token, WinInstanceData* instData,
 
 			if (drawData->image == nullptr)
 			{
-
-				DEBUG_ASSERTCRASH(FALSE,
-					("ParseDrawData: Window '%s', field '%s', entry %d: Unknown IMAGE '%s'.",
-						instData->m_decoratedNameString.str(), token, i + 1, c));
-				return FALSE;
+				// The retail parser allowed mapped images which were unavailable in
+				// the active image set and treated them as NoImage.  Preserve that
+				// compatibility while retaining the structural checks below.
+				DEBUG_LOG(("ParseDrawData: Window '%s', field '%s', entry %d: Unknown IMAGE '%s'; using NoImage.",
+					instData->m_decoratedNameString.str(), token, i + 1, c));
 
 			}
 
@@ -3026,6 +3026,23 @@ GameWindow *GameWindowManager::winCreateFromScript( AsciiString filenameString,
 
       // Parse window descriptions until the last END is read
       window = parseWindow( inFile, buffer );
+			if (window == nullptr)
+			{
+				DEBUG_LOG(("WinCreateFromScript: Error parsing a window in '%s'.", filename));
+				inFile->close();
+				inFile = nullptr;
+
+				// A multi-root script may already have created windows before the
+				// failure.  None belong to a WindowLayout yet, so roll them back.
+				for (std::list<GameWindow *>::iterator it = scriptInfo.windows.begin();
+					it != scriptInfo.windows.end(); ++it)
+				{
+					if (*it)
+						TheWindowManager->winDestroy(*it);
+				}
+				scriptInfo.windows.clear();
+				return nullptr;
+			}
 
 			// save first window created
 			if( firstWindow == nullptr )

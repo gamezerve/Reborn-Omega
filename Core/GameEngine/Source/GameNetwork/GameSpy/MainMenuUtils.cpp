@@ -54,6 +54,7 @@
 #include "WWDownload/Registry.h"
 #include "WWDownload/urlBuilder.h"
 #include "../OnlineServices_Init.h"
+#include "../OnlineServices_Auth.h"
 #include "Common/GameEngine.h"
 #include "Common/GlobalData.h"
 #include "../PluginInterfaces.h"
@@ -252,7 +253,24 @@ static void startOnline()
 		TheShell->push( "Menus/GameSpyLoginQuick.wnd" );
 #endif // ALLOW_NON_PROFILED_LOGIN
 #else
-	TheShell->push(AsciiString("Menus/GameSpyLoginProfile.wnd"));
+	NGMP_OnlineServices_AuthInterface *authInterface =
+		NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+	std::shared_ptr<WebSocket> webSocket = NGMP_OnlineServicesManager::GetWebSocket();
+	const Bool sessionReady = authInterface != nullptr && authInterface->IsLoggedIn() &&
+		webSocket != nullptr && webSocket->IsConnected();
+
+	if (sessionReady)
+	{
+		// The in-game communicator may already have established the complete GO
+		// session.  Reuse it instead of rotating the refresh token and replacing
+		// the live WebSocket through the login screen a second time.
+		SignalUIInteraction(SHELL_SCRIPT_HOOK_GENERALS_ONLINE_LOGIN);
+		TheShell->push(AsciiString("Menus/WOLWelcomeMenu.wnd"));
+	}
+	else
+	{
+		TheShell->push(AsciiString("Menus/GameSpyLoginProfile.wnd"));
+	}
 #endif
 }
 
@@ -862,6 +880,23 @@ void StartPatchCheck()
 	}
 
 	// GENERALS ONLINE
+	NGMP_OnlineServicesManager *existingOnlineServices = NGMP_OnlineServicesManager::GetInstance();
+	if (existingOnlineServices != nullptr)
+	{
+		NGMP_OnlineServices_AuthInterface *existingAuth =
+			NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+		std::shared_ptr<WebSocket> existingWebSocket = NGMP_OnlineServicesManager::GetWebSocket();
+		const Bool authenticatedButDisconnected = existingAuth != nullptr && existingAuth->IsLoggedIn() &&
+			(existingWebSocket == nullptr || !existingWebSocket->IsConnected());
+
+		// A cancelled in-game login or a disconnected authenticated socket must
+		// not leak its teardown state into the next Online-menu attempt.
+		if (existingOnlineServices->IsPendingFullTeardown() || authenticatedButDisconnected)
+		{
+			NGMP_OnlineServicesManager::DestroyInstance();
+		}
+	}
+
 	NGMP_OnlineServicesManager::CreateInstance();
 
 	// online services must be initialized

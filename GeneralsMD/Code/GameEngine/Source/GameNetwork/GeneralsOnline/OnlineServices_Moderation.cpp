@@ -104,9 +104,11 @@ namespace
 	}
 }
 
-void ShowLoginBanDialog(const std::string& reason)
+void ShowLoginBanDialog(const std::string& reason, bool leaveLoginScreen)
 {
-	ShowBanDialog(reason, EModerationDialogContext::LOGIN);
+	ShowBanDialog(reason, leaveLoginScreen
+		? EModerationDialogContext::LOGIN
+		: EModerationDialogContext::ACTIVE_SESSION);
 }
 
 void ShowChatRateLimitNotice(const std::string& reason, const std::string& scopeType)

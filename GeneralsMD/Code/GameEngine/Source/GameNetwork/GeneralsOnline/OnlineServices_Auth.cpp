@@ -1,5 +1,6 @@
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
 
+#include "Common/GameEngine.h"
 #include "GameNetwork/GeneralsOnline/HTTP/HTTPManager.h"
 #include "GameNetwork/GeneralsOnline/HTTP/HTTPRequest.h"
 #include "GameNetwork/GeneralsOnline/OnlineServices_Moderation.h"
@@ -108,10 +109,7 @@ void NGMP_OnlineServices_AuthInterface::GoToDetermineNetworkCaps()
 				// go to next screen
 				ClearGSMessageBoxes();
 
-				if (m_cb_LoginPendingCallback != nullptr)
-				{
-					m_cb_LoginPendingCallback(loginResult);
-				}
+				InvokeLoginCallback(loginResult);
 
 
 			}
@@ -138,10 +136,7 @@ void NGMP_OnlineServices_AuthInterface::GoToDetermineNetworkCaps()
 				// go to next screen
 				ClearGSMessageBoxes();
 
-				if (m_cb_LoginPendingCallback != nullptr)
-				{
-					m_cb_LoginPendingCallback(loginResult);
-				}
+				InvokeLoginCallback(loginResult);
 			}
 		});
 }
@@ -162,10 +157,17 @@ void NGMP_OnlineServices_AuthInterface::SendMiddlewareToken(std::string strMWTok
             if (statusCode >= 400 && statusCode < 500)
             {
                 ClearGSMessageBoxes();
-                GSMessageBoxOk(UnicodeString(L"Middleware Login Failed"), UnicodeString(L"Middleware Login Failed"), []()
-                    {
-                        TheShell->pop();
-                    });
+				if (m_shellLoginFlow)
+				{
+					GSMessageBoxOk(UnicodeString(L"Middleware Login Failed"), UnicodeString(L"Middleware Login Failed"), []()
+						{
+							TheShell->pop();
+						});
+				}
+				else
+				{
+					GSMessageBoxOk(UnicodeString(L"Middleware Login Failed"), UnicodeString(L"Middleware Login Failed"), nullptr);
+				}
                 return;
             }
             else
@@ -303,8 +305,9 @@ void NGMP_OnlineServices_AuthInterface::RefreshToken()
     }
 }
 
-void NGMP_OnlineServices_AuthInterface::BeginLogin()
+void NGMP_OnlineServices_AuthInterface::BeginLogin(bool shellLoginFlow)
 {
+	m_shellLoginFlow = shellLoginFlow;
 	m_tokenCreationTime = -1;
 
 	std::string strLoginURI = NGMP_OnlineServicesManager::GetAPIEndpoint("LoginWithToken");
@@ -335,7 +338,11 @@ void NGMP_OnlineServices_AuthInterface::BeginLogin()
 				{
 					if (statusCode == 423)
 					{
-						ShowLoginBanDialog(GetBanReason(strBody));
+						if (!m_shellLoginFlow)
+						{
+							InvokeLoginCallback(ELoginResult::Failed);
+						}
+						ShowLoginBanDialog(GetBanReason(strBody), m_shellLoginFlow);
 						return;
 					}
 					else
@@ -390,6 +397,14 @@ void NGMP_OnlineServices_AuthInterface::BeginLogin()
 	}
 }
 
+void NGMP_OnlineServices_AuthInterface::CancelLogin()
+{
+	m_bWaitingLogin = false;
+	m_strCode.clear();
+	m_lastCheckCode = -1;
+	OnLoginComplete(ELoginResult::UserCancelled, "");
+}
+
 void NGMP_OnlineServices_AuthInterface::DoFullLoginFlow()
 {
 	NetworkLog(ELogVerbosity::LOG_RELEASE, "LOGIN: DoFullLoginFlow");
@@ -414,10 +429,17 @@ void NGMP_OnlineServices_AuthInterface::DoFullLoginFlow()
 
 
 					ClearGSMessageBoxes();
-					GSMessageBoxOk(UnicodeString(L"Login Failed"), UnicodeString(L"Failed to retrieve login code"), []()
-						{
-							TheShell->pop();
-						});
+					if (m_shellLoginFlow)
+					{
+						GSMessageBoxOk(UnicodeString(L"Login Failed"), UnicodeString(L"Failed to retrieve login code"), []()
+							{
+								TheShell->pop();
+							});
+					}
+					else
+					{
+						InvokeLoginCallback(ELoginResult::Failed);
+					}
 				};
 
 			if (!bSuccess || (statusCode >= 400 && statusCode < 500))
@@ -447,20 +469,42 @@ void NGMP_OnlineServices_AuthInterface::DoFullLoginFlow()
                         std::string strURI = std::format("http://www.playgenerals.online/login/?gamecode={}", m_strCode.c_str());
 #endif
 
-                        ClearGSMessageBoxes();
-                        GSMessageBoxCancel(UnicodeString(L"Logging In"), UnicodeString(L"Please continue in your web browser"), []()
-                            {
-                                if (NGMP_OnlineServicesManager::GetInstance() != nullptr)
-                                {
-                                    NGMP_OnlineServicesManager::GetInstance()->SetPendingFullTeardown(EGOTearDownReason::USER_REQUESTED_SILENT);
-                                }
+						ClearGSMessageBoxes();
+						auto cancelLogin = []()
+							{
+								NGMP_OnlineServicesManager *onlineServices = NGMP_OnlineServicesManager::GetInstance();
+								if (onlineServices != nullptr)
+								{
+									onlineServices->SetPendingFullTeardown(EGOTearDownReason::USER_REQUESTED_SILENT);
+								}
 
-                                NGMP_OnlineServices_AuthInterface* pAuthInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
-                                if (pAuthInterface != nullptr)
-                                {
-                                    pAuthInterface->OnLoginComplete(ELoginResult::UserCancelled, "");
-                                }
-                            });
+								NGMP_OnlineServices_AuthInterface *authInterface =
+									NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_AuthInterface>();
+								if (authInterface != nullptr)
+								{
+									authInterface->CancelLogin();
+								}
+
+								TearDownGeneralsOnline();
+							};
+
+						if (m_shellLoginFlow)
+						{
+							GSMessageBoxCancel(
+								UnicodeString(L"Logging In"),
+								UnicodeString(L"Please continue in your web browser"),
+								cancelLogin);
+						}
+						else
+						{
+							GSMessageBoxOkCancelWithLabels(
+								UnicodeString(L"Logging In"),
+								UnicodeString(L"Please continue in your web browser"),
+								UnicodeString(L"Continue to Game"),
+								UnicodeString(L"Cancel"),
+								GameSpyContinueBuddyLoginInBackground,
+								cancelLogin);
+						}
 
 #if !defined(_DEBUG) || defined(USE_TEST_ENV) || defined(USE_DEBUG_ON_LIVE_SERVER)
                         ShellExecuteA(NULL, "open", strURI.c_str(), NULL, NULL, SW_SHOWNORMAL);
@@ -537,7 +581,11 @@ void NGMP_OnlineServices_AuthInterface::Tick()
 						if (statusCode == 423)
 						{
 							m_bWaitingLogin = false;
-							ShowLoginBanDialog(GetBanReason(strBody));
+							if (!m_shellLoginFlow)
+							{
+								InvokeLoginCallback(ELoginResult::Failed);
+							}
+							ShowLoginBanDialog(GetBanReason(strBody), m_shellLoginFlow);
 							return;
 						}
 
@@ -604,12 +652,12 @@ void NGMP_OnlineServices_AuthInterface::OnLoginComplete(ELoginResult loginResult
 	}
 	else
 	{
-		if (m_cb_LoginPendingCallback != nullptr)
-		{
-			m_cb_LoginPendingCallback(loginResult);
-		}
+		InvokeLoginCallback(loginResult);
 
-		TheShell->pop();
+		if (m_shellLoginFlow)
+		{
+			TheShell->pop();
+		}
 	}
 }
 

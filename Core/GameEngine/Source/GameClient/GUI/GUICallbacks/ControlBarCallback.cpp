@@ -443,7 +443,8 @@ WindowMsgHandledType ControlBarSystem( GameWindow *window, UnsignedInt msg,
 			}
 			else if (controlID == buttonGlobalCommunicator)
 			{
-				GameSpyToggleOverlay(GSOVERLAY_BUDDY);
+				if (TheControlBar && TheControlBar->canShowGlobalCommunicatorButton())
+					GameSpyToggleOverlay(GSOVERLAY_BUDDY);
 			}
 			else if( controlID == beaconPlacementButtonID && TheGameLogic->isInMultiplayerGame() &&
 				ThePlayerList->getLocalPlayer()->isPlayerActive())
