@@ -87,3 +87,4 @@ GSCommunicatorConnectionStatus GameSpyGetCommunicatorConnectionStatus();
 
 // Close the in-game login prompt without cancelling the pending browser login.
 void GameSpyContinueBuddyLoginInBackground();
+void GameSpyCancelBuddyLoginInBackground();

@@ -180,7 +180,7 @@ GUI:AccessibilitySettings
 END
 
 GUI:ShowCommunicatorButton
-"Show Communicator Button"
+"Show Communicator Button (Experimental)"
 END
 
 GUI:UpdateSettings
