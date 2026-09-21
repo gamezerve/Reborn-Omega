@@ -26574,6 +26574,10 @@ TOOLTIP:CommunicatorButton
 "Contact your buddies"
 END
 
+TOOLTIP:CommunicatorNoInternet
+"No active internet connection. The Communicator is unavailable."
+END
+
 TOOLTIP:Community
 "Win percentages for each army based on all online games played"
 END

@@ -42,6 +42,10 @@
 //#include "GameNetwork/GameSpy/PeerDefs.h"
 #include "GameNetwork/GameSpy/BuddyThread.h"
 
+#if defined(_MSC_VER)
+#pragma comment(lib, "wininet.lib")
+#endif
+
 #if defined(GENERALS_ONLINE)
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
 #endif
@@ -319,6 +323,23 @@ GSCommunicatorConnectionStatus GameSpyGetCommunicatorConnectionStatus()
 		{
 			return GSCOMMUNICATOR_CONNECTED;
 		}
+	}
+
+	static UnsignedInt lastInternetCheck = 0;
+	static Bool hasInternetConnection = FALSE;
+	const UnsignedInt now = timeGetTime();
+	if (lastInternetCheck == 0 || now - lastInternetCheck >= 1000)
+	{
+		DWORD connectionState = 0;
+		hasInternetConnection =
+			InternetGetConnectedState(&connectionState, 0) &&
+			!(connectionState & INTERNET_CONNECTION_MODEM_BUSY);
+		lastInternetCheck = now;
+	}
+
+	if (!hasInternetConnection)
+	{
+		return GSCOMMUNICATOR_NO_INTERNET;
 	}
 
 	if (buddyLoginInProgress)

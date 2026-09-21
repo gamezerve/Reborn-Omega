@@ -93,6 +93,7 @@
 #include "GameClient/GadgetTextEntry.h"
 #include "GameClient/InGameUI.h"
 #include "GameClient/Image.h"
+#include "GameClient/Mouse.h"
 #include "GameClient/Shell.h"
 #include "GameClient/WindowVideoManager.h"
 #include "GameClient/ControlBarResizer.h"
@@ -147,10 +148,24 @@ const FieldParse CommandButton::s_commandButtonFieldParseTable[] =
 
 };
 static void commandButtonTooltip(GameWindow *window,
-													WinInstanceData *instData,
-													UnsignedInt mouse)
+											WinInstanceData *instData,
+											UnsignedInt mouse)
 {
 	TheControlBar->showBuildTooltipLayout(window);
+}
+
+static void globalCommunicatorButtonTooltip(GameWindow *window,
+	WinInstanceData *instData,
+	UnsignedInt mouse)
+{
+	if (GameSpyGetCommunicatorConnectionStatus() == GSCOMMUNICATOR_NO_INTERNET)
+	{
+		TheControlBar->hideBuildTooltipLayout();
+		TheMouse->setCursorTooltip(TheGameText->fetch("TOOLTIP:CommunicatorNoInternet"));
+		return;
+	}
+
+	commandButtonTooltip(window, instData, mouse);
 }
 
 static void selectedUnitCameoTooltip(GameWindow* window,
@@ -2476,7 +2491,7 @@ void ControlBar::init()
 		if (globalCommunicatorButton)
 		{
 			setControlCommand(globalCommunicatorButton, findCommandButton("NonCommand_Communicator"));
-			globalCommunicatorButton->winSetTooltipFunc(commandButtonTooltip);
+			globalCommunicatorButton->winSetTooltipFunc(globalCommunicatorButtonTooltip);
 			m_globalCommunicatorAnimateWindowManager = NEW AnimateWindowManager;
 
 			UserPreferences rebornPreferences;
@@ -4698,7 +4713,7 @@ void ControlBar::updateGlobalCommunicatorButtonImage()
 			if (now - m_globalCommunicatorAnimationTime >= 300)
 			{
 				const UnsignedInt elapsedFrames = (now - m_globalCommunicatorAnimationTime) / 300;
-				animationFrame = (animationFrame + elapsedFrames) % 3;
+				animationFrame = (animationFrame + elapsedFrames) % 4;
 				m_globalCommunicatorAnimationTime += elapsedFrames * 300;
 			}
 		}
@@ -4711,7 +4726,11 @@ void ControlBar::updateGlobalCommunicatorButtonImage()
 	}
 
 	const char *imageName = "GOCommunicator";
-	if (status == GSCOMMUNICATOR_CONNECTED)
+	if (status == GSCOMMUNICATOR_NO_INTERNET)
+	{
+		imageName = "GOCommunicatorNC";
+	}
+	else if (status == GSCOMMUNICATOR_CONNECTED)
 	{
 		imageName = "GOCommunicatorConnected";
 	}
@@ -4721,7 +4740,7 @@ void ControlBar::updateGlobalCommunicatorButtonImage()
 		{
 			"GOCommunicatorConnecting1",
 			"GOCommunicatorConnecting2",
-			"GOCommunicatorConnecting3"
+			"GOCommunicatorConnecting3",
 			"GOCommunicatorConnecting4"
 		};
 		imageName = connectingImages[animationFrame];
