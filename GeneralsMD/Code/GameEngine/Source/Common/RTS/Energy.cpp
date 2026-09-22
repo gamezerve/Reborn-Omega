@@ -45,6 +45,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/Energy.h"
+#include "Common/GameState.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
 #include "Common/ThingTemplate.h"
@@ -61,6 +62,7 @@ Energy::Energy()
 	m_energyConsumption = 0;
 	m_owner = nullptr;
 	m_powerSabotagedTillFrame = 0;
+	m_preserveSerializedStateDuringLoad = FALSE;
 }
 
 //-----------------------------------------------------------------------------
@@ -224,12 +226,25 @@ void Energy::removePowerBonus( Object *obj )
 
 }
 
+// finishSerializedEnergyLoad ================================================
+/** Reborn: Resume normal energy adjustments after the saved energy state has been fully restored. */
+//=============================================================================
+void Energy::finishSerializedEnergyLoad()
+{
+	m_preserveSerializedStateDuringLoad = FALSE;
+}
+
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
 // Private functions
 // ------------------------------------------------------------------------------------------------
 void Energy::addProduction(Int amt)
 {
+	// Reborn: Production and consumption are authoritative in version 4+ save
+	// files. Ignore temporary object/team reconstruction while the save loads.
+	if (m_preserveSerializedStateDuringLoad && TheGameState && TheGameState->isInLoadGame())
+		return;
+
 	m_energyProduction += amt;
 
 	if( m_owner == nullptr )
@@ -243,6 +258,11 @@ void Energy::addProduction(Int amt)
 // ------------------------------------------------------------------------------------------------
 void Energy::addConsumption(Int amt)
 {
+	// Reborn: Consumption has already been restored from the save file. Do not
+	// allow temporary load-time object reconstruction to modify that value.
+	if (m_preserveSerializedStateDuringLoad && TheGameState && TheGameState->isInLoadGame())
+		return;
+
 	m_energyConsumption += amt;
 
 	if( m_owner == nullptr )
@@ -262,26 +282,40 @@ void Energy::crc( Xfer *xfer )
 // ------------------------------------------------------------------------------------------------
 /** Xfer method
 	* Version Info:
-	* 1: Initial version */
+	* 1: Initial version
+	* 3: Added power sabotage state
+	* 4: Reborn: Serialize production and consumption to preserve the exact energy state across save/load. */
 // ------------------------------------------------------------------------------------------------
 void Energy::xfer( Xfer *xfer )
 {
 
 	// version
-	XferVersion currentVersion = 3;
+	XferVersion currentVersion = 4;
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
 	// It is actually incorrect to save these, as they are reconstructed when the buildings are loaded
 	// I need to version though so old games will load wrong rather than crashing
 
-	// production
-	if( version < 2 )
-		xfer->xferInt( &m_energyProduction );
+	// Reborn: Version 4 restores the exact energy values that existed when the
+	// save was created instead of reconstructing them from object load order.
+	if (version < 2 || version >= 4)
+	{
+		xfer->xferInt(&m_energyProduction);
+		xfer->xferInt(&m_energyConsumption);
 
-	// consumption
-	if( version < 2 )
-		xfer->xferInt( &m_energyConsumption );
+		// Reborn: Temporary save/load energy validation logging.
+		if (version >= 4)
+		{
+			DEBUG_LOG((
+				"ENERGY_XFER_%s: Player=%d Production=%d Consumption=%d SufficientPower=%d.",
+				xfer->getXferMode() == XFER_SAVE ? "SAVE" : "LOAD",
+				m_owner ? m_owner->getPlayerIndex() : -1,
+				m_energyProduction,
+				m_energyConsumption,
+				hasSufficientPower()));
+		}
+	}
 
 	// owning player index
 	Int owningPlayerIndex;
@@ -291,9 +325,16 @@ void Energy::xfer( Xfer *xfer )
 	m_owner = ThePlayerList->getNthPlayer( owningPlayerIndex );
 
 	//Sabotage
-	if( version >= 3 )
+	if (version >= 3)
 	{
-		xfer->xferUnsignedInt( &m_powerSabotagedTillFrame );
+		xfer->xferUnsignedInt(&m_powerSabotagedTillFrame);
+	}
+
+	if (xfer->getXferMode() == XFER_LOAD)
+	{
+		// Reborn: New saves already contain the authoritative production and
+		// consumption totals. Ignore object reconstruction until load completes.
+		m_preserveSerializedStateDuringLoad = version >= 4;
 	}
 
 }

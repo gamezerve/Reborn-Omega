@@ -36,6 +36,7 @@
 #include "Common/GameStateMap.h"
 #include "Common/LatchRestore.h"
 #include "Common/MapObject.h"
+#include "Common/Player.h"
 #include "Common/PlayerList.h"
 #include "Common/PlayerTemplate.h" // Reborn
 #include "Common/RandomValue.h"
@@ -1760,6 +1761,29 @@ void GameState::gameStatePostProcessLoad()
 
 	// evil... must ensure this is updated prior to the script engine running the first time.
 	ThePartitionManager->update();
+
+	// Reborn: All object and module post-processing is complete. The serialized
+	// energy state is now safe from load-time reconstruction and normal runtime
+	// energy adjustments can resume.
+	for (Int i = 0; i < ThePlayerList->getPlayerCount(); ++i)
+	{
+		Player* player = ThePlayerList->getNthPlayer(i);
+
+		if (player)
+		{
+			Energy* energy = player->getEnergy();
+
+			DEBUG_LOG((
+				"ENERGY_POST_LOAD: Player=%d Production=%d Consumption=%d SufficientPower=%d.",
+				player->getPlayerIndex(),
+				energy->getProduction(),
+				energy->getConsumption(),
+				energy->hasSufficientPower()
+				));
+
+			energy->finishSerializedEnergyLoad();
+		}
+	}
 
 }
 

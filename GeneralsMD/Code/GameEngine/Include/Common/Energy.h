@@ -72,6 +72,7 @@ public:
 		m_energyConsumption = 0;
 		m_powerSabotagedTillFrame = 0;
 		m_owner = owner;
+		m_preserveSerializedStateDuringLoad = FALSE;
 	}
 
 	/// return current energy production in kilowatts
@@ -103,6 +104,11 @@ public:
 	*/
 	Real getEnergySupplyRatio() const;
 
+	// finishSerializedEnergyLoad ================================================
+	/** Reborn: Resume normal energy adjustments after the saved energy state has been fully restored. */
+	//=============================================================================
+	void finishSerializedEnergyLoad();
+
 protected:
 
 	// snapshot methods
@@ -119,4 +125,5 @@ private:
 	Int		m_energyConsumption;	///< level of energy consumption, in kw
 	UnsignedInt m_powerSabotagedTillFrame; ///< If power is sabotaged, the frame will be greater than now.
 	Player *m_owner;						///< Tight pointer to the Player I am intrinsic to.
+	Bool m_preserveSerializedStateDuringLoad; // Reborn: Prevent load-time reconstruction from modifying serialized energy values.
 };
