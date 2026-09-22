@@ -58,6 +58,8 @@
 #include "Lib/BaseType.h"
 #include "Common/file.h"
 #include "Common/FileSystem.h"
+#include "Common/FramePacer.h"
+#include "Common/GameEngine.h"
 #include "W3DDevice/GameClient/W3DShaderManager.h"
 #include "W3DDevice/GameClient/W3DShroud.h"
 #include "W3DDevice/GameClient/HeightMap.h"
@@ -1049,13 +1051,34 @@ Bool ScreenMotionBlurFilter::postRender(FilterModes mode, Coord2D &scrollDelta,B
 			}
 		}
 	}
+
+	Real renderMaxCount = (Real)m_maxCount;
+
+	if (!pan && continueEffect)
+	{
+		const Int logicFps = TheFramePacer->getActualLogicTimeScaleFps();
+
+		if (logicFps > 0 && TheFramePacer->getActualFramesPerSecondLimit() > logicFps)
+		{
+			Real nextMaxCount = renderMaxCount + (m_decrement ? -(Real)COUNT_STEP : (Real)COUNT_STEP);
+
+			if (nextMaxCount < 0.0f)
+				nextMaxCount = 0.0f;
+			else if (nextMaxCount > (Real)MAX_COUNT)
+				nextMaxCount = (Real)MAX_COUNT;
+
+			const Real interpolationAlpha = TheGameEngine->getLogicInterpolationAlpha();
+			renderMaxCount += (nextMaxCount - renderMaxCount) * interpolationAlpha;
+		}
+	}
+
 	Int	 i, j;
 	if (!pan) {
-		for (i=0; i<4; i++) {
-			Real factor = 1.0f - (m_maxCount/(Real)MAX_COUNT)*0.90f;
+		for (i = 0; i < 4; i++) {
+			Real factor = 1.0f - (renderMaxCount / (Real)MAX_COUNT) * 0.90f;
 			factor = sqrt(factor);
-			v[i].u = ((v[i].u-center.x)*factor) + center.x;
-			v[i].v = ((v[i].v-center.y)*factor) + center.y;
+			v[i].u = ((v[i].u - center.x) * factor) + center.x;
+			v[i].v = ((v[i].v - center.y) * factor) + center.y;
 		}
 	}
 	pDev->SetTextureStageState(0,D3DTSS_ALPHAARG1, D3DTA_CURRENT);
@@ -1066,8 +1089,11 @@ Bool ScreenMotionBlurFilter::postRender(FilterModes mode, Coord2D &scrollDelta,B
 
 	DX8Wrapper::Apply_Render_State_Changes();
 	{
-		Int limit = m_maxCount;
-		if (m_maxCount>30) limit = 30;
+		//Int limit = m_maxCount;
+		//if (m_maxCount>30) limit = 30;
+		Int limit = REAL_TO_INT_FLOOR(renderMaxCount);
+		if (limit > MAX_LIMIT)
+			limit = MAX_LIMIT;
 		for (j=0; j<limit; j++) {
 			for (i=0; i<4; i++) {
 				Real factor = 0.99f;
@@ -1075,10 +1101,14 @@ Bool ScreenMotionBlurFilter::postRender(FilterModes mode, Coord2D &scrollDelta,B
 				Int alpha = 0x15;
 				if (m_additive) {
 					alpha = 0x09;
-					if (m_maxCount>limit) {
-						alpha += (m_maxCount-limit)/5;
+					//if (m_maxCount>limit) {
+					//	alpha += (m_maxCount-limit)/5;
+					//}
+					//if (m_maxCount==MAX_COUNT) alpha += 60;
+					if (renderMaxCount > (Real)limit) {
+						alpha += REAL_TO_INT_FLOOR((renderMaxCount - (Real)limit) / 5.0f);
 					}
-					if (m_maxCount==MAX_COUNT) alpha += 60;
+					if (renderMaxCount >= (Real)MAX_COUNT) alpha += 60;
 				}
 				v[i].color = (alpha<<24)|0x00ffffff; //
 				if (pan) {
