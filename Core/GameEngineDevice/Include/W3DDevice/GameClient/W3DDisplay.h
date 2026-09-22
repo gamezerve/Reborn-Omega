@@ -210,6 +210,8 @@ protected:
 
 		LegacyForwardSpeed2D,
 		GameDifficulty,
+		RenderFPS,
+		LogicFPS,
 		DisplayStringCount
 	};
 

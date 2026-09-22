@@ -1351,15 +1351,23 @@ bool GameLogic::onNewGame(MAYBE_UNUSED GameMessage *msg)
 		if (maxFPS < 1 || maxFPS > 1000)
 			maxFPS = TheGlobalData->m_framesPerSecondLimit;
 		DEBUG_LOG(("Setting max FPS limit to %d FPS", maxFPS));
-		if (gameMode == GAME_SKIRMISH && TheGlobalData->m_skirmish60Fps)
+		if (gameMode == GAME_SKIRMISH)
 		{
-			TheFramePacer->setFramesPerSecondLimit(60);
+			// Reborn: Skirmish game speed controls the logic rate independently from
+			// the optional 60 FPS render rate.
 			TheFramePacer->setLogicTimeScaleFps(maxFPS);
 			TheFramePacer->enableLogicTimeScale(TRUE);
+
+			TheFramePacer->setFramesPerSecondLimit(
+				TheGlobalData->m_skirmish60Fps ? 60 : maxFPS);
 		}
 		else
 		{
 			TheFramePacer->setFramesPerSecondLimit(maxFPS);
+
+			// Reborn: Non-Skirmish games using the legacy FPS argument remain coupled
+			// unless their mode-specific setup enables independent logic timing later.
+			TheFramePacer->enableLogicTimeScale(FALSE);
 		}
 		TheWritableGlobalData->m_useFpsLimit = true;
 	}

@@ -1618,6 +1618,7 @@ void W3DDisplay::gatherDebugStats()
 		m_displayStrings[LegacyForwardSpeed2D]->setText(text);
 	}
 #endif
+
 #if defined(RTS_DEBUG)
 	if (m_displayStrings[GameDifficulty])
 	{
@@ -1639,6 +1640,28 @@ void W3DDisplay::gatherDebugStats()
 		UnicodeString text;
 		text.format(L"Difficulty: %s", difficulty);
 		m_displayStrings[GameDifficulty]->setText(text);
+	}
+#endif
+
+#if defined(RTS_DEBUG)
+	if (m_displayStrings[RenderFPS])
+	{
+		UnicodeString text;
+		text.format(
+			L"Render FPS: %d",
+			TheFramePacer->getFramesPerSecondLimit()
+		);
+		m_displayStrings[RenderFPS]->setText(text);
+	}
+
+	if (m_displayStrings[LogicFPS])
+	{
+		UnicodeString text;
+		text.format(
+			L"Logic FPS: %d",
+			TheFramePacer->getLogicTimeScaleFps()
+		);
+		m_displayStrings[LogicFPS]->setText(text);
 	}
 #endif
 

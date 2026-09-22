@@ -32,6 +32,7 @@
 
 #include "Common/file.h"
 #include "Common/FileSystem.h"
+#include "Common/FramePacer.h"
 #include "Common/GameState.h"
 #include "Common/GameStateMap.h"
 #include "Common/GlobalData.h"
@@ -66,6 +67,48 @@ GameStateMap::~GameStateMap()
 	//
 	clearScratchPadMaps();
 
+}
+
+// applyLoadedFrameRateSettings ==============================================
+/** Reborn: Configure logic and render frame rates for a loaded offline save game. */
+//=============================================================================
+static void applyLoadedFrameRateSettings(GameMode gameMode, Int savedSkirmishGameSpeed)
+{
+	Int logicFps = LOGICFRAMES_PER_SECOND;
+	Int renderFps = LOGICFRAMES_PER_SECOND;
+
+	if (gameMode == GAME_SKIRMISH)
+	{
+		// Reborn: Old or invalid saves fall back to the original 30 FPS game speed.
+		if (savedSkirmishGameSpeed < 15 || savedSkirmishGameSpeed > 1000)
+			savedSkirmishGameSpeed = LOGICFRAMES_PER_SECOND;
+
+		logicFps = savedSkirmishGameSpeed;
+		renderFps = TheGlobalData->m_skirmish60Fps ? 60 : logicFps;
+	}
+	else if (gameMode == GAME_SINGLE_PLAYER)
+	{
+		Campaign* campaign = TheCampaignManager->getCurrentCampaign();
+
+		if (campaign)
+		{
+			if (campaign->m_isChallengeCampaign)
+				renderFps = TheGlobalData->m_challenge60Fps ? 60 : LOGICFRAMES_PER_SECOND;
+			else
+				renderFps = TheGlobalData->m_campaignGameplay60Fps ? 60 : LOGICFRAMES_PER_SECOND;
+		}
+	}
+
+	TheFramePacer->setFramesPerSecondLimit(renderFps);
+	TheFramePacer->setLogicTimeScaleFps(logicFps);
+	TheFramePacer->enableLogicTimeScale(TRUE);
+	TheWritableGlobalData->m_useFpsLimit = TRUE;
+
+	DEBUG_LOG((
+		"Reborn: Loaded save FPS settings: GameMode=%d RenderFPS=%d LogicFPS=%d",
+		gameMode,
+		renderFps,
+		logicFps));
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -244,6 +287,7 @@ static void extractAndSaveMap( AsciiString mapToSave, Xfer *xfer )
 	* 1: Initial version
 	* 2: Now storing the game mode from logic. Storing that here cause TheGameLogic->startNewGame
 	*     needs to set up the player list based on it.
+	* 3: Reborn: Store Skirmish game speed for save game frame-rate restoration.
 	*/
 // ------------------------------------------------------------------------------------------------
 void GameStateMap::xfer( Xfer *xfer )
@@ -254,9 +298,11 @@ void GameStateMap::xfer( Xfer *xfer )
 	}
 
 	// version
-	const XferVersion currentVersion = 2;
+	const XferVersion currentVersion = 3;
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
+
+	Int savedSkirmishGameSpeed = LOGICFRAMES_PER_SECOND;
 
 	// get save game info
 	SaveGameInfo *saveGameInfo = TheGameState->getSaveGameInfo();
@@ -322,6 +368,16 @@ void GameStateMap::xfer( Xfer *xfer )
 			xfer->xferInt( &gameMode);
 		}
 
+		if (version >= 3)
+		{
+			// Reborn: Preserve the selected Skirmish game speed independently from
+			// the render frame rate.
+			if (TheGameLogic->getGameMode() == GAME_SKIRMISH)
+				savedSkirmishGameSpeed = TheFramePacer->getLogicTimeScaleFps();
+
+			xfer->xferInt(&savedSkirmishGameSpeed);
+		}
+
 	}
 	else
 	{
@@ -352,6 +408,12 @@ void GameStateMap::xfer( Xfer *xfer )
 			Int gameMode;
 			xfer->xferInt(&gameMode);
 			TheGameLogic->setGameMode((GameMode)gameMode);
+		}
+
+		if (version >= 3)
+		{
+			// Reborn: Restore the Skirmish game speed saved by newer versions.
+			xfer->xferInt(&savedSkirmishGameSpeed);
 		}
 
 	}
@@ -441,10 +503,17 @@ void GameStateMap::xfer( Xfer *xfer )
 	// things in the map file that don't don't change (terrain, triggers, teams, script
 	// definitions) etc
 	//
-	if( xfer->getXferMode() == XFER_LOAD )
+	if (xfer->getXferMode() == XFER_LOAD)
 	{
-		TheGameLogic->startNewGame( TRUE );
-		TheGameLogic->setLoadingSave( FALSE );
+		TheGameLogic->startNewGame(TRUE);
+
+		// Reborn: startNewGame reconstructs the saved map but does not restore the
+		// frame-rate configuration that existed when the game was originally started.
+		applyLoadedFrameRateSettings(
+			TheGameLogic->getGameMode(),
+			savedSkirmishGameSpeed);
+
+		TheGameLogic->setLoadingSave(FALSE);
 	}
 
 }
