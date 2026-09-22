@@ -364,17 +364,17 @@ void GeometryInfo::calcPitches(const Coord3D& thisPos, const GeometryInfo& that,
 	Coord3D thisCenter;
 	getCenterPosition(thisPos, thisCenter);
 
-	Real dxy = sqrt(sqr(thatPos.x - thisCenter.x) + sqr(thatPos.y - thisCenter.y));
+	Real dxy = WWMath::Sqrt(sqr(thatPos.x - thisCenter.x) + sqr(thatPos.y - thisCenter.y));
 
 	Real dz;
 
 	/** @todo srj -- this could be better, by calcing it for all the corners, not just top-center
 		and bottom-center... oh well */
 	dz = (thatPos.z + that.getMaxHeightAbovePosition()) - thisCenter.z;
-	maxPitch = atan2(dz, dxy);
+	maxPitch = WWMath::Atan2(dz, dxy);
 
 	dz = (thatPos.z - that.getMaxHeightBelowPosition()) - thisCenter.z;
-	minPitch = atan2(dz, dxy);
+	minPitch = WWMath::Atan2(dz, dxy);
 }
 
 ////=============================================================================
@@ -632,8 +632,8 @@ void GeometryInfo::get2DBounds(const Coord3D& geomCenter, Real angle, Region2D& 
 
 	Bool initialized = FALSE;
 
-	Real c = (Real)cos(angle);
-	Real s = (Real)sin(angle);
+	Real c = (Real)WWMath::Cos(angle);
+	Real s = (Real)WWMath::Sin(angle);
 
 	for (ShapeVector::const_iterator it = m_shapes.begin(); it != m_shapes.end(); ++it)
 	{
@@ -767,7 +767,7 @@ void GeometryInfo::clipPointToFootprint(const Coord3D& geomCenter, Coord3D& ptTo
 	{
 		Real dx = ptToClip.x - shapeCenter.x;
 		Real dy = ptToClip.y - shapeCenter.y;
-		Real radius = sqrt(sqr(dx) + sqr(dy));
+		Real radius = WWMath::Sqrt(sqr(dx) + sqr(dy));
 
 		if (radius > shape.m_majorRadius)
 		{
@@ -843,7 +843,7 @@ Bool GeometryInfo::isPointInFootprint(const Coord3D& geomCenter, const Coord3D& 
 		{
 			Real dx = pt.x - shapeCenter.x;
 			Real dy = pt.y - shapeCenter.y;
-			Real radius = sqrt(sqr(dx) + sqr(dy));
+			Real radius = WWMath::Sqrt(sqr(dx) + sqr(dy));
 
 			if (radius <= shape.m_majorRadius)
 				return TRUE;
@@ -1192,7 +1192,7 @@ void GeometryInfo::calcBoundingStuff()
 		case GEOMETRY_BOX:
 		{
 			shapeCircleRadius =
-				sqrt(
+				WWMath::Sqrt(
 					sqr(shape.m_majorRadius) +
 					sqr(shape.m_minorRadius));
 
@@ -1200,7 +1200,7 @@ void GeometryInfo::calcBoundingStuff()
 			shapeCenterZ += halfHeight;
 
 			shapeSphereRadius =
-				sqrt(
+				WWMath::Sqrt(
 					sqr(shape.m_majorRadius) +
 					sqr(shape.m_minorRadius) +
 					sqr(halfHeight));
@@ -1210,7 +1210,7 @@ void GeometryInfo::calcBoundingStuff()
 		}
 
 		Real offsetXY =
-			sqrt(
+			WWMath::Sqrt(
 				sqr(shape.m_offset.x) +
 				sqr(shape.m_offset.y));
 
@@ -1221,7 +1221,7 @@ void GeometryInfo::calcBoundingStuff()
 			m_boundingCircleRadius = totalCircleRadius;
 
 		Real offset3D =
-			sqrt(
+			WWMath::Sqrt(
 				sqr(shape.m_offset.x) +
 				sqr(shape.m_offset.y) +
 				sqr(shapeCenterZ));

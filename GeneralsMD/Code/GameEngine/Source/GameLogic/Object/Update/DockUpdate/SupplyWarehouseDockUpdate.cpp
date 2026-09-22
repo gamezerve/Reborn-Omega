@@ -104,7 +104,7 @@ Bool SupplyWarehouseDockUpdate::action( Object* docker, Object *drone )
 	Real closeEnoughSqr = sqr(docker->getGeometryInfo().getBoundingCircleRadius()*2);
 	Real curDistSqr = ThePartitionManager->getDistanceSquared(docker, getObject(), FROM_BOUNDINGSPHERE_2D);
 	if (curDistSqr > closeEnoughSqr) {
-		DEBUG_LOG(("Failing dock, dist %f, not close enough(%f).", sqrt(curDistSqr), sqrt(closeEnoughSqr)));
+		DEBUG_LOG(("Failing dock, dist %f, not close enough(%f).", WWMath::Sqrt(curDistSqr), WWMath::Sqrt(closeEnoughSqr)));
 		// Make it twitch a little.
 		Coord3D newPos = *docker->getPosition();
 		Real range = 0.4*PATHFIND_CELL_SIZE_F;
@@ -176,14 +176,14 @@ void SupplyWarehouseDockUpdate::setDockCrippled( Bool setting )
 	DockUpdate::setDockCrippled( setting );
 }
 
-void SupplyWarehouseDockUpdate::setCashValue( Int cashValue )
+void SupplyWarehouseDockUpdate::setCashValue(Int cashValue)
 {
 	// A script can tell us our set value, and we need to figure out the boxes needed to provide that.
-	m_boxesStored = ceil(cashValue / (float)TheGlobalData->m_baseValuePerSupplyBox);
+	m_boxesStored = WWMath::Ceil(cashValue / (float)TheGlobalData->m_baseValuePerSupplyBox);
 	m_rebornStartingBoxesOverride = m_boxesStored;
 
-	Drawable *draw = getObject()->getDrawable();
-	if( draw )
+	Drawable* draw = getObject()->getDrawable();
+	if (draw)
 	{
 		draw->updateDrawableSupplyStatus( getStartingBoxesForTooltip(), m_boxesStored );
 	}
