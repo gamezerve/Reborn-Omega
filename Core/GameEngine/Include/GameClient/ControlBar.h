@@ -1032,6 +1032,7 @@ public:
 	void showBuildTooltipLayout( GameWindow *cmdButton );
 	void showUpgradeCameoTooltip(GameWindow* window, const UpgradeTemplate* upgrade);
 	const UpgradeTemplate* getUpgradeTemplateForCameoWindow(GameWindow* window) const;
+	static UnicodeString getSidePrefixedThingName(const ThingTemplate* thingTemplate, Bool compact = FALSE);
 	const UpgradeTemplate* m_rightHUDUpgradeTooltipTemplates[MAX_RIGHT_HUD_UPGRADE_CAMEOS];
 	void showSelectedUnitCameoTooltip(GameWindow* window);
 	void showSelectedUnitTooltipLayout(GameWindow* window, Object* obj);

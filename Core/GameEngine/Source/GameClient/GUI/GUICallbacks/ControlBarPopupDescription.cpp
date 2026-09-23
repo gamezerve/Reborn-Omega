@@ -769,62 +769,6 @@ static const ThingTemplate* getTooltipProducedThingTemplate(
 	return nullptr;
 }
 
-static UnicodeString getSidePrefixedThingName(const ThingTemplate* thingTemplate)
-{
-	if (!thingTemplate)
-		return UnicodeString::TheEmptyString;
-
-	UnicodeString result;
-
-	if (!thingTemplate->getDisplayName().isEmpty())
-		result = thingTemplate->getDisplayName();
-	else
-		result.translate(thingTemplate->getName());
-
-	if (thingTemplate->getDefaultOwningSide().isNotEmpty())
-	{
-		UnicodeString sidePrefix;
-		AsciiString rawSide = thingTemplate->getDefaultOwningSide();
-
-		if (rawSide.compareNoCase("America") == 0)
-			sidePrefix = L"USA";
-		else if (rawSide.compareNoCase("AmericaSuperWeaponGeneral") == 0)
-			sidePrefix = L"SupW";
-		else if (rawSide.compareNoCase("AmericaLaserGeneral") == 0)
-			sidePrefix = L"Laser";
-		else if (rawSide.compareNoCase("AmericaAirForceGeneral") == 0)
-			sidePrefix = L"AirF";
-		else if (rawSide.compareNoCase("GLA") == 0)
-			sidePrefix = L"GLA";
-		else if (rawSide.compareNoCase("GLAToxinGeneral") == 0)
-			sidePrefix = L"Toxin";
-		else if (rawSide.compareNoCase("GLADemolitionGeneral") == 0)
-			sidePrefix = L"Demo";
-		else if (rawSide.compareNoCase("GLAStealthGeneral") == 0)
-			sidePrefix = L"Slth";
-		else if (rawSide.compareNoCase("China") == 0)
-			sidePrefix = L"China";
-		else if (rawSide.compareNoCase("ChinaTankGeneral") == 0)
-			sidePrefix = L"Tank";
-		else if (rawSide.compareNoCase("ChinaInfantryGeneral") == 0)
-			sidePrefix = L"Infa";
-		else if (rawSide.compareNoCase("ChinaNukeGeneral") == 0)
-			sidePrefix = L"Nuke";
-		else if (rawSide.compareNoCase("Boss") == 0)
-			sidePrefix = L"Boss";
-
-		if (!sidePrefix.isEmpty())
-		{
-			sidePrefix.concat(L" - ");
-			sidePrefix.concat(result);
-			result = sidePrefix;
-		}
-	}
-
-	return result;
-}
-
-
 static UnicodeString getMaxHealthTriggerUpgradeDisplay(const MaxHealthUpgradeModuleData* maxHealthUpgradeData)
 {
 	if (!maxHealthUpgradeData)
@@ -1171,6 +1115,32 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 							descrip = TheGameText->fetch("CONTROLBAR:ToolTipECMDisableVehicleEnabled");
 						else
 							descrip = TheGameText->fetch("CONTROLBAR:ToolTipECMDisableVehicleDisabled");
+					}
+				}
+
+				else if (commandButton->getName().compareNoCase("Command_ScuttleCombatBike") == 0 &&
+					TheInGameUI->getSelectCount() == 1)
+				{
+					ContainModuleInterface* contain = selectedObject->getContain();
+
+					if (contain)
+					{
+						const Object* rider = contain->friend_getRider();
+
+						if (rider)
+						{
+							const ThingTemplate* riderThing = rider->getTemplate();
+
+							if (riderThing)
+							{
+								UnicodeString riderName =
+									ControlBar::getSidePrefixedThingName(riderThing, TRUE);
+
+								descrip.format(
+									TheGameText->fetch("CONTROLBAR:ToolTipEvacuateRider"),
+									riderName.str());
+							}
+						}
 					}
 				}
 
@@ -2189,45 +2159,8 @@ if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE &&
 
 	}
 
-	if (commandButton && thingTemplate && thingTemplate->getDefaultOwningSide().isNotEmpty())
-	{
-		UnicodeString sidePrefix;
-		AsciiString rawSide = thingTemplate->getDefaultOwningSide();
-
-		if (rawSide.compareNoCase("America") == 0)
-			sidePrefix = L"USA";
-		else if (rawSide.compareNoCase("AmericaSuperWeaponGeneral") == 0)
-			sidePrefix = L"SupW";
-		else if (rawSide.compareNoCase("AmericaLaserGeneral") == 0)
-			sidePrefix = L"Laser";
-		else if (rawSide.compareNoCase("AmericaAirForceGeneral") == 0)
-			sidePrefix = L"AirF";
-		else if (rawSide.compareNoCase("GLA") == 0)
-			sidePrefix = L"GLA";
-		else if (rawSide.compareNoCase("GLAToxinGeneral") == 0)
-			sidePrefix = L"Toxin";
-		else if (rawSide.compareNoCase("GLADemolitionGeneral") == 0)
-			sidePrefix = L"Demo";
-		else if (rawSide.compareNoCase("GLAStealthGeneral") == 0)
-			sidePrefix = L"Slth";
-		else if (rawSide.compareNoCase("China") == 0)
-			sidePrefix = L"China";
-		else if (rawSide.compareNoCase("ChinaTankGeneral") == 0)
-			sidePrefix = L"Tank";
-		else if (rawSide.compareNoCase("ChinaInfantryGeneral") == 0)
-			sidePrefix = L"Infa";
-		else if (rawSide.compareNoCase("ChinaNukeGeneral") == 0)
-			sidePrefix = L"Nuke";
-		else if (rawSide.compareNoCase("Boss") == 0)
-			sidePrefix = L"Boss";
-
-		if (!sidePrefix.isEmpty())
-		{
-			sidePrefix.concat(L" - ");
-			sidePrefix.concat(name);
-			name = sidePrefix;
-		}
-	}
+	if (commandButton && thingTemplate)
+		name = ControlBar::getSidePrefixedThingName(thingTemplate);
 
 	GameWindow *win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextName"));
 	if(win)
@@ -2464,50 +2397,7 @@ void ControlBar::showSelectedUnitTooltipLayout(GameWindow* window, Object* obj)
 	descrip = UnicodeString::TheEmptyString;
 	stealthDetectText = UnicodeString::TheEmptyString;
 
-	if (!thing->getDisplayName().isEmpty())
-		name = thing->getDisplayName();
-	else
-		name.translate(thing->getName());
-
-	if (thing->getDefaultOwningSide().isNotEmpty())
-	{
-		UnicodeString sidePrefix;
-		AsciiString rawSide = thing->getDefaultOwningSide();
-
-		if (rawSide.compareNoCase("America") == 0)
-			sidePrefix = L"USA";
-		else if (rawSide.compareNoCase("AmericaSuperWeaponGeneral") == 0)
-			sidePrefix = L"SupW";
-		else if (rawSide.compareNoCase("AmericaLaserGeneral") == 0)
-			sidePrefix = L"Laser";
-		else if (rawSide.compareNoCase("AmericaAirForceGeneral") == 0)
-			sidePrefix = L"AirF";
-		else if (rawSide.compareNoCase("GLA") == 0)
-			sidePrefix = L"GLA";
-		else if (rawSide.compareNoCase("GLAToxinGeneral") == 0)
-			sidePrefix = L"Toxin";
-		else if (rawSide.compareNoCase("GLADemolitionGeneral") == 0)
-			sidePrefix = L"Demo";
-		else if (rawSide.compareNoCase("GLAStealthGeneral") == 0)
-			sidePrefix = L"Slth";
-		else if (rawSide.compareNoCase("China") == 0)
-			sidePrefix = L"China";
-		else if (rawSide.compareNoCase("ChinaTankGeneral") == 0)
-			sidePrefix = L"Tank";
-		else if (rawSide.compareNoCase("ChinaInfantryGeneral") == 0)
-			sidePrefix = L"Infa";
-		else if (rawSide.compareNoCase("ChinaNukeGeneral") == 0)
-			sidePrefix = L"Nuke";
-		else if (rawSide.compareNoCase("Boss") == 0)
-			sidePrefix = L"Boss";
-
-		if (!sidePrefix.isEmpty())
-		{
-			sidePrefix.concat(L" - ");
-			sidePrefix.concat(name);
-			name = sidePrefix;
-		}
-	}
+	name = ControlBar::getSidePrefixedThingName(thing);
 
 
 	Player* localPlayer = ThePlayerList->getLocalPlayer();

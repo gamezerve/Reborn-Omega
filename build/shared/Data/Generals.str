@@ -1,4 +1,8 @@
 
+CONTROLBAR:ToolTipEvacuateRider
+"Evacuate rider: %ls"
+END
+
 GUI:CurrentVersion
 "Current Version:"
 END

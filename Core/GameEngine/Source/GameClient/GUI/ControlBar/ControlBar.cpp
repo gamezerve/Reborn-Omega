@@ -120,6 +120,58 @@ const Image* ControlBar::m_rankHeroicIcon		= nullptr;
 // CommandButton //////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+UnicodeString ControlBar::getSidePrefixedThingName(const ThingTemplate* thingTemplate, Bool compact)
+{
+	if (!thingTemplate)
+		return UnicodeString::TheEmptyString;
+
+	UnicodeString name;
+
+	if (!thingTemplate->getDisplayName().isEmpty())
+		name = thingTemplate->getDisplayName();
+	else
+		name.translate(thingTemplate->getName());
+
+	UnicodeString sidePrefix;
+	const AsciiString& rawSide = thingTemplate->getDefaultOwningSide();
+
+	if (rawSide.compareNoCase("America") == 0)
+		sidePrefix = L"USA";
+	else if (rawSide.compareNoCase("AmericaSuperWeaponGeneral") == 0)
+		sidePrefix = L"SupW";
+	else if (rawSide.compareNoCase("AmericaLaserGeneral") == 0)
+		sidePrefix = L"Laser";
+	else if (rawSide.compareNoCase("AmericaAirForceGeneral") == 0)
+		sidePrefix = L"AirF";
+	else if (rawSide.compareNoCase("GLA") == 0)
+		sidePrefix = L"GLA";
+	else if (rawSide.compareNoCase("GLAToxinGeneral") == 0)
+		sidePrefix = L"Toxin";
+	else if (rawSide.compareNoCase("GLADemolitionGeneral") == 0)
+		sidePrefix = L"Demo";
+	else if (rawSide.compareNoCase("GLAStealthGeneral") == 0)
+		sidePrefix = L"Slth";
+	else if (rawSide.compareNoCase("China") == 0)
+		sidePrefix = L"China";
+	else if (rawSide.compareNoCase("ChinaTankGeneral") == 0)
+		sidePrefix = L"Tank";
+	else if (rawSide.compareNoCase("ChinaInfantryGeneral") == 0)
+		sidePrefix = L"Infa";
+	else if (rawSide.compareNoCase("ChinaNukeGeneral") == 0)
+		sidePrefix = L"Nuke";
+	else if (rawSide.compareNoCase("Boss") == 0)
+		sidePrefix = L"Boss";
+
+	if (!sidePrefix.isEmpty())
+	{
+		sidePrefix.concat(compact ? L" " : L" - ");
+		sidePrefix.concat(name);
+		name = sidePrefix;
+	}
+
+	return name;
+}
+
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 const FieldParse CommandButton::s_commandButtonFieldParseTable[] =
@@ -1011,326 +1063,6 @@ const UpgradeTemplate* ControlBar::getUpgradeTemplateForCameoWindow(GameWindow* 
 
 	return nullptr;
 }
-
-//void ControlBar::showSelectedUnitCameoTooltip(GameWindow* window)
-//{
-//	if (!window || !m_buildToolTipLayout)
-//		return;
-//
-//	if (TheInGameUI->areTooltipsDisabled())
-//		return;
-//
-//	if (TheScriptEngine->isGameEnding())
-//		return;
-//
-//	if (TheGameLogic->isInReplayGame())
-//		return;
-//
-//	if (TheInGameUI->isQuitMenuVisible())
-//		return;
-//
-//
-//
-//	Drawable* draw = m_currentSelectedDrawable;
-//	Object* obj = draw ? draw->getObject() : nullptr;
-//	if (!obj)
-//		return;
-//
-//	const ThingTemplate* thing = obj->getTemplate();
-//	Player* player = ThePlayerList->getLocalPlayer();
-//	if (!thing || !player)
-//		return;
-//
-//	UnicodeString name;
-//	UnicodeString cost;
-//	UnicodeString buildtime;
-//	UnicodeString powertext;
-//	UnicodeString limittext;
-//	UnicodeString descrip;
-//	UnicodeString healthText;
-//	UnicodeString shroudText;
-//	UnicodeString locomotorText;
-//	UnicodeString infoText;
-//
-//	if (!thing->getDisplayName().isEmpty())
-//		name = thing->getDisplayName();
-//	else
-//		name.translate(thing->getName());
-//
-//	if (thing->getDefaultOwningSide().isNotEmpty())
-//	{
-//		UnicodeString sidePrefix;
-//		AsciiString rawSide = thing->getDefaultOwningSide();
-//
-//		if (rawSide.compareNoCase("America") == 0)
-//			sidePrefix = L"USA";
-//		else if (rawSide.compareNoCase("AmericaSuperWeaponGeneral") == 0)
-//			sidePrefix = L"SupW";
-//		else if (rawSide.compareNoCase("AmericaLaserGeneral") == 0)
-//			sidePrefix = L"Lazr";
-//		else if (rawSide.compareNoCase("AmericaAirForceGeneral") == 0)
-//			sidePrefix = L"AirF";
-//		else if (rawSide.compareNoCase("GLA") == 0)
-//			sidePrefix = L"GLA";
-//		else if (rawSide.compareNoCase("GLAToxinGeneral") == 0)
-//			sidePrefix = L"Toxin";
-//		else if (rawSide.compareNoCase("GLADemolitionGeneral") == 0)
-//			sidePrefix = L"Demo";
-//		else if (rawSide.compareNoCase("GLAStealthGeneral") == 0)
-//			sidePrefix = L"Slth";
-//		else if (rawSide.compareNoCase("China") == 0)
-//			sidePrefix = L"China";
-//		else if (rawSide.compareNoCase("ChinaTankGeneral") == 0)
-//			sidePrefix = L"Tank";
-//		else if (rawSide.compareNoCase("ChinaInfantryGeneral") == 0)
-//			sidePrefix = L"Infa";
-//		else if (rawSide.compareNoCase("ChinaNukeGeneral") == 0)
-//			sidePrefix = L"Nuke";
-//		else if (rawSide.compareNoCase("Boss") == 0)
-//			sidePrefix = L"Boss";
-//
-//		if (!sidePrefix.isEmpty())
-//		{
-//			sidePrefix.concat(L" - ");
-//			sidePrefix.concat(name);
-//			name = sidePrefix;
-//		}
-//	}
-//
-//	descrip = UnicodeString::TheEmptyString;
-//
-//	UnsignedInt costToBuild = thing->calcCostToBuild(player);
-//	if (costToBuild > 0)
-//	{
-//		cost.format(TheGameText->fetch("TOOLTIP:Cost"), costToBuild);
-//	}
-//
-//	Real buildTimeValue = thing->calcTimeToBuild(player) / (Real)LOGICFRAMES_PER_SECOND;
-//	if (buildTimeValue > 0.0f)
-//	{
-//		if (buildTimeValue == (Int)buildTimeValue)
-//			buildtime.format(L"Build Time: %d sec", (Int)buildTimeValue);
-//		else
-//			buildtime.format(L"Build Time: %.1f sec", buildTimeValue);
-//
-//		if (player->getEnergy() && player->getEnergy()->getEnergySupplyRatio() < 1.0f)
-//			buildtime.concat(L" (Low Power)");
-//		else
-//			buildtime.concat(L" (Powered)");
-//	}
-//
-//	Real energyValue = thing->getEnergyProduction();
-//	Real energyBonusValue = thing->getEnergyBonus();
-//
-//	if (energyValue != 0.0f)
-//	{
-//		if (energyValue < 0.0f)
-//		{
-//			if (energyValue == (Int)energyValue)
-//				powertext.format(L"Power Consumption: %d", (Int)(-energyValue));
-//			else
-//				powertext.format(L"Power Consumption: %.1f", -energyValue);
-//		}
-//		else
-//		{
-//			if (energyValue == (Int)energyValue)
-//				powertext.format(L"Power Production: %d", (Int)energyValue);
-//			else
-//				powertext.format(L"Power Production: %.1f", energyValue);
-//
-//			if (energyBonusValue > 0.0f)
-//			{
-//				UnicodeString bonusText;
-//				if (energyBonusValue == (Int)energyBonusValue)
-//					bonusText.format(L" (+%d Bonus)", (Int)energyBonusValue);
-//				else
-//					bonusText.format(L" (+%.1f Bonus)", energyBonusValue);
-//				powertext.concat(bonusText);
-//			}
-//		}
-//	}
-//
-//	const ActiveBodyModuleData* bodyData = thing->friend_getActiveBodyModuleData();
-//	const MaxHealthUpgradeModuleData* maxHealthUpgradeData = thing->friend_getMaxHealthUpgradeModuleData();
-//
-//	if (bodyData)
-//	{
-//		if (maxHealthUpgradeData && maxHealthUpgradeData->m_addMaxHealth > 0.0f)
-//		{
-//			UnicodeString triggerUpgradeDisplay = L"an upgrade";
-//
-//			if (!maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames.empty())
-//			{
-//				AsciiString triggerUpgradeName = maxHealthUpgradeData->m_upgradeMuxData.m_activationUpgradeNames[0];
-//				const UpgradeTemplate* triggerUpgradeTemplate = TheUpgradeCenter->findUpgrade(triggerUpgradeName);
-//
-//				if (triggerUpgradeTemplate && triggerUpgradeTemplate->getDisplayNameLabel().isNotEmpty())
-//				{
-//					triggerUpgradeDisplay = TheGameText->fetch(triggerUpgradeTemplate->getDisplayNameLabel().str());
-//				}
-//				else
-//				{
-//					triggerUpgradeDisplay.format(L"%S", triggerUpgradeName.str());
-//				}
-//			}
-//
-//			healthText.format(L"Health: %.0f (+%.0f with %ls)",
-//				bodyData->m_maxHealth,
-//				maxHealthUpgradeData->m_addMaxHealth,
-//				triggerUpgradeDisplay.str());
-//		}
-//		else
-//		{
-//			healthText.format(L"Health: %.0f", bodyData->m_maxHealth);
-//		}
-//	}
-//
-//	if (thing->getShroudClearingRange() > 0.0f)
-//	{
-//		Real shroudRange = thing->getShroudClearingRange();
-//		shroudText.format(L"Shroud Clear Range: %.0f", shroudRange);
-//
-//		Player* selectedPlayer = obj->getControllingPlayer();
-//		if (selectedPlayer && selectedPlayer->getBattlePlansActiveSpecific(PLANSTATUS_SEARCHANDDESTROY) > 0)
-//		{
-//			Real scalar = selectedPlayer->getBattlePlanSightRangeScalar();
-//
-//			if (scalar > 1.0f)
-//			{
-//				Int percentBonus = (Int)((scalar - 1.0f) * 100.0f + 0.5f);
-//				Real bonusAmount = shroudRange * (scalar - 1.0f);
-//
-//				UnicodeString shroudBonusTextLocal;
-//				shroudBonusTextLocal.format(L" (+%.0f, +%d%% with Search and Destroy)", bonusAmount, percentBonus);
-//				shroudText.concat(shroudBonusTextLocal);
-//			}
-//		}
-//	}
-//
-//	AIUpdateModuleData* aiData = const_cast<ThingTemplate*>(thing)->friend_getAIModuleInfo();
-//
-//	if (aiData && !thing->isKindOf(KINDOF_STRUCTURE))
-//	{
-//		const LocomotorTemplateVector* locoVector = aiData->findLocomotorTemplateVector(LOCOMOTORSET_NORMAL);
-//
-//		if (locoVector && !locoVector->empty())
-//		{
-//			const LocomotorTemplate* locoTemplate = (*locoVector)[0];
-//
-//			if (locoTemplate)
-//			{
-//				Locomotor* tempLocomotor = TheLocomotorStore->newLocomotor(locoTemplate);
-//
-//				if (tempLocomotor)
-//				{
-//					Real speed = tempLocomotor->getMaxSpeedForCondition(BODY_PRISTINE);
-//					Real displaySpeed = speed * LOGICFRAMES_PER_SECOND;
-//
-//					if (displaySpeed > 0.0f)
-//					{
-//						locomotorText.format(L"Movement Speed: %d", REAL_TO_INT_FLOOR(displaySpeed + 0.5f));
-//					}
-//
-//					deleteInstance(tempLocomotor);
-//				}
-//			}
-//		}
-//	}
-//
-//	UnsignedInt buildLimit = thing->getMaxSimultaneousOfType();
-//	if (buildLimit > 0)
-//	{
-//		Int currentCount = 0;
-//		const ThingTemplate* tmpl = thing;
-//		player->countObjectsByThingTemplate(1, &tmpl, false, &currentCount);
-//		limittext.format(L"Build Limit: %d/%d", currentCount, buildLimit);
-//	}
-//
-//	if (!cost.isEmpty())
-//	{
-//		infoText.concat(cost);
-//	}
-//
-//	if (!buildtime.isEmpty())
-//	{
-//		if (!infoText.isEmpty())
-//			infoText.concat(L"\n");
-//		infoText.concat(buildtime);
-//	}
-//
-//	if (!powertext.isEmpty())
-//	{
-//		if (!infoText.isEmpty())
-//			infoText.concat(L"\n");
-//		infoText.concat(powertext);
-//	}
-//
-//	if (!healthText.isEmpty())
-//	{
-//		if (!infoText.isEmpty())
-//			infoText.concat(L"\n");
-//		infoText.concat(healthText);
-//	}
-//
-//	if (!shroudText.isEmpty())
-//	{
-//		if (!infoText.isEmpty())
-//			infoText.concat(L"\n");
-//		infoText.concat(shroudText);
-//	}
-//
-//	if (!locomotorText.isEmpty())
-//	{
-//		if (!infoText.isEmpty())
-//			infoText.concat(L"\n");
-//		infoText.concat(locomotorText);
-//	}
-//
-//	if (!limittext.isEmpty())
-//	{
-//		if (!infoText.isEmpty())
-//			infoText.concat(L"\n");
-//		infoText.concat(limittext);
-//	}
-//
-//	GameWindow* root = m_buildToolTipLayout->getFirstWindow();
-//
-//	GameWindow* titleWin = TheWindowManager->winGetWindowFromId(
-//		root,
-//		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextName")
-//	);
-//
-//	GameWindow* descWin = TheWindowManager->winGetWindowFromId(
-//		root,
-//		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextDescription")
-//	);
-//
-//	GameWindow* costWin = TheWindowManager->winGetWindowFromId(
-//		root,
-//		TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextCost")
-//	);
-//
-//	if (titleWin)
-//	{
-//		titleWin->winHide(FALSE);
-//		GadgetStaticTextSetText(titleWin, name);
-//	}
-//
-//	if (descWin)
-//	{
-//		descWin->winHide(FALSE);
-//		GadgetStaticTextSetText(descWin, descrip);
-//	}
-//
-//	if (costWin)
-//	{
-//		costWin->winHide(FALSE);
-//		GadgetStaticTextSetText(costWin, infoText);
-//	}
-//
-//	m_showBuildToolTipLayout = TRUE;
-//	m_buildToolTipLayout->hide(FALSE);
-//}
 
 /// mark the UI as dirty so the context of everything is re-evaluated
 void ControlBar::markUIDirty()
@@ -4145,6 +3877,26 @@ void ControlBar::setControlCommand( GameWindow *button, const CommandButton *com
 		}
 	}
 
+	if (commandButton->getName().compareNoCase("Command_ScuttleCombatBike") == 0 && contextObj)
+	{
+		ContainModuleInterface* contain = contextObj->getContain();
+
+		if (contain)
+		{
+			const Object* rider = contain->friend_getRider();
+
+			if (rider)
+			{
+				const Image* riderPortrait = rider->getTemplate()->getSelectedPortraitImage();
+
+				if (riderPortrait)
+				{
+					effectiveImage = riderPortrait;
+					mutableButton->setRuntimeOverrideButtonImage(riderPortrait);
+				}
+			}
+		}
+	}
 
 	if (effectiveImage)
 	{
