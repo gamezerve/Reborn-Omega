@@ -93,28 +93,78 @@ void RiderChangeContainModuleData::parseRiderInfo( INI* ini, void *instance, voi
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
+void RiderChangeContainModuleData::parseRiderAlias(INI* ini, void* instance, void* store, const void* /*userData*/)
+{
+	RiderInfo* rider = (RiderInfo*)store;
+
+	AsciiString name;
+	name = ini->getNextToken();
+
+	rider->m_templateAliases.push_back(name);
+}
+
+// ------------------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------
 void RiderChangeContainModuleData::buildFieldParse(MultiIniFieldParse& p)
 {
   TransportContainModuleData::buildFieldParse(p);
 
 	static const FieldParse dataFieldParse[] =
 	{
-		{ "Rider1",					parseRiderInfo,					nullptr, offsetof( RiderChangeContainModuleData, m_riders[0] ) },
-		{ "Rider2",					parseRiderInfo,					nullptr, offsetof( RiderChangeContainModuleData, m_riders[1] ) },
-		{ "Rider3",					parseRiderInfo,					nullptr, offsetof( RiderChangeContainModuleData, m_riders[2] ) },
-		{ "Rider4",					parseRiderInfo,					nullptr, offsetof( RiderChangeContainModuleData, m_riders[3] ) },
-		{ "Rider5",					parseRiderInfo,					nullptr, offsetof( RiderChangeContainModuleData, m_riders[4] ) },
-		{ "Rider6",					parseRiderInfo,					nullptr, offsetof( RiderChangeContainModuleData, m_riders[5] ) },
-		{ "Rider7",					parseRiderInfo,					nullptr, offsetof( RiderChangeContainModuleData, m_riders[6] ) },
-		{ "Rider8",					parseRiderInfo,					nullptr, offsetof( RiderChangeContainModuleData, m_riders[7] ) },
-    { "ScuttleDelay",   INI::parseDurationUnsignedInt,	nullptr, offsetof( RiderChangeContainModuleData, m_scuttleFrames ) },
-    { "ScuttleStatus",  INI::parseIndexList,		ModelConditionFlags::getBitNames(), offsetof( RiderChangeContainModuleData, m_scuttleState ) },
+		{ "Rider1", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[0]) },
+		{ "RiderAlias1", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[0]) },
+
+		{ "Rider2", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[1]) },
+		{ "RiderAlias2", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[1]) },
+
+		{ "Rider3", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[2]) },
+		{ "RiderAlias3", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[2]) },
+
+		{ "Rider4", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[3]) },
+		{ "RiderAlias4", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[3]) },
+
+		{ "Rider5", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[4]) },
+		{ "RiderAlias5", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[4]) },
+
+		{ "Rider6", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[5]) },
+		{ "RiderAlias6", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[5]) },
+
+		{ "Rider7", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[6]) },
+		{ "RiderAlias7", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[6]) },
+
+		{ "Rider8", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[7]) },
+		{ "RiderAlias8", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[7]) },
+
+		{ "ScuttleDelay", INI::parseDurationUnsignedInt, nullptr, offsetof(RiderChangeContainModuleData, m_scuttleFrames) },
+		{ "ScuttleStatus", INI::parseIndexList, ModelConditionFlags::getBitNames(), offsetof(RiderChangeContainModuleData, m_scuttleState) },
 		{ nullptr, nullptr, nullptr, 0 }
 	};
   p.add(dataFieldParse);
 }
 
+//-------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
+static Bool isRiderTemplateMatch(const RiderInfo& riderInfo, const ThingTemplate* riderTemplate)
+{
+	const ThingTemplate* thing = TheThingFactory->findTemplate(riderInfo.m_templateName);
+	if (thing && thing->isEquivalentTo(riderTemplate))
+	{
+		return TRUE;
+	}
 
+	for (std::list<AsciiString>::const_iterator it = riderInfo.m_templateAliases.begin();
+		it != riderInfo.m_templateAliases.end();
+		++it)
+	{
+		thing = TheThingFactory->findTemplate(*it);
+		if (thing && thing->isEquivalentTo(riderTemplate))
+		{
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
 
 // PRIVATE ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -169,8 +219,7 @@ Bool RiderChangeContain::isValidContainerFor(const Object* rider, Bool checkCapa
 		const RiderChangeContainModuleData *data = getRiderChangeContainModuleData();
 		for( int i = 0; i < MAX_RIDERS; i++ )
 		{
-			const ThingTemplate *thing = TheThingFactory->findTemplate( data->m_riders[ i ].m_templateName );
-			if( thing && thing->isEquivalentTo( rider->getTemplate() ) )
+			if (isRiderTemplateMatch(data->m_riders[i], rider->getTemplate()))
 			{
 				//We found a valid rider, so return success.
 				return TRUE;
@@ -182,133 +231,131 @@ Bool RiderChangeContain::isValidContainerFor(const Object* rider, Bool checkCapa
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-void RiderChangeContain::onContaining( Object *rider, Bool wasSelected )
+void RiderChangeContain::onContaining(Object* rider, Bool wasSelected)
 {
-	Object *obj = getObject();
+	Object* obj = getObject();
 	m_containing = TRUE;
 	//Remove our existing rider
-	if( m_payloadCreated )
+	if (m_payloadCreated)
 	{
-		obj->getAI()->aiEvacuateInstantly( TRUE, CMD_FROM_AI );
+		obj->getAI()->aiEvacuateInstantly(TRUE, CMD_FROM_AI);
 	}
 
 	//If the rider is currently selected, transfer selection to the container and preserve other units
 	//that may be already selected. Note that containing the rider will automatically cause it to be
 	//deselected, so all we have to do is select the container (if not already selected)!
-	Drawable *containDraw = getObject()->getDrawable();
-	if( containDraw && wasSelected && !containDraw->isSelected() )
+	Drawable* containDraw = getObject()->getDrawable();
+	if (containDraw && wasSelected && !containDraw->isSelected())
 	{
 		//Create the selection message
-		GameMessage *teamMsg = TheMessageStream->appendMessage( GameMessage::MSG_CREATE_SELECTED_GROUP );
-		teamMsg->appendBooleanArgument( FALSE );// not creating new team so pass false
-		teamMsg->appendObjectIDArgument( getObject()->getID() );
-		TheInGameUI->selectDrawable( containDraw );
-		TheInGameUI->setDisplayedMaxWarning( FALSE );
+		GameMessage* teamMsg = TheMessageStream->appendMessage(GameMessage::MSG_CREATE_SELECTED_GROUP);
+		teamMsg->appendBooleanArgument(FALSE);// not creating new team so pass false
+		teamMsg->appendObjectIDArgument(getObject()->getID());
+		TheInGameUI->selectDrawable(containDraw);
+		TheInGameUI->setDisplayedMaxWarning(FALSE);
 	}
 
 	//Find the rider in the list and set the appropriate model condition
-	const RiderChangeContainModuleData *data = getRiderChangeContainModuleData();
-	for( int i = 0; i < MAX_RIDERS; i++ )
+	const RiderChangeContainModuleData* data = getRiderChangeContainModuleData();
+	for (int i = 0; i < MAX_RIDERS; i++)
 	{
-		const ThingTemplate *thing = TheThingFactory->findTemplate( data->m_riders[ i ].m_templateName );
-		if( thing && thing->isEquivalentTo( rider->getTemplate() ) )
+		if (isRiderTemplateMatch(data->m_riders[i], rider->getTemplate()))
 		{
 
 			//This is our rider, so set the correct model condition.
-			obj->setModelConditionState( data->m_riders[ i ].m_modelConditionFlagType );
+			obj->setModelConditionState(data->m_riders[i].m_modelConditionFlagType);
 
 			//Also set the correct weaponset flag
-			obj->setWeaponSetFlag( data->m_riders[ i ].m_weaponSetFlag );
+			obj->setWeaponSetFlag(data->m_riders[i].m_weaponSetFlag);
 
 			//Also set the object status
-			obj->setStatus( MAKE_OBJECT_STATUS_MASK( data->m_riders[ i ].m_objectStatusType ) );
+			obj->setStatus(MAKE_OBJECT_STATUS_MASK(data->m_riders[i].m_objectStatusType));
 
 			//Set the new commandset override
-			obj->setCommandSetStringOverride( data->m_riders[ i ].m_commandSet );
+			obj->setCommandSetStringOverride(data->m_riders[i].m_commandSet);
 			TheControlBar->markUIDirty();	// Refresh the UI in case we are selected
 
 			//Change the locomotor.
 			AIUpdateInterface* ai = obj->getAI();
-			if( ai )
+			if (ai)
 			{
-				ai->chooseLocomotorSet( data->m_riders[ i ].m_locomotorSetType );
+				ai->chooseLocomotorSet(data->m_riders[i].m_locomotorSetType);
 			}
 
-			if( obj->getStatusBits().test( OBJECT_STATUS_STEALTHED ) )
+			if (obj->getStatusBits().test(OBJECT_STATUS_STEALTHED))
 			{
 				StealthUpdate* stealth = obj->getStealth();
-				if( stealth )
+				if (stealth)
 				{
 					stealth->markAsDetected();
 				}
 			}
 
 			//Transfer experience from the rider to the bike.
-			ExperienceTracker *riderTracker = rider->getExperienceTracker();
-			ExperienceTracker *bikeTracker = obj->getExperienceTracker();
+			ExperienceTracker* riderTracker = rider->getExperienceTracker();
+			ExperienceTracker* bikeTracker = obj->getExperienceTracker();
 #if !RETAIL_COMPATIBLE_CRC
 			// TheSuperHackers @bugfix Stubbjax 15/12/2025 Copy trainable flag from the rider to prevent
 			// Workers and other untrainable riders from ranking up via the bike's experience tracker.
 			bikeTracker->setTrainable(riderTracker->isTrainable());
 #endif
-			bikeTracker->setVeterancyLevel( riderTracker->getVeterancyLevel(), FALSE );
-			riderTracker->setExperienceAndLevel( 0, FALSE );
+			bikeTracker->setVeterancyLevel(riderTracker->getVeterancyLevel(), FALSE);
+			riderTracker->setExperienceAndLevel(0, FALSE);
 
 			break;
 		}
 	}
 
 	//Extend base class
-	TransportContain::onContaining( rider, wasSelected );
+	TransportContain::onContaining(rider, wasSelected);
 
 	m_containing = FALSE;
 }
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-void RiderChangeContain::onRemoving( Object *rider )
+void RiderChangeContain::onRemoving(Object* rider)
 {
-	Object *bike = getObject();
+	Object* bike = getObject();
 	//Note if the bike dies, the rider dies too.
-	if( bike->isEffectivelyDead() )
+	if (bike->isEffectivelyDead())
 	{
-		TheGameLogic->destroyObject( rider );
+		TheGameLogic->destroyObject(rider);
 		return;
 	}
 
-	if( m_payloadCreated )
+	if (m_payloadCreated)
 	{
 		//Extend base class
-		TransportContain::onRemoving( rider );
+		TransportContain::onRemoving(rider);
 	}
 
 	//Find the rider in the list and clear various data.
-	const RiderChangeContainModuleData *data = getRiderChangeContainModuleData();
-	for( int i = 0; i < MAX_RIDERS; i++ )
+	const RiderChangeContainModuleData* data = getRiderChangeContainModuleData();
+	for (int i = 0; i < MAX_RIDERS; i++)
 	{
-		const ThingTemplate *thing = TheThingFactory->findTemplate( data->m_riders[ i ].m_templateName );
-		if( thing && thing->isEquivalentTo( rider->getTemplate() ) )
+		if (isRiderTemplateMatch(data->m_riders[i], rider->getTemplate()))
 		{
 			//This is our rider, so clear the current model condition.
-			bike->clearModelConditionFlags( MAKE_MODELCONDITION_MASK2( data->m_riders[ i ].m_modelConditionFlagType, MODELCONDITION_DOOR_1_CLOSING ) );
+			bike->clearModelConditionFlags(MAKE_MODELCONDITION_MASK2(data->m_riders[i].m_modelConditionFlagType, MODELCONDITION_DOOR_1_CLOSING));
 
 			//Also clear the current weaponset flag
-			bike->clearWeaponSetFlag( data->m_riders[ i ].m_weaponSetFlag );
+			bike->clearWeaponSetFlag(data->m_riders[i].m_weaponSetFlag);
 
 			//Also clear the object status
-			bike->clearStatus( MAKE_OBJECT_STATUS_MASK( data->m_riders[ i ].m_objectStatusType ) );
+			bike->clearStatus(MAKE_OBJECT_STATUS_MASK(data->m_riders[i].m_objectStatusType));
 
-			if( rider->getControllingPlayer() != nullptr )
+			if (rider->getControllingPlayer() != nullptr)
 			{
 				//Wow, completely unforseeable game teardown order crash.  SetVeterancyLevel results in a call to player
 				//about upgrade masks.  So if we have a null player, it is game teardown, so don't worry about transferring exp.
 
 				//Transfer experience from the bike to the rider.
-				ExperienceTracker *riderTracker = rider->getExperienceTracker();
-				ExperienceTracker *bikeTracker = bike->getExperienceTracker();
+				ExperienceTracker* riderTracker = rider->getExperienceTracker();
+				ExperienceTracker* bikeTracker = bike->getExperienceTracker();
 				bikeTracker->resetTrainable();
-				riderTracker->setVeterancyLevel( bikeTracker->getVeterancyLevel(), FALSE );
-				bikeTracker->setExperienceAndLevel( 0, FALSE );
+				riderTracker->setVeterancyLevel(bikeTracker->getVeterancyLevel(), FALSE);
+				bikeTracker->setExperienceAndLevel(0, FALSE);
 			}
 
 			break;
@@ -317,34 +364,34 @@ void RiderChangeContain::onRemoving( Object *rider )
 
 	//If we're not replacing the rider, then if the cycle is selected, transfer selection
 	//to the rider getting off (because the bike is gonna blow).
-	if( !m_containing )
+	if (!m_containing)
 	{
-		Drawable *containDraw = bike->getDrawable();
-		Drawable *riderDraw = rider->getDrawable();
-		if( containDraw && riderDraw )
+		Drawable* containDraw = bike->getDrawable();
+		Drawable* riderDraw = rider->getDrawable();
+		if (containDraw && riderDraw)
 		{
 			//Create the selection message for the rider if it's ours and SELECTED!
-			if( bike->isLocallyControlled() && containDraw->isSelected() )
+			if (bike->isLocallyControlled() && containDraw->isSelected())
 			{
-				GameMessage *teamMsg = TheMessageStream->appendMessage( GameMessage::MSG_CREATE_SELECTED_GROUP );
-				teamMsg->appendBooleanArgument( FALSE );// not creating new team so pass false
-				teamMsg->appendObjectIDArgument( rider->getID() );
-				TheInGameUI->selectDrawable( riderDraw );
-				TheInGameUI->setDisplayedMaxWarning( FALSE );
+				GameMessage* teamMsg = TheMessageStream->appendMessage(GameMessage::MSG_CREATE_SELECTED_GROUP);
+				teamMsg->appendBooleanArgument(FALSE);// not creating new team so pass false
+				teamMsg->appendObjectIDArgument(rider->getID());
+				TheInGameUI->selectDrawable(riderDraw);
+				TheInGameUI->setDisplayedMaxWarning(FALSE);
 
 				//Create the de-selection message for the container
-				teamMsg = TheMessageStream->appendMessage( GameMessage::MSG_REMOVE_FROM_SELECTED_GROUP );
-				teamMsg->appendObjectIDArgument( bike->getID() );
-				TheInGameUI->deselectDrawable( containDraw );
+				teamMsg = TheMessageStream->appendMessage(GameMessage::MSG_REMOVE_FROM_SELECTED_GROUP);
+				teamMsg->appendObjectIDArgument(bike->getID());
+				TheInGameUI->deselectDrawable(containDraw);
 			}
 
 			//Finally, scuttle the bike so nobody else can use it! <Design Spec>
 			m_scuttledOnFrame = TheGameLogic->getFrame();
-			bike->setStatus( MAKE_OBJECT_STATUS_MASK( OBJECT_STATUS_UNSELECTABLE ) );
-			bike->setModelConditionState( data->m_scuttleState );
-			if( !bike->getAI()->isMoving() )
+			bike->setStatus(MAKE_OBJECT_STATUS_MASK(OBJECT_STATUS_UNSELECTABLE));
+			bike->setModelConditionState(data->m_scuttleState);
+			if (!bike->getAI()->isMoving())
 			{
-				bike->setStatus( MAKE_OBJECT_STATUS_MASK( OBJECT_STATUS_IMMOBILE ) );
+				bike->setStatus(MAKE_OBJECT_STATUS_MASK(OBJECT_STATUS_IMMOBILE));
 			}
 		}
 	}

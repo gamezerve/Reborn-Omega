@@ -22,7 +22,7 @@
 //																																						//
 ////////////////////////////////////////////////////////////////////////////////
 
-// FILE: RiderChangeContain.cpp //////////////////////////////////////////////////////////////////////
+// FILE: RiderChangeContain.h //////////////////////////////////////////////////////////////////////
 // Author: Kris Morness, May 2003
 // Desc:   Contain module for the combat bike (transport that switches units).
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -30,6 +30,7 @@
 #pragma once
 
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
+#include "Common/STLTypedefs.h"
 #include "GameLogic/Module/TransportContain.h"
 
 #define MAX_RIDERS 8 //***NOTE: If you change this, make sure you update the parsing section!
@@ -41,6 +42,7 @@ enum LocomotorSetType CPP_11(: Int);
 struct RiderInfo
 {
 	AsciiString m_templateName;
+	AsciiStringList m_templateAliases;
 	WeaponSetType m_weaponSetFlag;
 	ModelConditionFlagType m_modelConditionFlagType;
 	ObjectStatusType m_objectStatusType;
@@ -61,6 +63,7 @@ public:
 
 	static void buildFieldParse(MultiIniFieldParse& p);
 	static void parseRiderInfo( INI* ini, void *instance, void *store, const void* /*userData*/ );
+	static void parseRiderAlias(INI* ini, void* instance, void* store, const void* userData);
 
 };
 
