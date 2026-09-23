@@ -2130,11 +2130,12 @@ Type scanType(std::string_view token)
 	}
 
 	DEBUG_CRASH(("token %s is not a valid member of the lookup list",token));
-	throw INI_INVALID_DATA;
 
 	REBORN_LOG(
 		"INI_INVALID_DATA: Token '%s' is not a valid member of the lookup list.",
 		token ? token : "NULL");
+
+	throw INI_INVALID_DATA;
 
 	return 0;	// never executed, but keeps compiler happy
 
