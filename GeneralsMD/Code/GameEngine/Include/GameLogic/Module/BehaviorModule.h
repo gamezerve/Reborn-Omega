@@ -47,6 +47,7 @@ class DieModuleInterface;
 class SpecialPowerModuleInterface;
 class UpdateModuleInterface;
 class UpgradeModuleInterface;
+class RiderCommandSetUpgradeInterface;
 
 //-------------------------------------------------------------------------------------------------
 class ParkingPlaceBehaviorInterface;
@@ -109,7 +110,8 @@ public:
 	virtual SpecialPowerModuleInterface* getSpecialPower() = 0;
 	virtual UpdateModuleInterface* getUpdate() = 0;
 	virtual UpgradeModuleInterface* getUpgrade() = 0;
-
+	virtual RiderCommandSetUpgradeInterface* getRiderCommandSetUpgradeInterface() = 0;
+	
 	// interface acquisition
 	virtual ParkingPlaceBehaviorInterface* getParkingPlaceBehaviorInterface() = 0;
 	virtual RebuildHoleBehaviorInterface* getRebuildHoleBehaviorInterface() = 0;
@@ -163,6 +165,7 @@ public:
 	virtual SpecialPowerModuleInterface* getSpecialPower() override { return nullptr; }
 	virtual UpdateModuleInterface* getUpdate() override { return nullptr; }
 	virtual UpgradeModuleInterface* getUpgrade() override { return nullptr; }
+	virtual RiderCommandSetUpgradeInterface* getRiderCommandSetUpgradeInterface() {	return nullptr;	}
   virtual StealthUpdate* getStealth() { return nullptr; }
 	virtual SpyVisionUpdate* getSpyVisionUpdate() { return nullptr; }
 

@@ -418,6 +418,7 @@ set(GAMEENGINE_SRC
 #    Include/GameLogic/Module/RepairDockUpdate.h
 #    Include/GameLogic/Module/ReplaceObjectUpgrade.h
 #    Include/GameLogic/Module/RiderChangeContain.h
+    Include/GameLogic/Module/RiderCommandSetUpgrade.h
 #    Include/GameLogic/Module/SabotageCommandCenterCrateCollide.h
 #    Include/GameLogic/Module/SabotageFakeBuildingCrateCollide.h
 #    Include/GameLogic/Module/SabotageInternetCenterCrateCollide.h
@@ -935,6 +936,7 @@ set(GAMEENGINE_SRC
 #    Source/GameLogic/Object/Contain/ParachuteContain.cpp
 #    Source/GameLogic/Object/Contain/RailedTransportContain.cpp
 #    Source/GameLogic/Object/Contain/RiderChangeContain.cpp
+    Source/GameLogic/Object/RiderCommandSetUpgrade.cpp
 #    Source/GameLogic/Object/Contain/TransportContain.cpp
 #    Source/GameLogic/Object/Contain/TunnelContain.cpp
 #    Source/GameLogic/Object/Create/CreateModule.cpp

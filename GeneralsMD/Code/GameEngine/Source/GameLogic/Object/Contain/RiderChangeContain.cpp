@@ -36,6 +36,7 @@
 #include "Common/PlayerList.h"
 #include "Common/ThingTemplate.h"
 #include "Common/ThingFactory.h"
+#include "Common/Upgrade.h"
 #include "Common/Xfer.h"
 
 #include "GameClient/ControlBar.h"
@@ -51,8 +52,9 @@
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/Module/BodyModule.h"
 #include "GameLogic/Module/PhysicsUpdate.h"
-#include "GameLogic/Module/StealthUpdate.h"
+#include "GameLogic/Module/RiderCommandSetUpgrade.h"
 #include "GameLogic/Module/RiderChangeContain.h"
+#include "GameLogic/Module/StealthUpdate.h"
 
 
 
@@ -181,6 +183,86 @@ Int RiderChangeContain::getContainMax() const
 	return 0;
 }
 
+//-------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
+void RiderChangeContain::refreshCommandSet(const Object* rider)
+{
+	Object* bike = getObject();
+
+	if (!bike)
+		return;
+
+	if (!rider)
+		rider = friend_getRider();
+
+	if (!rider || !rider->getTemplate())
+		return;
+
+	const RiderChangeContainModuleData* data =
+		getRiderChangeContainModuleData();
+
+	if (!data)
+		return;
+
+	for (Int i = 0; i < MAX_RIDERS; ++i)
+	{
+		const RiderInfo& riderInfo = data->m_riders[i];
+
+		if (!isRiderTemplateMatch(
+			riderInfo,
+			rider->getTemplate()))
+		{
+			continue;
+		}
+
+		//
+		// Always begin with the normal command set defined by
+		// RiderChangeContain.
+		//
+		AsciiString commandSet =
+			riderInfo.m_commandSet;
+
+		//
+		// Allow an active RiderCommandSetUpgrade module to replace it.
+		//
+		BehaviorModule** modules =
+			bike->getBehaviorModules();
+
+		if (modules)
+		{
+			for (BehaviorModule** module = modules;
+				*module;
+				++module)
+			{
+				RiderCommandSetUpgradeInterface* upgrade =
+					(*module)->getRiderCommandSetUpgradeInterface();
+
+				if (!upgrade)
+					continue;
+
+				AsciiString upgradedCommandSet;
+
+				if (upgrade->resolveCommandSet(
+					bike,
+					rider,
+					commandSet,
+					upgradedCommandSet))
+				{
+					commandSet = upgradedCommandSet;
+					break;
+				}
+			}
+		}
+
+		bike->setCommandSetStringOverride(commandSet);
+
+		if (TheControlBar)
+			TheControlBar->markUIDirty();
+
+		return;
+	}
+}
+
 // PUBLIC /////////////////////////////////////////////////////////////////////////////////////////
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
@@ -274,9 +356,10 @@ void RiderChangeContain::onContaining(Object* rider, Bool wasSelected)
 			//Also set the object status
 			obj->setStatus(MAKE_OBJECT_STATUS_MASK(data->m_riders[i].m_objectStatusType));
 
-			//Set the new commandset override
-			obj->setCommandSetStringOverride(data->m_riders[i].m_commandSet);
-			TheControlBar->markUIDirty();	// Refresh the UI in case we are selected
+			////Set the new commandset override
+			//obj->setCommandSetStringOverride(data->m_riders[i].m_commandSet);
+			//TheControlBar->markUIDirty();	// Refresh the UI in case we are selected
+			refreshCommandSet(rider);
 
 			//Change the locomotor.
 			AIUpdateInterface* ai = obj->getAI();

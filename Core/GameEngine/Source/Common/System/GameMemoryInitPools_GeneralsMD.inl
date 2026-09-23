@@ -322,6 +322,7 @@ static PoolSizeRec PoolSizes[] =
 #endif
 	{ "CashHackSpecialPower", 32, 32 },
 	{ "CommandSetUpgrade", 32, 32 },
+	{ "RiderCommandSetUpgrade", 32, 32 },
 	{ "PassengersFireUpgrade", 32, 32 },
 	{ "GrantUpgradeCreate", 256, 32 },
 	{ "GrantScienceUpgrade", 256, 32 },

@@ -89,6 +89,8 @@ public:
 	virtual Bool isRiderChangeContain() const override { return TRUE; }
 	virtual const Object *friend_getRider() const override;
 
+	void refreshCommandSet(const Object* rider = nullptr);
+
 	virtual Int getContainMax() const override;
 
 	virtual Int getExtraSlotsInUse() override { return m_extraSlotsInUse; }///< Transports have the ability to carry guys how take up more than spot.
