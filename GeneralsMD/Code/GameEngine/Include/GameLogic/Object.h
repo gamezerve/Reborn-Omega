@@ -552,8 +552,8 @@ public:
 	void setModelConditionFlags( const ModelConditionFlags& set );
 	void clearAndSetModelConditionFlags( const ModelConditionFlags& clr, const ModelConditionFlags& set );
 
-	void setWeaponSetFlag(WeaponSetType wst);
-	void clearWeaponSetFlag(WeaponSetType wst);
+	void setWeaponSetFlag(WeaponSetType wst, Bool updateModelCondition = TRUE);
+	void clearWeaponSetFlag(WeaponSetType wst, Bool updateModelCondition = TRUE);
 	inline Bool testWeaponSetFlag(WeaponSetType wst) const { return m_curWeaponSetFlags.test(wst); }
 	inline const WeaponSetFlags& getWeaponSetFlags() const { return m_curWeaponSetFlags; }
 	Bool setWeaponLock( WeaponSlotType weaponSlot, WeaponLockType lockType ){ return m_weaponSet.setWeaponLock( weaponSlot, lockType ); }

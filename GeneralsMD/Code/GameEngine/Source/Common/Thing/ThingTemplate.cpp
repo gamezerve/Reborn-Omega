@@ -281,6 +281,7 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "AddModule",						ThingTemplate::parseAddModule,			nullptr, 0 },
 	{ "RemoveModule",					ThingTemplate::parseRemoveModule,		nullptr, 0 },
 	{ "ReplaceModule",				ThingTemplate::parseReplaceModule,	nullptr, 0 },
+	{ "OverrideModule",				ThingTemplate::parseOverrideModule, nullptr, 0 },
 	{ "InheritableModule",		ThingTemplate::parseInheritableModule,	nullptr, 0 },
 
   { "OverrideableByLikeKind",		ThingTemplate::OverrideableByLikeKind,	nullptr, 0 },
@@ -336,6 +337,36 @@ const ModuleInfo::Nugget *ModuleInfo::getNuggetWithTag( const AsciiString& tag )
 	// no match
 	return nullptr;
 
+}
+
+Bool ModuleInfo::getModuleDataWithTag(
+	const AsciiString& tag,
+	AsciiString& moduleNameOut,
+	const ModuleData*& moduleDataOut) const
+{
+	const Nugget* nugget = getNuggetWithTag(tag);
+	if (nugget == nullptr)
+		return false;
+
+	moduleNameOut = nugget->first;
+	moduleDataOut = nugget->second;
+	return true;
+}
+
+Bool ModuleInfo::replaceModuleDataWithTag(
+	const AsciiString& tag,
+	const ModuleData* moduleData)
+{
+	for (std::vector<Nugget>::iterator it = m_info.begin(); it != m_info.end(); ++it)
+	{
+		if (it->m_moduleTag == tag)
+		{
+			it->second = moduleData;
+			return true;
+		}
+	}
+
+	return false;
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -920,6 +951,126 @@ void ThingTemplate::parseAddModule(INI *ini, void *instance, void *store, const 
 	ini->initFromINI(self, self->getFieldParse());
 
 	self->m_moduleParsingMode = oldMode;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Parse modules to remove from the existing set of modules. */
+//-------------------------------------------------------------------------------------------------
+void ThingTemplate::parseOverrideModule(
+	INI* ini,
+	void* instance,
+	void* store,
+	const void* userData)
+{
+	ThingTemplate* self = static_cast<ThingTemplate*>(instance);
+
+	if (self->m_moduleParsingMode != MODULEPARSE_NORMAL)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: OverrideModule cannot be parsed while ThingTemplate '%s' is already in module parsing mode %d. INIFile='%s', INILine=%d.",
+			self->getName().str(),
+			static_cast<int>(self->m_moduleParsingMode),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
+		throw INI_INVALID_DATA;
+	}
+
+	AsciiString moduleTag = ini->getNextToken();
+
+	ModuleInfo* moduleInfo = nullptr;
+	ModuleType moduleType = MODULETYPE_BEHAVIOR;
+	AsciiString moduleName;
+	const ModuleData* inheritedData = nullptr;
+	Int matches = 0;
+
+	AsciiString name;
+	const ModuleData* data = nullptr;
+
+	if (self->m_behaviorModuleInfo.getModuleDataWithTag(moduleTag, name, data))
+	{
+		moduleInfo = &self->m_behaviorModuleInfo;
+		moduleType = MODULETYPE_BEHAVIOR;
+		moduleName = name;
+		inheritedData = data;
+		++matches;
+	}
+
+	if (self->m_drawModuleInfo.getModuleDataWithTag(moduleTag, name, data))
+	{
+		moduleInfo = &self->m_drawModuleInfo;
+		moduleType = MODULETYPE_DRAW;
+		moduleName = name;
+		inheritedData = data;
+		++matches;
+	}
+
+	if (self->m_clientUpdateModuleInfo.getModuleDataWithTag(moduleTag, name, data))
+	{
+		moduleInfo = &self->m_clientUpdateModuleInfo;
+		moduleType = MODULETYPE_CLIENT_UPDATE;
+		moduleName = name;
+		inheritedData = data;
+		++matches;
+	}
+
+	if (matches != 1 || moduleInfo == nullptr || inheritedData == nullptr)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: OverrideModule tag '%s' resolved to %d modules on ThingTemplate '%s'. INIFile='%s', INILine=%d.",
+			moduleTag.str(),
+			matches,
+			self->getName().str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
+		throw INI_INVALID_DATA;
+	}
+
+	ModuleData* childData =
+		TheModuleFactory->cloneModuleData(moduleName, moduleType, inheritedData);
+
+	if (childData == nullptr)
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: OverrideModule failed to clone module '%s' with tag '%s' on ThingTemplate '%s'. INIFile='%s', INILine=%d.",
+			moduleName.str(),
+			moduleTag.str(),
+			self->getName().str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
+		throw INI_INVALID_DATA;
+	}
+
+	if (!TheModuleFactory->parseModuleDataFromINI(
+		ini,
+		moduleName,
+		moduleType,
+		childData))
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: OverrideModule failed to parse module '%s' with tag '%s' on ThingTemplate '%s'. INIFile='%s', INILine=%d.",
+			moduleName.str(),
+			moduleTag.str(),
+			self->getName().str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
+		throw INI_INVALID_DATA;
+	}
+
+	if (!moduleInfo->replaceModuleDataWithTag(moduleTag, childData))
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: OverrideModule failed to replace module data for tag '%s' on ThingTemplate '%s'. INIFile='%s', INILine=%d.",
+			moduleTag.str(),
+			self->getName().str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
+		throw INI_INVALID_DATA;
+	}
 }
 
 //-------------------------------------------------------------------------------------------------

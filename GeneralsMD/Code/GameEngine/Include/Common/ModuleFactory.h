@@ -55,6 +55,8 @@ class INI;
 // TYPE DEFINITIONS ///////////////////////////////////////////////////////////////////////////////
 typedef Module *(*NewModuleProc)(Thing *thing, const ModuleData* moduleData);
 typedef ModuleData* (*NewModuleDataProc)(INI* ini);
+typedef ModuleData* (*CloneModuleDataProc)(const ModuleData* moduleData);
+typedef void (*ParseModuleDataProc)(INI* ini, ModuleData* moduleData);
 
 //-------------------------------------------------------------------------------------------------
 /** We use TheModuleFactory to register classes that will be attached
@@ -85,31 +87,40 @@ public:
 	virtual void xfer( Xfer *xfer ) override;
 	virtual void loadPostProcess() override;
 
+	ModuleData* cloneModuleData(const AsciiString& name, ModuleType type, const ModuleData* source);
+	Bool parseModuleDataFromINI(INI* ini, const AsciiString& name, ModuleType type, ModuleData* data);
+
 protected:
 
 
 	class ModuleTemplate
 	{
 	public:
-		ModuleTemplate() : m_createProc(nullptr), m_createDataProc(nullptr), m_whichInterfaces(0)
+		ModuleTemplate() : m_createProc(nullptr), m_createDataProc(nullptr), m_cloneDataProc(nullptr), m_parseDataProc(nullptr), m_whichInterfaces(0)
 		{
 		}
 
 		NewModuleProc m_createProc;					///< creation method
 		NewModuleDataProc m_createDataProc;	///< creation method
+		CloneModuleDataProc m_cloneDataProc;
+		ParseModuleDataProc m_parseDataProc;
 		Int m_whichInterfaces;
 	};
 
 	const ModuleTemplate* findModuleTemplate(const AsciiString& name, ModuleType type);
 
 	/// adding a new module template to the factory, and assisting macro to make it easier
-	void addModuleInternal( NewModuleProc proc, NewModuleDataProc dataproc, ModuleType type, const AsciiString& name, Int whichIntf );
-	#define addModule( classname )											\
-		addModuleInternal( classname::friend_newModuleInstance,  \
-											 classname::friend_newModuleData,			\
-											 classname::getModuleType(),		\
-											 AsciiString( #classname ),			\
-											 classname::getInterfaceMask())
+	//void addModuleInternal( NewModuleProc proc, NewModuleDataProc dataproc, ModuleType type, const AsciiString& name, Int whichIntf );
+	void addModuleInternal(	NewModuleProc proc,	NewModuleDataProc dataproc,	CloneModuleDataProc cloneproc, ParseModuleDataProc parseproc,	ModuleType type, const AsciiString& name,	Int whichIntf);
+	#define addModule( classname ) \
+		addModuleInternal( \
+			classname::friend_newModuleInstance, \
+			classname::friend_newModuleData, \
+			classname::friend_cloneModuleData, \
+			classname::friend_parseModuleData, \
+			classname::getModuleType(), \
+			AsciiString( #classname ), \
+			classname::getInterfaceMask())
 
 	static NameKeyType makeDecoratedNameKey(const AsciiString& name, ModuleType type);
 

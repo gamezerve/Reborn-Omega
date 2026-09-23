@@ -3104,24 +3104,30 @@ Bool Object::isMassSelectable() const
 }
 
 //-------------------------------------------------------------------------------------------------
-void Object::setWeaponSetFlag(WeaponSetType wst)
+void Object::setWeaponSetFlag(WeaponSetType wst, Bool updateModelCondition)
 {
 	m_curWeaponSetFlags.set(wst);
 	m_weaponSet.updateWeaponSet(this);
-	if (m_drawable)
+
+	if (updateModelCondition && m_drawable)
 	{
-		m_drawable->setModelConditionState(TheWeaponSetTypeToModelConditionTypeMap[wst]);
+		ModelConditionFlagType condition = TheWeaponSetTypeToModelConditionTypeMap[wst];
+		if (condition != MODELCONDITION_INVALID)
+			m_drawable->setModelConditionState(condition);
 	}
 }
 
 //-------------------------------------------------------------------------------------------------
-void Object::clearWeaponSetFlag(WeaponSetType wst)
+void Object::clearWeaponSetFlag(WeaponSetType wst, Bool updateModelCondition)
 {
 	m_curWeaponSetFlags.set(wst, 0);
 	m_weaponSet.updateWeaponSet(this);
-	if (m_drawable)
+
+	if (updateModelCondition && m_drawable)
 	{
-		m_drawable->clearModelConditionState(TheWeaponSetTypeToModelConditionTypeMap[wst]);
+		ModelConditionFlagType condition = TheWeaponSetTypeToModelConditionTypeMap[wst];
+		if (condition != MODELCONDITION_INVALID)
+			m_drawable->clearModelConditionState(condition);
 	}
 }
 

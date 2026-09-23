@@ -280,6 +280,15 @@ public:
 	void addModuleInfo( ThingTemplate *thingTemplate, const AsciiString& name, const AsciiString& moduleTag, const ModuleData* data, Int interfaceMask, Bool inheritable, Bool overrideableByLikeKind = FALSE );
 	const ModuleInfo::Nugget *getNuggetWithTag( const AsciiString& tag ) const;
 
+	Bool getModuleDataWithTag(
+		const AsciiString& tag,
+		AsciiString& moduleNameOut,
+		const ModuleData*& moduleDataOut) const;
+
+	Bool replaceModuleDataWithTag(
+		const AsciiString& tag,
+		const ModuleData* moduleData);
+
 	Int getCount() const
 	{
 		return m_info.size();
@@ -666,6 +675,7 @@ protected:
 	static void parseReplaceModule(INI *ini, void *instance, void *store, const void *userData);
 	static void parseInheritableModule(INI *ini, void *instance, void *store, const void *userData);
   static void OverrideableByLikeKind(INI *ini, void *instance, void *store, const void *userData);
+	static void parseOverrideModule(INI* ini, void* instance, void* store, const void* userData);
 
   static void parseMaxSimultaneous(INI *ini, void *instance, void *store, const void *userData);
 

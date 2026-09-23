@@ -586,6 +586,45 @@ Int ModuleFactory::findModuleInterfaceMask(const AsciiString& name, ModuleType t
 	return 0;
 }
 
+ModuleData* ModuleFactory::cloneModuleData(
+	const AsciiString& name,
+	ModuleType type,
+	const ModuleData* source)
+{
+	if (name.isEmpty() || source == nullptr)
+		return nullptr;
+
+	const ModuleTemplate* moduleTemplate = findModuleTemplate(name, type);
+	if (moduleTemplate == nullptr || moduleTemplate->m_cloneDataProc == nullptr)
+		return nullptr;
+
+	ModuleData* md = (*moduleTemplate->m_cloneDataProc)(source);
+	if (md == nullptr)
+		return nullptr;
+
+	md->setModuleTagNameKey(source->getModuleTagNameKey());
+	m_moduleDataList.push_back(md);
+
+	return md;
+}
+
+Bool ModuleFactory::parseModuleDataFromINI(
+	INI* ini,
+	const AsciiString& name,
+	ModuleType type,
+	ModuleData* data)
+{
+	if (ini == nullptr || name.isEmpty() || data == nullptr)
+		return false;
+
+	const ModuleTemplate* moduleTemplate = findModuleTemplate(name, type);
+	if (moduleTemplate == nullptr || moduleTemplate->m_parseDataProc == nullptr)
+		return false;
+
+	(*moduleTemplate->m_parseDataProc)(ini, data);
+	return true;
+}
+
 //-------------------------------------------------------------------------------------------------
 ModuleData* ModuleFactory::newModuleDataFromINI(INI* ini, const AsciiString& name, ModuleType type,
 																								const AsciiString& moduleTag)
@@ -697,12 +736,15 @@ Module *ModuleFactory::newModule( Thing *thing, const AsciiString& name, const M
 //-------------------------------------------------------------------------------------------------
 /** Add a module template to our list of templates */
 //-------------------------------------------------------------------------------------------------
-void ModuleFactory::addModuleInternal( NewModuleProc proc, NewModuleDataProc dataproc, ModuleType type, const AsciiString& name, Int whichIntf )
+//void ModuleFactory::addModuleInternal( NewModuleProc proc, NewModuleDataProc dataproc, ModuleType type, const AsciiString& name, Int whichIntf )
+void ModuleFactory::addModuleInternal( NewModuleProc proc, NewModuleDataProc dataproc, CloneModuleDataProc cloneproc, ParseModuleDataProc parseproc, ModuleType type, const AsciiString& name, Int whichIntf)
 {
 	NameKeyType namekey = makeDecoratedNameKey(name, type);
 	ModuleTemplate& mtm = m_moduleTemplateMap[namekey];	// this creates it if it does not exist already
 	mtm.m_createProc = proc;
 	mtm.m_createDataProc = dataproc;
+	mtm.m_cloneDataProc = cloneproc;
+	mtm.m_parseDataProc = parseproc;
 	mtm.m_whichInterfaces = whichIntf;
 }
 

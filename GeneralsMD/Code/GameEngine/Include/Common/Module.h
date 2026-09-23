@@ -162,8 +162,15 @@ public: \
 		clsmd* data = MSGNEW( "AllModuleData" ) clsmd; \
 		if (ini) ini->initFromINIMultiProc(data, clsmd::buildFieldParse); \
 		return data; \
+	} \
+	static ModuleData* friend_cloneModuleData(const ModuleData* moduleData) \
+	{ \
+		return MSGNEW( "AllModuleData" ) clsmd(*static_cast<const clsmd*>(moduleData)); \
+	} \
+	static void friend_parseModuleData(INI* ini, ModuleData* moduleData) \
+	{ \
+		if (ini) ini->initFromINIMultiProc(static_cast<clsmd*>(moduleData), clsmd::buildFieldParse); \
 	}
-
 //-------------------------------------------------------------------------------------------------
 #define MAKE_STANDARD_MODULE_MACRO_WITH_MODULE_DATA( cls, clsmd ) \
 	MAKE_STANDARD_MODULE_MACRO(cls) \
@@ -189,6 +196,17 @@ public:
 	// this method should NEVER be overridden by user code, only via the MAKE_STANDARD_MODULE_xxx macros!
 	// it should also NEVER be called directly; it's only for use by ModuleFactory!
 	static ModuleData* friend_newModuleData(INI* ini);
+
+	static ModuleData* friend_cloneModuleData(const ModuleData* moduleData)
+	{
+		return moduleData ? MSGNEW("AllModuleData") ModuleData(*moduleData) : nullptr;
+	}
+
+	static void friend_parseModuleData(INI* ini, ModuleData* moduleData)
+	{
+		if (ini)
+			ini->initFromINI(moduleData, nullptr);
+	}
 
 	virtual NameKeyType getModuleNameKey() const = 0;
 

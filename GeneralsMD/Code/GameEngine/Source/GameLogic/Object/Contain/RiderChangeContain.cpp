@@ -135,6 +135,9 @@ void RiderChangeContainModuleData::buildFieldParse(MultiIniFieldParse& p)
 		{ "Rider8", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[7]) },
 		{ "RiderAlias8", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[7]) },
 
+		{ "Rider9", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[8]) },
+		{ "RiderAlias9", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[8]) },
+
 		{ "ScuttleDelay", INI::parseDurationUnsignedInt, nullptr, offsetof(RiderChangeContainModuleData, m_scuttleFrames) },
 		{ "ScuttleStatus", INI::parseIndexList, ModelConditionFlags::getBitNames(), offsetof(RiderChangeContainModuleData, m_scuttleState) },
 		{ nullptr, nullptr, nullptr, 0 }
@@ -266,7 +269,7 @@ void RiderChangeContain::onContaining(Object* rider, Bool wasSelected)
 			obj->setModelConditionState(data->m_riders[i].m_modelConditionFlagType);
 
 			//Also set the correct weaponset flag
-			obj->setWeaponSetFlag(data->m_riders[i].m_weaponSetFlag);
+			obj->setWeaponSetFlag(data->m_riders[i].m_weaponSetFlag, FALSE);
 
 			//Also set the object status
 			obj->setStatus(MAKE_OBJECT_STATUS_MASK(data->m_riders[i].m_objectStatusType));
@@ -340,7 +343,7 @@ void RiderChangeContain::onRemoving(Object* rider)
 			bike->clearModelConditionFlags(MAKE_MODELCONDITION_MASK2(data->m_riders[i].m_modelConditionFlagType, MODELCONDITION_DOOR_1_CLOSING));
 
 			//Also clear the current weaponset flag
-			bike->clearWeaponSetFlag(data->m_riders[i].m_weaponSetFlag);
+			bike->clearWeaponSetFlag(data->m_riders[i].m_weaponSetFlag, FALSE);
 
 			//Also clear the object status
 			bike->clearStatus(MAKE_OBJECT_STATUS_MASK(data->m_riders[i].m_objectStatusType));
