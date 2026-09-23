@@ -1351,7 +1351,28 @@ void W3DModelDraw::showSubObject( const AsciiString& name, Bool show )
 	}
 }
 
+static void rebuildPublicBones(ModelConditionInfo& info)
+{
+	info.m_publicBones.clear();
 
+	for (Int i = 0; i < MAX_TURRETS; ++i)
+	{
+		if (info.m_turrets[i].m_turretAngleNameKey != NAMEKEY_INVALID)
+			info.addPublicBone(KEYNAME(info.m_turrets[i].m_turretAngleNameKey));
+
+		if (info.m_turrets[i].m_turretPitchNameKey != NAMEKEY_INVALID)
+			info.addPublicBone(KEYNAME(info.m_turrets[i].m_turretPitchNameKey));
+	}
+
+	for (Int i = 0; i < WEAPONSLOT_COUNT; ++i)
+	{
+		info.addPublicBone(info.m_weaponFireFXBoneName[i]);
+		info.addPublicBone(info.m_weaponRecoilBoneName[i]);
+		info.addPublicBone(info.m_weaponMuzzleFlashName[i]);
+		info.addPublicBone(info.m_weaponProjectileLaunchBoneName[i]);
+		info.addPublicBone(info.m_weaponProjectileHideShowName[i]);
+	}
+}
 
 //-------------------------------------------------------------------------------------------------
 static void parseWeaponBoneName(INI* ini, void *instance, void * store, const void* /*userData*/)
@@ -1754,6 +1775,7 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 	}
 
 	ini->initFromINI(&info, myFieldParse);
+	rebuildPublicBones(info);
 
 	if (info.m_modelName.isEmpty())
 	{
