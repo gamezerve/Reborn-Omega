@@ -16879,7 +16879,7 @@ GUI:BioFeatures_Pos7
 END
 
 GUI:BioFeatures_Pos8
-"Fully scrapped Quad Cannon, Scorpion, Scud Launcher \n Triple Barrel Marauder \n Advanced Demo Trap \n Suicide Bomb upgrade \n Terrorists do more damage \n Starts with Booby Trap \n Combat Cycles begin with Terrorist \n No camouflaged units \n Bomb Trucks cost less"
+"Fully scrapped Quad Cannon, Scorpion, Scud Launcher \n Triple Barrel Marauder Tank \n Advanced Demo Trap \n Suicide Bomb upgrade \n Terrorists do more damage \n Starts with Booby Trap \n Combat Cycles begin with Terrorist \n No camouflaged units \n Bomb Trucks cost less"
 END
 
 GUI:BioFeatures_Pos9
@@ -28279,7 +28279,7 @@ SCIENCE:DemoInfo
 END
 
 GUI:Info_Demo
-"Advanced Demo Trap (PreR- Price- Build_Time--)\n Suicide Bomb upgrade for All Units and Base Defenses \n Quad Cannon, Scorpion and Scud Launcher Starts Fully Scrapped \n Scorpion (Price++) \n Technical (Price-) \n Modified Radar Van (Vision+++) \n Quad Cannon (Price+) \n Toxin Tractor (Price+) \n Rocket Buggy (Price+) \n Triple Barrel Marauder (Price+ Build_Time++) \n Bomb Truck (Price- Build_Time-) \n SCUD Launcher (Price+ No_BioShells) \n Combat Cycles begin with Terrorist \n Battle Bus (Price++) \n Terrorists do more damage \n Rebels Starts with Booby Trap \n No camouflaged units"
+"Advanced Demo Trap (PreR- Price- Build_Time--)\n Suicide Bomb upgrade for All Units and Base Defenses \n Quad Cannon, Scorpion and Scud Launcher Starts Fully Scrapped \n Scorpion (Price++) \n Technical (Price-) \n Modified Radar Van (Vision+++) \n Quad Cannon (Price+) \n Toxin Tractor (Price+) \n Rocket Buggy (Price+) \n Triple Barrel Marauder Tank (Price+ Build_Time++) \n Bomb Truck (Price- Build_Time-) \n SCUD Launcher (Price+ No_BioShells) \n Combat Cycles begin with Terrorist \n Battle Bus (Price++) \n Terrorists do more damage \n Rebels Starts with Booby Trap \n No camouflaged units"
 END
 
 SCIENCE:SlthInfo

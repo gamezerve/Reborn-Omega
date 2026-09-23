@@ -1351,28 +1351,7 @@ void W3DModelDraw::showSubObject( const AsciiString& name, Bool show )
 	}
 }
 
-static void rebuildPublicBones(ModelConditionInfo& info)
-{
-	info.m_publicBones.clear();
 
-	for (Int i = 0; i < MAX_TURRETS; ++i)
-	{
-		if (info.m_turrets[i].m_turretAngleNameKey != NAMEKEY_INVALID)
-			info.addPublicBone(KEYNAME(info.m_turrets[i].m_turretAngleNameKey));
-
-		if (info.m_turrets[i].m_turretPitchNameKey != NAMEKEY_INVALID)
-			info.addPublicBone(KEYNAME(info.m_turrets[i].m_turretPitchNameKey));
-	}
-
-	for (Int i = 0; i < WEAPONSLOT_COUNT; ++i)
-	{
-		info.addPublicBone(info.m_weaponFireFXBoneName[i]);
-		info.addPublicBone(info.m_weaponRecoilBoneName[i]);
-		info.addPublicBone(info.m_weaponMuzzleFlashName[i]);
-		info.addPublicBone(info.m_weaponProjectileLaunchBoneName[i]);
-		info.addPublicBone(info.m_weaponProjectileHideShowName[i]);
-	}
-}
 
 //-------------------------------------------------------------------------------------------------
 static void parseWeaponBoneName(INI* ini, void *instance, void * store, const void* /*userData*/)
@@ -1453,6 +1432,29 @@ static Bool doesStateExist(const ModelConditionVector& v, const ModelConditionFl
 		}
 	}
 	return false;
+}
+
+static void rebuildPublicBones(ModelConditionInfo& info)
+{
+	info.m_publicBones.clear();
+
+	for (Int i = 0; i < MAX_TURRETS; ++i)
+	{
+		if (info.m_turrets[i].m_turretAngleNameKey != NAMEKEY_INVALID)
+			info.addPublicBone(KEYNAME(info.m_turrets[i].m_turretAngleNameKey));
+
+		if (info.m_turrets[i].m_turretPitchNameKey != NAMEKEY_INVALID)
+			info.addPublicBone(KEYNAME(info.m_turrets[i].m_turretPitchNameKey));
+	}
+
+	for (Int i = 0; i < WEAPONSLOT_COUNT; ++i)
+	{
+		info.addPublicBone(info.m_weaponFireFXBoneName[i]);
+		info.addPublicBone(info.m_weaponRecoilBoneName[i]);
+		info.addPublicBone(info.m_weaponMuzzleFlashName[i]);
+		info.addPublicBone(info.m_weaponProjectileLaunchBoneName[i]);
+		info.addPublicBone(info.m_weaponProjectileHideShowName[i]);
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -2034,6 +2036,14 @@ void W3DModelDraw::setHidden(Bool hidden)
 {
 	if (hidden)
 	{
+#if defined(RTS_DEBUG)
+		DEBUG_LOG((
+			"MUZZLE DEBUG: source=setHidden state='%s' stateModel='%s' renderModel='%s'\n",
+			m_curState ? m_curState->m_description.str() : "<null>",
+			m_curState ? m_curState->m_modelName.str() : "<null>",
+			m_renderObject ? m_renderObject->Get_Name() : "<null>"
+			));
+#endif
 		hideAllMuzzleFlashes(m_curState, m_renderObject);
 		rebuildWeaponRecoilInfo(m_curState);
 	}
@@ -3159,6 +3169,16 @@ void W3DModelDraw::hideAllMuzzleFlashes(const ModelConditionInfo* state, RenderO
 		{
 			if (it->m_muzzleFlashBone != 0)
 			{
+#if defined(RTS_DEBUG)
+				DEBUG_LOG((
+					"MUZZLE DEBUG: hideAll state='%s' stateModel='%s' renderModel='%s' muzzle='%s' boneIndex=%d\n",
+					state->m_description.str(),
+					state->m_modelName.str(),
+					renderObject->Get_Name(),
+					it->m_muzzleFlashBoneName.str(),
+					it->m_muzzleFlashBone
+					));
+#endif
 				it->setMuzzleFlashHidden(renderObject, true);
 			}
 		}
@@ -4229,7 +4249,9 @@ Real W3DModelDraw::getAnimationScrubScalar() const
 //-------------------------------------------------------------------------------------------------
 void W3DModelDraw::rebuildWeaponRecoilInfo(const ModelConditionInfo* state)
 {
-	if (m_curState != nullptr && m_renderObject != nullptr)
+	if (m_curState != nullptr &&
+		m_renderObject != nullptr &&
+		stricmp(m_curState->m_modelName.str(), m_renderObject->Get_Name()) == 0)
 	{
 		hideAllMuzzleFlashes(m_curState, m_renderObject);
 	}
@@ -4254,7 +4276,9 @@ void W3DModelDraw::rebuildWeaponRecoilInfo(const ModelConditionInfo* state)
 				m_weaponRecoilInfoVec[wslot].resize(ncount, tmp);
 			}
 
-			for (WeaponRecoilInfoVec::iterator it = m_weaponRecoilInfoVec[wslot].begin(); it != m_weaponRecoilInfoVec[wslot].end(); ++it)
+			for (WeaponRecoilInfoVec::iterator it = m_weaponRecoilInfoVec[wslot].begin();
+				it != m_weaponRecoilInfoVec[wslot].end();
+				++it)
 			{
 				it->clear();
 			}

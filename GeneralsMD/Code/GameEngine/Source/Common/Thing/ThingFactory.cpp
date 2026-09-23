@@ -420,15 +420,16 @@ void ThingFactory::parseObjectDefinition(INI* ini, const AsciiString& name, cons
 		if (parentTemplate)
 		{
 			thingTemplate->copyFrom(parentTemplate);
-			thingTemplate->setCopiedFromDefault();
 
 			if (reskinOnly)
 			{
+				thingTemplate->setCopiedFromDefault();
 				thingTemplate->setReskinnedFrom(parentTemplate);
 				ini->initFromINI(thingTemplate, thingTemplate->getReskinFieldParse());
 			}
 			else
 			{
+				thingTemplate->setCopiedFromObjectInheritance();
 				ini->initFromINI(thingTemplate, thingTemplate->getFieldParse());
 			}
 		}
@@ -666,12 +667,12 @@ Bool ThingFactory::resolvePendingObjectInheritance(
 	// parent first, then the child's own INI fields.
 	//
 	thingTemplate->copyFrom(parentTemplate);
-	thingTemplate->setCopiedFromDefault();
 
 	INI replayIni;
 
 	if (pending.m_reskinOnly)
 	{
+		thingTemplate->setCopiedFromDefault();
 		thingTemplate->setReskinnedFrom(parentTemplate);
 
 		replayIni.initFromCapturedBlock(
@@ -683,6 +684,8 @@ Bool ThingFactory::resolvePendingObjectInheritance(
 	}
 	else
 	{
+		thingTemplate->setCopiedFromObjectInheritance();
+
 		replayIni.initFromCapturedBlock(
 			thingTemplate,
 			thingTemplate->getFieldParse(),

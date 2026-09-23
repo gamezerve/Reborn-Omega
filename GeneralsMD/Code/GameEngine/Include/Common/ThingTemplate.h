@@ -613,6 +613,8 @@ public:
 
 	void setCopiedFromDefault();
 
+	void setCopiedFromObjectInheritance();
+
 	void setReskinnedFrom(const ThingTemplate* tt) { DEBUG_ASSERTCRASH(m_reskinnedFrom == nullptr, ("should be null")); m_reskinnedFrom = tt; }
 
 	Bool isPrerequisite() const { return m_isPrerequisite; }

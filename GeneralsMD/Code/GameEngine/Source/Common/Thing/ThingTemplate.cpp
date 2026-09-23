@@ -1002,6 +1002,37 @@ void ThingTemplate::parseReplaceModule(INI* ini, void* instance, void* store, co
 		return;
 	}
 
+	if (stricmp(modToRemove, "WeaponSet") == 0)
+	{
+		WeaponTemplateSet replacement;
+		replacement.parseWeaponTemplateSet(ini, self);
+
+		const WeaponSetFlags& replacementConditions = replacement.getNthConditionsYes(0);
+
+		for (WeaponTemplateSetVector::iterator it = self->m_weaponTemplateSets.begin();
+			it != self->m_weaponTemplateSets.end();
+			++it)
+		{
+			if (it->getNthConditionsYes(0) == replacementConditions)
+			{
+				*it = replacement;
+				self->m_weaponTemplateSetFinder.clear();
+				self->m_moduleParsingMode = oldMode;
+				return;
+			}
+		}
+
+		DEBUG_CRASH(("ReplaceModule WeaponSet found no matching WeaponSet for %s.", self->getName().str()));
+
+		REBORN_LOG(
+			"INI_INVALID_DATA: ReplaceModule WeaponSet found no matching inherited WeaponSet for ThingTemplate '%s'. INIFile='%s', INILine=%d.",
+			self->getName().str(),
+			ini->getFilename().str(),
+			ini->getLineNum());
+
+		throw INI_INVALID_DATA;
+	}
+
 	AsciiString removedModuleName;
 	Bool removed = self->removeModuleInfo(modToRemove, removedModuleName);
 	if (!removed)
@@ -1482,6 +1513,12 @@ void ThingTemplate::setCopiedFromDefault()
 	m_behaviorModuleInfo.setCopiedFromDefault(true);
 	m_drawModuleInfo.setCopiedFromDefault(true);
 	m_clientUpdateModuleInfo.setCopiedFromDefault(true);
+}
+
+void ThingTemplate::setCopiedFromObjectInheritance()
+{
+	m_armorCopiedFromDefault = true;
+	m_weaponsCopiedFromDefault = true;
 }
 
 //-------------------------------------------------------------------------------------------------
