@@ -7,6 +7,7 @@
 #include "StdAfx.h"
 #include "ObjectDeparser.h"
 #include "ObjectDeparserDialog.h"
+#include "ObjectDeparserLoadingDialog.h"
 
 #include "Common/ArchiveFileSystem.h"
 #include "Common/DamageFX.h"
@@ -87,13 +88,37 @@ CObjectDeparserApp::CObjectDeparserApp()
 
 BOOL CObjectDeparserApp::InitInstance()
 {
+	CWinApp::InitInstance();
+
+	AfxEnableControlContainer();
+	AfxInitRichEdit2();
+
+	CObjectDeparserLoadingDialog loadingDialog;
+
+	if (!loadingDialog.Create(IDD_OBJECT_DEPARSER_LOADING))
+		return FALSE;
+
+	loadingDialog.ShowWindow(SW_SHOW);
+	loadingDialog.UpdateWindow();
+
+	loadingDialog.setProgress(
+		2,
+		"Validating Reborn Omega runtime...");
+
 #ifdef REBORN_BUILD
 	if (!validateRebornOmegaRuntime())
+	{
+		loadingDialog.DestroyWindow();
 		return FALSE;
+	}
 #endif
 
 	ApplicationHWnd = GetDesktopWindow();
 	ApplicationHInstance = AfxGetInstanceHandle();
+
+	loadingDialog.setProgress(
+		5,
+		"Initializing memory system...");
 
 	initMemoryManager();
 
@@ -102,6 +127,10 @@ BOOL CObjectDeparserApp::InitInstance()
 	INI::setBlockParsedProc(
 		&ParsedDefinitionCatalog::capture,
 		&m_definitionCatalog);
+
+	loadingDialog.setProgress(
+		8,
+		"Initializing file system...");
 
 	TheNameKeyGenerator = new NameKeyGenerator;
 	TheNameKeyGenerator->init();
@@ -116,9 +145,17 @@ BOOL CObjectDeparserApp::InitInstance()
 		TheArchiveFileSystem,
 		static_cast<ArchiveFileSystem*>(new Win32BIGFileSystem));
 
+	loadingDialog.setProgress(
+		12,
+		"Loading data archives...");
+
 	TheArchiveFileSystem->loadMods();
 
 	INI ini;
+
+	loadingDialog.setProgress(
+		16,
+		"Loading game data...");
 
 	initSubsystem(
 		TheWritableGlobalData,
@@ -136,6 +173,10 @@ BOOL CObjectDeparserApp::InitInstance()
 
 	TheMappedImageCollection->load(512);
 
+	loadingDialog.setProgress(
+		22,
+		"Loading sciences and multiplayer data...");
+
 	initSubsystem(
 		TheScienceStore,
 		new ScienceStore(),
@@ -147,6 +188,10 @@ BOOL CObjectDeparserApp::InitInstance()
 		new MultiplayerSettings(),
 		"Data\\INI\\Default\\Multiplayer",
 		"Data\\INI\\Multiplayer");
+
+	loadingDialog.setProgress(
+		28,
+		"Initializing audio and modules...");
 
 	initSubsystem(
 		TheAudio,
@@ -166,6 +211,10 @@ BOOL CObjectDeparserApp::InitInstance()
 		nullptr,
 		"Data\\INI\\Rank");
 
+	loadingDialog.setProgress(
+		34,
+		"Loading player templates...");
+
 	initSubsystem(
 		ThePlayerTemplateStore,
 		new PlayerTemplateStore(),
@@ -178,6 +227,10 @@ BOOL CObjectDeparserApp::InitInstance()
 		"Data\\INI\\Default\\SpecialPower",
 		"Data\\INI\\SpecialPower");
 
+	loadingDialog.setProgress(
+		34,
+		"Loading player templates...");
+
 	initSubsystem(
 		TheParticleSystemManager,
 		static_cast<ParticleSystemManager*>(new W3DParticleSystemManager()));
@@ -188,11 +241,19 @@ BOOL CObjectDeparserApp::InitInstance()
 		"Data\\INI\\Default\\FXList",
 		"Data\\INI\\FXList");
 
+	loadingDialog.setProgress(
+		50,
+		"Loading weapons...");
+
 	initSubsystem(
 		TheWeaponStore,
 		new WeaponStore(),
 		nullptr,
 		"Data\\INI\\Weapon");
+
+	loadingDialog.setProgress(
+		58,
+		"Loading object creation lists...");
 
 	initSubsystem(
 		TheObjectCreationListStore,
@@ -200,11 +261,19 @@ BOOL CObjectDeparserApp::InitInstance()
 		"Data\\INI\\Default\\ObjectCreationList",
 		"Data\\INI\\ObjectCreationList");
 
+	loadingDialog.setProgress(
+		64,
+		"Loading locomotors...");
+
 	initSubsystem(
 		TheLocomotorStore,
 		new LocomotorStore(),
 		nullptr,
 		"Data\\INI\\Locomotor");
+
+	loadingDialog.setProgress(
+		70,
+		"Loading damage and armor data...");
 
 	initSubsystem(
 		TheDamageFXStore,
@@ -218,6 +287,10 @@ BOOL CObjectDeparserApp::InitInstance()
 		nullptr,
 		"Data\\INI\\Armor");
 
+	loadingDialog.setProgress(
+		76,
+		"Loading objects...");
+
 	initSubsystem(
 		TheThingFactory,
 		new ThingFactory(),
@@ -229,6 +302,10 @@ BOOL CObjectDeparserApp::InitInstance()
 		new CrateSystem(),
 		"Data\\INI\\Default\\Crate",
 		"Data\\INI\\Crate");
+
+	loadingDialog.setProgress(
+		88,
+		"Loading upgrades...");
 
 	initSubsystem(
 		TheUpgradeCenter,
@@ -244,14 +321,19 @@ BOOL CObjectDeparserApp::InitInstance()
 		TheAnim2DCollection,
 		new Anim2DCollection);
 
+	loadingDialog.setProgress(
+		94,
+		"Resolving INI references...");
+
 	TheSubsystemListRecord.postProcessLoadAll();
 
 	updateObjectIniLoadTimestamp();
 
-	CWinApp::InitInstance();
+	loadingDialog.setProgress(
+		100,
+		"Loading complete.");
 
-	AfxEnableControlContainer();
-	AfxInitRichEdit2();
+	loadingDialog.DestroyWindow();
 
 	CObjectDeparserDialog dialog;
 	m_pMainWnd = &dialog;

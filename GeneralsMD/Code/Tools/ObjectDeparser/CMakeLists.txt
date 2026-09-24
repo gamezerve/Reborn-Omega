@@ -10,6 +10,8 @@ set(OBJECTDEPARSER_SRC
     "src/TextDiff.cpp"
     "include/ParsedDefinitionCatalog.h"
     "src/ParsedDefinitionCatalog.cpp"
+    "src/ObjectDeparserLoadingDialog.cpp"
+    "include/ObjectDeparserLoadingDialog.h"
 )
 
 add_executable(z_objectdeparser WIN32)

@@ -527,6 +527,19 @@ void CObjectDeparserDialog::OnDeparseNow()
 	output += loadTimeAnsi.GetString();
 	output += "\r\n";
 
+	std::string sourceFilename =
+		definition->filename.str();
+
+	std::replace(
+		sourceFilename.begin(),
+		sourceFilename.end(),
+		'\\',
+		'/');
+
+	output += "; Source: ";
+	output += sourceFilename;
+	output += "\r\n\r\n";
+
 	if (definition->blockType.compareNoCase("Object") == 0 ||
 		definition->blockType.compareNoCase("ObjectInherit") == 0 ||
 		definition->blockType.compareNoCase("ObjectReskin") == 0)
@@ -559,6 +572,21 @@ void CObjectDeparserDialog::OnDeparseNow()
 	m_transferButton.EnableWindow(TRUE);
 
 	updateCompareButtonState();
+}
+
+void CObjectDeparserDialog::OnOK()
+{
+}
+
+void CObjectDeparserDialog::OnCancel()
+{
+	const int result = MessageBox(
+		"Are you sure you want to exit?",
+		"Reborn Omega INI Deparser",
+		MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2);
+
+	if (result == IDYES)
+		CDialog::OnCancel();
 }
 
 void CObjectDeparserDialog::OnReloadINI()

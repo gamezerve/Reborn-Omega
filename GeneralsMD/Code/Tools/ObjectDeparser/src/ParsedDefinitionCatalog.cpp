@@ -48,8 +48,14 @@ void ParsedDefinitionCatalog::add(
 	UnsignedInt line,
 	INILoadType loadType)
 {
-	const AsciiString name = getDefinitionName(declaration);
-	const AsciiString family = getDefinitionFamily(blockType);
+	AsciiString normalizedDeclaration = declaration;
+	normalizedDeclaration.trim();
+
+	const AsciiString name =
+		getDefinitionName(normalizedDeclaration);
+
+	const AsciiString family =
+		getDefinitionFamily(blockType);
 
 	if (!name.isEmpty())
 	{
@@ -58,6 +64,9 @@ void ParsedDefinitionCatalog::add(
 			if (getDefinitionFamily(definition.blockType).compareNoCase(family) == 0 &&
 				definition.name.compareNoCase(name) == 0)
 			{
+				definition.declaration = normalizedDeclaration;
+				definition.blockType = blockType;
+				definition.name = name;
 				definition.filename = filename;
 				definition.line = line;
 				definition.loadType = loadType;
@@ -67,7 +76,7 @@ void ParsedDefinitionCatalog::add(
 	}
 
 	ParsedDefinition definition;
-	definition.declaration = declaration;
+	definition.declaration = normalizedDeclaration;
 	definition.blockType = blockType;
 	definition.name = name;
 	definition.filename = filename;
