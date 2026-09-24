@@ -8,6 +8,7 @@ if(RTS_BUILD_ZEROHOUR_TOOLS)
     add_subdirectory(W3DView)
     add_subdirectory(wdump)
     add_subdirectory(WorldBuilder)
+    add_subdirectory(ObjectDeparser)
 endif()
 
 # Build less useful tool/test binaries.

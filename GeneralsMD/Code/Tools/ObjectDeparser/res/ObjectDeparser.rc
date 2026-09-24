@@ -1,0 +1,30 @@
+///////////////////////////////////////////////////////////////////////////////////////
+// FILE: ObjectDeparser.rc
+// Author: Gamezerve, September 2026
+// Description: 
+///////////////////////////////////////////////////////////////////////////////////////
+
+#include "resource.h"
+#include "afxres.h"
+
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+IDD_OBJECT_DEPARSER_DIALOG DIALOGEX 0, 0, 900, 560
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX
+EXSTYLE WS_EX_APPWINDOW
+CAPTION "Reborn Omega Object Deparser"
+FONT 9, "Segoe UI"
+BEGIN
+LTEXT           "Search:", IDC_STATIC_SEARCH, 8, 10, 36, 10
+EDITTEXT        IDC_SEARCH_EDIT, 48, 7, 738, 15, ES_AUTOHSCROLL
+PUSHBUTTON      "Deparse Now", IDC_DEPARSE_NOW, 792, 6, 98, 17
+
+LTEXT           "Objects", IDC_STATIC_OBJECTS, 8, 31, 100, 10
+LTEXT           "Deparsed Object", IDC_STATIC_OUTPUT, 250, 31, 120, 10
+
+LISTBOX         IDC_RESULTS_LIST, 8, 43, 232, 493, LBS_NOTIFY | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+
+EDITTEXT        IDC_OUTPUT_EDIT, 250, 43, 640, 493, ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL
+
+LTEXT           "0 objects", IDC_OBJECT_COUNT, 8, 543, 232, 10
+END

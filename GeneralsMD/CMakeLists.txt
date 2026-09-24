@@ -66,6 +66,11 @@ if(RTS_INSTALL_PREFIX_ZEROHOUR)
         install(FILES $<TARGET_PDB_FILE:z_worldbuilder> DESTINATION "${RTS_INSTALL_PREFIX_ZEROHOUR}" OPTIONAL)
     endif()
 
+    if(TARGET z_objectdeparser)
+        install(TARGETS z_objectdeparser RUNTIME DESTINATION "${RTS_INSTALL_PREFIX_ZEROHOUR}")
+        install(FILES $<TARGET_PDB_FILE:z_objectdeparser> DESTINATION "${RTS_INSTALL_PREFIX_ZEROHOUR}" OPTIONAL)
+    endif()
+
     if(TARGET core_particleeditor)
         install(TARGETS core_particleeditor RUNTIME DESTINATION "${RTS_INSTALL_PREFIX_ZEROHOUR}")
         install(FILES $<TARGET_PDB_FILE:core_particleeditor> DESTINATION "${RTS_INSTALL_PREFIX_ZEROHOUR}" OPTIONAL)
