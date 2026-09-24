@@ -248,6 +248,51 @@ void ThingFactory::reset()
 	m_nextTemplateID = static_cast<UnsignedShort>(m_firstTemplate->getTemplateID() + 1);
 }
 
+void ThingFactory::reloadFromINI(
+	const AsciiString& defaultObjectPath,
+	const AsciiString& objectPath,
+	ThingFactoryReloadProgressProc progressProc,
+	void* userData)
+{
+	if (progressProc)
+		progressProc(5, "Clearing object database...", userData);
+
+	freeDatabase();
+	m_nextTemplateID = 1;
+
+	INI ini;
+
+	if (!defaultObjectPath.isEmpty())
+	{
+		if (progressProc)
+			progressProc(15, "Loading Default Object INI...", userData);
+
+		ini.loadFileDirectory(
+			defaultObjectPath,
+			INI_LOAD_OVERWRITE,
+			nullptr);
+	}
+
+	if (!objectPath.isEmpty())
+	{
+		if (progressProc)
+			progressProc(40, "Loading Object INI...", userData);
+
+		ini.loadFileDirectory(
+			objectPath,
+			INI_LOAD_OVERWRITE,
+			nullptr);
+	}
+
+	if (progressProc)
+		progressProc(85, "Resolving object database...", userData);
+
+	postProcessLoad();
+
+	if (progressProc)
+		progressProc(100, "Reload complete.", userData);
+}
+
 //-------------------------------------------------------------------------------------------------
 /** Update */
 //-------------------------------------------------------------------------------------------------

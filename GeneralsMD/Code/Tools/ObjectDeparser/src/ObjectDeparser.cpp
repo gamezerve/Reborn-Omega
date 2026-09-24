@@ -228,6 +228,8 @@ BOOL CObjectDeparserApp::InitInstance()
 
 	TheSubsystemListRecord.postProcessLoadAll();
 
+	updateObjectIniLoadTimestamp();
+
 	CWinApp::InitInstance();
 
 	AfxEnableControlContainer();
@@ -238,6 +240,43 @@ BOOL CObjectDeparserApp::InitInstance()
 	dialog.DoModal();
 
 	return FALSE;
+}
+
+Bool CObjectDeparserApp::reloadObjectDatabase(
+	ObjectReloadProgressProc progressProc,
+	void* userData)
+{
+	if (!TheThingFactory)
+		return FALSE;
+
+	try
+	{
+		TheThingFactory->reloadFromINI(
+			"Data\\INI\\Default\\Object",
+			"Data\\INI\\Object",
+			progressProc,
+			userData);
+
+		updateObjectIniLoadTimestamp();
+
+		return TRUE;
+	}
+	catch (...)
+	{
+		if (progressProc)
+			progressProc(
+				0,
+				"Reload failed.",
+				userData);
+
+		return FALSE;
+	}
+}
+
+void CObjectDeparserApp::updateObjectIniLoadTimestamp()
+{
+	m_lastObjectIniLoadTime =
+		CTime::GetCurrentTime().Format("%Y-%m-%d %H:%M:%S");
 }
 
 int CObjectDeparserApp::ExitInstance()

@@ -28,6 +28,8 @@ protected:
 	afx_msg void OnSelectionChanged();
 	afx_msg void OnResultDoubleClicked();
 	afx_msg void OnDeparseNow();
+	afx_msg void OnTransfer();
+	afx_msg void OnReloadINI();
 
 	DECLARE_MESSAGE_MAP()
 
@@ -35,12 +37,20 @@ private:
 	void layoutControls();
 	void buildTemplateList();
 	void refreshTemplateList();
+	void selectTemplateByName(const CString& name);
+	static void reloadProgressCallback(Int progress, const char* status, void* userData);
+	void updateReloadProgress(Int progress, const char* status);
 
 	CEdit m_searchEdit;
 	CListBox m_resultsList;
 	CButton m_deparseButton;
+	CButton m_transferButton;
+	CButton m_reloadButton;
 	CEdit m_outputEdit;
+	CEdit m_workEdit;
 	CStatic m_objectCount;
+	CProgressCtrl m_reloadProgress;
+	CStatic m_reloadStatus;
 
 	CFont m_outputFont;
 

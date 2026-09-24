@@ -68,6 +68,7 @@ class INI;
 
 typedef std::hash_map<AsciiString, ThingTemplate*, rts::hash<AsciiString>, rts::equal_to<AsciiString>/**/> ThingTemplateHashMap;
 typedef ThingTemplateHashMap::iterator ThingTemplateHashMapIt;
+typedef void (*ThingFactoryReloadProgressProc)(Int progress, const char* status, void* userData);
 //-------------------------------------------------------------------------------------------------
 /** Implementation of the thing manager interface singleton */
 //-------------------------------------------------------------------------------------------------
@@ -114,6 +115,8 @@ public:
 	Drawable *newDrawable(const ThingTemplate *tmplate, DrawableStatusBits statusBits = DRAWABLE_STATUS_DEFAULT );
 
 	static void parseObjectDefinition(INI* ini, const AsciiString& name, const AsciiString& inheritFrom, Bool reskinOnly);
+
+	void reloadFromINI(const AsciiString& defaultObjectPath, const AsciiString& objectPath, ThingFactoryReloadProgressProc progressProc = nullptr, void* userData = nullptr);
 
 private:
 
