@@ -25,6 +25,13 @@ target_precompile_headers(z_objectdeparser PRIVATE
 
 target_link_libraries(z_objectdeparser PRIVATE
     comctl32
+    d3d8lib
+    imm32
+    vfw32
+    winmm
+    core_browserdispatch
+    z_gameengine
+    z_gameenginedevice
     zi_always
 )
 
@@ -39,6 +46,22 @@ if(WIN32 OR "${CMAKE_SYSTEM}" MATCHES "Windows")
     target_sources(z_objectdeparser PRIVATE
         res/ObjectDeparser.rc
     )
+
+    
+
+    if(MSVC AND RTS_BUILD_OPTION_REBORN)
+    target_link_options(z_objectdeparser PRIVATE
+        "/DELAYLOAD:GameNetworkingSockets.dll"
+        "/DELAYLOAD:libcurl.dll"
+    )
+
+    target_link_libraries(z_objectdeparser PRIVATE delayimp)
+
+    target_sources(z_objectdeparser PRIVATE
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../Main/RebornOmegaDllLoad.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/../../Main/RebornOmegaDllLoad.h"
+    )
+    endif()
 
     if(RTS_BUILD_OPTION_REBORN)
         set_target_properties(

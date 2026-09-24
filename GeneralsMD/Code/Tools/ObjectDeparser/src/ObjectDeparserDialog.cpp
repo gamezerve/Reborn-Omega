@@ -7,6 +7,9 @@
 #include "StdAfx.h"
 #include "ObjectDeparserDialog.h"
 
+#include "Common/ThingFactory.h"
+#include "Common/ThingTemplate.h"
+
 BEGIN_MESSAGE_MAP(CObjectDeparserDialog, CDialog)
 	ON_WM_SIZE()
 	ON_EN_CHANGE(IDC_SEARCH_EDIT, OnSearchChanged)
@@ -31,6 +34,70 @@ void CObjectDeparserDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_OBJECT_COUNT, m_objectCount);
 }
 
+void CObjectDeparserDialog::buildTemplateList()
+{
+	m_templates.clear();
+
+	if (!TheThingFactory)
+		return;
+
+	for (const ThingTemplate* thing = TheThingFactory->firstTemplate();
+		thing != nullptr;
+		thing = thing->friend_getNextTemplate())
+	{
+		m_templates.push_back(thing);
+	}
+
+	std::sort(
+		m_templates.begin(),
+		m_templates.end(),
+		[](const ThingTemplate* a, const ThingTemplate* b)
+		{
+			return _stricmp(
+				a->getName().str(),
+				b->getName().str()) < 0;
+		});
+}
+
+void CObjectDeparserDialog::refreshTemplateList()
+{
+	CString filter;
+	m_searchEdit.GetWindowText(filter);
+	filter.MakeLower();
+
+	m_resultsList.SetRedraw(FALSE);
+	m_resultsList.ResetContent();
+
+	for (const ThingTemplate* thing : m_templates)
+	{
+		CString name(thing->getName().str());
+		CString lowerName(name);
+
+		lowerName.MakeLower();
+
+		if (!filter.IsEmpty() && lowerName.Find(filter) == -1)
+			continue;
+
+		const int index = m_resultsList.AddString(name);
+
+		m_resultsList.SetItemDataPtr(
+			index,
+			const_cast<ThingTemplate*>(thing));
+	}
+
+	CString countText;
+	countText.Format(
+		"%d objects",
+		m_resultsList.GetCount());
+
+	m_objectCount.SetWindowText(countText);
+
+	m_resultsList.SetRedraw(TRUE);
+	m_resultsList.Invalidate();
+
+	m_deparseButton.EnableWindow(FALSE);
+}
+
 BOOL CObjectDeparserDialog::OnInitDialog()
 {
 	CDialog::OnInitDialog();
@@ -41,10 +108,8 @@ BOOL CObjectDeparserDialog::OnInitDialog()
 	m_outputEdit.SetFont(&m_outputFont);
 	m_outputEdit.SetLimitText(0x7fffffff);
 
-	m_outputEdit.SetWindowText(
-		"Object database is not loaded yet.\r\n"
-		"\r\n"
-		"The UI is ready.");
+	buildTemplateList();
+	refreshTemplateList();
 
 	m_deparseButton.EnableWindow(FALSE);
 
@@ -143,6 +208,7 @@ void CObjectDeparserDialog::layoutControls()
 
 void CObjectDeparserDialog::OnSearchChanged()
 {
+	refreshTemplateList();
 }
 
 void CObjectDeparserDialog::OnSelectionChanged()

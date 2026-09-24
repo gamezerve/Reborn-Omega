@@ -8,6 +8,10 @@
 
 #include "resource.h"
 
+#include <vector>
+
+class ThingTemplate;
+
 class CObjectDeparserDialog : public CDialog
 {
 public:
@@ -29,6 +33,8 @@ protected:
 
 private:
 	void layoutControls();
+	void buildTemplateList();
+	void refreshTemplateList();
 
 	CEdit m_searchEdit;
 	CListBox m_resultsList;
@@ -37,4 +43,6 @@ private:
 	CStatic m_objectCount;
 
 	CFont m_outputFont;
+
+	std::vector<const ThingTemplate*> m_templates;
 };
