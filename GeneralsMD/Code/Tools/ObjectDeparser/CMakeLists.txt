@@ -8,6 +8,8 @@ set(OBJECTDEPARSER_SRC
     "include/resource.h"
     "include/TextDiff.h"
     "src/TextDiff.cpp"
+    "include/ParsedDefinitionCatalog.h"
+    "src/ParsedDefinitionCatalog.cpp"
 )
 
 add_executable(z_objectdeparser WIN32)

@@ -154,7 +154,7 @@ public:
 //-------------------------------------------------------------------------------------------------
 typedef void (*INIBlockParse)( INI *ini );
 typedef void (*BuildMultiIniFieldProc)(MultiIniFieldParse& p);
-
+typedef void (*INIBlockParsedProc)(const AsciiString& declaration, const AsciiString& blockType,const AsciiString& filename, UnsignedInt line, INILoadType loadType, void* userData);
 //-------------------------------------------------------------------------------------------------
 /** INI Reader interface */
 //-------------------------------------------------------------------------------------------------
@@ -395,6 +395,8 @@ public:
 	static Int scanLookupList(const char* token, ConstLookupListRecArray lookupList);
 
 	static Bool scanBool(const char* token);
+
+	static void setBlockParsedProc(INIBlockParsedProc proc, void* userData);
 
 protected:
 

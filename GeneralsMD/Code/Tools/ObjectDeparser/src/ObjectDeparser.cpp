@@ -27,7 +27,9 @@
 #include "Common/Upgrade.h"
 
 #include "GameClient/Anim2D.h"
+#include "GameClient/ControlBar.h"
 #include "GameClient/FXList.h"
+#include "GameClient/Image.h"
 #include "GameClient/ParticleSys.h"
 #include "GameClient/GameText.h"
 
@@ -95,6 +97,12 @@ BOOL CObjectDeparserApp::InitInstance()
 
 	initMemoryManager();
 
+	m_definitionCatalog.clear();
+
+	INI::setBlockParsedProc(
+		&ParsedDefinitionCatalog::capture,
+		&m_definitionCatalog);
+
 	TheNameKeyGenerator = new NameKeyGenerator;
 	TheNameKeyGenerator->init();
 
@@ -121,6 +129,12 @@ BOOL CObjectDeparserApp::InitInstance()
 	initSubsystem(
 		TheGameText,
 		CreateGameTextInterface());
+
+	initSubsystem(
+		TheMappedImageCollection,
+		new ImageCollection());
+
+	TheMappedImageCollection->load(512);
 
 	initSubsystem(
 		TheScienceStore,
@@ -223,6 +237,10 @@ BOOL CObjectDeparserApp::InitInstance()
 		"Data\\INI\\Upgrade");
 
 	initSubsystem(
+		TheControlBar,
+		new ControlBar());
+
+	initSubsystem(
 		TheAnim2DCollection,
 		new Anim2DCollection);
 
@@ -282,6 +300,9 @@ void CObjectDeparserApp::updateObjectIniLoadTimestamp()
 
 int CObjectDeparserApp::ExitInstance()
 {
+
+	INI::setBlockParsedProc(nullptr, nullptr);
+
 	TheSubsystemListRecord.shutdownAll();
 
 	delete TheFileSystem;

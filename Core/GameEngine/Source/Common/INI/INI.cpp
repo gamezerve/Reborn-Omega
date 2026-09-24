@@ -77,6 +77,8 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 static Xfer *s_xfer = nullptr;
+static INIBlockParsedProc s_blockParsedProc = nullptr;
+static void* s_blockParsedUserData = nullptr;
 
 //-------------------------------------------------------------------------------------------------
 /** This is the table of data types we can have in INI files.  To add a new data type
@@ -166,6 +168,12 @@ Bool INI::isValidINIFilename( const char *filename )
 		return FALSE;
 
 	return endsWithNoCase(filename, ".ini");
+}
+
+void INI::setBlockParsedProc(INIBlockParsedProc proc, void* userData)
+{
+	s_blockParsedProc = proc;
+	s_blockParsedUserData = userData;
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -421,9 +429,12 @@ UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 			AsciiString currentLine = m_buffer;
 
 			// the first word is the type of data we're processing
-			const char *token = strtok( m_buffer, getSeps() );
-			if( token )
+			const char* token = strtok(m_buffer, getSeps());
+			if (token)
 			{
+				const AsciiString blockType = token;
+				const UnsignedInt declarationLine = getLineNum();
+
 				INIBlockParse parse = findBlockParse(token);
 				if (parse)
 				{
@@ -433,6 +444,17 @@ UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 					#endif
 					try {
 						(*parse)( this );
+
+						if (s_blockParsedProc)
+						{
+							s_blockParsedProc(
+								currentLine,
+								blockType,
+								m_filename,
+								declarationLine,
+								m_loadType,
+								s_blockParsedUserData);
+						}
 
 					} catch (...) {
 						DEBUG_CRASH(("Error parsing block '%s' in INI file '%s'", token, m_filename.str()) );

@@ -7,10 +7,9 @@
 #pragma once
 
 #include "resource.h"
+#include "ParsedDefinitionCatalog.h"
 
 #include <vector>
-
-class ThingTemplate;
 
 class CObjectDeparserDialog : public CDialog
 {
@@ -37,9 +36,9 @@ protected:
 
 private:
 	void layoutControls();
-	void buildTemplateList();
-	void refreshTemplateList();
-	void selectTemplateByName(const CString& name);
+	void buildDefinitionList();
+	void refreshDefinitionList();
+	void selectDefinitionByDeclaration(const CString& declaration);
 	static void reloadProgressCallback(Int progress, const char* status, void* userData);
 	void updateReloadProgress(Int progress, const char* status);
 	void clearCompareHighlight();
@@ -60,5 +59,5 @@ private:
 
 	CFont m_outputFont;
 
-	std::vector<const ThingTemplate*> m_templates;
+	std::vector<const ParsedDefinition*> m_definitions;
 };

@@ -11,8 +11,10 @@
 #endif
 
 #include "resource.h"
+#include "ParsedDefinitionCatalog.h"
 
 typedef void (*ObjectReloadProgressProc)(Int progress, const char* status, void* userData);
+
 class CObjectDeparserApp : public CWinApp
 {
 public:
@@ -28,12 +30,23 @@ public:
 		return m_lastObjectIniLoadTime;
 	}
 
+	ParsedDefinitionCatalog& getDefinitionCatalog()
+	{
+		return m_definitionCatalog;
+	}
+
+	const ParsedDefinitionCatalog& getDefinitionCatalog() const
+	{
+		return m_definitionCatalog;
+	}
+
 	DECLARE_MESSAGE_MAP()
 
 private:
 	void updateObjectIniLoadTimestamp();
 
 	CString m_lastObjectIniLoadTime;
+	ParsedDefinitionCatalog m_definitionCatalog;
 };
 
 inline CObjectDeparserApp* ObjectDeparserApp()

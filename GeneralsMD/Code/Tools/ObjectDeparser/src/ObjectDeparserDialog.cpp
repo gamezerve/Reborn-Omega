@@ -47,32 +47,28 @@ void CObjectDeparserDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMPARE, m_compareButton);
 }
 
-void CObjectDeparserDialog::buildTemplateList()
+void CObjectDeparserDialog::buildDefinitionList()
 {
-	m_templates.clear();
+	m_definitions.clear();
 
-	if (!TheThingFactory)
-		return;
+	const std::vector<ParsedDefinition>& definitions =
+		ObjectDeparserApp()->getDefinitionCatalog().getDefinitions();
 
-	for (const ThingTemplate* thing = TheThingFactory->firstTemplate();
-		thing != nullptr;
-		thing = thing->friend_getNextTemplate())
-	{
-		m_templates.push_back(thing);
-	}
+	for (const ParsedDefinition& definition : definitions)
+		m_definitions.push_back(&definition);
 
 	std::sort(
-		m_templates.begin(),
-		m_templates.end(),
-		[](const ThingTemplate* a, const ThingTemplate* b)
+		m_definitions.begin(),
+		m_definitions.end(),
+		[](const ParsedDefinition* a, const ParsedDefinition* b)
 		{
 			return _stricmp(
-				a->getName().str(),
-				b->getName().str()) < 0;
+				a->declaration.str(),
+				b->declaration.str()) < 0;
 		});
 }
 
-void CObjectDeparserDialog::refreshTemplateList()
+void CObjectDeparserDialog::refreshDefinitionList()
 {
 	CString filter;
 	m_searchEdit.GetWindowText(filter);
@@ -81,26 +77,30 @@ void CObjectDeparserDialog::refreshTemplateList()
 	m_resultsList.SetRedraw(FALSE);
 	m_resultsList.ResetContent();
 
-	for (const ThingTemplate* thing : m_templates)
+	for (const ParsedDefinition* definition : m_definitions)
 	{
-		CString name(thing->getName().str());
-		CString lowerName(name);
+		CString declaration(definition->declaration.str());
+		CString lowerDeclaration(declaration);
 
-		lowerName.MakeLower();
+		lowerDeclaration.MakeLower();
 
-		if (!filter.IsEmpty() && lowerName.Find(filter) == -1)
+		if (!filter.IsEmpty() &&
+			lowerDeclaration.Find(filter) == -1)
+		{
 			continue;
+		}
 
-		const int index = m_resultsList.AddString(name);
+		const int index =
+			m_resultsList.AddString(declaration);
 
 		m_resultsList.SetItemDataPtr(
 			index,
-			const_cast<ThingTemplate*>(thing));
+			const_cast<ParsedDefinition*>(definition));
 	}
 
 	CString countText;
 	countText.Format(
-		"%d objects",
+		"%d definitions",
 		m_resultsList.GetCount());
 
 	m_objectCount.SetWindowText(countText);
@@ -117,7 +117,7 @@ BOOL CObjectDeparserDialog::OnInitDialog()
 
 	m_compareButton.EnableWindow(FALSE);
 
-	SetWindowText("Reborn Omega Object Deparser");
+	SetWindowText("Reborn Omega INI Deparser");
 
 	m_outputFont.CreatePointFont(95, "Consolas");
 
@@ -136,8 +136,8 @@ BOOL CObjectDeparserDialog::OnInitDialog()
 	m_reloadStatus.SetWindowText(
 		"Initial load complete.");
 
-	buildTemplateList();
-	refreshTemplateList();
+	buildDefinitionList();
+	refreshDefinitionList();
 
 	m_deparseButton.EnableWindow(FALSE);
 
@@ -486,7 +486,7 @@ void CObjectDeparserDialog::OnTransfer()
 
 void CObjectDeparserDialog::OnSearchChanged()
 {
-	refreshTemplateList();
+	refreshDefinitionList();
 }
 
 void CObjectDeparserDialog::OnSelectionChanged()
@@ -509,11 +509,11 @@ void CObjectDeparserDialog::OnDeparseNow()
 	if (index == LB_ERR)
 		return;
 
-	const ThingTemplate* thing =
-		static_cast<const ThingTemplate*>(
+	const ParsedDefinition* definition =
+		static_cast<const ParsedDefinition*>(
 			m_resultsList.GetItemDataPtr(index));
 
-	if (!thing)
+	if (!definition)
 		return;
 
 	std::string output;
@@ -523,17 +523,38 @@ void CObjectDeparserDialog::OnDeparseNow()
 
 	CStringA loadTimeAnsi(loadTime);
 
-	output += "; Object INI Load Completed: ";
+	output += "; INI Load Completed: ";
 	output += loadTimeAnsi.GetString();
 	output += "\r\n";
 
-	output +=
-		ThingTemplateDeparser::deparse(thing);
+	if (definition->blockType.compareNoCase("Object") == 0 ||
+		definition->blockType.compareNoCase("ObjectInherit") == 0 ||
+		definition->blockType.compareNoCase("ObjectReskin") == 0)
+	{
+		const ThingTemplate* thing =
+			TheThingFactory->findTemplate(
+				definition->name,
+				FALSE);
 
-	m_outputEdit.SetWindowText(
-		output.c_str());
+		if (thing)
+		{
+			output += ThingTemplateDeparser::deparse(thing);
+		}
+		else
+		{
+			output += definition->declaration.str();
+			output += "\r\n\r\n";
+			output += "; ThingTemplate was not found.\r\n";
+		}
+	}
+	else
+	{
+		output += definition->declaration.str();
+		output += "\r\n\r\n";
+		output += "; Deparser for this definition type is not implemented yet.\r\n";
+	}
 
-	m_transferButton.EnableWindow(TRUE);
+	m_outputEdit.SetWindowText(output.c_str());
 
 	m_transferButton.EnableWindow(TRUE);
 
@@ -565,8 +586,8 @@ void CObjectDeparserDialog::OnReloadINI()
 			&CObjectDeparserDialog::reloadProgressCallback,
 			this);
 
-	buildTemplateList();
-	refreshTemplateList();
+	buildDefinitionList();
+	refreshDefinitionList();
 
 	m_reloadButton.EnableWindow(TRUE);
 
@@ -581,17 +602,17 @@ void CObjectDeparserDialog::OnReloadINI()
 	}
 
 	if (!selectedName.IsEmpty())
-		selectTemplateByName(selectedName);
+		selectDefinitionByDeclaration(selectedName);
 }
 
-void CObjectDeparserDialog::selectTemplateByName(const CString& name)
+void CObjectDeparserDialog::selectDefinitionByDeclaration(const CString& declaration)
 {
 	for (int i = 0; i < m_resultsList.GetCount(); ++i)
 	{
-		CString currentName;
-		m_resultsList.GetText(i, currentName);
+		CString currentDeclaration;
+		m_resultsList.GetText(i, currentDeclaration);
 
-		if (currentName.CompareNoCase(name) != 0)
+		if (currentDeclaration.CompareNoCase(declaration) != 0)
 			continue;
 
 		m_resultsList.SetCurSel(i);
