@@ -15,6 +15,13 @@
 
 BEGIN_MESSAGE_MAP(CObjectDeparserDialog, CDialog)
 	ON_WM_SIZE()
+	ON_WM_LBUTTONDOWN()
+	ON_WM_LBUTTONUP()
+	ON_WM_MOUSEMOVE()
+	ON_WM_SETCURSOR()
+	ON_WM_PAINT()
+	ON_WM_DRAWITEM()
+	ON_WM_MEASUREITEM()
 	ON_EN_CHANGE(IDC_SEARCH_EDIT, OnSearchChanged)
 	ON_LBN_SELCHANGE(IDC_RESULTS_LIST, OnSelectionChanged)
 	ON_LBN_DBLCLK(IDC_RESULTS_LIST, OnResultDoubleClicked)
@@ -26,7 +33,11 @@ BEGIN_MESSAGE_MAP(CObjectDeparserDialog, CDialog)
 END_MESSAGE_MAP()
 
 CObjectDeparserDialog::CObjectDeparserDialog(CWnd* parent)
-	: CDialog(IDD_OBJECT_DEPARSER_DIALOG, parent)
+	: CDialog(IDD_OBJECT_DEPARSER_DIALOG, parent),
+	m_draggingSplitter(FALSE),
+	m_activeSplitter(0),
+	m_firstSplitterRatio(0.20),
+	m_secondSplitterRatio(0.60)
 {
 }
 
@@ -45,6 +56,94 @@ void CObjectDeparserDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_RELOAD_PROGRESS, m_reloadProgress);
 	DDX_Control(pDX, IDC_RELOAD_STATUS, m_reloadStatus);
 	DDX_Control(pDX, IDC_COMPARE, m_compareButton);
+}
+
+void CObjectDeparserDialog::calculatePaneGeometry(
+	CRect& leftPane,
+	CRect& firstSplitter,
+	CRect& middlePane,
+	CRect& secondSplitter,
+	CRect& rightPane) const
+{
+	CRect client;
+	GetClientRect(&client);
+
+	const int margin = 10;
+	const int gap = 10;
+	const int searchHeight = 24;
+	const int labelHeight = 18;
+	const int statusHeight = 20;
+	const int splitterWidth = 6;
+	const int minPaneWidth = 160;
+
+	const int panelLabelTop =
+		margin + searchHeight + gap;
+
+	const int panelTop =
+		panelLabelTop + labelHeight;
+
+	const int panelBottom =
+		client.Height() - margin - statusHeight;
+
+	const int contentLeft = margin;
+	const int contentRight = client.Width() - margin;
+	const int contentWidth = max(1, contentRight - contentLeft);
+
+	int firstX =
+		contentLeft +
+		static_cast<int>(
+			contentWidth * m_firstSplitterRatio);
+
+	int secondX =
+		contentLeft +
+		static_cast<int>(
+			contentWidth * m_secondSplitterRatio);
+
+	firstX = max(
+		contentLeft + minPaneWidth,
+		min(
+			firstX,
+			contentRight -
+			minPaneWidth * 2 -
+			splitterWidth * 2));
+
+	secondX = max(
+		firstX + splitterWidth + minPaneWidth,
+		min(
+			secondX,
+			contentRight -
+			minPaneWidth -
+			splitterWidth));
+
+	leftPane.SetRect(
+		contentLeft,
+		panelTop,
+		firstX,
+		panelBottom);
+
+	firstSplitter.SetRect(
+		firstX,
+		panelLabelTop,
+		firstX + splitterWidth,
+		panelBottom);
+
+	middlePane.SetRect(
+		firstX + splitterWidth,
+		panelTop,
+		secondX,
+		panelBottom);
+
+	secondSplitter.SetRect(
+		secondX,
+		panelLabelTop,
+		secondX + splitterWidth,
+		panelBottom);
+
+	rightPane.SetRect(
+		secondX + splitterWidth,
+		panelTop,
+		contentRight,
+		panelBottom);
 }
 
 void CObjectDeparserDialog::buildDefinitionList()
@@ -143,7 +242,14 @@ BOOL CObjectDeparserDialog::OnInitDialog()
 
 	layoutControls();
 
-	return TRUE;
+	ShowWindow(SW_RESTORE);
+	BringWindowToTop();
+	SetActiveWindow();
+	::SetForegroundWindow(GetSafeHwnd());
+
+	m_searchEdit.SetFocus();
+
+	return FALSE;
 }
 
 void CObjectDeparserDialog::OnSize(UINT nType, int cx, int cy)
@@ -264,80 +370,80 @@ void CObjectDeparserDialog::layoutControls()
 
 	const int panelLabelTop =
 		searchTop + searchHeight + gap;
-
-	const int panelTop =
-		panelLabelTop + labelHeight;
-
+	
 	const int panelBottom =
 		client.Height() - margin - statusHeight;
 
-	const int panelHeight =
-		max(50, panelBottom - panelTop);
+	CRect leftPane;
+	CRect firstSplitter;
+	CRect middlePane;
+	CRect secondSplitter;
+	CRect rightPane;
 
-	const int leftWidth =
-		max(180, client.Width() / 5);
-
-	const int availableWidth =
-		client.Width() -
-		margin * 2 -
-		gap * 2 -
-		leftWidth;
-
-	const int middleWidth =
-		availableWidth / 2;
-
-	const int rightWidth =
-		availableWidth - middleWidth;
-
-	const int middleX =
-		margin + leftWidth + gap;
-
-	const int rightX =
-		middleX + middleWidth + gap;
+	calculatePaneGeometry(
+		leftPane,
+		firstSplitter,
+		middlePane,
+		secondSplitter,
+		rightPane);
 
 	if (objectsLabel)
-		objectsLabel->MoveWindow(
-			margin,
+	{
+		objectsLabel->SetWindowPos(
+			&wndTop,
+			leftPane.left + 2,
 			panelLabelTop,
-			leftWidth,
-			labelHeight);
+			max(1, leftPane.Width() - 4),
+			labelHeight,
+			SWP_SHOWWINDOW);
+	}
 
 	if (outputLabel)
-		outputLabel->MoveWindow(
-			middleX,
+	{
+		outputLabel->SetWindowPos(
+			&wndTop,
+			middlePane.left + 2,
 			panelLabelTop,
-			middleWidth,
-			labelHeight);
+			max(1, middlePane.Width() - 4),
+			labelHeight,
+			SWP_SHOWWINDOW);
+	}
 
 	if (workLabel)
-		workLabel->MoveWindow(
-			rightX,
+	{
+		workLabel->SetWindowText("Working Copy");
+
+		workLabel->SetWindowPos(
+			&wndTop,
+			rightPane.left + 2,
 			panelLabelTop,
-			rightWidth,
-			labelHeight);
+			max(1, rightPane.Width() - 4),
+			labelHeight,
+			SWP_SHOWWINDOW);
+	}
 
 	m_resultsList.MoveWindow(
-		margin,
-		panelTop,
-		leftWidth,
-		panelHeight);
+		leftPane.left,
+		leftPane.top,
+		leftPane.Width(),
+		leftPane.Height());
 
 	m_outputEdit.MoveWindow(
-		middleX,
-		panelTop,
-		middleWidth,
-		panelHeight);
+		middlePane.left,
+		middlePane.top,
+		middlePane.Width(),
+		middlePane.Height());
 
 	m_workEdit.MoveWindow(
-		rightX,
-		panelTop,
-		rightWidth,
-		panelHeight);
+		rightPane.left,
+		rightPane.top,
+		rightPane.Width(),
+		rightPane.Height());
 
 	m_objectCount.MoveWindow(
-		margin,
+		leftPane.left,
 		panelBottom + 4,
-		leftWidth,
+		leftPane.Width(),
 		statusHeight);
 
 	const int footerY =
@@ -346,19 +452,245 @@ void CObjectDeparserDialog::layoutControls()
 	const int reloadStatusWidth = 180;
 
 	m_reloadProgress.MoveWindow(
-		middleX,
+		middlePane.left,
 		footerY,
-		middleWidth + gap + rightWidth -
-		reloadStatusWidth - gap,
+		rightPane.right -
+		middlePane.left -
+		reloadStatusWidth -
+		gap,
 		16);
 
 	m_reloadStatus.MoveWindow(
-		client.Width() -
-		margin -
+		rightPane.right -
 		reloadStatusWidth,
 		footerY,
 		reloadStatusWidth,
 		16);
+}
+
+void CObjectDeparserDialog::OnLButtonDown(
+	UINT nFlags,
+	CPoint point)
+{
+	CRect leftPane;
+	CRect firstSplitter;
+	CRect middlePane;
+	CRect secondSplitter;
+	CRect rightPane;
+
+	calculatePaneGeometry(
+		leftPane,
+		firstSplitter,
+		middlePane,
+		secondSplitter,
+		rightPane);
+
+	if (firstSplitter.PtInRect(point))
+	{
+		m_draggingSplitter = TRUE;
+		m_activeSplitter = 1;
+		SetCapture();
+		return;
+	}
+
+	if (secondSplitter.PtInRect(point))
+	{
+		m_draggingSplitter = TRUE;
+		m_activeSplitter = 2;
+		SetCapture();
+		return;
+	}
+
+	CDialog::OnLButtonDown(
+		nFlags,
+		point);
+}
+
+void CObjectDeparserDialog::OnLButtonUp(
+	UINT nFlags,
+	CPoint point)
+{
+	if (m_draggingSplitter)
+	{
+		m_draggingSplitter = FALSE;
+		m_activeSplitter = 0;
+
+		if (GetCapture() == this)
+			ReleaseCapture();
+
+		return;
+	}
+
+	CDialog::OnLButtonUp(
+		nFlags,
+		point);
+}
+
+void CObjectDeparserDialog::OnMouseMove(
+	UINT nFlags,
+	CPoint point)
+{
+	if (!m_draggingSplitter)
+	{
+		CDialog::OnMouseMove(
+			nFlags,
+			point);
+
+		return;
+	}
+
+	CRect client;
+	GetClientRect(&client);
+
+	const int margin = 10;
+	const int splitterWidth = 6;
+	const int minPaneWidth = 160;
+
+	const int contentLeft = margin;
+	const int contentRight =
+		client.Width() - margin;
+
+	const int contentWidth =
+		max(
+			1,
+			contentRight - contentLeft);
+
+	CRect leftPane;
+	CRect firstSplitter;
+	CRect middlePane;
+	CRect secondSplitter;
+	CRect rightPane;
+
+	calculatePaneGeometry(
+		leftPane,
+		firstSplitter,
+		middlePane,
+		secondSplitter,
+		rightPane);
+
+	if (m_activeSplitter == 1)
+	{
+		const int minimumX =
+			contentLeft + minPaneWidth;
+
+		const int maximumX =
+			secondSplitter.left -
+			splitterWidth -
+			minPaneWidth;
+
+		const int pointX = static_cast<int>(point.x);
+
+		const int newX =
+			pointX < minimumX
+			? minimumX
+			: pointX > maximumX
+			? maximumX
+			: pointX;
+
+		m_firstSplitterRatio =
+			static_cast<double>(
+				newX - contentLeft) /
+			static_cast<double>(
+				contentWidth);
+	}
+	else if (m_activeSplitter == 2)
+	{
+		const int minimumX =
+			firstSplitter.right +
+			minPaneWidth;
+
+		const int maximumX =
+			contentRight -
+			splitterWidth -
+			minPaneWidth;
+
+		const int pointX = static_cast<int>(point.x);
+
+		const int newX =
+			pointX < minimumX
+			? minimumX
+			: pointX > maximumX
+			? maximumX
+			: pointX;
+
+		m_secondSplitterRatio =
+			static_cast<double>(
+				newX - contentLeft) /
+			static_cast<double>(
+				contentWidth);
+	}
+
+	layoutControls();
+
+	Invalidate(FALSE);
+	UpdateWindow();
+}
+
+BOOL CObjectDeparserDialog::OnSetCursor(
+	CWnd* pWnd,
+	UINT nHitTest,
+	UINT message)
+{
+	CPoint point;
+	GetCursorPos(&point);
+	ScreenToClient(&point);
+
+	CRect leftPane;
+	CRect firstSplitter;
+	CRect middlePane;
+	CRect secondSplitter;
+	CRect rightPane;
+
+	calculatePaneGeometry(
+		leftPane,
+		firstSplitter,
+		middlePane,
+		secondSplitter,
+		rightPane);
+
+	if (m_draggingSplitter ||
+		firstSplitter.PtInRect(point) ||
+		secondSplitter.PtInRect(point))
+	{
+		::SetCursor(
+			AfxGetApp()->LoadStandardCursor(
+				IDC_SIZEWE));
+
+		return TRUE;
+	}
+
+	return CDialog::OnSetCursor(
+		pWnd,
+		nHitTest,
+		message);
+}
+
+void CObjectDeparserDialog::OnPaint()
+{
+	CDialog::OnPaint();
+
+	CRect leftPane;
+	CRect firstSplitter;
+	CRect middlePane;
+	CRect secondSplitter;
+	CRect rightPane;
+
+	calculatePaneGeometry(
+		leftPane,
+		firstSplitter,
+		middlePane,
+		secondSplitter,
+		rightPane);
+
+	CClientDC dc(this);
+
+	dc.FillSolidRect(
+		firstSplitter,
+		GetSysColor(COLOR_3DSHADOW));
+
+	dc.FillSolidRect(
+		secondSplitter,
+		GetSysColor(COLOR_3DSHADOW));
 }
 
 void CObjectDeparserDialog::clearCompareHighlight()
@@ -500,6 +832,116 @@ void CObjectDeparserDialog::OnResultDoubleClicked()
 	OnDeparseNow();
 }
 
+Bool CObjectDeparserDialog::isDefinitionImplemented(
+	const ParsedDefinition* definition) const
+{
+	if (!definition)
+		return FALSE;
+
+	return
+		definition->blockType.compareNoCase("Object") == 0 ||
+		definition->blockType.compareNoCase("ObjectInherit") == 0 ||
+		definition->blockType.compareNoCase("ObjectReskin") == 0;
+}
+
+void CObjectDeparserDialog::OnMeasureItem(
+	int nIDCtl,
+	LPMEASUREITEMSTRUCT lpMeasureItemStruct)
+{
+	if (nIDCtl == IDC_RESULTS_LIST)
+	{
+		lpMeasureItemStruct->itemHeight = 18;
+		return;
+	}
+
+	CDialog::OnMeasureItem(
+		nIDCtl,
+		lpMeasureItemStruct);
+}
+
+void CObjectDeparserDialog::OnDrawItem(
+	int nIDCtl,
+	LPDRAWITEMSTRUCT lpDrawItemStruct)
+{
+	if (nIDCtl != IDC_RESULTS_LIST)
+	{
+		CDialog::OnDrawItem(
+			nIDCtl,
+			lpDrawItemStruct);
+
+		return;
+	}
+
+	if (lpDrawItemStruct->itemID == static_cast<UINT>(-1))
+		return;
+
+	CDC dc;
+	dc.Attach(lpDrawItemStruct->hDC);
+
+	CString text;
+	m_resultsList.GetText(
+		lpDrawItemStruct->itemID,
+		text);
+
+	const ParsedDefinition* definition =
+		static_cast<const ParsedDefinition*>(
+			m_resultsList.GetItemDataPtr(
+				lpDrawItemStruct->itemID));
+
+	const Bool selected =
+		(lpDrawItemStruct->itemState & ODS_SELECTED) != 0;
+
+	const COLORREF backgroundColor =
+		GetSysColor(
+			selected
+			? COLOR_HIGHLIGHT
+			: COLOR_WINDOW);
+
+	COLORREF textColor;
+
+	if (!isDefinitionImplemented(definition))
+	{
+		textColor =
+			selected
+			? RGB(255, 190, 190)
+			: RGB(200, 0, 0);
+	}
+	else
+	{
+		textColor =
+			GetSysColor(
+				selected
+				? COLOR_HIGHLIGHTTEXT
+				: COLOR_WINDOWTEXT);
+	}
+
+	dc.FillSolidRect(
+		&lpDrawItemStruct->rcItem,
+		backgroundColor);
+
+	dc.SetBkMode(TRANSPARENT);
+	dc.SetTextColor(textColor);
+
+	CRect textRect =
+		lpDrawItemStruct->rcItem;
+
+	textRect.left += 3;
+
+	dc.DrawText(
+		text,
+		&textRect,
+		DT_SINGLELINE |
+		DT_VCENTER |
+		DT_NOPREFIX |
+		DT_END_ELLIPSIS);
+
+	if (lpDrawItemStruct->itemState & ODS_FOCUS)
+		dc.DrawFocusRect(
+			&lpDrawItemStruct->rcItem);
+
+	dc.Detach();
+}
+
 void CObjectDeparserDialog::OnDeparseNow()
 {
 	clearCompareHighlight();
@@ -540,9 +982,7 @@ void CObjectDeparserDialog::OnDeparseNow()
 	output += sourceFilename;
 	output += "\r\n\r\n";
 
-	if (definition->blockType.compareNoCase("Object") == 0 ||
-		definition->blockType.compareNoCase("ObjectInherit") == 0 ||
-		definition->blockType.compareNoCase("ObjectReskin") == 0)
+	if (isDefinitionImplemented(definition))
 	{
 		const ThingTemplate* thing =
 			TheThingFactory->findTemplate(

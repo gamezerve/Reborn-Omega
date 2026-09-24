@@ -34,6 +34,13 @@ protected:
 	afx_msg void OnReloadINI();
 	afx_msg void OnCompare();
 	afx_msg void OnWorkingCopyChanged();
+	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
+	afx_msg void OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT lpMeasureItemStruct);
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
+	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
+	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
+	afx_msg void OnPaint();
 
 	DECLARE_MESSAGE_MAP()
 
@@ -47,6 +54,12 @@ private:
 	void clearCompareHighlight();
 	void highlightLines(CRichEditCtrl& edit, const std::vector<Int>& lines, COLORREF color);
 	void updateCompareButtonState();
+	Bool isDefinitionImplemented(const ParsedDefinition* definition) const;
+	void calculatePaneGeometry(CRect& leftPane,	CRect& firstSplitter,	CRect& middlePane, CRect& secondSplitter, CRect& rightPane) const;
+	Bool m_draggingSplitter;
+	Int m_activeSplitter;
+	double m_firstSplitterRatio;
+	double m_secondSplitterRatio;
 
 	CEdit m_searchEdit;
 	CListBox m_resultsList;
