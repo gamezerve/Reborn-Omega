@@ -41,6 +41,7 @@ protected:
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnPaint();
+	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 
 	DECLARE_MESSAGE_MAP()
 
@@ -72,8 +73,16 @@ private:
 	CProgressCtrl m_reloadProgress;
 	CStatic m_reloadStatus;
 	CButton m_compareButton;
-
 	CFont m_outputFont;
+	CBrush m_backgroundBrush;
+	CBrush m_editBrush;
+	COLORREF m_backgroundColor;
+	COLORREF m_panelColor;
+	COLORREF m_textColor;
+	COLORREF m_secondaryTextColor;
+	COLORREF m_borderColor;
+	COLORREF m_unsupportedColor;
+	COLORREF m_selectionColor;
 
 	std::vector<const ParsedDefinition*> m_definitions;
 };

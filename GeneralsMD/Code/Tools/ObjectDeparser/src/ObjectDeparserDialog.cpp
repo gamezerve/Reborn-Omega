@@ -22,6 +22,7 @@ BEGIN_MESSAGE_MAP(CObjectDeparserDialog, CDialog)
 	ON_WM_PAINT()
 	ON_WM_DRAWITEM()
 	ON_WM_MEASUREITEM()
+	ON_WM_CTLCOLOR()
 	ON_EN_CHANGE(IDC_SEARCH_EDIT, OnSearchChanged)
 	ON_LBN_SELCHANGE(IDC_RESULTS_LIST, OnSelectionChanged)
 	ON_LBN_DBLCLK(IDC_RESULTS_LIST, OnResultDoubleClicked)
@@ -37,8 +38,17 @@ CObjectDeparserDialog::CObjectDeparserDialog(CWnd* parent)
 	m_draggingSplitter(FALSE),
 	m_activeSplitter(0),
 	m_firstSplitterRatio(0.20),
-	m_secondSplitterRatio(0.60)
+	m_secondSplitterRatio(0.60),
+	m_backgroundColor(RGB(37, 37, 38)),
+	m_panelColor(RGB(30, 30, 30)),
+	m_textColor(RGB(212, 212, 212)),
+	m_secondaryTextColor(RGB(160, 160, 160)),
+	m_borderColor(RGB(63, 63, 70)),
+	m_unsupportedColor(RGB(240, 106, 106)),
+	m_selectionColor(RGB(9, 71, 113))
 {
+	m_backgroundBrush.CreateSolidBrush(m_backgroundColor);
+	m_editBrush.CreateSolidBrush(m_panelColor);
 }
 
 void CObjectDeparserDialog::DoDataExchange(CDataExchange* pDX)
@@ -56,6 +66,48 @@ void CObjectDeparserDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_RELOAD_PROGRESS, m_reloadProgress);
 	DDX_Control(pDX, IDC_RELOAD_STATUS, m_reloadStatus);
 	DDX_Control(pDX, IDC_COMPARE, m_compareButton);
+}
+
+HBRUSH CObjectDeparserDialog::OnCtlColor(
+	CDC* pDC,
+	CWnd* pWnd,
+	UINT nCtlColor)
+{
+
+	switch (nCtlColor)
+	{
+	case CTLCOLOR_DLG:
+		pDC->SetBkColor(m_backgroundColor);
+		return static_cast<HBRUSH>(
+			m_backgroundBrush.GetSafeHandle());
+
+	case CTLCOLOR_STATIC:
+		pDC->SetTextColor(m_textColor);
+		pDC->SetBkColor(m_backgroundColor);
+		pDC->SetBkMode(TRANSPARENT);
+
+		return static_cast<HBRUSH>(
+			m_backgroundBrush.GetSafeHandle());
+
+	case CTLCOLOR_EDIT:
+		pDC->SetTextColor(m_textColor);
+		pDC->SetBkColor(m_panelColor);
+
+		return static_cast<HBRUSH>(
+			m_editBrush.GetSafeHandle());
+
+	case CTLCOLOR_LISTBOX:
+		pDC->SetTextColor(m_textColor);
+		pDC->SetBkColor(m_panelColor);
+
+		return static_cast<HBRUSH>(
+			m_editBrush.GetSafeHandle());
+	}
+
+	return CDialog::OnCtlColor(
+		pDC,
+		pWnd,
+		nCtlColor);
 }
 
 void CObjectDeparserDialog::calculatePaneGeometry(
@@ -225,6 +277,32 @@ BOOL CObjectDeparserDialog::OnInitDialog()
 
 	m_workEdit.SetFont(&m_outputFont);
 	m_workEdit.SendMessage(EM_EXLIMITTEXT, 0, 0x7fffffff);
+
+	m_outputEdit.SetBackgroundColor(
+		FALSE,
+		m_panelColor);
+
+	m_workEdit.SetBackgroundColor(
+		FALSE,
+		m_panelColor);
+
+	CHARFORMAT2 textFormat = {};
+	textFormat.cbSize = sizeof(textFormat);
+	textFormat.dwMask = CFM_COLOR;
+	textFormat.crTextColor = m_textColor;
+
+	m_outputEdit.SetDefaultCharFormat(textFormat);
+	m_workEdit.SetDefaultCharFormat(textFormat);
+
+	m_reloadProgress.SendMessage(
+		PBM_SETBKCOLOR,
+		0,
+		m_panelColor);
+
+	m_reloadProgress.SendMessage(
+		PBM_SETBARCOLOR,
+		0,
+		RGB(0, 122, 204));
 
 	m_deparseButton.EnableWindow(FALSE);
 	m_transferButton.EnableWindow(FALSE);
@@ -732,19 +810,20 @@ void CObjectDeparserDialog::OnPaint()
 
 	dc.FillSolidRect(
 		firstSplitter,
-		GetSysColor(COLOR_3DSHADOW));
+		m_borderColor);
 
 	dc.FillSolidRect(
 		secondSplitter,
-		GetSysColor(COLOR_3DSHADOW));
+		m_borderColor);
 }
 
 void CObjectDeparserDialog::clearCompareHighlight()
 {
 	CHARFORMAT2 format = {};
 	format.cbSize = sizeof(format);
-	format.dwMask = CFM_BACKCOLOR;
+	format.dwMask = CFM_BACKCOLOR | CFM_COLOR;
 	format.dwEffects = CFE_AUTOBACKCOLOR;
+	format.crTextColor = m_textColor;
 
 	long start;
 	long end;
@@ -772,8 +851,9 @@ void CObjectDeparserDialog::highlightLines(
 
 	CHARFORMAT2 format = {};
 	format.cbSize = sizeof(format);
-	format.dwMask = CFM_BACKCOLOR;
+	format.dwMask = CFM_BACKCOLOR | CFM_COLOR;
 	format.crBackColor = color;
+	format.crTextColor = RGB(0, 0, 0);
 
 	const int lineCount = edit.GetLineCount();
 
@@ -941,10 +1021,9 @@ void CObjectDeparserDialog::OnDrawItem(
 		(lpDrawItemStruct->itemState & ODS_SELECTED) != 0;
 
 	const COLORREF backgroundColor =
-		GetSysColor(
-			selected
-			? COLOR_HIGHLIGHT
-			: COLOR_WINDOW);
+		selected
+		? m_selectionColor
+		: m_panelColor;
 
 	COLORREF textColor;
 
@@ -953,15 +1032,11 @@ void CObjectDeparserDialog::OnDrawItem(
 		textColor =
 			selected
 			? RGB(255, 190, 190)
-			: RGB(200, 0, 0);
+			: m_unsupportedColor;
 	}
 	else
 	{
-		textColor =
-			GetSysColor(
-				selected
-				? COLOR_HIGHLIGHTTEXT
-				: COLOR_WINDOWTEXT);
+		textColor = m_textColor;
 	}
 
 	dc.FillSolidRect(
