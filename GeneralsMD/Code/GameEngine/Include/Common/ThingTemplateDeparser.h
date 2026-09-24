@@ -6,12 +6,12 @@
 
 #pragma once
 
-#include "Common/AsciiString.h"
+#include <string>
 
 class ThingTemplate;
 
 class ThingTemplateDeparser
 {
 public:
-	static AsciiString deparse(const ThingTemplate* thingTemplate);
+	static std::string deparse(const ThingTemplate* thingTemplate);
 };

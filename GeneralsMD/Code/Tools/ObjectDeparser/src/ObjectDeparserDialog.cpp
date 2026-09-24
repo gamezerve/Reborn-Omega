@@ -237,8 +237,8 @@ void CObjectDeparserDialog::OnDeparseNow()
 	if (!thing)
 		return;
 
-	const AsciiString output =
+	const std::string output =
 		ThingTemplateDeparser::deparse(thing);
 
-	m_outputEdit.SetWindowText(output.str());
+	m_outputEdit.SetWindowText(output.c_str());
 }
