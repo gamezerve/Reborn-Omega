@@ -1,0 +1,17 @@
+///////////////////////////////////////////////////////////////////////////////////////
+// FILE: ThingTemplateDeparser.h
+// Author: Gamezerve, September 2026
+// Description: 
+///////////////////////////////////////////////////////////////////////////////////////
+
+#pragma once
+
+#include "Common/AsciiString.h"
+
+class ThingTemplate;
+
+class ThingTemplateDeparser
+{
+public:
+	static AsciiString deparse(const ThingTemplate* thingTemplate);
+};

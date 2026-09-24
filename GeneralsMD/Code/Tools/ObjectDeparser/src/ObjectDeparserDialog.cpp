@@ -9,6 +9,7 @@
 
 #include "Common/ThingFactory.h"
 #include "Common/ThingTemplate.h"
+#include "Common/ThingTemplateDeparser.h"
 
 BEGIN_MESSAGE_MAP(CObjectDeparserDialog, CDialog)
 	ON_WM_SIZE()
@@ -224,4 +225,20 @@ void CObjectDeparserDialog::OnResultDoubleClicked()
 
 void CObjectDeparserDialog::OnDeparseNow()
 {
+	const int index = m_resultsList.GetCurSel();
+
+	if (index == LB_ERR)
+		return;
+
+	const ThingTemplate* thing =
+		static_cast<const ThingTemplate*>(
+			m_resultsList.GetItemDataPtr(index));
+
+	if (!thing)
+		return;
+
+	const AsciiString output =
+		ThingTemplateDeparser::deparse(thing);
+
+	m_outputEdit.SetWindowText(output.str());
 }
