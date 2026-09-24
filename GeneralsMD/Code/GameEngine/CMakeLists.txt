@@ -1240,7 +1240,7 @@ target_link_libraries(z_gameengine PUBLIC
 )
 
 target_precompile_headers(z_gameengine PRIVATE
-    [["Precompiled/precompiled.h"]] # Must be first
+    [["Precompiled/BasePrecomp.h"]] # Must be first
 )
 
 # Reborn: Enable the Generals Online replacement only for Reborn builds.
