@@ -30,6 +30,8 @@ protected:
 	afx_msg void OnDeparseNow();
 	afx_msg void OnTransfer();
 	afx_msg void OnReloadINI();
+	afx_msg void OnCompare();
+	afx_msg void OnWorkingCopyChanged();
 
 	DECLARE_MESSAGE_MAP()
 
@@ -40,17 +42,21 @@ private:
 	void selectTemplateByName(const CString& name);
 	static void reloadProgressCallback(Int progress, const char* status, void* userData);
 	void updateReloadProgress(Int progress, const char* status);
+	void clearCompareHighlight();
+	void highlightLines(CRichEditCtrl& edit, const std::vector<Int>& lines, COLORREF color);
+	void updateCompareButtonState();
 
 	CEdit m_searchEdit;
 	CListBox m_resultsList;
 	CButton m_deparseButton;
 	CButton m_transferButton;
 	CButton m_reloadButton;
-	CEdit m_outputEdit;
-	CEdit m_workEdit;
+	CRichEditCtrl m_outputEdit;
+	CRichEditCtrl m_workEdit;
 	CStatic m_objectCount;
 	CProgressCtrl m_reloadProgress;
 	CStatic m_reloadStatus;
+	CButton m_compareButton;
 
 	CFont m_outputFont;
 

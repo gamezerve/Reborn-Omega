@@ -5,6 +5,7 @@
 ///////////////////////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "TextDiff.h"
 #include "ObjectDeparser.h"
 #include "ObjectDeparserDialog.h"
 
@@ -20,6 +21,8 @@ BEGIN_MESSAGE_MAP(CObjectDeparserDialog, CDialog)
 	ON_BN_CLICKED(IDC_DEPARSE_NOW, OnDeparseNow)
 	ON_BN_CLICKED(IDC_TRANSFER, OnTransfer)
 	ON_BN_CLICKED(IDC_RELOAD_INI, OnReloadINI)
+	ON_BN_CLICKED(IDC_COMPARE, OnCompare)
+	ON_EN_CHANGE(IDC_WORK_EDIT, OnWorkingCopyChanged)
 END_MESSAGE_MAP()
 
 CObjectDeparserDialog::CObjectDeparserDialog(CWnd* parent)
@@ -41,6 +44,7 @@ void CObjectDeparserDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_OBJECT_COUNT, m_objectCount);
 	DDX_Control(pDX, IDC_RELOAD_PROGRESS, m_reloadProgress);
 	DDX_Control(pDX, IDC_RELOAD_STATUS, m_reloadStatus);
+	DDX_Control(pDX, IDC_COMPARE, m_compareButton);
 }
 
 void CObjectDeparserDialog::buildTemplateList()
@@ -111,15 +115,17 @@ BOOL CObjectDeparserDialog::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
+	m_compareButton.EnableWindow(FALSE);
+
 	SetWindowText("Reborn Omega Object Deparser");
 
 	m_outputFont.CreatePointFont(95, "Consolas");
 
 	m_outputEdit.SetFont(&m_outputFont);
-	m_outputEdit.SetLimitText(0x7fffffff);
+	m_outputEdit.SendMessage(EM_EXLIMITTEXT, 0, 0x7fffffff);
 
 	m_workEdit.SetFont(&m_outputFont);
-	m_workEdit.SetLimitText(0x7fffffff);
+	m_workEdit.SendMessage(EM_EXLIMITTEXT, 0, 0x7fffffff);
 
 	m_deparseButton.EnableWindow(FALSE);
 	m_transferButton.EnableWindow(FALSE);
@@ -193,6 +199,7 @@ void CObjectDeparserDialog::layoutControls()
 	const int transferWidth = 100;
 	const int reloadWidth = 100;
 	const int statusHeight = 20;
+	const int compareWidth = 90;
 
 	const int searchTop = margin;
 
@@ -208,39 +215,27 @@ void CObjectDeparserDialog::layoutControls()
 			searchLabelWidth,
 			labelHeight);
 
-	const int buttonsWidth =
-		deparseWidth +
-		transferWidth +
-		reloadWidth +
-		gap * 3;
-
 	const int searchLeft =
 		margin + searchLabelWidth;
 
-	const int searchWidth =
-		max(
-			100,
-			client.Width() -
-			searchLeft -
-			margin -
-			buttonsWidth);
-
-	m_searchEdit.MoveWindow(
-		searchLeft,
-		searchTop,
-		searchWidth,
-		searchHeight);
-
 	int buttonX =
-		searchLeft + searchWidth + gap;
+		client.Width() - margin - reloadWidth;
 
-	m_deparseButton.MoveWindow(
+	m_reloadButton.MoveWindow(
 		buttonX,
 		searchTop,
-		deparseWidth,
+		reloadWidth,
 		searchHeight);
 
-	buttonX += deparseWidth + gap;
+	buttonX -= gap + compareWidth;
+
+	m_compareButton.MoveWindow(
+		buttonX,
+		searchTop,
+		compareWidth,
+		searchHeight);
+
+	buttonX -= gap + transferWidth;
 
 	m_transferButton.MoveWindow(
 		buttonX,
@@ -248,12 +243,23 @@ void CObjectDeparserDialog::layoutControls()
 		transferWidth,
 		searchHeight);
 
-	buttonX += transferWidth + gap;
+	buttonX -= gap + deparseWidth;
 
-	m_reloadButton.MoveWindow(
+	m_deparseButton.MoveWindow(
 		buttonX,
 		searchTop,
-		reloadWidth,
+		deparseWidth,
+		searchHeight);
+
+	const int searchWidth =
+		max(
+			50,
+			buttonX - gap - searchLeft);
+
+	m_searchEdit.MoveWindow(
+		searchLeft,
+		searchTop,
+		searchWidth,
 		searchHeight);
 
 	const int panelLabelTop =
@@ -355,6 +361,117 @@ void CObjectDeparserDialog::layoutControls()
 		16);
 }
 
+void CObjectDeparserDialog::clearCompareHighlight()
+{
+	CHARFORMAT2 format = {};
+	format.cbSize = sizeof(format);
+	format.dwMask = CFM_BACKCOLOR;
+	format.dwEffects = CFE_AUTOBACKCOLOR;
+
+	long start;
+	long end;
+
+	m_outputEdit.GetSel(start, end);
+	m_outputEdit.SetSel(0, -1);
+	m_outputEdit.SetSelectionCharFormat(format);
+	m_outputEdit.SetSel(start, end);
+
+	m_workEdit.GetSel(start, end);
+	m_workEdit.SetSel(0, -1);
+	m_workEdit.SetSelectionCharFormat(format);
+	m_workEdit.SetSel(start, end);
+}
+
+void CObjectDeparserDialog::highlightLines(
+	CRichEditCtrl& edit,
+	const std::vector<Int>& lines,
+	COLORREF color)
+{
+	long oldStart;
+	long oldEnd;
+
+	edit.GetSel(oldStart, oldEnd);
+
+	CHARFORMAT2 format = {};
+	format.cbSize = sizeof(format);
+	format.dwMask = CFM_BACKCOLOR;
+	format.crBackColor = color;
+
+	const int lineCount = edit.GetLineCount();
+
+	for (Int line : lines)
+	{
+		if (line < 0 || line >= lineCount)
+			continue;
+
+		const long start = edit.LineIndex(line);
+
+		const long end =
+			line + 1 < lineCount
+			? edit.LineIndex(line + 1)
+			: edit.GetTextLength();
+
+		if (start < 0)
+			continue;
+
+		edit.SetSel(start, end);
+		edit.SetSelectionCharFormat(format);
+	}
+
+	edit.SetSel(oldStart, oldEnd);
+}
+
+void CObjectDeparserDialog::OnCompare()
+{
+	CString leftText;
+	CString rightText;
+
+	m_outputEdit.GetWindowText(leftText);
+	m_workEdit.GetWindowText(rightText);
+
+	CStringA leftAnsi(leftText);
+	CStringA rightAnsi(rightText);
+
+	clearCompareHighlight();
+
+	const TextDiffResult result =
+		TextDiff::compare(
+			leftAnsi.GetString(),
+			rightAnsi.GetString());
+
+	highlightLines(
+		m_outputEdit,
+		result.leftChangedLines,
+		RGB(255, 210, 210));
+
+	highlightLines(
+		m_workEdit,
+		result.rightChangedLines,
+		RGB(210, 255, 210));
+
+	CString status;
+
+	status.Format(
+		"Compare: %d added, %d removed",
+		result.addedCount,
+		result.removedCount);
+
+	m_reloadStatus.SetWindowText(status);
+}
+
+void CObjectDeparserDialog::updateCompareButtonState()
+{
+	m_compareButton.EnableWindow(
+		m_outputEdit.GetWindowTextLength() > 0 &&
+		m_workEdit.GetWindowTextLength() > 0);
+}
+
+void CObjectDeparserDialog::OnWorkingCopyChanged()
+{
+	clearCompareHighlight();
+	updateCompareButtonState();
+}
+
 void CObjectDeparserDialog::OnTransfer()
 {
 	CString text;
@@ -362,6 +479,9 @@ void CObjectDeparserDialog::OnTransfer()
 
 	m_workEdit.SetWindowText(text);
 	m_workEdit.SetFocus();
+
+	clearCompareHighlight();
+	updateCompareButtonState();
 }
 
 void CObjectDeparserDialog::OnSearchChanged()
@@ -382,6 +502,8 @@ void CObjectDeparserDialog::OnResultDoubleClicked()
 
 void CObjectDeparserDialog::OnDeparseNow()
 {
+	clearCompareHighlight();
+
 	const int index = m_resultsList.GetCurSel();
 
 	if (index == LB_ERR)
@@ -414,6 +536,8 @@ void CObjectDeparserDialog::OnDeparseNow()
 	m_transferButton.EnableWindow(TRUE);
 
 	m_transferButton.EnableWindow(TRUE);
+
+	updateCompareButtonState();
 }
 
 void CObjectDeparserDialog::OnReloadINI()

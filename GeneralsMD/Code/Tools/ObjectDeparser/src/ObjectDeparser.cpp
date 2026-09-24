@@ -233,6 +233,7 @@ BOOL CObjectDeparserApp::InitInstance()
 	CWinApp::InitInstance();
 
 	AfxEnableControlContainer();
+	AfxInitRichEdit2();
 
 	CObjectDeparserDialog dialog;
 	m_pMainWnd = &dialog;

@@ -6,6 +6,8 @@ set(OBJECTDEPARSER_SRC
     "include/ObjectDeparser.h"
     "include/ObjectDeparserDialog.h"
     "include/resource.h"
+    "include/TextDiff.h"
+    "src/TextDiff.cpp"
 )
 
 add_executable(z_objectdeparser WIN32)
@@ -16,6 +18,7 @@ target_include_directories(z_objectdeparser PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
     include
     res
+    ${CMAKE_SOURCE_DIR}/Dependencies/DTL
 )
 
 target_precompile_headers(z_objectdeparser PRIVATE
