@@ -125,7 +125,7 @@ void CObjectDeparserDialog::calculatePaneGeometry(
 		firstX,
 		panelLabelTop,
 		firstX + splitterWidth,
-		panelBottom);
+		panelBottom - 1);
 
 	middlePane.SetRect(
 		firstX + splitterWidth,
@@ -137,7 +137,7 @@ void CObjectDeparserDialog::calculatePaneGeometry(
 		secondX,
 		panelLabelTop,
 		secondX + splitterWidth,
-		panelBottom);
+		panelBottom - 1);
 
 	rightPane.SetRect(
 		secondX + splitterWidth,
@@ -256,8 +256,17 @@ void CObjectDeparserDialog::OnSize(UINT nType, int cx, int cy)
 {
 	CDialog::OnSize(nType, cx, cy);
 
-	if (GetSafeHwnd())
-		layoutControls();
+	if (!GetSafeHwnd())
+		return;
+
+	layoutControls();
+
+	RedrawWindow(
+		nullptr,
+		nullptr,
+		RDW_INVALIDATE |
+		RDW_ERASE |
+		RDW_ALLCHILDREN);
 }
 
 void CObjectDeparserDialog::reloadProgressCallback(
@@ -568,6 +577,9 @@ void CObjectDeparserDialog::OnMouseMove(
 		secondSplitter,
 		rightPane);
 
+	const CRect oldFirstSplitter = firstSplitter;
+	const CRect oldSecondSplitter = secondSplitter;
+
 	if (m_activeSplitter == 1)
 	{
 		const int minimumX =
@@ -622,7 +634,41 @@ void CObjectDeparserDialog::OnMouseMove(
 
 	layoutControls();
 
-	Invalidate(FALSE);
+	CRect newLeftPane;
+	CRect newFirstSplitter;
+	CRect newMiddlePane;
+	CRect newSecondSplitter;
+	CRect newRightPane;
+
+	calculatePaneGeometry(
+		newLeftPane,
+		newFirstSplitter,
+		newMiddlePane,
+		newSecondSplitter,
+		newRightPane);
+
+	InvalidateRect(
+		&oldFirstSplitter,
+		TRUE);
+
+	InvalidateRect(
+		&oldSecondSplitter,
+		TRUE);
+
+	InvalidateRect(
+		&newFirstSplitter,
+		TRUE);
+
+	InvalidateRect(
+		&newSecondSplitter,
+		TRUE);
+
+	if (m_activeSplitter == 1)
+	{
+		m_resultsList.Invalidate(FALSE);
+		m_resultsList.UpdateWindow();
+	}
+
 	UpdateWindow();
 }
 
@@ -878,6 +924,9 @@ void CObjectDeparserDialog::OnDrawItem(
 	CDC dc;
 	dc.Attach(lpDrawItemStruct->hDC);
 
+	CFont* oldFont = dc.SelectObject(
+		m_resultsList.GetFont());
+
 	CString text;
 	m_resultsList.GetText(
 		lpDrawItemStruct->itemID,
@@ -938,6 +987,9 @@ void CObjectDeparserDialog::OnDrawItem(
 	if (lpDrawItemStruct->itemState & ODS_FOCUS)
 		dc.DrawFocusRect(
 			&lpDrawItemStruct->rcItem);
+
+	if (oldFont)
+		dc.SelectObject(oldFont);
 
 	dc.Detach();
 }
