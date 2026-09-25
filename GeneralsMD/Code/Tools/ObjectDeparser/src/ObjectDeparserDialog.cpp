@@ -16,6 +16,73 @@
 #include "GameLogic/Weapon.h"
 #include "GameLogic/WeaponTemplateDeparser.h"
 
+#include <tom.h>
+
+class ScopedRichEditUndoSuspend
+{
+public:
+	explicit ScopedRichEditUndoSuspend(CRichEditCtrl& edit)
+		: m_document(nullptr)
+	{
+		IUnknown* ole = nullptr;
+
+		if (!edit.SendMessage(
+			EM_GETOLEINTERFACE,
+			0,
+			reinterpret_cast<LPARAM>(&ole)) || !ole)
+			return;
+
+		const HRESULT result = ole->QueryInterface(
+			__uuidof(ITextDocument),
+			reinterpret_cast<void**>(&m_document));
+
+		ole->Release();
+
+		if (FAILED(result) || !m_document)
+		{
+			m_document = nullptr;
+			return;
+		}
+
+		if (FAILED(m_document->Undo(tomSuspend, nullptr)))
+		{
+			m_document->Release();
+			m_document = nullptr;
+		}
+	}
+
+	~ScopedRichEditUndoSuspend()
+	{
+		if (m_document)
+		{
+			m_document->Undo(tomResume, nullptr);
+			m_document->Release();
+		}
+	}
+
+	bool isActive() const
+	{
+		return m_document != nullptr;
+	}
+
+	ScopedRichEditUndoSuspend(
+		const ScopedRichEditUndoSuspend&) = delete;
+
+	ScopedRichEditUndoSuspend& operator=(
+		const ScopedRichEditUndoSuspend&) = delete;
+
+private:
+	ITextDocument* m_document;
+};
+
+
+struct ReloadCaptureContext
+{
+	ParsedDefinitionCatalog* catalog;
+	CObjectDeparserDialog* dialog;
+};
+
+
 BEGIN_MESSAGE_MAP(CObjectDeparserDialog, CDialog)
 	ON_WM_SIZE()
 	ON_WM_LBUTTONDOWN()
@@ -26,6 +93,9 @@ BEGIN_MESSAGE_MAP(CObjectDeparserDialog, CDialog)
 	ON_WM_DRAWITEM()
 	ON_WM_MEASUREITEM()
 	ON_WM_CTLCOLOR()
+	ON_EN_CHANGE(IDC_OUTPUT_EDIT, OnOutputChanged)
+	ON_WM_TIMER()
+	ON_WM_CLOSE()
 	ON_EN_CHANGE(IDC_SEARCH_EDIT, OnSearchChanged)
 	ON_LBN_SELCHANGE(IDC_RESULTS_LIST, OnSelectionChanged)
 	ON_LBN_DBLCLK(IDC_RESULTS_LIST, OnResultDoubleClicked)
@@ -42,6 +112,13 @@ CObjectDeparserDialog::CObjectDeparserDialog(CWnd* parent)
 	m_activeSplitter(0),
 	m_firstSplitterRatio(0.20),
 	m_secondSplitterRatio(0.60),
+	m_compareMode(FALSE),
+	m_compareUpdating(FALSE),
+	m_lastOutputScroll(0, 0),
+	m_lastWorkScroll(0, 0),
+	m_reloadInProgress(FALSE),
+	m_pumpingReloadMessages(FALSE),
+	m_lastReloadPumpTick(0),
 	m_backgroundColor(RGB(37, 37, 38)),
 	m_panelColor(RGB(30, 30, 30)),
 	m_textColor(RGB(212, 212, 212)),
@@ -52,6 +129,7 @@ CObjectDeparserDialog::CObjectDeparserDialog(CWnd* parent)
 {
 	m_backgroundBrush.CreateSolidBrush(m_backgroundColor);
 	m_editBrush.CreateSolidBrush(m_panelColor);
+
 }
 
 void CObjectDeparserDialog::DoDataExchange(CDataExchange* pDX)
@@ -281,6 +359,24 @@ BOOL CObjectDeparserDialog::OnInitDialog()
 	m_workEdit.SetFont(&m_outputFont);
 	m_workEdit.SendMessage(EM_EXLIMITTEXT, 0, 0x7fffffff);
 
+	const DWORD outputEventMask =
+		static_cast<DWORD>(
+			m_outputEdit.SendMessage(EM_GETEVENTMASK));
+
+	m_outputEdit.SendMessage(
+		EM_SETEVENTMASK,
+		0,
+		outputEventMask | ENM_CHANGE);
+
+	const DWORD workEventMask =
+		static_cast<DWORD>(
+			m_workEdit.SendMessage(EM_GETEVENTMASK));
+
+	m_workEdit.SendMessage(
+		EM_SETEVENTMASK,
+		0,
+		workEventMask | ENM_CHANGE);
+
 	m_outputEdit.SetBackgroundColor(
 		FALSE,
 		m_panelColor);
@@ -376,7 +472,20 @@ void CObjectDeparserDialog::updateReloadProgress(
 	m_reloadProgress.UpdateWindow();
 	m_reloadStatus.UpdateWindow();
 	UpdateWindow();
+
+	pumpReloadMessages();
+
 }
+
+
+void CObjectDeparserDialog::OnClose()
+{
+	if (m_reloadInProgress)
+		return;
+
+	CDialog::OnClose();
+}
+
 
 void CObjectDeparserDialog::layoutControls()
 {
@@ -820,8 +929,15 @@ void CObjectDeparserDialog::OnPaint()
 		m_borderColor);
 }
 
+
 void CObjectDeparserDialog::clearCompareHighlight()
 {
+	ScopedRichEditUndoSuspend outputUndo(m_outputEdit);
+	ScopedRichEditUndoSuspend workUndo(m_workEdit);
+
+	if (!outputUndo.isActive() || !workUndo.isActive())
+		return;
+
 	CHARFORMAT2 format = {};
 	format.cbSize = sizeof(format);
 	format.dwMask = CFM_BACKCOLOR | CFM_COLOR;
@@ -842,11 +958,18 @@ void CObjectDeparserDialog::clearCompareHighlight()
 	m_workEdit.SetSel(start, end);
 }
 
+
+
 void CObjectDeparserDialog::highlightLines(
 	CRichEditCtrl& edit,
 	const std::vector<Int>& lines,
 	COLORREF color)
 {
+	ScopedRichEditUndoSuspend undo(edit);
+
+	if (!undo.isActive())
+		return;
+
 	long oldStart;
 	long oldEnd;
 
@@ -882,55 +1005,177 @@ void CObjectDeparserDialog::highlightLines(
 	edit.SetSel(oldStart, oldEnd);
 }
 
+
+static CPoint getEditorScroll(
+	CRichEditCtrl& edit)
+{
+	POINT position = {};
+
+	edit.SendMessage(
+		EM_GETSCROLLPOS,
+		0,
+		reinterpret_cast<LPARAM>(&position));
+
+	return CPoint(
+		position.x,
+		position.y);
+}
+
 void CObjectDeparserDialog::OnCompare()
 {
-	CString leftText;
-	CString rightText;
+	if (m_compareMode)
+	{
+		stopCompareMode();
+		return;
+	}
 
-	m_outputEdit.GetWindowText(leftText);
-	m_workEdit.GetWindowText(rightText);
+	if (m_outputEdit.GetWindowTextLength() == 0 ||
+		m_workEdit.GetWindowTextLength() == 0)
+	{
+		return;
+	}
 
-	CStringA leftAnsi(leftText);
-	CStringA rightAnsi(rightText);
+	m_compareMode = TRUE;
+
+	m_compareButton.SetWindowText(
+		"Stop Compare");
+
+	performCompare();
+
+	CPoint top(0, 0);
+
+	m_outputEdit.SendMessage(
+		EM_SETSCROLLPOS,
+		0,
+		reinterpret_cast<LPARAM>(&top));
+
+	m_workEdit.SendMessage(
+		EM_SETSCROLLPOS,
+		0,
+		reinterpret_cast<LPARAM>(&top));
+
+	m_lastOutputScroll =
+		getEditorScroll(m_outputEdit);
+
+	m_lastWorkScroll =
+		getEditorScroll(m_workEdit);
+
+	SetTimer(
+		TIMER_COMPARE_SCROLL,
+		30,
+		nullptr);
+
+	updateCompareButtonState();
+}
+
+void CObjectDeparserDialog::stopCompareMode()
+{
+	if (!m_compareMode)
+		return;
+
+	KillTimer(TIMER_COMPARE_SCROLL);
+	KillTimer(TIMER_COMPARE_DEBOUNCE);
+
+	m_compareMode = FALSE;
+	m_compareUpdating = TRUE;
+
+	const CPoint outputScroll =
+		getEditorScroll(m_outputEdit);
+
+	const CPoint workScroll =
+		getEditorScroll(m_workEdit);
+
+	m_outputEdit.SetRedraw(FALSE);
+	m_workEdit.SetRedraw(FALSE);
 
 	clearCompareHighlight();
 
-	const TextDiffResult result =
-		TextDiff::compare(
-			leftAnsi.GetString(),
-			rightAnsi.GetString());
+	m_outputEdit.SendMessage(
+		EM_SETSCROLLPOS,
+		0,
+		reinterpret_cast<LPARAM>(&outputScroll));
 
-	highlightLines(
-		m_outputEdit,
-		result.leftChangedLines,
-		RGB(255, 210, 210));
+	m_workEdit.SendMessage(
+		EM_SETSCROLLPOS,
+		0,
+		reinterpret_cast<LPARAM>(&workScroll));
 
-	highlightLines(
-		m_workEdit,
-		result.rightChangedLines,
-		RGB(210, 255, 210));
+	m_outputEdit.SetRedraw(TRUE);
+	m_workEdit.SetRedraw(TRUE);
 
-	CString status;
+	m_outputEdit.Invalidate(FALSE);
+	m_workEdit.Invalidate(FALSE);
 
-	status.Format(
-		"Compare: %d added, %d removed",
-		result.addedCount,
-		result.removedCount);
+	m_compareUpdating = FALSE;
 
-	m_reloadStatus.SetWindowText(status);
+	m_compareButton.SetWindowText(
+		"Compare");
+
+	m_reloadStatus.SetWindowText(
+		"Compare mode off.");
+
+	updateCompareButtonState();
+}
+
+void CObjectDeparserDialog::restartCompareDebounce()
+{
+	if (!m_compareMode || m_compareUpdating)
+		return;
+
+	KillTimer(TIMER_COMPARE_DEBOUNCE);
+
+	SetTimer(
+		TIMER_COMPARE_DEBOUNCE,
+		500,
+		nullptr);
 }
 
 void CObjectDeparserDialog::updateCompareButtonState()
 {
 	m_compareButton.EnableWindow(
-		m_outputEdit.GetWindowTextLength() > 0 &&
-		m_workEdit.GetWindowTextLength() > 0);
+		m_compareMode ||
+		(m_outputEdit.GetWindowTextLength() > 0 &&
+			m_workEdit.GetWindowTextLength() > 0));
 }
 
 void CObjectDeparserDialog::OnWorkingCopyChanged()
 {
-	clearCompareHighlight();
+	if (m_compareUpdating)
+		return;
+
+	restartCompareDebounce();
 	updateCompareButtonState();
+}
+
+void CObjectDeparserDialog::OnOutputChanged()
+{
+	if (m_compareUpdating)
+		return;
+
+	restartCompareDebounce();
+	updateCompareButtonState();
+}
+
+void CObjectDeparserDialog::OnTimer(
+	UINT_PTR nIDEvent)
+{
+	if (nIDEvent == TIMER_COMPARE_SCROLL)
+	{
+		synchronizeCompareScroll();
+		return;
+	}
+
+	if (nIDEvent == TIMER_COMPARE_DEBOUNCE)
+	{
+		KillTimer(TIMER_COMPARE_DEBOUNCE);
+
+		if (m_compareMode)
+			performCompare();
+
+		return;
+	}
+
+	CDialog::OnTimer(nIDEvent);
 }
 
 void CObjectDeparserDialog::OnTransfer()
@@ -939,6 +1184,10 @@ void CObjectDeparserDialog::OnTransfer()
 	m_outputEdit.GetWindowText(text);
 
 	m_workEdit.SetWindowText(text);
+
+	if (m_compareMode)
+		restartCompareDebounce();
+
 	m_workEdit.SetFocus();
 
 	clearCompareHighlight();
@@ -1157,6 +1406,9 @@ void CObjectDeparserDialog::OnDeparseNow()
 
 	m_outputEdit.SetWindowText(output.c_str());
 
+	if (m_compareMode)
+		restartCompareDebounce();
+
 	m_transferButton.EnableWindow(TRUE);
 
 	updateCompareButtonState();
@@ -1168,6 +1420,10 @@ void CObjectDeparserDialog::OnOK()
 
 void CObjectDeparserDialog::OnCancel()
 {
+
+	if (m_reloadInProgress)
+		return;
+
 	const int result = MessageBox(
 		"Are you sure you want to exit?",
 		"Reborn Omega INI Deparser",
@@ -1177,18 +1433,43 @@ void CObjectDeparserDialog::OnCancel()
 		CDialog::OnCancel();
 }
 
+
 void CObjectDeparserDialog::OnReloadINI()
 {
+	if (m_reloadInProgress)
+		return;
+
+	stopCompareMode();
+
 	CString selectedName;
 
-	const int selectedIndex = m_resultsList.GetCurSel();
+	const int selectedIndex =
+		m_resultsList.GetCurSel();
 
 	if (selectedIndex != LB_ERR)
-		m_resultsList.GetText(selectedIndex, selectedName);
+	{
+		m_resultsList.GetText(
+			selectedIndex,
+			selectedName);
+	}
+
+	m_reloadInProgress = TRUE;
+	m_pumpingReloadMessages = FALSE;
+	m_lastReloadPumpTick = ::GetTickCount() - 30;
 
 	m_deparseButton.EnableWindow(FALSE);
 	m_transferButton.EnableWindow(FALSE);
+	m_compareButton.EnableWindow(FALSE);
 	m_reloadButton.EnableWindow(FALSE);
+	m_searchEdit.EnableWindow(FALSE);
+	m_resultsList.EnableWindow(FALSE);
+	m_workEdit.SetReadOnly(TRUE);
+
+	m_resultsList.SetRedraw(FALSE);
+	m_resultsList.ResetContent();
+	m_definitions.clear();
+	m_resultsList.SetRedraw(TRUE);
+	m_resultsList.Invalidate(FALSE);
 
 	m_outputEdit.SetWindowText("");
 	m_objectCount.SetWindowText("Reloading...");
@@ -1197,15 +1478,36 @@ void CObjectDeparserDialog::OnReloadINI()
 		0,
 		"Starting reload...");
 
+	ReloadCaptureContext context = {};
+	context.catalog =
+		&ObjectDeparserApp()->getDefinitionCatalog();
+	context.dialog = this;
+
+	INI::setBlockParsedProc(
+		&CObjectDeparserDialog::reloadBlockParsedCallback,
+		&context);
+
 	const Bool success =
 		ObjectDeparserApp()->reloadObjectDatabase(
 			&CObjectDeparserDialog::reloadProgressCallback,
 			this);
 
+	INI::setBlockParsedProc(
+		&ParsedDefinitionCatalog::capture,
+		context.catalog);
+
 	buildDefinitionList();
 	refreshDefinitionList();
 
+	m_reloadInProgress = FALSE;
+	m_pumpingReloadMessages = FALSE;
+
+	m_searchEdit.EnableWindow(TRUE);
+	m_resultsList.EnableWindow(TRUE);
+	m_workEdit.SetReadOnly(FALSE);
 	m_reloadButton.EnableWindow(TRUE);
+
+	updateCompareButtonState();
 
 	if (!success)
 	{
@@ -1218,8 +1520,12 @@ void CObjectDeparserDialog::OnReloadINI()
 	}
 
 	if (!selectedName.IsEmpty())
-		selectDefinitionByDeclaration(selectedName);
+	{
+		selectDefinitionByDeclaration(
+			selectedName);
+	}
 }
+
 
 void CObjectDeparserDialog::selectDefinitionByDeclaration(const CString& declaration)
 {
@@ -1238,4 +1544,214 @@ void CObjectDeparserDialog::selectDefinitionByDeclaration(const CString& declara
 
 		return;
 	}
+}
+
+static void setEditorVerticalScroll(
+	CRichEditCtrl& edit,
+	LONG y)
+{
+	CPoint position =
+		getEditorScroll(edit);
+
+	position.y = y;
+
+	edit.SendMessage(
+		EM_SETSCROLLPOS,
+		0,
+		reinterpret_cast<LPARAM>(&position));
+}
+
+void CObjectDeparserDialog::synchronizeCompareScroll()
+{
+	if (!m_compareMode || m_compareUpdating)
+		return;
+
+	const CPoint outputScroll =
+		getEditorScroll(m_outputEdit);
+
+	const CPoint workScroll =
+		getEditorScroll(m_workEdit);
+
+	const Bool outputChanged =
+		outputScroll.y != m_lastOutputScroll.y;
+
+	const Bool workChanged =
+		workScroll.y != m_lastWorkScroll.y;
+
+	if (!outputChanged && !workChanged)
+		return;
+
+	if (outputChanged &&
+		(!workChanged ||
+			::GetFocus() != m_workEdit.GetSafeHwnd()))
+	{
+		setEditorVerticalScroll(
+			m_workEdit,
+			outputScroll.y);
+	}
+	else
+	{
+		setEditorVerticalScroll(
+			m_outputEdit,
+			workScroll.y);
+	}
+
+	m_lastOutputScroll =
+		getEditorScroll(m_outputEdit);
+
+	m_lastWorkScroll =
+		getEditorScroll(m_workEdit);
+}
+
+void CObjectDeparserDialog::performCompare()
+{
+	if (!m_compareMode)
+		return;
+
+	const CPoint outputScroll =
+		getEditorScroll(m_outputEdit);
+
+	const CPoint workScroll =
+		getEditorScroll(m_workEdit);
+
+	const LONG commonY =
+		::GetFocus() == m_workEdit.GetSafeHwnd()
+		? workScroll.y
+		: outputScroll.y;
+
+	CString leftText;
+	CString rightText;
+
+	m_outputEdit.GetWindowText(leftText);
+	m_workEdit.GetWindowText(rightText);
+
+	CStringA leftAnsi(leftText);
+	CStringA rightAnsi(rightText);
+
+	const TextDiffResult result =
+		TextDiff::compare(
+			leftAnsi.GetString(),
+			rightAnsi.GetString());
+
+	m_compareUpdating = TRUE;
+
+	m_outputEdit.SetRedraw(FALSE);
+	m_workEdit.SetRedraw(FALSE);
+
+	clearCompareHighlight();
+
+	highlightLines(
+		m_outputEdit,
+		result.leftChangedLines,
+		RGB(255, 210, 210));
+
+	highlightLines(
+		m_workEdit,
+		result.rightChangedLines,
+		RGB(210, 255, 210));
+
+	setEditorVerticalScroll(
+		m_outputEdit,
+		commonY);
+
+	setEditorVerticalScroll(
+		m_workEdit,
+		commonY);
+
+	m_outputEdit.SetRedraw(TRUE);
+	m_workEdit.SetRedraw(TRUE);
+
+	m_outputEdit.Invalidate(FALSE);
+	m_workEdit.Invalidate(FALSE);
+
+	m_lastOutputScroll =
+		getEditorScroll(m_outputEdit);
+
+	m_lastWorkScroll =
+		getEditorScroll(m_workEdit);
+
+	m_compareUpdating = FALSE;
+
+	CString status;
+
+	status.Format(
+		"Compare: %d added, %d removed",
+		result.addedCount,
+		result.removedCount);
+
+	m_reloadStatus.SetWindowText(status);
+}
+
+
+void CObjectDeparserDialog::reloadBlockParsedCallback(
+	const AsciiString& declaration,
+	const AsciiString& blockType,
+	const AsciiString& filename,
+	UnsignedInt line,
+	INILoadType loadType,
+	void* userData)
+{
+	ReloadCaptureContext* context =
+		static_cast<ReloadCaptureContext*>(userData);
+
+	if (!context)
+		return;
+
+	ParsedDefinitionCatalog::capture(
+		declaration,
+		blockType,
+		filename,
+		line,
+		loadType,
+		context->catalog);
+
+	context->dialog->pumpReloadMessages();
+}
+
+
+void CObjectDeparserDialog::pumpReloadMessages()
+{
+	if (!m_reloadInProgress ||
+		m_pumpingReloadMessages)
+	{
+		return;
+	}
+
+	const DWORD now = ::GetTickCount();
+
+	if (now - m_lastReloadPumpTick < 30)
+		return;
+
+	m_lastReloadPumpTick = now;
+	m_pumpingReloadMessages = TRUE;
+
+	MSG message = {};
+	Int processed = 0;
+
+	while (processed < 32 &&
+		::PeekMessage(
+			&message,
+			nullptr,
+			0,
+			0,
+			PM_REMOVE))
+	{
+		if (message.message == WM_QUIT)
+		{
+			::PostQuitMessage(
+				static_cast<Int>(message.wParam));
+
+			break;
+		}
+
+		if (!AfxGetApp()->PreTranslateMessage(&message))
+		{
+			::TranslateMessage(&message);
+			::DispatchMessage(&message);
+		}
+
+		++processed;
+	}
+
+	m_pumpingReloadMessages = FALSE;
 }

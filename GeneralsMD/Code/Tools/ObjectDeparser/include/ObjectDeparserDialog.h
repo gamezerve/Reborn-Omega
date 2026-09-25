@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////
-// FILE: ObjectDeparserDialog.h
+// FILE: ObjectDeparserDialog.h 
 // Author: Gamezerve, September 2026
 // Description: 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -42,6 +42,10 @@ protected:
 	afx_msg BOOL OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message);
 	afx_msg void OnPaint();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
+	afx_msg void OnOutputChanged();
+	afx_msg void OnTimer(UINT_PTR nIDEvent);
+	afx_msg void OnClose();
+
 
 	DECLARE_MESSAGE_MAP()
 
@@ -61,6 +65,24 @@ private:
 	Int m_activeSplitter;
 	double m_firstSplitterRatio;
 	double m_secondSplitterRatio;
+	void performCompare();
+	void stopCompareMode();
+	void synchronizeCompareScroll();
+	void restartCompareDebounce();
+	static void reloadBlockParsedCallback(
+		const AsciiString& declaration,
+		const AsciiString& blockType,
+		const AsciiString& filename,
+		UnsignedInt line,
+		INILoadType loadType,
+		void* userData);
+
+	void pumpReloadMessages();
+
+	Bool m_reloadInProgress;
+	Bool m_pumpingReloadMessages;
+	DWORD m_lastReloadPumpTick;
+
 
 	CEdit m_searchEdit;
 	CListBox m_resultsList;
@@ -85,4 +107,17 @@ private:
 	COLORREF m_selectionColor;
 
 	std::vector<const ParsedDefinition*> m_definitions;
+
+	enum
+	{
+		TIMER_COMPARE_SCROLL = 2001,
+		TIMER_COMPARE_DEBOUNCE = 2002
+	};
+
+	Bool m_compareMode;
+	Bool m_compareUpdating;
+
+	CPoint m_lastOutputScroll;
+	CPoint m_lastWorkScroll;
+
 };
