@@ -33,7 +33,6 @@
 #include "gamespy/ghttp/ghttp.h"
 
 #include "BuildVersion.h"
-#include "Lib/BaseType.h"
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
 #include "Common/GlobalData.h"
