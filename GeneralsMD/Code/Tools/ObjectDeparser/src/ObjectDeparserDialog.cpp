@@ -13,6 +13,9 @@
 #include "Common/ThingTemplate.h"
 #include "Common/ThingTemplateDeparser.h"
 
+#include "GameLogic/Weapon.h"
+#include "GameLogic/WeaponTemplateDeparser.h"
+
 BEGIN_MESSAGE_MAP(CObjectDeparserDialog, CDialog)
 	ON_WM_SIZE()
 	ON_WM_LBUTTONDOWN()
@@ -1125,6 +1128,24 @@ void CObjectDeparserDialog::OnDeparseNow()
 			output += definition->declaration.str();
 			output += "\r\n\r\n";
 			output += "; ThingTemplate was not found.\r\n";
+		}
+	}
+	else if (definition->blockType.compareNoCase("Weapon") == 0)
+	{
+		const WeaponTemplate* weapon =
+			TheWeaponStore->findWeaponTemplate(
+				definition->name);
+
+		if (weapon)
+		{
+			output += WeaponTemplateDeparser::deparse(
+				weapon);
+		}
+		else
+		{
+			output += definition->declaration.str();
+			output += "\r\n\r\n";
+			output += "; WeaponTemplate was not found.\r\n";
 		}
 	}
 	else

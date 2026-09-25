@@ -464,6 +464,12 @@ public:
 	Bool isPlayFXWhenStealthed() const { return m_playFXWhenStealthed; }
 	Bool getDieOnDetonate() const { return m_dieOnDetonate; }
 
+	Int getMinDelayBetweenShotsFrames() const	{	return m_minDelayBetweenShots; }
+
+	Int getMaxDelayBetweenShotsFrames() const	{	return m_maxDelayBetweenShots; }
+
+	const WeaponTemplate* getHistoricBonusWeapon() const { return m_historicBonusWeapon; }
+
 	Bool shouldProjectileCollideWith(
 		const Object* projectileLauncher,
 		const Object* projectile,

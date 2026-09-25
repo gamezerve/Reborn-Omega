@@ -58,6 +58,7 @@ set(GAMEENGINE_SRC
     Include/Common/IgnorePreferences.h
 #    Include/Common/INI.h
     Include/Common/INIException.h
+    Include/Common/INIFieldDeparser.h
     Include/Common/KindOf.h
     Include/Common/LadderPreferences.h
 #    Include/Common/Language.h
@@ -500,6 +501,7 @@ set(GAMEENGINE_SRC
     Include/GameLogic/WeaponSetFlags.h
     Include/GameLogic/WeaponSetType.h
     Include/GameLogic/WeaponStatus.h
+    Include/GameLogic/WeaponTemplateDeparser.h
 #    Include/GameNetwork/Connection.h
 #    Include/GameNetwork/ConnectionManager.h
 #    Include/GameNetwork/DisconnectManager.h
@@ -612,6 +614,7 @@ set(GAMEENGINE_SRC
 #    Source/Common/RandomValue.cpp
     Source/Common/Recorder.cpp
 #    Source/Common/ReplaySimulation.cpp
+    Source/Common/INI/INIFieldDeparser.cpp
 #    Source/Common/RTS/AcademyStats.cpp
     Source/Common/RTS/ActionManager.cpp
     Source/Common/RTS/Energy.cpp
@@ -1081,6 +1084,7 @@ set(GAMEENGINE_SRC
     Source/GameLogic/Object/Upgrade/WeaponSetUpgrade.cpp
     Source/GameLogic/Object/Weapon.cpp
     Source/GameLogic/Object/WeaponSet.cpp
+    Source/GameLogic/Object/WeaponTemplateDeparser.cpp
     Source/GameLogic/Reborn/ImageUpgradeReborn.cpp
     Source/GameLogic/ScriptEngine/ScriptActions.cpp
     Source/GameLogic/ScriptEngine/ScriptConditions.cpp
