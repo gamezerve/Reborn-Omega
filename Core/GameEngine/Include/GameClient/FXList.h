@@ -206,6 +206,8 @@ public:
 
 	static void parseFXListDefinition(INI* ini);
 
+	AsciiString getNameForList(const FXList* list) const;
+
 private:
 
 	// use the hashing function for Ints.

@@ -29,11 +29,19 @@
 
 #include "PreRTS.h"
 
+#define DEFINE_WEAPONBONUSCONDITION_NAMES
+#define DEFINE_WEAPONBONUSFIELD_NAMES
+#include "GameLogic/Weapon.h"
+
 #include "Common/GameCommon.h"
 #include "Common/INI.h"
 #include "Common/INIFieldDeparser.h"
 #include "Common/ThingTemplate.h"
-#include "GameLogic/Weapon.h"
+
+#include "GameClient/FXList.h"
+#include "GameClient/ParticleSys.h"
+
+#include "GameLogic/ObjectCreationList.h"
 #include "GameLogic/WeaponTemplateDeparser.h"
 
 #include <cmath>
@@ -46,6 +54,73 @@ static Int framesToMilliseconds(Int frames)
 		std::floor(
 			static_cast<double>(frames) *
 			MSEC_PER_LOGICFRAME_REAL));
+}
+
+static void appendVeterancyReference(
+	std::string& output,
+	const char* field,
+	VeterancyLevel level,
+	const AsciiString& name)
+{
+	if (name.isEmpty())
+	{
+		output += "; WARNING: Unresolved reference for ";
+		output += field;
+		output += "\r\n";
+		return;
+	}
+
+	const std::string value =
+		std::string(TheVeterancyNames[level]) +
+		" " +
+		name.str();
+
+	INIFieldDeparser::appendField(
+		output,
+		field,
+		value);
+}
+
+static void appendWeaponBonusFields(
+	std::string& output,
+	const WeaponBonusSet* bonuses)
+{
+	if (!bonuses)
+		return;
+
+	for (Int condition = 0;
+		condition < WEAPONBONUSCONDITION_COUNT;
+		++condition)
+	{
+		for (Int field = 0;
+			field < WeaponBonus::FIELD_COUNT;
+			++field)
+		{
+			const Real value =
+				bonuses->getField(
+					static_cast<WeaponBonusConditionType>(
+						condition),
+					static_cast<WeaponBonus::Field>(
+						field));
+
+			if (value == 1.0f)
+				continue;
+
+			const std::string text =
+				std::string(TheWeaponBonusNames[condition]) +
+				" " +
+				TheWeaponBonusFieldNames[field] +
+				" " +
+				INIFieldDeparser::formatReal(
+					value * 100.0f) +
+				"%";
+
+			INIFieldDeparser::appendField(
+				output,
+				"WeaponBonus",
+				text);
+		}
+	}
 }
 
 std::string WeaponTemplateDeparser::deparse(
@@ -212,6 +287,78 @@ std::string WeaponTemplateDeparser::deparse(
 			weapon,
 			output);
 	}
+
+	for (Int i = LEVEL_FIRST; i <= LEVEL_LAST; ++i)
+	{
+		const VeterancyLevel level =
+			static_cast<VeterancyLevel>(i);
+
+		const FXList* fireFX =
+			weapon->getFireFX(level);
+
+		if (fireFX)
+		{
+			appendVeterancyReference(
+				output,
+				"VeterancyFireFX",
+				level,
+				TheFXListStore->getNameForList(fireFX));
+		}
+
+		const FXList* detonationFX =
+			weapon->getProjectileDetonateFX(level);
+
+		if (detonationFX)
+		{
+			appendVeterancyReference(
+				output,
+				"VeterancyProjectileDetonationFX",
+				level,
+				TheFXListStore->getNameForList(detonationFX));
+		}
+
+		const ObjectCreationList* fireOCL =
+			weapon->getFireOCL(level);
+
+		if (fireOCL)
+		{
+			appendVeterancyReference(
+				output,
+				"VeterancyFireOCL",
+				level,
+				TheObjectCreationListStore->getNameForList(
+					fireOCL));
+		}
+
+		const ObjectCreationList* detonationOCL =
+			weapon->getProjectileDetonationOCL(level);
+
+		if (detonationOCL)
+		{
+			appendVeterancyReference(
+				output,
+				"VeterancyProjectileDetonationOCL",
+				level,
+				TheObjectCreationListStore->getNameForList(
+					detonationOCL));
+		}
+
+		const ParticleSystemTemplate* exhaust =
+			weapon->getProjectileExhaust(level);
+
+		if (exhaust)
+		{
+			appendVeterancyReference(
+				output,
+				"VeterancyProjectileExhaust",
+				level,
+				exhaust->getName());
+		}
+	}
+
+	appendWeaponBonusFields(
+		output,
+		weapon->getExtraBonus());
 
 	output += "\r\nEnd\r\n";
 

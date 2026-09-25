@@ -832,7 +832,21 @@ void FXList::doFXObj(const Object* primary, const Object* secondary) const
 	}
 }
 
+//-------------------------------------------------------------------------------------------------
+AsciiString FXListStore::getNameForList(
+	const FXList* list) const
+{
+	if (!list)
+		return AsciiString();
 
+	for (const auto& entry : m_fxmap)
+	{
+		if (&entry.second == list)
+			return TheNameKeyGenerator->keyToName(entry.first);
+	}
+
+	return AsciiString();
+}
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------

@@ -319,6 +319,12 @@ public:
 	void parseWeaponBonusSet(INI* ini);
 	static void parseWeaponBonusSet(INI* ini, void *instance, void* /*store*/, const void* /*userData*/);
 	static void parseWeaponBonusSetPtr(INI* ini, void *instance, void* /*store*/, const void* /*userData*/);
+
+	Real getField(WeaponBonusConditionType condition,	WeaponBonus::Field field) const
+	{
+		return m_bonus[condition].getField(field);
+	}
+
 };
 EMPTY_DTOR(WeaponBonusSet)
 

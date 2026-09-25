@@ -39,6 +39,7 @@
 #include "Common/DrawModule.h"
 #include "Common/GlobalData.h"
 #include "Common/INI.h"
+#include "Common/NameKeyGenerator.h"
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
 #include "Common/ThingTemplate.h"
@@ -1685,6 +1686,22 @@ const ObjectCreationList *ObjectCreationListStore::findObjectCreationList(const 
 	{
 		return &(*it).second;
 	}
+}
+
+//-------------------------------------------------------------------------------------------------
+AsciiString ObjectCreationListStore::getNameForList(
+	const ObjectCreationList* list) const
+{
+	if (!list)
+		return AsciiString();
+
+	for (const auto& entry : m_ocls)
+	{
+		if (&entry.second == list)
+			return TheNameKeyGenerator->keyToName(entry.first);
+	}
+
+	return AsciiString();
 }
 
 //-------------------------------------------------------------------------------------------------

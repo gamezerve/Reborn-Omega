@@ -32,14 +32,27 @@ std::string ThingTemplateDeparser::deparse(
 	const FieldParse* fields =
 		finalTemplate->getFieldParse();
 
+	std::string unsupportedFields;
+
 	for (const FieldParse* field = fields;
 		field && field->token;
 		++field)
 	{
-		INIFieldDeparser::deparseField(
+		if (!INIFieldDeparser::deparseField(
 			*field,
 			finalTemplate,
-			output);
+			output))
+		{
+			unsupportedFields += "; Unsupported field: ";
+			unsupportedFields += field->token;
+			unsupportedFields += "\r\n";
+		}
+	}
+
+	if (!unsupportedFields.empty())
+	{
+		output += "\r\n";
+		output += unsupportedFields;
 	}
 
 	output += "\r\nEnd\r\n";

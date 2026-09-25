@@ -33,6 +33,7 @@
 #pragma once
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
+#include "Common/AsciiString.h"
 #include "Common/GameMemory.h"
 
 // FORWARD REFERENCES /////////////////////////////////////////////////////////////////////////////
@@ -206,6 +207,9 @@ public:
 	static void parseObjectCreationListDefinition(INI* ini);
 
 	void addObjectCreationNugget(ObjectCreationNugget* nugget);
+
+	AsciiString getNameForList(
+		const ObjectCreationList* list) const;
 
 private:
 
