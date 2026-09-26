@@ -84,6 +84,7 @@ void GameSpyUpdateOverlays();
 void ReOpenPlayerInfo();
 void CheckReOpenPlayerInfo();
 GSCommunicatorConnectionStatus GameSpyGetCommunicatorConnectionStatus();
+Bool GameSpyHasUnreadCommunicatorMessages(); // Reborn: Expose the GO direct-message unread state to the in-game communicator button.
 
 // Close the in-game login prompt without cancelling the pending browser login.
 void GameSpyContinueBuddyLoginInBackground();

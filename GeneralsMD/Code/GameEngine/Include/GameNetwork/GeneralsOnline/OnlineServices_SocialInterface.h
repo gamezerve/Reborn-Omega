@@ -83,6 +83,20 @@ public:
         return 0;
 	}
 
+	// Reborn: Report whether any direct-message conversation still contains unread messages.
+	bool HasUnreadChatMessages() const
+	{
+		for (const auto& unreadEntry : m_mapUnreadMessagesForUser)
+		{
+			if (unreadEntry.second > 0)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	// Callbacks
 	void InvokeCallback_NewFriendRequest(std::string strDisplayName);
 	void RegisterForCallback_NewFriendRequest(std::function<void(std::string strDisplayName)> cbOnNewFriendRequest)

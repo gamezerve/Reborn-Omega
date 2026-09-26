@@ -4449,6 +4449,8 @@ void ControlBar::updateGlobalCommunicatorButtonImage()
 		return;
 
 	const Int status = GameSpyGetCommunicatorConnectionStatus();
+	const Bool hasUnreadMessages =
+		status == GSCOMMUNICATOR_CONNECTED && GameSpyHasUnreadCommunicatorMessages();
 	Int animationFrame = -1;
 	const UnsignedInt now = timeGetTime();
 
@@ -4470,6 +4472,25 @@ void ControlBar::updateGlobalCommunicatorButtonImage()
 			}
 		}
 	}
+	else if (hasUnreadMessages)
+	{
+		// Reborn: Blink between connected and notification artwork while a GO direct message is unread.
+		if (m_globalCommunicatorConnectionStatus != status || m_globalCommunicatorAnimationFrame < 0)
+		{
+			animationFrame = 0;
+			m_globalCommunicatorAnimationTime = now;
+		}
+		else
+		{
+			animationFrame = m_globalCommunicatorAnimationFrame;
+			if (now - m_globalCommunicatorAnimationTime >= 500)
+			{
+				const UnsignedInt elapsedFrames = (now - m_globalCommunicatorAnimationTime) / 500;
+				animationFrame = (animationFrame + elapsedFrames) % 2;
+				m_globalCommunicatorAnimationTime += elapsedFrames * 500;
+			}
+		}
+	}
 
 	if (m_globalCommunicatorConnectionStatus == status &&
 		m_globalCommunicatorAnimationFrame == animationFrame)
@@ -4484,7 +4505,10 @@ void ControlBar::updateGlobalCommunicatorButtonImage()
 	}
 	else if (status == GSCOMMUNICATOR_CONNECTED)
 	{
-		imageName = "GOCommunicatorConnected";
+		// Reborn: Frame zero presents the unread artwork; frame one returns to the normal connected image.
+		imageName = hasUnreadMessages && animationFrame == 0
+			? "GOCommunicatorNotification"
+			: "GOCommunicatorConnected";
 	}
 	else if (status == GSCOMMUNICATOR_CONNECTING)
 	{

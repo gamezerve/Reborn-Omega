@@ -594,6 +594,21 @@ GSCommunicatorConnectionStatus GameSpyGetCommunicatorConnectionStatus()
 	return GSCOMMUNICATOR_DISCONNECTED;
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return whether the connected GO social cache contains unread direct messages. */
+//-------------------------------------------------------------------------------------------------
+Bool GameSpyHasUnreadCommunicatorMessages()
+{
+#if defined(GENERALS_ONLINE)
+	NGMP_OnlineServices_SocialInterface* socialInterface =
+		NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_SocialInterface>();
+
+	return socialInterface != nullptr && socialInterface->HasUnreadChatMessages();
+#else
+	return FALSE;
+#endif
+}
+
 static void buddyTryReconnect()
 {
 	BuddyRequest req;
