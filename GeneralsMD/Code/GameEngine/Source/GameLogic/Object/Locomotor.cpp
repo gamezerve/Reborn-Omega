@@ -336,6 +336,7 @@ LocomotorTemplate::LocomotorTemplate()
 	m_stickToGround = false;
 	m_canMoveBackward = false;
 	m_hasSuspension = false;
+	m_setsModelConditionOverWater = false; // Reborn: Ordinary locomotors do not control the over-water model condition.
 	m_wheelTurnAngle = 0;
 	m_maximumWheelExtension = 0;
 	m_maximumWheelCompression = 0;
@@ -503,6 +504,7 @@ const FieldParse* LocomotorTemplate::getFieldParse() const
 		{ "StickToGround",				INI::parseBool,			nullptr,	offsetof(LocomotorTemplate, m_stickToGround) },
 		{ "CanMoveBackwards",				INI::parseBool,			nullptr,	offsetof(LocomotorTemplate, m_canMoveBackward) },
 		{ "HasSuspension",				INI::parseBool,			nullptr,	offsetof(LocomotorTemplate, m_hasSuspension) },
+		{ "SetsModelConditionOverWater", INI::parseBool, nullptr, offsetof(LocomotorTemplate, m_setsModelConditionOverWater) }, // Reborn: Let a surface-specific locomotor drive swimming visuals without hover movement.
 		{ "FrontWheelTurnAngle", INI::parseAngleReal, nullptr, offsetof(LocomotorTemplate, m_wheelTurnAngle) },
 		{ "MaximumWheelExtension", INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_maximumWheelExtension) },
 		{ "MaximumWheelCompression", INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_maximumWheelCompression) },

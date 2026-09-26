@@ -204,6 +204,7 @@ private:
 	Bool											m_stickToGround;				// if true, can't leave ground
 	Bool											m_canMoveBackward;				// if true, can move backwards.
 	Bool											m_hasSuspension;				///< If true, calculate 4 wheel independent suspension values.
+	Bool											m_setsModelConditionOverWater;	///< Reborn: If true, selecting this locomotor marks its object as over water.
 	Real											m_maximumWheelExtension; ///< Maximum distance wheels can move down.  (negative value)
 	Real											m_maximumWheelCompression; ///< Maximum distance wheels can move up.  (positive value)
 	Real											m_wheelTurnAngle;				///< How far the front wheels can turn.
@@ -256,6 +257,7 @@ public:
 	LocomotorAppearance getAppearance() const { return m_template->m_appearance; }
 	LocomotorPriority getMovePriority() const { return m_template->m_movePriority; }
 	LocomotorSurfaceTypeMask getLegalSurfaces() const { return m_template->m_surfaces; }
+	Bool getSetsModelConditionOverWater() const { return m_template->m_setsModelConditionOverWater; } // Reborn: Expose water-state ownership to AI locomotor selection.
 
 	AsciiString getTemplateName() const { return m_template->m_name;}
 	Real getMinSpeed() const { return m_template->m_minSpeed;}

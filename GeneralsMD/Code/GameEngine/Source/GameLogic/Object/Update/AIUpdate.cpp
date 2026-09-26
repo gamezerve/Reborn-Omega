@@ -963,6 +963,17 @@ void AIUpdateInterface::chooseGoodLocomotorFromCurrentSet()
 
 	if (prevLoco != m_curLocomotor)
 	{
+		// Reborn: Keep amphibious animation state synchronized with surface-specific locomotor selection.
+		const Bool prevControlledOverWater = prevLoco && prevLoco->getSetsModelConditionOverWater();
+		const Bool curControlsOverWater = m_curLocomotor && m_curLocomotor->getSetsModelConditionOverWater();
+		if (prevControlledOverWater || curControlsOverWater)
+		{
+			if (curControlsOverWater)
+				getObject()->setModelConditionState(MODELCONDITION_OVER_WATER);
+			else
+				getObject()->clearModelConditionState(MODELCONDITION_OVER_WATER);
+		}
+
 		// make sure the group's speed will be recalculated
 		if (getGroup())
 			getGroup()->recomputeGroupSpeed();
