@@ -68,6 +68,14 @@ static Bool buddyLoginCallbackRegistered = FALSE;
 static const UnsignedInt BUDDY_LOGIN_TIMEOUT = 120000;
 #endif
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Select the matching message-box theme for the current campaign UI. */
+//-------------------------------------------------------------------------------------------------
+static void selectGameSpyMessageBoxLayout()
+{
+	SetPopupMessageUsesRebornLayout(IsRebornCampaign());
+}
+
 Bool GameSpyIsBuddyLoginInProgress()
 {
 	return buddyLoginInProgress;
@@ -169,6 +177,7 @@ void ClearGSMessageBoxes()
 void GSMessageBoxOk(UnicodeString title, UnicodeString message, GameWinMsgBoxFunc newOkFunc)
 {
 	ClearGSMessageBoxes();
+	selectGameSpyMessageBoxLayout();
 	messageBoxWindow = MessageBoxOk(title, message, messageBoxOK);
 	okFunc = newOkFunc;
 }
@@ -180,6 +189,7 @@ void GSMessageBoxOk(UnicodeString title, UnicodeString message, GameWinMsgBoxFun
 void GSMessageBoxOkCancel(UnicodeString title, UnicodeString message, GameWinMsgBoxFunc newOkFunc, GameWinMsgBoxFunc newCancelFunc)
 {
 	ClearGSMessageBoxes();
+	selectGameSpyMessageBoxLayout();
 	messageBoxWindow = MessageBoxOkCancel(title, message, messageBoxOK, messageBoxCancel);
 	okFunc = newOkFunc;
 	cancelFunc = newCancelFunc;
@@ -207,13 +217,23 @@ void GSMessageBoxOkCancelWithLabels(
 		return;
 	}
 
+	// Reborn: Gen message boxes use their own element prefix.
+	const char *messageBoxPrefix = GetPopupMessageUsesRebornLayout()
+		? "MessageBoxGen.wnd:"
+		: "MessageBox.wnd:";
+
+	AsciiString buttonName;
+	buttonName.set(messageBoxPrefix);
+	buttonName.concat("ButtonOk");
 	GameWindow* buttonOk = TheWindowManager->winGetWindowFromId(
 		messageBoxWindow,
-		TheNameKeyGenerator->nameToKey("MessageBox.wnd:ButtonOk"));
+		TheNameKeyGenerator->nameToKey(buttonName));
 
+	buttonName.set(messageBoxPrefix);
+	buttonName.concat("ButtonCancel");
 	GameWindow* buttonCancel = TheWindowManager->winGetWindowFromId(
 		messageBoxWindow,
-		TheNameKeyGenerator->nameToKey("MessageBox.wnd:ButtonCancel"));
+		TheNameKeyGenerator->nameToKey(buttonName));
 
 	if (buttonOk != nullptr)
 	{
@@ -233,6 +253,7 @@ void GSMessageBoxOkCancelWithLabels(
 void GSMessageBoxYesNo(UnicodeString title, UnicodeString message, GameWinMsgBoxFunc newYesFunc, GameWinMsgBoxFunc newNoFunc)
 {
 	ClearGSMessageBoxes();
+	selectGameSpyMessageBoxLayout();
 	messageBoxWindow = MessageBoxYesNo(title, message, messageBoxOK, messageBoxCancel);
 	okFunc = newYesFunc;
 	cancelFunc = newNoFunc;
@@ -255,12 +276,14 @@ void RaiseGSMessageBox()
 void GSMessageBoxCancel(UnicodeString title, UnicodeString message, GameWinMsgBoxFunc cancelFunc)
 {
 	ClearGSMessageBoxes();
+	selectGameSpyMessageBoxLayout();
 	messageBoxWindow = MessageBoxCancel(title, message, cancelFunc);
 }
 
 void GSMessageBoxNoButtons(UnicodeString title, UnicodeString message, bool bShowLogo)
 {
 	ClearGSMessageBoxes();
+	selectGameSpyMessageBoxLayout();
 	messageBoxWindow = MessageBoxNoButtons(title, message, bShowLogo);
 }
 
