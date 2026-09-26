@@ -1042,6 +1042,8 @@ W3DModelDrawModuleData::W3DModelDrawModuleData() :
 	m_maxRecoil = MAX_SHIFT;
 	m_recoilDamping = RECOIL_DAMPING;
 	m_recoilSettle = SETTLE_RATE;
+	// Reborn: Preserve retail transforms unless a draw module explicitly requests a water offset.
+	m_overWaterZOffset = 0.0f;
 
 
   m_receivesDynamicLights = TRUE;
@@ -1207,6 +1209,8 @@ void W3DModelDrawModuleData::buildFieldParse(MultiIniFieldParse& p)
 		{ "MaxRecoilDistance",	INI::parseReal, nullptr, offsetof(W3DModelDrawModuleData, m_maxRecoil) },
 		{ "RecoilDamping",	INI::parseReal, nullptr, offsetof(W3DModelDrawModuleData, m_recoilDamping) },
 		{ "RecoilSettleSpeed",	INI::parseVelocityReal, nullptr, offsetof(W3DModelDrawModuleData, m_recoilSettle) },
+		// Reborn: Raise only the rendered model over water without changing authoritative movement physics.
+		{ "OverWaterZOffset",	INI::parseReal, nullptr, offsetof(W3DModelDrawModuleData, m_overWaterZOffset) },
 		{ "OkToChangeModelColor",	INI::parseBool, nullptr, offsetof(W3DModelDrawModuleData, m_okToChangeModelColor) },
 		{ "AnimationsRequirePower",	INI::parseBool, nullptr, offsetof(W3DModelDrawModuleData, m_animationsRequirePower) },
 		{ "ParticlesAttachedToAnimatedBones",	INI::parseBool, nullptr, offsetof(W3DModelDrawModuleData, m_particlesAttachedToAnimatedBones) },
@@ -2247,6 +2251,13 @@ void W3DModelDraw::adjustTransformMtx(Matrix3D& mtx) const
 		}
 	}
 #endif
+
+	// Reborn: Apply the INI water offset to the client transform only, leaving logic position and braking untouched.
+	if (d->m_overWaterZOffset != 0.0f &&
+		getDrawable()->getModelConditionFlags().test(MODELCONDITION_OVER_WATER))
+	{
+		mtx.Adjust_Z_Translation(d->m_overWaterZOffset);
+	}
 
 	if (m_curState->m_flags & (1<<ADJUST_HEIGHT_BY_CONSTRUCTION_PERCENT))
 	{

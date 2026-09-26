@@ -299,6 +299,7 @@ public:
 	Real															m_maxRecoil;
 	Real															m_recoilDamping;
 	Real															m_recoilSettle;
+	Real															m_overWaterZOffset;			///< Reborn: visual-only world Z offset while OVER_WATER is active
 	StaticGameLODLevel								m_minLODRequired;				///< minumum game LOD level necessary to use this module.
 	ModelConditionFlags								m_ignoreConditionStates;
 	Bool															m_okToChangeModelColor;
