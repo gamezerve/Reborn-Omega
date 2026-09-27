@@ -30,6 +30,8 @@
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "GameClient/CampaignManager.h" // Reborn: Resolve online layout names for the selected theme.
+
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
 #include "Common/MultiplayerSettings.h"
@@ -2408,7 +2410,7 @@ void WOLGameSetupMenuInit( WindowLayout *layout, void *userData )
 
 	// Set Keyboard to chat entry
 	raiseMessageBoxes = true;
-	TheTransitionHandler->setGroup("GameSpyGameOptionsMenuFade");
+	TheTransitionHandler->setGroup(UseGeneralsLayout() ? "GameSpyGameOptionsMenuFadeGen" : "GameSpyGameOptionsMenuFade"); // Reborn: Animate the active online game-options theme.
 	TheWindowManager->winSetFocus(textEntryChat);
 
 #if defined(GENERALS_ONLINE)
@@ -2561,7 +2563,7 @@ void WOLGameSetupMenuShutdown( WindowLayout *layout, void *userData )
 	TheShell->reverseAnimatewindow();
 
 	RaiseGSMessageBox();
-	TheTransitionHandler->reverse("GameSpyGameOptionsMenuFade");
+	TheTransitionHandler->reverse(UseGeneralsLayout() ? "GameSpyGameOptionsMenuFadeGen" : "GameSpyGameOptionsMenuFade"); // Reborn: Reverse the active online game-options transition.
 }
 
 static void fillPlayerInfo(const PeerResponse *resp, PlayerInfo *info)
@@ -4179,7 +4181,7 @@ WindowMsgHandledType WOLGameSetupMenuSystem( GameWindow *window, UnsignedInt msg
 
 				GameWindow *control = (GameWindow *)mData1;
 				Int controlID = control->winGetWindowId();
-				static int buttonCommunicatorID = NAMEKEY("GameSpyGameOptionsMenu.wnd:ButtonCommunicator");
+				int buttonCommunicatorID = NAMEKEY("GameSpyGameOptionsMenu.wnd:ButtonCommunicator"); // Reborn: Resolve the ID again if the active theme changed.
 
 				if ( controlID == buttonBackID )
 				{

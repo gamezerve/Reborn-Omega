@@ -31,6 +31,8 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "GameClient/CampaignManager.h" // Reborn: Resolve online layout names for the selected theme.
+
 #include "Common/GameEngine.h"
 #include "Common/QuickmatchPreferences.h"
 #include "Common/LadderPreferences.h"
@@ -141,7 +143,7 @@ static const LadderInfo * getLadderInfo();
 
 static Bool isInfoShown()
 {
-	static NameKeyType parentStatsID = NAMEKEY("WOLQuickMatchMenu.wnd:ParentStats");
+	NameKeyType parentStatsID = NAMEKEY("WOLQuickMatchMenu.wnd:ParentStats"); // Reborn: Resolve the ID again if the active theme changed.
 	GameWindow *parentStats = TheWindowManager->winGetWindowFromId( parentWOLQuickMatch, parentStatsID );
 	if (parentStats)
 		return !parentStats->winIsHidden();
@@ -150,7 +152,7 @@ static Bool isInfoShown()
 
 static void hideInfoGadgets(Bool doIt)
 {
-	static NameKeyType parentStatsID = NAMEKEY("WOLQuickMatchMenu.wnd:ParentStats");
+	NameKeyType parentStatsID = NAMEKEY("WOLQuickMatchMenu.wnd:ParentStats"); // Reborn: Resolve the ID again if the active theme changed.
 	GameWindow *parentStats = TheWindowManager->winGetWindowFromId( parentWOLQuickMatch, parentStatsID );
 	if (parentStats)
 	{
@@ -160,7 +162,7 @@ static void hideInfoGadgets(Bool doIt)
 
 static void hideOptionsGadgets(Bool doIt)
 {
-	static NameKeyType parentOptionsID = NAMEKEY("WOLQuickMatchMenu.wnd:ParentOptions");
+	NameKeyType parentOptionsID = NAMEKEY("WOLQuickMatchMenu.wnd:ParentOptions"); // Reborn: Resolve the ID again if the active theme changed.
 	GameWindow *parentOptions = TheWindowManager->winGetWindowFromId( parentWOLQuickMatch, parentOptionsID );
 	if (parentOptions)
 	{
@@ -187,7 +189,7 @@ static void enableOptionsGadgets(Bool doIt)
 #ifdef PERF_TEST
 	s_inQM = !doIt;
 #endif // PERF_TEST
-	static NameKeyType parentOptionsID = NAMEKEY("WOLQuickMatchMenu.wnd:ParentOptions");
+	NameKeyType parentOptionsID = NAMEKEY("WOLQuickMatchMenu.wnd:ParentOptions"); // Reborn: Resolve the ID again if the active theme changed.
 	GameWindow *parentOptions = TheWindowManager->winGetWindowFromId( parentWOLQuickMatch, parentOptionsID );
 	const LadderInfo *li = getLadderInfo();
 	if (parentOptions)
@@ -892,7 +894,7 @@ void WOLQuickMatchMenuInit( WindowLayout *layout, void *userData )
 
 	UpdateLocalPlayerStats();
 	UpdateStartButton();
-	TheTransitionHandler->setGroup("WOLQuickMatchMenuFade");
+	TheTransitionHandler->setGroup(UseGeneralsLayout() ? "WOLQuickMatchMenuFadeGen" : "WOLQuickMatchMenuFade"); // Reborn: Animate the active quick-match theme.
 	isInInit= FALSE;
 }
 
@@ -947,7 +949,7 @@ void WOLQuickMatchMenuShutdown( WindowLayout *layout, void *userData )
 	}
 
 	TheShell->reverseAnimatewindow();
-	TheTransitionHandler->reverse("WOLQuickMatchMenuFade");
+	TheTransitionHandler->reverse(UseGeneralsLayout() ? "WOLQuickMatchMenuFadeGen" : "WOLQuickMatchMenuFade"); // Reborn: Reverse the active quick-match transition.
 
 	RaiseGSMessageBox();
 }
@@ -1600,7 +1602,7 @@ WindowMsgHandledType WOLQuickMatchMenuSystem( GameWindow *window, UnsignedInt ms
 					break;
 				GameWindow *control = (GameWindow *)mData1;
 				Int controlID = control->winGetWindowId();
-				static NameKeyType buttonOptionsID = NAMEKEY("WOLQuickMatchMenu.wnd:ButtonOptions");
+				NameKeyType buttonOptionsID = NAMEKEY("WOLQuickMatchMenu.wnd:ButtonOptions"); // Reborn: Resolve the ID again if the active theme changed.
 
 				if ( controlID == buttonStopID )
 				{

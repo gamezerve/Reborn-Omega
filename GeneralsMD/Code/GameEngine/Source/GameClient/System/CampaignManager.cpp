@@ -61,6 +61,9 @@
 #include "GameNetwork/GameInfo.h" //For Challenge Info.  It and Skirmish info are in the wrong place it seems.
 #include "Common/GlobalData.h"
 
+#include <map> // Reborn: Keep generated themed WND names stable for legacy const-char pointers.
+#include <string> // Reborn: Build themed WND names without maintaining duplicate lookup tables.
+
 //-----------------------------------------------------------------------------
 // DEFINES ////////////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
@@ -109,6 +112,28 @@ Bool UseGeneralsLayout()
 	}
 
 	return IsRebornCampaign();
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Insert the Generals-theme suffix into a WND filename or child-window key. */
+//-------------------------------------------------------------------------------------------------
+const char *GetThemedWindowName( const char *windowName )
+{
+	if (!windowName || !UseGeneralsLayout())
+		return windowName ? windowName : "";
+
+	// Reborn: Cache each generated name because several legacy menu paths retain the returned pointer.
+	static std::map<std::string, std::string> themedNames;
+	const std::map<std::string, std::string>::const_iterator existingName = themedNames.find(windowName);
+	if (existingName != themedNames.end())
+		return existingName->second.c_str();
+
+	std::string themedName(windowName);
+	const std::string::size_type extensionPosition = themedName.find(".wnd");
+	if (extensionPosition != std::string::npos)
+		themedName.insert(extensionPosition, "Gen");
+
+	return themedNames.insert(std::make_pair(std::string(windowName), themedName)).first->second.c_str();
 }
 
 const FieldParse CampaignManager::m_campaignFieldParseTable[] =

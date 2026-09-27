@@ -30,9 +30,41 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "GameClient/CampaignManager.h" // Reborn: Resolve visual sources without changing canonical online layout identities.
 #include "GameClient/WindowLayout.h"
 #include "GameClient/Shell.h"
 #include "GameClient/GameWindowManager.h"
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Load Generals-themed online visuals while retaining the WND identity expected by GO. */
+//-------------------------------------------------------------------------------------------------
+static AsciiString getOnlineLayoutSourceFilename( const AsciiString &layoutIdentity )
+{
+	if (!UseGeneralsLayout())
+		return layoutIdentity;
+
+	static const char *themedOnlineLayouts[] =
+	{
+		"Menus/GameSpyGameOptionsMenu.wnd",
+		"Menus/PopupGameSpyCreateGame.wnd",
+		"Menus/WOLCustomLobby.wnd",
+		"Menus/WOLLadderScreen.wnd",
+		"Menus/WOLLoginMenu.wnd",
+		"Menus/WOLMapSelectMenu.wnd",
+		"Menus/WOLMessageWindow.wnd",
+		"Menus/WOLQuickMatchMenu.wnd",
+		"Menus/WOLStatusMenu.wnd",
+		"Menus/WOLWelcomeMenu.wnd"
+	};
+
+	for (Int i = 0; i < ARRAY_SIZE(themedOnlineLayouts); ++i)
+	{
+		if (layoutIdentity.compareNoCase(themedOnlineLayouts[i]) == 0)
+			return AsciiString(GetThemedWindowName(themedOnlineLayouts[i]));
+	}
+
+	return layoutIdentity;
+}
 
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////////////////////////
 //-------------------------------------------------------------------------------------------------
@@ -208,13 +240,14 @@ Bool WindowLayout::load( AsciiString filename )
 	//
 	GameWindow *target;
 	WindowLayoutInfo info;
+	const AsciiString sourceFilename = getOnlineLayoutSourceFilename(filename); // Reborn: Keep filename as GO's canonical identity and theme only the parsed source.
 
-	target = TheWindowManager->winCreateFromScript( filename, &info );
+	target = TheWindowManager->winCreateFromScript( sourceFilename, &info );
 	if( target == nullptr )
 	{
 
 		DEBUG_ASSERTCRASH( target, ("WindowLayout::load - Failed to load layout") );
-		DEBUG_LOG(( "WindowLayout::load - Unable to load layout file '%s'", filename.str() ));
+		DEBUG_LOG(( "WindowLayout::load - Unable to load layout file '%s'", sourceFilename.str() ));
 		return FALSE;
 
 	}

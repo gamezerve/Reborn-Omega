@@ -117,11 +117,13 @@ static const char *qmperPlayerGadgetsToHide[] =
 
 static void showGameSpyGameOptionsUnderlyingGUIElements( Bool show )
 {
+	// Reborn: Both visual themes expose the original online child-window names to GO.
 	ShowUnderlyingGUIElements( show, layoutFilename, parentName, gadgetsToHide, perPlayerGadgetsToHide );
 
 }
 static void showGameSpyQMUnderlyingGUIElements( Bool show )
 {
+	// Reborn: Both visual themes expose the original online child-window names to GO.
 	ShowUnderlyingGUIElements( show, qmlayoutFilename, qmparentName, qmgadgetsToHide, qmperPlayerGadgetsToHide );
 }
 

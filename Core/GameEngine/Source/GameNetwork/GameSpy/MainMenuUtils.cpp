@@ -31,6 +31,8 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "GameClient/CampaignManager.h" // Reborn: Resolve online layout names for the selected theme.
+
 #include <fcntl.h>
 
 //#include "Common/Registry.h"
@@ -248,10 +250,10 @@ static void startOnline()
 	UserPreferences::const_iterator it = pref.find("useProfiles");
 	if (it != pref.end() && it->second.compareNoCase("yes") == 0)
 #endif // ALLOW_NON_PROFILED_LOGIN
-		TheShell->push( "Menus/GameSpyLoginProfile.wnd" );
+		TheShell->push( GetThemedWindowName("Menus/GameSpyLoginProfile.wnd") );
 #ifdef ALLOW_NON_PROFILED_LOGIN
 	else
-		TheShell->push( "Menus/GameSpyLoginQuick.wnd" );
+		TheShell->push( GetThemedWindowName("Menus/GameSpyLoginQuick.wnd") );
 #endif // ALLOW_NON_PROFILED_LOGIN
 #else
 	NGMP_OnlineServices_AuthInterface *authInterface =
@@ -275,6 +277,8 @@ static void startOnline()
 			GameSpyHandoffBuddyLoginToShell();
 		}
 
+		// Reborn: Keep the Generals Online authentication carrier independent of the visual theme;
+		// the successful login callback opens the themed online menus afterwards.
 		TheShell->push(AsciiString("Menus/GameSpyLoginProfile.wnd"));
 	}
 #endif

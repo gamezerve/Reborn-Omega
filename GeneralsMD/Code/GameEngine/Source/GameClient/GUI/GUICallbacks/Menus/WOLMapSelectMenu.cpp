@@ -116,6 +116,7 @@ void positionStartSpots( AsciiString mapName, GameWindow *buttonMapStartPosition
 
 static void showGameSpyGameOptionsUnderlyingGUIElements( Bool show )
 {
+	// Reborn: Both visual themes expose the original online child-window names to GO.
 	ShowUnderlyingGUIElements( show, layoutFilename, parentName, gadgetsToHide, perPlayerGadgetsToHide );
 	GameWindow *win	= TheWindowManager->winGetWindowFromId( nullptr, TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:ButtonBack") );
 	if(win)

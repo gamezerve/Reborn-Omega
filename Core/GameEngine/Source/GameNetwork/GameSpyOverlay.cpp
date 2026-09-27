@@ -626,7 +626,8 @@ void GameSpyOpenOverlay( GSOverlayType overlay )
 #endif
 
 	const Bool useGeneralsBuddyOverlay = overlay == GSOVERLAY_BUDDY && UseGeneralsLayout(); // Reborn: Follow the selected visual theme.
-	const char *overlayFilename = useGeneralsBuddyOverlay
+	// Reborn: Keep GO overlay identities canonical; WindowLayout selects the themed map source internally.
+	const AsciiString overlayFilename = useGeneralsBuddyOverlay
 		? "Menus/WOLBuddyOverlayGen.wnd"
 		: gsOverlays[overlay];
 
@@ -674,10 +675,10 @@ void GameSpyOpenOverlay( GSOverlayType overlay )
 	}
 	else
 	{
-		overlayLayouts[overlay] = TheWindowManager->winCreateLayout(AsciiString(overlayFilename));
+		overlayLayouts[overlay] = TheWindowManager->winCreateLayout(overlayFilename);
 		if (!overlayLayouts[overlay])
 		{
-			DEBUG_LOG(("Unable to create GameSpy overlay layout '%s'", overlayFilename));
+			DEBUG_LOG(("Unable to create GameSpy overlay layout '%s'", overlayFilename.str()));
 			return;
 		}
 		if (overlay == GSOVERLAY_BUDDY)

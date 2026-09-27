@@ -35,6 +35,7 @@
 #include "Common/RandomValue.h"
 #include "Common/ScoreKeeper.h"
 #include "GameClient/GameText.h"
+#include "GameClient/CampaignManager.h" // Reborn: Resolve the active online game-options layout for diagnostics.
 #include "GameClient/MapUtil.h"
 #include "GameClient/Shell.h"
 #include "GameLogic/GameLogic.h"
@@ -866,7 +867,7 @@ void GameSpyStagingRoom::reset()
 #ifdef DEBUG_LOGGING
 	if (this == TheGameSpyGame)
 	{
-		WindowLayout *theLayout = TheShell->findScreenByFilename("Menus/GameSpyGameOptionsMenu.wnd");
+		WindowLayout *theLayout = TheShell->findScreenByFilename("Menus/GameSpyGameOptionsMenu.wnd"); // Reborn: Detect either online game-options theme.
 		if (theLayout)
 		{
 			DEBUG_LOG(("Resetting TheGameSpyGame on the game options menu!"));

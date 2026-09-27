@@ -182,6 +182,7 @@ private:
 //-----------------------------------------------------------------------------
 Bool IsRebornCampaign();
 Bool UseGeneralsLayout(); // Reborn: Apply the user-selected visual theme without changing campaign identity.
+const char *GetThemedWindowName( const char *windowName ); // Reborn: Resolve a stable layout filename or window key for the selected visual theme.
 
 //-----------------------------------------------------------------------------
 // EXTERNALS //////////////////////////////////////////////////////////////////

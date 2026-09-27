@@ -31,6 +31,8 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "GameClient/CampaignManager.h" // Reborn: Resolve online layout names for the selected theme.
+
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
 #include "Common/MiniLog.h"
@@ -1664,7 +1666,7 @@ void WOLLobbyMenuShutdown( WindowLayout *layout, void *userData )
 	DontShowMainMenu = FALSE;
 
 	RaiseGSMessageBox();
-	TheTransitionHandler->reverse("WOLCustomLobbyFade");
+	TheTransitionHandler->reverse(UseGeneralsLayout() ? "WOLCustomLobbyFadeGen" : "WOLCustomLobbyFade"); // Reborn: Reverse the active custom-lobby transition.
 
 }
 
@@ -1834,7 +1836,7 @@ void WOLLobbyMenuUpdate( WindowLayout * layout, void *userData)
 		if(initialGadgetDelay == 1)
 		{
 			TheTransitionHandler->remove("MainMenuDefaultMenuLogoFade");
-			TheTransitionHandler->setGroup("WOLCustomLobbyFade");
+			TheTransitionHandler->setGroup(UseGeneralsLayout() ? "WOLCustomLobbyFadeGen" : "WOLCustomLobbyFade"); // Reborn: Animate the active custom-lobby theme.
 			TheWindowManager->winSetFocus(textEntryChat);
 			initialGadgetDelay = 2;
 			justEntered = FALSE;

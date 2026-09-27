@@ -31,6 +31,8 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "GameClient/CampaignManager.h" // Reborn: Resolve online layout names for the selected theme.
+
 #include "Common/STLTypedefs.h"
 #include "../NGMP_types.h"
 
@@ -84,6 +86,7 @@ static Bool useWebBrowserForTOS = FALSE;
 static Bool isShuttingDown = false;
 static Bool buttonPushed = false;
 static const char *nextScreen = NULL;
+static Bool s_loginUsesGeneralsLayout = FALSE; // Reborn: Track the layout actually loaded instead of the current theme preference.
 
 static const UnsignedInt loginTimeoutInMS = 10000;
 static UnsignedInt loginAttemptTime = 0;
@@ -448,6 +451,8 @@ void EnableLoginControls( Bool state )
 //-------------------------------------------------------------------------------------------------
 void WOLLoginMenuInit( WindowLayout *layout, void *userData )
 {
+	s_loginUsesGeneralsLayout = layout &&
+		layout->getFilename().compareNoCase("Menus/GameSpyLoginProfileGen.wnd") == 0; // Reborn: Match transitions to the actual authentication carrier.
 	nextScreen = NULL;
 	buttonPushed = false;
 	isShuttingDown = false;
@@ -541,7 +546,7 @@ void WOLLoginMenuInit( WindowLayout *layout, void *userData )
 		TheWindowManager->winSendSystemMsg( parentWOLLogin, GBM_SELECTED,
 																			(WindowMsgData)buttonTOS, buttonTOSID );
 	}
-	TheTransitionHandler->setGroup("GameSpyLoginProfileFade");
+	TheTransitionHandler->setGroup(s_loginUsesGeneralsLayout ? "GameSpyLoginProfileFadeGen" : "GameSpyLoginProfileFade"); // Reborn: Animate the login layout that was actually loaded.
 
 }
 
@@ -581,7 +586,7 @@ void WOLLoginMenuShutdown( WindowLayout *layout, void *userData )
 	}
 
 	TheShell->reverseAnimatewindow();
-	TheTransitionHandler->reverse("GameSpyLoginProfileFade");
+	TheTransitionHandler->reverse(s_loginUsesGeneralsLayout ? "GameSpyLoginProfileFadeGen" : "GameSpyLoginProfileFade"); // Reborn: Reverse the login layout that was actually loaded.
 
 }
 
@@ -1095,14 +1100,14 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 				else if ( controlID == buttonUseAccountID )
 				{
 					buttonPushed = true;
-					nextScreen = "Menus/GameSpyLoginProfile.wnd";
+					nextScreen = GetThemedWindowName("Menus/GameSpyLoginProfile.wnd");
 					TheShell->pop();
 					//TheShell->push( "Menus/GameSpyLoginProfile.wnd" );
 				}
 				else if ( controlID == buttonDontUseAccountID )
 				{
 					buttonPushed = true;
-					nextScreen = "Menus/GameSpyLoginQuick.wnd";
+					nextScreen = GetThemedWindowName("Menus/GameSpyLoginQuick.wnd");
 					TheShell->pop();
 					//TheShell->push( "Menus/GameSpyLoginQuick.wnd" );
 				}
@@ -1191,7 +1196,7 @@ WindowMsgHandledType WOLLoginMenuSystem( GameWindow *window, UnsignedInt msg,
 					{
 						// not the profile screen - switch to it
 						buttonPushed = TRUE;
-						nextScreen = "Menus/GameSpyLoginProfile.wnd";
+						nextScreen = GetThemedWindowName("Menus/GameSpyLoginProfile.wnd");
 						TheShell->pop();
 					}
 #endif // ALLOW_NON_PROFILED_LOGIN

@@ -1628,7 +1628,7 @@ extern Int GetAdditionalDisconnectsFromUserFile(Int playerID);
 void GameSpyLoadScreen::init( GameInfo *game )
 {
 	// create the layout of the load screen
-	m_loadScreen = TheWindowManager->winCreateFromScript( "Menus/GameSpyLoadScreen.wnd" );
+	m_loadScreen = TheWindowManager->winCreateFromScript( GetThemedWindowName("Menus/GameSpyLoadScreen.wnd") );
 	DEBUG_ASSERTCRASH(m_loadScreen, ("Can't initialize the Multiplayer loadscreen"));
 	m_loadScreen->winHide(FALSE);
 	m_loadScreen->winBringToTop();

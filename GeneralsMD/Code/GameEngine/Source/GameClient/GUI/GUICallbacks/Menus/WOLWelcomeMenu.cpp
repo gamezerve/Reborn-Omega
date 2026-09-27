@@ -31,6 +31,8 @@
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
+#include "GameClient/CampaignManager.h" // Reborn: Resolve online layout names for the selected theme.
+
 #include "gamespy/peer/peer.h"
 
 #include "Common/GameEngine.h"
@@ -474,11 +476,11 @@ void UpdateLocalPlayerStats()
 
 	if (welcomeParent)
 	{
-		PopulatePlayerInfoWindows( "WOLWelcomeMenu.wnd" );
+		PopulatePlayerInfoWindows( "WOLWelcomeMenu.wnd" ); // Reborn: Gen visuals retain the canonical GO child-window prefix.
 	}
 	else
 	{
-		PopulatePlayerInfoWindows( "WOLQuickMatchMenu.wnd" );
+		PopulatePlayerInfoWindows( "WOLQuickMatchMenu.wnd" ); // Reborn: Gen visuals retain the canonical GO child-window prefix.
 	}
 }
 
@@ -657,7 +659,7 @@ void WOLWelcomeMenuInit( WindowLayout *layout, void *userData )
 #endif
 
 	raiseMessageBoxes = TRUE;
-	TheTransitionHandler->setGroup("WOLWelcomeMenuFade");
+	TheTransitionHandler->setGroup(UseGeneralsLayout() ? "WOLWelcomeMenuFadeGen" : "WOLWelcomeMenuFade"); // Reborn: Animate the active online welcome theme.
 
 #if defined(GENERALS_ONLINE)
     // Update the communicator button anytime we get notifications
@@ -717,7 +719,7 @@ void WOLWelcomeMenuShutdown( WindowLayout *layout, void *userData )
 	}
 
 	TheShell->reverseAnimatewindow();
-	TheTransitionHandler->reverse("WOLWelcomeMenuFade");
+	TheTransitionHandler->reverse(UseGeneralsLayout() ? "WOLWelcomeMenuFadeGen" : "WOLWelcomeMenuFade"); // Reborn: Reverse the active online welcome transition.
 
 
 	RaiseGSMessageBox();
