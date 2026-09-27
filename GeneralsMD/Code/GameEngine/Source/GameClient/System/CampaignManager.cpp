@@ -99,7 +99,7 @@ Bool UseGeneralsLayout()
 			case REBORN_LAYOUT_THEME_RANDOM:
 			{
 				// Reborn: Keep Random consistent for the entire process so related layouts and images cannot disagree.
-				static const Bool randomLayoutUsesGenerals = (GetTickCount() & 1) != 0;
+				static const Bool randomLayoutUsesGenerals = (rand() % 2) != 0;
 				return randomLayoutUsesGenerals;
 			}
 
