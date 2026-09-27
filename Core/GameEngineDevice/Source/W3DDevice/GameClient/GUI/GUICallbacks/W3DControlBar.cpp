@@ -684,7 +684,7 @@ void W3DNoDraw( GameWindow *window, WinInstanceData *instData )
 
 }
 
-void drawSkinnyBorder( Int x, Int y, Int width, Int height);
+void drawSkinnyBorder(Int x, Int y, Int width, Int height, Bool useGeneralsLayout); // Reborn: Allow map previews to select theme-specific border art.
 void W3DDrawMapPreview( GameWindow *window, WinInstanceData *instData)
 {
 	MapMetaData *mmData = (MapMetaData *)window->winGetUserData();
@@ -695,7 +695,7 @@ void W3DDrawMapPreview( GameWindow *window, WinInstanceData *instData)
 	if(!mmData)
 	{
 		W3DGameWinDefaultDraw( window, instData );
-		drawSkinnyBorder(pixelX - 1, pixelY - 1, width + 2, height + 2);
+		drawSkinnyBorder(pixelX - 1, pixelY - 1, width + 2, height + 2, UseGeneralsLayout()); // Reborn: Match the preview border to the selected layout theme.
 		return;
 	}
 
@@ -760,10 +760,13 @@ void W3DDrawMapPreview( GameWindow *window, WinInstanceData *instData)
 			TheDisplay->drawImage(image, pixelX + it->x, pixelY + it->y, pixelX + it->x + SUPPLY_TECH_SIZE, pixelY + it->y +SUPPLY_TECH_SIZE);
 			it++;
 		}
-	drawSkinnyBorder(pixelX - 1, pixelY - 1, width + 2, height + 2);
+	drawSkinnyBorder(pixelX - 1, pixelY - 1, width + 2, height + 2, UseGeneralsLayout()); // Reborn: Match the preview border to the selected layout theme.
 }
 
-void drawSkinnyBorder( Int x, Int y, Int width, Int height)
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Draw the map-preview frame with the selected shell theme's border pieces. */
+//-------------------------------------------------------------------------------------------------
+void drawSkinnyBorder(Int x, Int y, Int width, Int height, Bool useGeneralsLayout)
 {
 
 	enum
@@ -788,8 +791,8 @@ void drawSkinnyBorder( Int x, Int y, Int width, Int height)
 	y = originalY - Offset;
 	y2 = maxY - OffsetLower;
 	x2 = maxX - (OffsetLower + BORDER_LINE_SIZE);
-	image1 = TheMappedImageCollection->findImageByName("FrameT");
-	image2 = TheMappedImageCollection->findImageByName("FrameB");
+	image1 = TheMappedImageCollection->findImageByName(useGeneralsLayout ? "FrameTGen" : "FrameT");
+	image2 = TheMappedImageCollection->findImageByName(useGeneralsLayout ? "FrameBGen" : "FrameB");
 	for( x=(originalX + 3); x <= x2; x += BORDER_LINE_SIZE )
 	{
 
@@ -834,8 +837,8 @@ void drawSkinnyBorder( Int x, Int y, Int width, Int height)
 
 	// Draw Vertical Lines
 	// All border pieces are based on a 10 pixel offset from the centerline
-	image1 = TheMappedImageCollection->findImageByName("FrameL");
-	image2 = TheMappedImageCollection->findImageByName("FrameR");
+	image1 = TheMappedImageCollection->findImageByName(useGeneralsLayout ? "FrameLGen" : "FrameL");
+	image2 = TheMappedImageCollection->findImageByName(useGeneralsLayout ? "FrameRGen" : "FrameR");
 
 	x = originalX - Offset;
 	x2 = maxX - OffsetLower;
@@ -885,22 +888,22 @@ void drawSkinnyBorder( Int x, Int y, Int width, Int height)
 	// Draw Corners
 	x = originalX - 2;//BORDER_CORNER_SIZE ;
 	y = originalY - 2;//BORDER_CORNER_SIZE;
-	image1 = TheMappedImageCollection->findImageByName("FrameCornerUL");
+	image1 = TheMappedImageCollection->findImageByName(useGeneralsLayout ? "FrameCornerULGen" : "FrameCornerUL");
 	TheDisplay->drawImage( image1,
 												 x, y, x + size, y + size );
 	x = maxX - 5;//BORDER_CORNER_SIZE;
 	y = originalY - 2;//BORDER_CORNER_SIZE;
-	image1 = TheMappedImageCollection->findImageByName("FrameCornerUR");
+	image1 = TheMappedImageCollection->findImageByName(useGeneralsLayout ? "FrameCornerURGen" : "FrameCornerUR");
 	TheDisplay->drawImage(image1,
 												 x, y, x + size, y + size );
 	x = originalX - 2;//BORDER_CORNER_SIZE;
 	y = maxY - 5;//BORDER_CORNER_SIZE;
-	image1 = TheMappedImageCollection->findImageByName("FrameCornerLL");
+	image1 = TheMappedImageCollection->findImageByName(useGeneralsLayout ? "FrameCornerLLGen" : "FrameCornerLL");
 	TheDisplay->drawImage( image1,
 												 x, y, x + size, y + size );
 	x = maxX - 5;//BORDER_CORNER_SIZE;
 	y = maxY - 5;//BORDER_CORNER_SIZE;
-	image1 = TheMappedImageCollection->findImageByName("FrameCornerLR");
+	image1 = TheMappedImageCollection->findImageByName(useGeneralsLayout ? "FrameCornerLRGen" : "FrameCornerLR");
 	TheDisplay->drawImage(image1,
 												 x, y, x + size, y + size );
 

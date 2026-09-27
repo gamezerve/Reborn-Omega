@@ -64,6 +64,7 @@
 #include "GameClient/GameWindowTransitions.h"
 
 static Bool s_popupSaveLoadUsesRebornLayout = FALSE;
+static Bool s_fullScreenSaveLoadUsesGeneralsLayout = FALSE; // Reborn: Track the fullscreen layout that is actually loaded.
 
 void SetPopupSaveLoadUsesRebornLayout(Bool useReborn)
 {
@@ -77,19 +78,15 @@ static const char* GetPopupSaveLoadWndName()
 
 static const char* GetSaveLoadWndName()
 {
-	const Campaign* campaign = TheCampaignManager->getCurrentCampaign();
+	return s_fullScreenSaveLoadUsesGeneralsLayout ? "SaveLoadGen.wnd" : "SaveLoad.wnd"; // Reborn: Resolve controls against the loaded theme, including corrupt-save dialogs.
+}
 
-	if (campaign == nullptr)
-		return "SaveLoad.wnd";
-
-	const AsciiString& campaignName = campaign->m_name;
-
-	if (campaignName.isEmpty())
-		return "SaveLoad.wnd";
-
-	//return IsRebornCampaign() ? "SaveLoadGen.wnd" : "SaveLoad.wnd";
-	// Reborn: Disabled for now, since the SaveLoadGen.wnd may cause issues when a corrupt save file opened.
-	return IsRebornCampaign() ? "SaveLoad.wnd" : "SaveLoad.wnd";
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return the transition group belonging to the loaded fullscreen save/load layout. */
+//-------------------------------------------------------------------------------------------------
+static const char* GetSaveLoadTransitionGroup()
+{
+	return s_fullScreenSaveLoadUsesGeneralsLayout ? "SaveLoadMenuFadeGen" : "SaveLoadMenuFade"; // Reborn: Animate the matching fullscreen save/load layout.
 }
 
 static NameKeyType MakeWndKey(const char* wndName, const char* controlName)
@@ -332,6 +329,8 @@ void SaveLoadMenuFullScreenInit( WindowLayout *layout, void *userData )
 {
 
 	TheShell->showShellMap(TRUE);
+	s_fullScreenSaveLoadUsesGeneralsLayout =
+		layout && layout->getFilename().compareNoCase("Menus/SaveLoadGen.wnd") == 0; // Reborn: Bind IDs to the layout selected when this menu was opened.
 
 	isPopup = FALSE;
 	// set default behavior for this menu
@@ -368,36 +367,36 @@ void SaveLoadMenuFullScreenInit( WindowLayout *layout, void *userData )
 	//buttonSaveDescConfirm = GetSaveLoadKey("ButtonSaveDescConfirm");
 	//buttonDeleteConfirm = GetSaveLoadKey("ButtonDeleteConfirm");
 	//buttonDeleteCancel = GetSaveLoadKey("ButtonDeleteCancel");
-	buttonBackKey = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonBack");
-	buttonSaveKey = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonSave");
-	buttonLoadKey = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonLoad");
-	buttonDeleteKey = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonDelete");
-	listboxGamesKey = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ListboxGames");
-	buttonOverwriteCancel = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonOverwriteCancel");
-	buttonOverwriteConfirm = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonOverwriteConfirm");
-	buttonLoadCancel = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonLoadCancel");
-	buttonLoadConfirm = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonLoadConfirm");
-	buttonSaveDescCancel = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonSaveDescCancel");
-	buttonSaveDescConfirm = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonSaveDescConfirm");
-	buttonDeleteConfirm = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonDeleteConfirm");
-	buttonDeleteCancel = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonDeleteCancel");
-	buttonBaseSavesKey = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonBaseSaves");
-	buttonModSavesKey = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:ButtonModSaves");
+	buttonBackKey = GetSaveLoadKey("ButtonBack");
+	buttonSaveKey = GetSaveLoadKey("ButtonSave");
+	buttonLoadKey = GetSaveLoadKey("ButtonLoad");
+	buttonDeleteKey = GetSaveLoadKey("ButtonDelete");
+	listboxGamesKey = GetSaveLoadKey("ListboxGames");
+	buttonOverwriteCancel = GetSaveLoadKey("ButtonOverwriteCancel");
+	buttonOverwriteConfirm = GetSaveLoadKey("ButtonOverwriteConfirm");
+	buttonLoadCancel = GetSaveLoadKey("ButtonLoadCancel");
+	buttonLoadConfirm = GetSaveLoadKey("ButtonLoadConfirm");
+	buttonSaveDescCancel = GetSaveLoadKey("ButtonSaveDescCancel");
+	buttonSaveDescConfirm = GetSaveLoadKey("ButtonSaveDescConfirm");
+	buttonDeleteConfirm = GetSaveLoadKey("ButtonDeleteConfirm");
+	buttonDeleteCancel = GetSaveLoadKey("ButtonDeleteCancel");
+	buttonBaseSavesKey = GetSaveLoadKey("ButtonBaseSaves");
+	buttonModSavesKey = GetSaveLoadKey("ButtonModSaves");
 	currentSaveListSource = SAVE_LIST_MOD;
 
 	//set keyboard focus to main parent and set modal
 	//NameKeyType parentID = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:SaveLoadMenu");
-	DEBUG_LOG(("SaveLoadMenuFullScreenInit: looking for hardcoded parent name=SaveLoad.wnd:SaveLoadMenu"));
+	DEBUG_LOG(("SaveLoadMenuFullScreenInit: looking for themed parent name=%s:SaveLoadMenu", GetSaveLoadWndName())); // Reborn: Log the actual themed key.
 
 #if RTS_DEBUG || defined(RELEASE_DEBUG_LOGGING)
-	NameKeyType hardcodedParentID = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:SaveLoadMenu");
+	NameKeyType hardcodedParentID = GetSaveLoadKey("SaveLoadMenu");
 	GameWindow* hardcodedParent = TheWindowManager->winGetWindowFromId(nullptr, hardcodedParentID);
 #endif
 
 	DEBUG_LOG(("SaveLoadMenuFullScreenInit: hardcodedParentID=%u", hardcodedParentID));
 	DEBUG_LOG(("SaveLoadMenuFullScreenInit: hardcodedParent=%p", hardcodedParent));
 
-	NameKeyType parentID = TheNameKeyGenerator->nameToKey("SaveLoad.wnd:SaveLoadMenu");
+	NameKeyType parentID = GetSaveLoadKey("SaveLoadMenu");
 	parent = TheWindowManager->winGetWindowFromId(nullptr, parentID);
 
 	DEBUG_LOG(("SaveLoadMenuFullScreenInit: GetSaveLoadKey parentID=%u", parentID));
@@ -415,7 +414,7 @@ void SaveLoadMenuFullScreenInit( WindowLayout *layout, void *userData )
 	// enable the menu action buttons
 	//buttonFrame = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:MenuButtonFrame" ) );
 	//buttonFrame->winEnable( TRUE );
-	buttonFrame = TheWindowManager->winGetWindowFromId(parent, TheNameKeyGenerator->nameToKey("SaveLoad.wnd:MenuButtonFrame"));
+	buttonFrame = TheWindowManager->winGetWindowFromId(parent, GetSaveLoadKey("MenuButtonFrame"));
 	DEBUG_ASSERTCRASH(buttonFrame != nullptr, ("SaveLoadMenuFullScreenInit: MenuButtonFrame not found"));
 	buttonFrame->winEnable(TRUE);
 
@@ -430,21 +429,21 @@ void SaveLoadMenuFullScreenInit( WindowLayout *layout, void *userData )
 	//editDesc = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:EntryDesc" ) );
 	//deleteConfirm = TheWindowManager->winGetWindowFromId( parent, NAMEKEY( "SaveLoad.wnd:DeleteConfirmParent" ) );
 
-	overwriteConfirm = TheWindowManager->winGetWindowFromId(parent, TheNameKeyGenerator->nameToKey("SaveLoad.wnd:OverwriteConfirmParent"));
+	overwriteConfirm = TheWindowManager->winGetWindowFromId(parent, GetSaveLoadKey("OverwriteConfirmParent"));
 	if (overwriteConfirm)
 		overwriteConfirm->winHide(TRUE);
 
-	loadConfirm = TheWindowManager->winGetWindowFromId(parent, TheNameKeyGenerator->nameToKey("SaveLoad.wnd:LoadConfirmParent"));
+	loadConfirm = TheWindowManager->winGetWindowFromId(parent, GetSaveLoadKey("LoadConfirmParent"));
 	if (loadConfirm)
 		loadConfirm->winHide(TRUE);
 
-	saveDesc = TheWindowManager->winGetWindowFromId(parent, TheNameKeyGenerator->nameToKey("SaveLoad.wnd:SaveDescParent"));
+	saveDesc = TheWindowManager->winGetWindowFromId(parent, GetSaveLoadKey("SaveDescParent"));
 	if (saveDesc)
 		saveDesc->winHide(TRUE);
 
-	editDesc = TheWindowManager->winGetWindowFromId(parent, TheNameKeyGenerator->nameToKey("SaveLoad.wnd:EntryDesc"));
+	editDesc = TheWindowManager->winGetWindowFromId(parent, GetSaveLoadKey("EntryDesc"));
 
-	deleteConfirm = TheWindowManager->winGetWindowFromId(parent, TheNameKeyGenerator->nameToKey("SaveLoad.wnd:DeleteConfirmParent"));
+	deleteConfirm = TheWindowManager->winGetWindowFromId(parent, GetSaveLoadKey("DeleteConfirmParent"));
 
 	DEBUG_LOG(("SaveLoadMenuFullScreenInit: overwriteConfirm=%p", overwriteConfirm));
 	DEBUG_LOG(("SaveLoadMenuFullScreenInit: loadConfirm=%p", loadConfirm));
@@ -491,7 +490,7 @@ void SaveLoadMenuShutdown( WindowLayout *layout, void *userData )
 	}
 
 	// our shutdown is complete
-	TheTransitionHandler->reverse("SaveLoadMenuFade");
+	TheTransitionHandler->reverse(GetSaveLoadTransitionGroup()); // Reborn: Reverse the transition belonging to the loaded theme.
 	isShuttingDown = TRUE;
 }
 
@@ -513,7 +512,7 @@ void SaveLoadMenuUpdate( WindowLayout *layout, void *userData )
 		if(initialGadgetDelay == 1)
 		{
 			TheTransitionHandler->remove("MainMenuDefaultMenuLogoFade");
-			TheTransitionHandler->setGroup("SaveLoadMenuFade");
+			TheTransitionHandler->setGroup(GetSaveLoadTransitionGroup()); // Reborn: Start the transition belonging to the loaded theme.
 			initialGadgetDelay = 2;
 			justEntered = FALSE;
 		}

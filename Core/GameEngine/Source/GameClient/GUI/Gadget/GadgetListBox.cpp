@@ -653,8 +653,11 @@ WindowMsgHandledType GadgetListBoxInput( GameWindow *window, UnsignedInt msg,
 
 						NameKeyType chaptersListID =
 							TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+						NameKeyType chaptersListGenID =
+							TheNameKeyGenerator->nameToKey("ChaptersMenuGen.wnd:ListboxMap"); // Reborn: Apply chapter-list key repeat handling to both visual themes.
 
-						if (window->winGetWindowId() == chaptersListID)
+						if (window->winGetWindowId() == chaptersListID ||
+							window->winGetWindowId() == chaptersListGenID)
 						{
 							UnsignedInt now = timeGetTime();
 
@@ -721,8 +724,12 @@ WindowMsgHandledType GadgetListBoxInput( GameWindow *window, UnsignedInt msg,
 					{
 						NameKeyType chaptersListID =
 							TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+						NameKeyType chaptersListGenID =
+							TheNameKeyGenerator->nameToKey("ChaptersMenuGen.wnd:ListboxMap"); // Reborn: Apply chapter-list key repeat handling to both visual themes.
 
-						Bool isChaptersMapList = (window->winGetWindowId() == chaptersListID);
+						Bool isChaptersMapList =
+							window->winGetWindowId() == chaptersListID ||
+							window->winGetWindowId() == chaptersListGenID;
 
 						if (isChaptersMapList)
 						{

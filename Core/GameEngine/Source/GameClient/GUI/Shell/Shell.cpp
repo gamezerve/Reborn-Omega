@@ -760,21 +760,30 @@ void Shell::doPop( Bool impendingPush )
 			newTop->getFilename().compareNoCase("Menus/MainMenu.wnd") == 0;
 		const Bool topIsGeneralsMainMenu =
 			newTop->getFilename().compareNoCase("Menus/MainMenuGen.wnd") == 0;
-		const Bool useGeneralsMainMenu = UseGeneralsLayout();
-		const Bool mainMenuThemeChanged =
-			(topIsZeroHourMainMenu && useGeneralsMainMenu) ||
-			(topIsGeneralsMainMenu && !useGeneralsMainMenu);
+		const Bool topIsZeroHourChaptersMenu =
+			newTop->getFilename().compareNoCase("Menus/ChaptersMenu.wnd") == 0;
+		const Bool topIsGeneralsChaptersMenu =
+			newTop->getFilename().compareNoCase("Menus/ChaptersMenuGen.wnd") == 0;
+		const Bool useGeneralsTheme = UseGeneralsLayout();
+		const Bool cachedThemeChanged =
+			(topIsZeroHourMainMenu && useGeneralsTheme) ||
+			(topIsGeneralsMainMenu && !useGeneralsTheme) ||
+			(topIsZeroHourChaptersMenu && useGeneralsTheme) ||
+			(topIsGeneralsChaptersMenu && !useGeneralsTheme);
 
-		if (mainMenuThemeChanged)
+		if (cachedThemeChanged)
 		{
-			// Reborn: Replace a stale cached Main Menu before a score screen or submenu reveals it.
+			// Reborn: Replace a stale cached themed menu before a score screen or submenu reveals it.
 			unlinkScreen(newTop);
 			newTop->destroyWindows();
 			deleteInstance(newTop);
 
-			newTop = TheWindowManager->winCreateLayout(
-				useGeneralsMainMenu ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd");
-			DEBUG_ASSERTCRASH(newTop != nullptr, ("Unable to refresh cached Main Menu theme"));
+			const Bool isChaptersMenu = topIsZeroHourChaptersMenu || topIsGeneralsChaptersMenu;
+			const char* selectedLayout = isChaptersMenu
+				? (useGeneralsTheme ? "Menus/ChaptersMenuGen.wnd" : "Menus/ChaptersMenu.wnd")
+				: (useGeneralsTheme ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd");
+			newTop = TheWindowManager->winCreateLayout(selectedLayout);
+			DEBUG_ASSERTCRASH(newTop != nullptr, ("Unable to refresh cached themed menu"));
 			if (newTop)
 				linkScreen(newTop);
 		}

@@ -54,6 +54,28 @@ typedef UnicodeString TooltipString;
 typedef std::map<ReplayName, TooltipString> ReplayTooltipMap;
 
 static ReplayTooltipMap replayTooltipCache;
+static Bool s_replayMenuUsesGeneralsLayout = FALSE; // Reborn: Track the Replay layout that is actually loaded.
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Resolve a child ID against the currently loaded Replay Menu theme. */
+//-------------------------------------------------------------------------------------------------
+static NameKeyType GetReplayMenuWindowKey(const char* childName)
+{
+	AsciiString windowName;
+	windowName.format(
+		"%s:%s",
+		s_replayMenuUsesGeneralsLayout ? "ReplayMenuGen.wnd" : "ReplayMenu.wnd",
+		childName);
+	return TheNameKeyGenerator->nameToKey(windowName.str());
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return the transition group belonging to the loaded Replay Menu layout. */
+//-------------------------------------------------------------------------------------------------
+static const char* GetReplayMenuTransitionGroup()
+{
+	return s_replayMenuUsesGeneralsLayout ? "ReplayMenuFadeGen" : "ReplayMenuFade"; // Reborn: Animate the matching Replay layout.
+}
 
 // Reborn: defined in GameInfo.cpp, used to suppress camera changes during replay metadata reads
 extern Bool g_rebornSuppressReplayHeaderCamera;
@@ -402,14 +424,16 @@ void PopulateReplayFileListbox(GameWindow *listbox)
 void ReplayMenuInit( WindowLayout *layout, void *userData )
 {
 	TheShell->showShellMap(TRUE);
+	s_replayMenuUsesGeneralsLayout =
+		layout && layout->getFilename().compareNoCase("Menus/ReplayMenuGen.wnd") == 0; // Reborn: Bind IDs to the theme selected when this menu was opened.
 
 	// get ids for our children controls
-	parentReplayMenuID = TheNameKeyGenerator->nameToKey( "ReplayMenu.wnd:ParentReplayMenu" );
-	buttonLoadID = TheNameKeyGenerator->nameToKey( "ReplayMenu.wnd:ButtonLoadReplay" );
-	buttonBackID = TheNameKeyGenerator->nameToKey( "ReplayMenu.wnd:ButtonBack" );
-	listboxReplayFilesID = TheNameKeyGenerator->nameToKey( "ReplayMenu.wnd:ListboxReplayFiles" );
-	buttonDeleteID = TheNameKeyGenerator->nameToKey( "ReplayMenu.wnd:ButtonDeleteReplay" );
-	buttonCopyID = TheNameKeyGenerator->nameToKey( "ReplayMenu.wnd:ButtonCopyReplay" );
+	parentReplayMenuID = GetReplayMenuWindowKey("ParentReplayMenu");
+	buttonLoadID = GetReplayMenuWindowKey("ButtonLoadReplay");
+	buttonBackID = GetReplayMenuWindowKey("ButtonBack");
+	listboxReplayFilesID = GetReplayMenuWindowKey("ListboxReplayFiles");
+	buttonDeleteID = GetReplayMenuWindowKey("ButtonDeleteReplay");
+	buttonCopyID = GetReplayMenuWindowKey("ButtonCopyReplay");
 
 	parentReplayMenu = TheWindowManager->winGetWindowFromId( nullptr, parentReplayMenuID );
 	buttonLoad = TheWindowManager->winGetWindowFromId( parentReplayMenu, buttonLoadID );
@@ -452,7 +476,7 @@ void ReplayMenuInit( WindowLayout *layout, void *userData )
 	TheWindowManager->winSetFocus( parentReplayMenu );
 	justEntered = TRUE;
 	initialGadgetDelay = 2;
-	GameWindow *win = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ReplayMenu.wnd:GadgetParent"));
+	GameWindow *win = TheWindowManager->winGetWindowFromId(nullptr, GetReplayMenuWindowKey("GadgetParent"));
 	if(win)
 		win->winHide(TRUE);
 	isShuttingDown = FALSE;
@@ -476,7 +500,7 @@ void ReplayMenuShutdown( WindowLayout *layout, void *userData )
 	}
 
 	// our shutdown is complete
-	TheTransitionHandler->reverse("ReplayMenuFade");
+	TheTransitionHandler->reverse(GetReplayMenuTransitionGroup()); // Reborn: Reverse the transition belonging to the loaded theme.
 	isShuttingDown = TRUE;
 }
 
@@ -490,7 +514,7 @@ void ReplayMenuUpdate( WindowLayout *layout, void *userData )
 		if(initialGadgetDelay == 1)
 		{
 			TheTransitionHandler->remove("MainMenuDefaultMenuLogoFade");
-			TheTransitionHandler->setGroup("ReplayMenuFade");
+			TheTransitionHandler->setGroup(GetReplayMenuTransitionGroup()); // Reborn: Start the transition belonging to the loaded theme.
 			initialGadgetDelay = 2;
 			justEntered = FALSE;
 		}

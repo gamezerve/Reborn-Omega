@@ -1255,12 +1255,22 @@ static void DestroyOptionsLayout() {
 
 static void showAdvancedOptions()
 {
+	GameWindow* advancedSettingsButton = TheWindowManager->winGetWindowFromId(
+		nullptr, GetOptionsMenuChildKey("ButtonAdvancedSettings"));
+	if (advancedSettingsButton)
+		advancedSettingsButton->winHide(TRUE); // Reborn: Keep the Advanced button behind either theme's custom LOD panel.
+
 	WinAdvancedDisplay->winHide(FALSE);
 }
 
 static void acceptAdvancedOptions()
 {
 	WinAdvancedDisplay->winHide(TRUE);
+
+	GameWindow* advancedSettingsButton = TheWindowManager->winGetWindowFromId(
+		nullptr, GetOptionsMenuChildKey("ButtonAdvancedSettings"));
+	if (advancedSettingsButton)
+		advancedSettingsButton->winHide(FALSE); // Reborn: Restore the Advanced button after accepting custom LOD settings.
 }
 
 static void cancelAdvancedOptions()
@@ -1269,6 +1279,11 @@ static void cancelAdvancedOptions()
 	GadgetComboBoxSetSelectedPos(comboBoxDetail, (Int)TheGameLODManager->getStaticLODLevel());
 
 	WinAdvancedDisplay->winHide(TRUE);
+
+	GameWindow* advancedSettingsButton = TheWindowManager->winGetWindowFromId(
+		nullptr, GetOptionsMenuChildKey("ButtonAdvancedSettings"));
+	if (advancedSettingsButton)
+		advancedSettingsButton->winHide(FALSE); // Reborn: Restore the Advanced button after cancelling custom LOD settings.
 }
 
 static void showAdvancedSettings()

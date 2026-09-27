@@ -80,6 +80,7 @@ static Bool ignoreNextMapSelectionForDoubleClick = FALSE;
 static Bool resetDifficultyOnNextInit = FALSE;
 static Bool resetChapterImagesOnNextInit = FALSE;
 static Bool missionLaunchPending = FALSE;
+static Bool s_chaptersMenuUsesGeneralsLayout = FALSE; // Reborn: Track the Chapters layout that is actually alive.
 
 Bool g_chapterMissionLaunchActive = FALSE;
 
@@ -124,6 +125,30 @@ static UnsignedInt worldMapMarkerLastFrameTime = 0;
 static Int worldMapMarkerFrame = 0;
 static const Image* worldMapMarkerImages[20] = { nullptr };
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Resolve a Chapters child ID against the currently loaded visual theme. */
+//-------------------------------------------------------------------------------------------------
+static NameKeyType GetChaptersMenuWindowKey(const char* windowName)
+{
+  const char* childName = strchr(windowName, ':');
+  childName = childName ? childName + 1 : windowName;
+
+  AsciiString themedName;
+  themedName.format(
+    "%s:%s",
+    s_chaptersMenuUsesGeneralsLayout ? "ChaptersMenuGen.wnd" : "ChaptersMenu.wnd",
+    childName);
+  return TheNameKeyGenerator->nameToKey(themedName.str());
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Select the transition group that targets the active Chapters window prefix. */
+//-------------------------------------------------------------------------------------------------
+static const char* GetChaptersMenuTransitionGroup()
+{
+  return s_chaptersMenuUsesGeneralsLayout ? "ChaptersMenuFadeGen" : "ChaptersMenuFade"; // Reborn: Keep transitions bound to the active prefix.
+}
+
 static const Image* GetFactionIcon(const std::string& factionName)
 {
   if (factionName.empty())
@@ -139,7 +164,7 @@ static const Image* GetFactionIcon(const std::string& factionName)
 
 static void SetWindowImage(const char* windowName, const Image* image)
 {
-  GameWindow* window = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(windowName));
+  GameWindow* window = TheWindowManager->winGetWindowFromId(nullptr, GetChaptersMenuWindowKey(windowName));
 
   if (!window)
     return;
@@ -160,17 +185,17 @@ static void PositionDifficultyStarsForRadio(const char* radioName, const char* l
 {
   GameWindow* radio = TheWindowManager->winGetWindowFromId(
     nullptr,
-    TheNameKeyGenerator->nameToKey(radioName)
+    GetChaptersMenuWindowKey(radioName)
   );
 
   GameWindow* leftStar = TheWindowManager->winGetWindowFromId(
     nullptr,
-    TheNameKeyGenerator->nameToKey(leftStarName)
+    GetChaptersMenuWindowKey(leftStarName)
   );
 
   GameWindow* rightStar = TheWindowManager->winGetWindowFromId(
     nullptr,
-    TheNameKeyGenerator->nameToKey(rightStarName)
+    GetChaptersMenuWindowKey(rightStarName)
   );
 
   if (!radio || !leftStar || !rightStar)
@@ -218,27 +243,27 @@ static void PositionMissionFactionIcons(Bool hasAlly, Bool hasSecondEnemy)
 {
   GameWindow* playerWindow = TheWindowManager->winGetWindowFromId(
     nullptr,
-    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:PlayerFactionIcon")
+    GetChaptersMenuWindowKey("ChaptersMenu.wnd:PlayerFactionIcon")
   );
 
   GameWindow* allyWindow = TheWindowManager->winGetWindowFromId(
     nullptr,
-    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:AllyFactionIcon1")
+    GetChaptersMenuWindowKey("ChaptersMenu.wnd:AllyFactionIcon1")
   );
 
   GameWindow* enemyWindow1 = TheWindowManager->winGetWindowFromId(
     nullptr,
-    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:EnemyFactionIcon1")
+    GetChaptersMenuWindowKey("ChaptersMenu.wnd:EnemyFactionIcon1")
   );
 
   GameWindow* enemyWindow2 = TheWindowManager->winGetWindowFromId(
     nullptr,
-    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:EnemyFactionIcon2")
+    GetChaptersMenuWindowKey("ChaptersMenu.wnd:EnemyFactionIcon2")
   );
 
   GameWindow* vsWindow = TheWindowManager->winGetWindowFromId(
     nullptr,
-    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:VSWindow")
+    GetChaptersMenuWindowKey("ChaptersMenu.wnd:VSWindow")
   );
 
   if (!playerWindow || !enemyWindow1 || !vsWindow)
@@ -288,7 +313,7 @@ static void PositionMissionFactionIcons(Bool hasAlly, Bool hasSecondEnemy)
 
 static void SetWindowVisible(const char* windowName, Bool visible)
 {
-  GameWindow* window = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(windowName));
+  GameWindow* window = TheWindowManager->winGetWindowFromId(nullptr, GetChaptersMenuWindowKey(windowName));
 
   if (window)
     window->winHide(!visible);
@@ -382,7 +407,7 @@ static void BringWorldMapLayersToTop()
 
   GameWindow* worldMapBorder = TheWindowManager->winGetWindowFromId(
     nullptr,
-    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:WorldMapBorder")
+    GetChaptersMenuWindowKey("ChaptersMenu.wnd:WorldMapBorder")
   );
 
   if (worldMapBorder)
@@ -393,7 +418,7 @@ static void UpdateMissionLocation(Int row)
 {
   GameWindow* window = TheWindowManager->winGetWindowFromId(
     nullptr,
-    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:BattleLocationText")
+    GetChaptersMenuWindowKey("ChaptersMenu.wnd:BattleLocationText")
   );
 
   if (!window)
@@ -450,7 +475,7 @@ static void UpdateWorldMapMarkerPosition(Int row)
 
   GameWindow* worldMapBorder = TheWindowManager->winGetWindowFromId(
     nullptr,
-    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:WorldMapBorder")
+    GetChaptersMenuWindowKey("ChaptersMenu.wnd:WorldMapBorder")
   );
 
   if (!worldMapBorder)
@@ -545,7 +570,7 @@ static void DrawMapListboxDividers(GameWindow* window, WinInstanceData* instData
   if (!window)
     return;
 
-  NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+  NameKeyType listID = GetChaptersMenuWindowKey("ChaptersMenu.wnd:ListboxMap");
   GameWindow* listbox = TheWindowManager->winGetWindowFromId(nullptr, listID);
 
   if (!listbox)
@@ -633,7 +658,7 @@ static void LoadCampaignMaps(const char* campaignName)
 {
   campaignMissionData.clear();
 
-  NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+  NameKeyType listID = GetChaptersMenuWindowKey("ChaptersMenu.wnd:ListboxMap");
   GameWindow* listbox = TheWindowManager->winGetWindowFromId(nullptr, listID);
 
   if (!listbox)
@@ -1001,7 +1026,7 @@ static void DrawWorldMapMarkerClipped(GameWindow* window, WinInstanceData* instD
 
   GameWindow* worldMap = TheWindowManager->winGetWindowFromId(
     nullptr,
-    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:WorldMap")
+    GetChaptersMenuWindowKey("ChaptersMenu.wnd:WorldMap")
   );
 
   if (!worldMap)
@@ -1050,6 +1075,16 @@ static void DrawWorldMapMarkerClipped(GameWindow* window, WinInstanceData* instD
 void ChaptersMenuInit(WindowLayout* layout, void* userData)
 {
 
+  const Bool useGeneralsLayout = layout &&
+    layout->getFilename().compareNoCase("Menus/ChaptersMenuGen.wnd") == 0;
+  if (useGeneralsLayout != s_chaptersMenuUsesGeneralsLayout)
+  {
+    // Reborn: Discard button-image pointers cached from the other Chapters visual theme.
+    memset(chapterButtons, 0, sizeof(chapterButtons));
+    chapterImagesCached = FALSE;
+  }
+  s_chaptersMenuUsesGeneralsLayout = useGeneralsLayout; // Reborn: Derive child IDs from the layout selected by Main Menu.
+
   missionLaunchPending = FALSE;
   startGame = FALSE;
 
@@ -1071,14 +1106,14 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
 
   TheShell->showShellMap(TRUE);
 
-  radioEasyID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:RadioButtonEasyAI");
-  radioMediumID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:RadioButtonMediumAI");
-  radioHardID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:RadioButtonHardAI");
+  radioEasyID = GetChaptersMenuWindowKey("ChaptersMenu.wnd:RadioButtonEasyAI");
+  radioMediumID = GetChaptersMenuWindowKey("ChaptersMenu.wnd:RadioButtonMediumAI");
+  radioHardID = GetChaptersMenuWindowKey("ChaptersMenu.wnd:RadioButtonHardAI");
 
   PositionDifficultyStars();
 
-  buttonBackID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ButtonBack");
-  buttonStartID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ButtonStart");
+  buttonBackID = GetChaptersMenuWindowKey("ChaptersMenu.wnd:ButtonBack");
+  buttonStartID = GetChaptersMenuWindowKey("ChaptersMenu.wnd:ButtonStart");
   buttonPushed = FALSE;
 
   isShuttingDown = FALSE;
@@ -1102,7 +1137,7 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
 
   GameWindow* subParent = TheWindowManager->winGetWindowFromId(
     nullptr,
-    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:SubParent")
+    GetChaptersMenuWindowKey("ChaptersMenu.wnd:SubParent")
   );
 
   if (subParent)
@@ -1113,10 +1148,10 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
   justEntered = TRUE;
   initialGadgetDelay = 2;
 
-  //NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+  //NameKeyType listID = GetChaptersMenuWindowKey("ChaptersMenu.wnd:ListboxMap");
   //GameWindow* listbox = TheWindowManager->winGetWindowFromId(nullptr, listID);
 
-  NameKeyType dividerID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxDividerOverlay");
+  NameKeyType dividerID = GetChaptersMenuWindowKey("ChaptersMenu.wnd:ListboxDividerOverlay");
   GameWindow* divider = TheWindowManager->winGetWindowFromId(nullptr, dividerID);
 
   if (divider)
@@ -1136,7 +1171,7 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
 
     GameWindow* button = TheWindowManager->winGetWindowFromId(
       nullptr,
-      TheNameKeyGenerator->nameToKey(name));
+      GetChaptersMenuWindowKey(name.str()));
 
     if (button)
       button->winHide(TRUE);
@@ -1163,7 +1198,7 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
   {
     chapterButtons[i] = TheWindowManager->winGetWindowFromId(
       nullptr,
-      TheNameKeyGenerator->nameToKey(names[i]));
+      GetChaptersMenuWindowKey(names[i]));
 
     if (chapterButtons[i])
     {
@@ -1204,7 +1239,7 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
 
   worldMapMarker = TheWindowManager->winGetWindowFromId(
     nullptr,
-    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:WorldMapMarker")
+    GetChaptersMenuWindowKey("ChaptersMenu.wnd:WorldMapMarker")
   );
 
   if (worldMapMarker)
@@ -1227,7 +1262,7 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
 
   SelectChapter(chapterToSelect);
 
-  //TheTransitionHandler->setGroup("ChaptersMenuFade");
+  //TheTransitionHandler->setGroup(GetChaptersMenuTransitionGroup());
 }
 
 static void shutdownComplete(WindowLayout* layout)
@@ -1236,7 +1271,7 @@ static void shutdownComplete(WindowLayout* layout)
 
   GameWindow* preview = TheWindowManager->winGetWindowFromId(
     nullptr,
-    TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:MapWindow"));
+    GetChaptersMenuWindowKey("ChaptersMenu.wnd:MapWindow"));
 
   if (preview)
     preview->winSetUserData(nullptr);
@@ -1261,7 +1296,7 @@ void ChaptersMenuShutdown(WindowLayout* layout, void* userData)
 
   isShuttingDown = TRUE;
   TheShell->reverseAnimatewindow();
-  TheTransitionHandler->reverse("ChaptersMenuFade");
+  TheTransitionHandler->reverse(GetChaptersMenuTransitionGroup());
 }
 
 void ChaptersMenuUpdate(WindowLayout* layout, void* userData)
@@ -1287,13 +1322,13 @@ void ChaptersMenuUpdate(WindowLayout* layout, void* userData)
     {
       GameWindow* subParent = TheWindowManager->winGetWindowFromId(
         nullptr,
-        TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:SubParent")
+        GetChaptersMenuWindowKey("ChaptersMenu.wnd:SubParent")
       );
 
       if (subParent)
         subParent->winHide(FALSE);
 
-      TheTransitionHandler->setGroup("ChaptersMenuFade");
+      TheTransitionHandler->setGroup(GetChaptersMenuTransitionGroup());
       initialGadgetDelay = 2;
       justEntered = FALSE;
     }
@@ -1457,7 +1492,7 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
 
     if (controlID == buttonStartID)
     {
-      NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+      NameKeyType listID = GetChaptersMenuWindowKey("ChaptersMenu.wnd:ListboxMap");
       GameWindow* listbox = TheWindowManager->winGetWindowFromId(nullptr, listID);
 
       LaunchSelectedChapterMission(listbox);
@@ -1509,7 +1544,7 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
     if (!control)
       break;
 
-    NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+    NameKeyType listID = GetChaptersMenuWindowKey("ChaptersMenu.wnd:ListboxMap");
 
     if (control->winGetWindowId() == listID)
     {
@@ -1554,7 +1589,7 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
       AsciiString asciiMap = fixedPath.c_str();
       asciiMap.toLower();
 
-      NameKeyType previewID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:MapWindow");
+      NameKeyType previewID = GetChaptersMenuWindowKey("ChaptersMenu.wnd:MapWindow");
       GameWindow* preview = TheWindowManager->winGetWindowFromId(nullptr, previewID);
 
       if (!preview)
@@ -1600,7 +1635,7 @@ WindowMsgHandledType ChaptersMenuSystem(GameWindow* window, UnsignedInt msg, Win
     if (!listbox)
       return MSG_HANDLED;
 
-    NameKeyType listID = TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:ListboxMap");
+    NameKeyType listID = GetChaptersMenuWindowKey("ChaptersMenu.wnd:ListboxMap");
 
     if (listbox->winGetWindowId() != listID)
       return MSG_HANDLED;
@@ -1638,12 +1673,12 @@ WindowMsgHandledType ChaptersMenuInput(GameWindow* window, UnsignedInt msg, Wind
 {
   if (msg == GWM_LEFT_UP)
   {
-    GameWindow* easyLeftStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:EasyLeftStar"));
-    GameWindow* easyRightStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:EasyRightStar"));
-    GameWindow* mediumLeftStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:MediumLeftStar"));
-    GameWindow* mediumRightStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:MediumRightStar"));
-    GameWindow* hardLeftStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:HardLeftStar"));
-    GameWindow* hardRightStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:HardRightStar"));
+    GameWindow* easyLeftStar = TheWindowManager->winGetWindowFromId(nullptr, GetChaptersMenuWindowKey("ChaptersMenu.wnd:EasyLeftStar"));
+    GameWindow* easyRightStar = TheWindowManager->winGetWindowFromId(nullptr, GetChaptersMenuWindowKey("ChaptersMenu.wnd:EasyRightStar"));
+    GameWindow* mediumLeftStar = TheWindowManager->winGetWindowFromId(nullptr, GetChaptersMenuWindowKey("ChaptersMenu.wnd:MediumLeftStar"));
+    GameWindow* mediumRightStar = TheWindowManager->winGetWindowFromId(nullptr, GetChaptersMenuWindowKey("ChaptersMenu.wnd:MediumRightStar"));
+    GameWindow* hardLeftStar = TheWindowManager->winGetWindowFromId(nullptr, GetChaptersMenuWindowKey("ChaptersMenu.wnd:HardLeftStar"));
+    GameWindow* hardRightStar = TheWindowManager->winGetWindowFromId(nullptr, GetChaptersMenuWindowKey("ChaptersMenu.wnd:HardRightStar"));
 
     GameWindow* radio = nullptr;
 
@@ -1681,12 +1716,12 @@ WindowMsgHandledType ChaptersMenuInput(GameWindow* window, UnsignedInt msg, Wind
 
   if (msg == GWM_MOUSE_ENTERING || msg == GWM_MOUSE_LEAVING)
   {
-    GameWindow* easyLeftStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:EasyLeftStar"));
-    GameWindow* easyRightStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:EasyRightStar"));
-    GameWindow* mediumLeftStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:MediumLeftStar"));
-    GameWindow* mediumRightStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:MediumRightStar"));
-    GameWindow* hardLeftStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:HardLeftStar"));
-    GameWindow* hardRightStar = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:HardRightStar"));
+    GameWindow* easyLeftStar = TheWindowManager->winGetWindowFromId(nullptr, GetChaptersMenuWindowKey("ChaptersMenu.wnd:EasyLeftStar"));
+    GameWindow* easyRightStar = TheWindowManager->winGetWindowFromId(nullptr, GetChaptersMenuWindowKey("ChaptersMenu.wnd:EasyRightStar"));
+    GameWindow* mediumLeftStar = TheWindowManager->winGetWindowFromId(nullptr, GetChaptersMenuWindowKey("ChaptersMenu.wnd:MediumLeftStar"));
+    GameWindow* mediumRightStar = TheWindowManager->winGetWindowFromId(nullptr, GetChaptersMenuWindowKey("ChaptersMenu.wnd:MediumRightStar"));
+    GameWindow* hardLeftStar = TheWindowManager->winGetWindowFromId(nullptr, GetChaptersMenuWindowKey("ChaptersMenu.wnd:HardLeftStar"));
+    GameWindow* hardRightStar = TheWindowManager->winGetWindowFromId(nullptr, GetChaptersMenuWindowKey("ChaptersMenu.wnd:HardRightStar"));
 
     GameWindow* radio = nullptr;
 
@@ -1712,7 +1747,7 @@ WindowMsgHandledType ChaptersMenuInput(GameWindow* window, UnsignedInt msg, Wind
 
     GameWindow* worldMapBorder = TheWindowManager->winGetWindowFromId(
       nullptr,
-      TheNameKeyGenerator->nameToKey("ChaptersMenu.wnd:WorldMapBorder")
+      GetChaptersMenuWindowKey("ChaptersMenu.wnd:WorldMapBorder")
     );
 
     if (worldMapBorder)

@@ -2396,6 +2396,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 		{
 			const Bool useGeneralsMainMenu = UseGeneralsLayout();
 			const char* selectedMainMenu = useGeneralsMainMenu ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd";
+			const char* selectedChaptersMenu = useGeneralsMainMenu ? "Menus/ChaptersMenuGen.wnd" : "Menus/ChaptersMenu.wnd";
 			if(TheShell->getScreenCount() == 0)
 				TheShell->push(selectedMainMenu); // Reborn: Restore the selected Main Menu theme.
 			else if (TheShell->top())
@@ -2405,15 +2406,24 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 					shellTop->getFilename().compareNoCase("Menus/MainMenu.wnd") == 0;
 				const Bool topIsGeneralsMainMenu =
 					shellTop->getFilename().compareNoCase("Menus/MainMenuGen.wnd") == 0;
-				const Bool mainMenuThemeChanged =
+				const Bool topIsZeroHourChaptersMenu =
+					shellTop->getFilename().compareNoCase("Menus/ChaptersMenu.wnd") == 0;
+				const Bool topIsGeneralsChaptersMenu =
+					shellTop->getFilename().compareNoCase("Menus/ChaptersMenuGen.wnd") == 0;
+				const Bool cachedThemeChanged =
 					(topIsZeroHourMainMenu && useGeneralsMainMenu) ||
-					(topIsGeneralsMainMenu && !useGeneralsMainMenu);
+					(topIsGeneralsMainMenu && !useGeneralsMainMenu) ||
+					(topIsZeroHourChaptersMenu && useGeneralsMainMenu) ||
+					(topIsGeneralsChaptersMenu && !useGeneralsMainMenu);
 
-				if (mainMenuThemeChanged)
+				if (cachedThemeChanged)
 				{
-					// Reborn: Replace the hidden in-game Main Menu cache only after returning safely to the shell.
+					// Reborn: Replace hidden Main Menu or Chapters caches only after returning safely to the shell.
 					TheShell->popImmediate(TRUE);
-					TheShell->push(selectedMainMenu);
+					TheShell->push(
+						topIsZeroHourChaptersMenu || topIsGeneralsChaptersMenu
+							? selectedChaptersMenu
+							: selectedMainMenu);
 				}
 				else
 				{

@@ -145,9 +145,7 @@ void SkipNextMainMenuTransition()
 
 static const char* GetSaveLoadMenuFile()
 {
-	//return IsRebornCampaign() ? "Menus/SaveLoadGen.wnd" : "Menus/SaveLoad.wnd";
-	// Reborn: Disabled for now, since the SaveLoadGen.wnd may cause issues when a corrupt save file opened.
-	return IsRebornCampaign() ? "Menus/SaveLoad.wnd" : "Menus/SaveLoad.wnd";
+	return UseGeneralsLayout() ? "Menus/SaveLoadGen.wnd" : "Menus/SaveLoad.wnd"; // Reborn: Open the fullscreen save/load menu with the selected visual theme.
 }
 
 // window ids -------------------------------------------------------------------------------------
@@ -1665,7 +1663,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				buttonPushed = TRUE;
 				dropDownWindows[DROPDOWN_LOADREPLAY]->winHide(FALSE);
 				TheTransitionHandler->reverse("MainMenuLoadReplayMenuBackTransition");
-				TheShell->push("Menus/ReplayMenu.wnd");
+				TheShell->push(UseGeneralsLayout() ? "Menus/ReplayMenuGen.wnd" : "Menus/ReplayMenu.wnd"); // Reborn: Open the Replay menu with the selected visual theme.
 			}
 			else if( controlID == skirmishID )
 			{
@@ -1703,7 +1701,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				TheTransitionHandler->remove("MainMenuFactionSkirmish");
 				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackSkirmish");
 
-				TheShell->push("Menus/ChaptersMenu.wnd");
+				TheShell->push(UseGeneralsLayout() ? "Menus/ChaptersMenuGen.wnd" : "Menus/ChaptersMenu.wnd"); // Reborn: Open Chapters with the selected visual theme.
 				}
 			else if( controlID == onlineID )
 			{
