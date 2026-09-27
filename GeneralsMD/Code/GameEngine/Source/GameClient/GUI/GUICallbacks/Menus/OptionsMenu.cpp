@@ -270,6 +270,8 @@ WindowLayout *OptionsLayout = nullptr;
 static OptionPreferences *pref = nullptr;
 
 static Bool s_optionsMenuUsesRebornLayout = FALSE;
+static Bool s_layoutThemeRefreshPending = FALSE; // Reborn: Defer layout destruction until after the Advanced Settings button callback returns.
+static Bool s_pendingGeneralsLayout = FALSE; // Reborn: Preserve the concrete theme chosen for the deferred refresh.
 
 static Bool s_rebornOmegaUpdateCheckIgnored = FALSE;
 
@@ -1302,7 +1304,15 @@ static void showAdvancedSettings()
 
 static void acceptAdvancedSettings()
 {
+	const Bool previousGeneralsLayout = s_optionsMenuUsesRebornLayout; // Reborn: Compare against the layout that is currently alive.
 	saveAdvancedSettings();
+
+	// Reborn: Apply concrete layout choices immediately; Random intentionally waits for the next normal layout load.
+	if (TheGlobalData->m_layoutTheme != REBORN_LAYOUT_THEME_RANDOM)
+	{
+		s_pendingGeneralsLayout = UseGeneralsLayout();
+		s_layoutThemeRefreshPending = s_pendingGeneralsLayout != previousGeneralsLayout;
+	}
 
 	if (WinAdvancedSettings)
 		WinAdvancedSettings->winHide(TRUE);
@@ -2503,6 +2513,44 @@ void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 //-------------------------------------------------------------------------------------------------
 void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 {
+	if (s_layoutThemeRefreshPending)
+	{
+		s_layoutThemeRefreshPending = FALSE;
+
+		// Reborn: Preserve unsaved parent Options values while replacing its visual layout.
+		saveOptions();
+
+		WindowLayout* mainMenuLayout = TheShell->top();
+		const Bool isActiveGame = TheGameLogic->isInGame() && !TheGameLogic->isInShellGame();
+		const Bool reloadMainMenu = !isActiveGame && mainMenuLayout &&
+			(mainMenuLayout->getFilename().compareNoCase("Menus/MainMenu.wnd") == 0 ||
+			 mainMenuLayout->getFilename().compareNoCase("Menus/MainMenuGen.wnd") == 0);
+		// Reborn: The shell keeps MainMenu on its stack during a match; never reload it while gameplay is active.
+
+		DestroyOptionsLayout();
+		if (isActiveGame)
+			RefreshQuitMenuLayoutTheme(); // Reborn: Keep the already-open quit menu synchronized with the new concrete theme.
+
+		if (reloadMainMenu)
+		{
+			TheShell->popImmediate(TRUE);
+			TheShell->push(
+				s_pendingGeneralsLayout ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd",
+				TRUE);
+		}
+
+		SetOptionsMenuUsesRebornLayout(s_pendingGeneralsLayout);
+		WindowLayout* refreshedOptions = TheShell->getOptionsLayout(TRUE, s_pendingGeneralsLayout);
+		DEBUG_ASSERTCRASH(refreshedOptions != nullptr, ("Unable to refresh options menu layout"));
+		if (refreshedOptions)
+		{
+			refreshedOptions->runInit();
+			refreshedOptions->hide(FALSE);
+			refreshedOptions->bringForward();
+		}
+
+		return;
+	}
 
 	if (IsChangeLogMenuROOptionsOverlayActive())
 	{

@@ -753,6 +753,32 @@ void Shell::doPop( Bool impendingPush )
 
 	// run the init for the new top of the stack if present
 	WindowLayout *newTop = top();
+	if (newTop && TheGameLogic &&
+		(!TheGameLogic->isInGame() || TheGameLogic->isInShellGame()))
+	{
+		const Bool topIsZeroHourMainMenu =
+			newTop->getFilename().compareNoCase("Menus/MainMenu.wnd") == 0;
+		const Bool topIsGeneralsMainMenu =
+			newTop->getFilename().compareNoCase("Menus/MainMenuGen.wnd") == 0;
+		const Bool useGeneralsMainMenu = UseGeneralsLayout();
+		const Bool mainMenuThemeChanged =
+			(topIsZeroHourMainMenu && useGeneralsMainMenu) ||
+			(topIsGeneralsMainMenu && !useGeneralsMainMenu);
+
+		if (mainMenuThemeChanged)
+		{
+			// Reborn: Replace a stale cached Main Menu before a score screen or submenu reveals it.
+			unlinkScreen(newTop);
+			newTop->destroyWindows();
+			deleteInstance(newTop);
+
+			newTop = TheWindowManager->winCreateLayout(
+				useGeneralsMainMenu ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd");
+			DEBUG_ASSERTCRASH(newTop != nullptr, ("Unable to refresh cached Main Menu theme"));
+			if (newTop)
+				linkScreen(newTop);
+		}
+	}
 	if( newTop && !impendingPush )
 	{
 		newTop->runInit( nullptr );

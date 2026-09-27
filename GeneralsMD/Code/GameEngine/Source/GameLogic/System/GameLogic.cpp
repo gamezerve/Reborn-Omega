@@ -2394,12 +2394,32 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 	{
 		if (!TheGlobalData->m_headless)
 		{
+			const Bool useGeneralsMainMenu = UseGeneralsLayout();
+			const char* selectedMainMenu = useGeneralsMainMenu ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd";
 			if(TheShell->getScreenCount() == 0)
-				TheShell->push(UseGeneralsLayout() ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd"); // Reborn: Restore the selected Main Menu theme.
+				TheShell->push(selectedMainMenu); // Reborn: Restore the selected Main Menu theme.
 			else if (TheShell->top())
 			{
-				TheShell->top()->hide(FALSE);
-				TheShell->top()->bringForward();
+				WindowLayout* shellTop = TheShell->top();
+				const Bool topIsZeroHourMainMenu =
+					shellTop->getFilename().compareNoCase("Menus/MainMenu.wnd") == 0;
+				const Bool topIsGeneralsMainMenu =
+					shellTop->getFilename().compareNoCase("Menus/MainMenuGen.wnd") == 0;
+				const Bool mainMenuThemeChanged =
+					(topIsZeroHourMainMenu && useGeneralsMainMenu) ||
+					(topIsGeneralsMainMenu && !useGeneralsMainMenu);
+
+				if (mainMenuThemeChanged)
+				{
+					// Reborn: Replace the hidden in-game Main Menu cache only after returning safely to the shell.
+					TheShell->popImmediate(TRUE);
+					TheShell->push(selectedMainMenu);
+				}
+				else
+				{
+					shellTop->hide(FALSE);
+					shellTop->bringForward();
+				}
 			}
 			HideControlBar();
 		}

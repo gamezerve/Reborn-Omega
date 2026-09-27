@@ -405,6 +405,7 @@ extern WindowMsgHandledType EstablishConnectionsControlInput( GameWindow *window
 
 // The in game quit menu --------------------------------------------------------------------------
 extern void destroyQuitMenu();
+extern void RefreshQuitMenuLayoutTheme(); // Reborn: Rebuild the visible in-game quit menu after a concrete theme change.
 extern Bool canOpenQuitMenu();
 extern void ToggleQuitMenu();
 extern void HideQuitMenu();

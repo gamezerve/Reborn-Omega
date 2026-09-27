@@ -175,6 +175,50 @@ void destroyQuitMenu()
 	TheInGameUI->setQuitMenuVisible(FALSE);
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Rebuild the visible single-player quit menu without closing Options or resuming gameplay. */
+//-------------------------------------------------------------------------------------------------
+void RefreshQuitMenuLayoutTheme()
+{
+	if (!isVisible || !TheGameLogic || TheGameLogic->getGameMode() != GAME_SINGLE_PLAYER)
+		return;
+
+	TheTransitionHandler->remove("QuitFull");
+	TheTransitionHandler->remove("QuitFullGen");
+
+	if (fullQuitMenuLayout)
+	{
+		fullQuitMenuLayout->destroyWindows();
+		deleteInstance(fullQuitMenuLayout);
+		fullQuitMenuLayout = nullptr;
+	}
+	if (quitMenuGenLayout)
+	{
+		quitMenuGenLayout->destroyWindows();
+		deleteInstance(quitMenuGenLayout);
+		quitMenuGenLayout = nullptr;
+	}
+
+	const Bool useRebornQuitMenu = UseRebornQuitMenu();
+	if (useRebornQuitMenu)
+	{
+		quitMenuGenLayout = TheWindowManager->winCreateLayout("Menus/QuitMenuGen.wnd");
+		quitMenuLayout = quitMenuGenLayout;
+		initGadgetsFullQuit(TRUE);
+		TheTransitionHandler->setGroup("QuitFullGen");
+	}
+	else
+	{
+		fullQuitMenuLayout = TheWindowManager->winCreateLayout("Menus/QuitMenu.wnd");
+		quitMenuLayout = fullQuitMenuLayout;
+		initGadgetsFullQuit(FALSE);
+		TheTransitionHandler->setGroup("QuitFull");
+	}
+
+	DEBUG_ASSERTCRASH(quitMenuLayout != nullptr, ("Unable to refresh quit menu layout"));
+	TheInGameUI->setQuitMenuVisible(TRUE);
+}
+
 /**
  *  quits the program
  */
