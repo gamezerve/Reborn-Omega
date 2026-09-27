@@ -62,6 +62,7 @@ extern Bool LANisShuttingDown;
 
 static Bool isShuttingDown = false;
 static Bool buttonPushed = false;
+static Bool s_networkDirectConnectUsesGeneralsLayout = FALSE; // Reborn: Track the Direct Connect layout that is actually loaded.
 
 static NameKeyType buttonBackID = NAMEKEY_INVALID;
 static NameKeyType buttonHostID = NAMEKEY_INVALID;
@@ -76,6 +77,24 @@ static GameWindow *buttonJoin = nullptr;
 static GameWindow *editPlayerName = nullptr;
 static GameWindow *comboboxRemoteIP = nullptr;
 static GameWindow *staticLocalIP = nullptr;
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return a child key using the prefix of the loaded Direct Connect layout. */
+//-------------------------------------------------------------------------------------------------
+static NameKeyType GetNetworkDirectConnectWindowKey(const char *childName)
+{
+	AsciiString windowName;
+	windowName.format("%s:%s", s_networkDirectConnectUsesGeneralsLayout ? "NetworkDirectConnectGen.wnd" : "NetworkDirectConnect.wnd", childName);
+	return TheNameKeyGenerator->nameToKey(windowName);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return the transition group matching the loaded Direct Connect layout. */
+//-------------------------------------------------------------------------------------------------
+static const char *GetNetworkDirectConnectTransitionGroup()
+{
+	return s_networkDirectConnectUsesGeneralsLayout ? "NetworkDirectConnectFadeGen" : "NetworkDirectConnectFade";
+}
 
 void PopulateRemoteIPComboBox()
 {
@@ -249,6 +268,8 @@ void JoinDirectConnectGame()
 //-------------------------------------------------------------------------------------------------
 void NetworkDirectConnectInit( WindowLayout *layout, void *userData )
 {
+	s_networkDirectConnectUsesGeneralsLayout =
+		layout && layout->getFilename().compareNoCase("Menus/NetworkDirectConnectGen.wnd") == 0; // Reborn: Bind controls to the Direct Connect theme selected by the LAN lobby.
 	LANbuttonPushed = false;
 	LANisShuttingDown = false;
 
@@ -262,12 +283,12 @@ void NetworkDirectConnectInit( WindowLayout *layout, void *userData )
 	buttonPushed = false;
 	isShuttingDown = false;
 	TheShell->showShellMap(TRUE);
-	buttonBackID = TheNameKeyGenerator->nameToKey( "NetworkDirectConnect.wnd:ButtonBack" );
-	buttonHostID = TheNameKeyGenerator->nameToKey( "NetworkDirectConnect.wnd:ButtonHost" );
-	buttonJoinID = TheNameKeyGenerator->nameToKey( "NetworkDirectConnect.wnd:ButtonJoin" );
-	editPlayerNameID = TheNameKeyGenerator->nameToKey( "NetworkDirectConnect.wnd:EditPlayerName" );
-	comboboxRemoteIPID = TheNameKeyGenerator->nameToKey( "NetworkDirectConnect.wnd:ComboboxRemoteIP" );
-	staticLocalIPID = TheNameKeyGenerator->nameToKey( "NetworkDirectConnect.wnd:StaticLocalIP" );
+	buttonBackID = GetNetworkDirectConnectWindowKey("ButtonBack"); // Reborn: Resolve controls against the active Direct Connect layout.
+	buttonHostID = GetNetworkDirectConnectWindowKey("ButtonHost"); // Reborn: Resolve controls against the active Direct Connect layout.
+	buttonJoinID = GetNetworkDirectConnectWindowKey("ButtonJoin"); // Reborn: Resolve controls against the active Direct Connect layout.
+	editPlayerNameID = GetNetworkDirectConnectWindowKey("EditPlayerName"); // Reborn: Resolve controls against the active Direct Connect layout.
+	comboboxRemoteIPID = GetNetworkDirectConnectWindowKey("ComboboxRemoteIP"); // Reborn: Resolve controls against the active Direct Connect layout.
+	staticLocalIPID = GetNetworkDirectConnectWindowKey("StaticLocalIP"); // Reborn: Resolve controls against the active Direct Connect layout.
 
 	buttonBack = TheWindowManager->winGetWindowFromId( nullptr,  buttonBackID);
 	buttonHost = TheWindowManager->winGetWindowFromId( nullptr,	buttonHostID);
@@ -344,7 +365,7 @@ void NetworkDirectConnectInit( WindowLayout *layout, void *userData )
 	TheLAN->RequestLobbyLeave(true);
 	layout->hide(FALSE);
 	layout->bringForward();
-	TheTransitionHandler->setGroup("NetworkDirectConnectFade");
+	TheTransitionHandler->setGroup(GetNetworkDirectConnectTransitionGroup()); // Reborn: Animate the loaded Direct Connect layout.
 
 
 }
@@ -384,7 +405,7 @@ void NetworkDirectConnectShutdown( WindowLayout *layout, void *userData )
 
 	TheShell->reverseAnimatewindow();
 
-	TheTransitionHandler->reverse("NetworkDirectConnectFade");
+	TheTransitionHandler->reverse(GetNetworkDirectConnectTransitionGroup()); // Reborn: Reverse the loaded Direct Connect transition.
 }
 
 

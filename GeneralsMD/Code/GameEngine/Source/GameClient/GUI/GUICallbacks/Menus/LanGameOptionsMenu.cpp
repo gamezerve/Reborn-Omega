@@ -72,6 +72,33 @@ extern void MapSelectorTooltip(GameWindow *window, WinInstanceData *instData,	Un
 extern void gameAcceptTooltip(GameWindow *window, WinInstanceData *instData, UnsignedInt mouse);
 Color white = GameMakeColor( 255, 255, 255, 255 );
 static bool s_isIniting = FALSE;
+static Bool s_lanGameOptionsUsesGeneralsLayout = FALSE; // Reborn: Track the LAN game-options layout that is actually loaded.
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return the window prefix belonging to the loaded LAN game-options layout. */
+//-------------------------------------------------------------------------------------------------
+static const char* GetLanGameOptionsWndName()
+{
+	return s_lanGameOptionsUsesGeneralsLayout ? "LanGameOptionsMenuGen.wnd" : "LanGameOptionsMenu.wnd";
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Resolve a child ID against the currently loaded LAN game-options theme. */
+//-------------------------------------------------------------------------------------------------
+static NameKeyType GetLanGameOptionsWindowKey(const char* childName)
+{
+	AsciiString windowName;
+	windowName.format("%s:%s", GetLanGameOptionsWndName(), childName);
+	return TheNameKeyGenerator->nameToKey(windowName.str());
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return the transition group belonging to the loaded LAN game-options layout. */
+//-------------------------------------------------------------------------------------------------
+static const char* GetLanGameOptionsTransitionGroup()
+{
+	return s_lanGameOptionsUsesGeneralsLayout ? "LanGameOptionsFadeGen" : "LanGameOptionsFade";
+}
 // window ids ------------------------------------------------------------------------------
 static NameKeyType parentLanGameOptionsID = NAMEKEY_INVALID;
 
@@ -928,21 +955,21 @@ static void handleLanMaxCameraHeightChanged(Bool resetAccepted, Bool clampText)
 void InitLanGameGadgets()
 {
 	//Initialize the gadget IDs
-	parentLanGameOptionsID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:LanGameOptionsMenuParent" );
-	buttonBackID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:ButtonBack" );
-	buttonStartID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:ButtonStart" );
-	textEntryChatID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:TextEntryChat" );
-	textEntryMapDisplayID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:TextEntryMapDisplay" );
-	listboxChatWindowLanGameID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:ListboxChatWindowLanGame" );
-	buttonChatID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:ButtonEmote" ); // TODO Rename ButtonEmote to ButtonChat in .wnd file
-	buttonSelectMapID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:ButtonSelectMap" );
+	parentLanGameOptionsID = GetLanGameOptionsWindowKey("LanGameOptionsMenuParent");
+	buttonBackID = GetLanGameOptionsWindowKey("ButtonBack");
+	buttonStartID = GetLanGameOptionsWindowKey("ButtonStart");
+	textEntryChatID = GetLanGameOptionsWindowKey("TextEntryChat");
+	textEntryMapDisplayID = GetLanGameOptionsWindowKey("TextEntryMapDisplay");
+	listboxChatWindowLanGameID = GetLanGameOptionsWindowKey("ListboxChatWindowLanGame");
+	buttonChatID = GetLanGameOptionsWindowKey("ButtonEmote");
+	buttonSelectMapID = GetLanGameOptionsWindowKey("ButtonSelectMap");
   //checkboxLimitSuperweaponsID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:CheckboxLimitSuperweapons" );
-	comboBoxSuperweaponRestrictionID = TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:ComboBoxSuperweaponRestriction"); // Reborn
-  comboBoxStartingCashID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:ComboBoxStartingCash" );
-	comboBoxResourceMultiplierID = TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:ComboBoxResourceMultiplier"); // Reborn: resource multiplier combo box
-	checkMaxCameraHeightID = TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:CheckMaxCameraHeight");
-	textEntryMaxCameraHeightID = TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:TextEntryMaxCameraHeight");
-	windowMapID = TheNameKeyGenerator->nameToKey( "LanGameOptionsMenu.wnd:MapWindow" );
+	comboBoxSuperweaponRestrictionID = GetLanGameOptionsWindowKey("ComboBoxSuperweaponRestriction"); // Reborn: Preserve the themed LAN control prefix.
+  comboBoxStartingCashID = GetLanGameOptionsWindowKey("ComboBoxStartingCash");
+	comboBoxResourceMultiplierID = GetLanGameOptionsWindowKey("ComboBoxResourceMultiplier"); // Reborn: Preserve the themed LAN control prefix.
+	checkMaxCameraHeightID = GetLanGameOptionsWindowKey("CheckMaxCameraHeight");
+	textEntryMaxCameraHeightID = GetLanGameOptionsWindowKey("TextEntryMaxCameraHeight");
+	windowMapID = GetLanGameOptionsWindowKey("MapWindow");
 
 	// Initialize the pointers to our gadgets
 	parentLanGameOptions = TheWindowManager->winGetWindowFromId( nullptr, parentLanGameOptionsID );
@@ -994,7 +1021,7 @@ void InitLanGameGadgets()
 	for (Int i = 0; i < MAX_SLOTS; i++)
 	{
 		AsciiString tmpString;
-		tmpString.format("LanGameOptionsMenu.wnd:ComboBoxPlayer%d", i);
+		tmpString.format("%s:ComboBoxPlayer%d", GetLanGameOptionsWndName(), i);
 		comboBoxPlayerID[i] = TheNameKeyGenerator->nameToKey( tmpString );
 		comboBoxPlayer[i] = TheWindowManager->winGetWindowFromId( parentLanGameOptions, comboBoxPlayerID[i] );
 		GadgetComboBoxReset(comboBoxPlayer[i]);
@@ -1016,14 +1043,14 @@ void InitLanGameGadgets()
 		}
 		*/
 
-		tmpString.format("LanGameOptionsMenu.wnd:ComboBoxColor%d", i);
+		tmpString.format("%s:ComboBoxColor%d", GetLanGameOptionsWndName(), i);
 		comboBoxColorID[i] = TheNameKeyGenerator->nameToKey( tmpString );
 		comboBoxColor[i] = TheWindowManager->winGetWindowFromId( parentLanGameOptions, comboBoxColorID[i] );
 		DEBUG_ASSERTCRASH(comboBoxColor[i], ("Could not find the comboBoxColor[%d]",i ));
 		PopulateColorComboBox(i, comboBoxColor, TheLAN->GetMyGame());
 		GadgetComboBoxSetSelectedPos(comboBoxColor[i], 0);
 
-		tmpString.format("LanGameOptionsMenu.wnd:ComboBoxPlayerTemplate%d", i);
+		tmpString.format("%s:ComboBoxPlayerTemplate%d", GetLanGameOptionsWndName(), i);
 		comboBoxPlayerTemplateID[i] = TheNameKeyGenerator->nameToKey( tmpString );
 		comboBoxPlayerTemplate[i] = TheWindowManager->winGetWindowFromId( parentLanGameOptions, comboBoxPlayerTemplateID[i] );
 		DEBUG_ASSERTCRASH(comboBoxPlayerTemplate[i], ("Could not find the comboBoxPlayerTemplate[%d]",i ));
@@ -1033,14 +1060,14 @@ void InitLanGameGadgets()
 		comboBoxPlayerTemplate[i]->winSetTooltipFunc(playerTemplateComboBoxTooltip);
 		GadgetComboBoxGetListBox(comboBoxPlayerTemplate[i])->winSetTooltipFunc(playerTemplateListBoxTooltip);
 
-		tmpString.format("LanGameOptionsMenu.wnd:ComboBoxTeam%d", i);
+		tmpString.format("%s:ComboBoxTeam%d", GetLanGameOptionsWndName(), i);
 		comboBoxTeamID[i] = TheNameKeyGenerator->nameToKey( tmpString );
 		comboBoxTeam[i] = TheWindowManager->winGetWindowFromId( parentLanGameOptions, comboBoxTeamID[i] );
 		DEBUG_ASSERTCRASH(comboBoxTeam[i], ("Could not find the comboBoxTeam[%d]",i ));
 		PopulateTeamComboBox(i, comboBoxTeam, TheLAN->GetMyGame());
 
 		tmpString.clear();
-		tmpString.format("LanGameOptionsMenu.wnd:ButtonAccept%d", i);
+		tmpString.format("%s:ButtonAccept%d", GetLanGameOptionsWndName(), i);
 		buttonAcceptID[i] = TheNameKeyGenerator->nameToKey( tmpString );
 		buttonAccept[i] = TheWindowManager->winGetWindowFromId( parentLanGameOptions, buttonAcceptID[i] );
 		DEBUG_ASSERTCRASH(buttonAccept[i], ("Could not find the buttonAccept[%d]",i ));
@@ -1051,7 +1078,7 @@ void InitLanGameGadgets()
 //		buttonStartPosition[i] = TheWindowManager->winGetWindowFromId( parentLanGameOptions, buttonStartPositionID[i] );
 //		DEBUG_ASSERTCRASH(buttonStartPosition[i], ("Could not find the ButtonStartPosition[%d]",i ));
 
-		tmpString.format("LanGameOptionsMenu.wnd:ButtonMapStartPosition%d", i);
+		tmpString.format("%s:ButtonMapStartPosition%d", GetLanGameOptionsWndName(), i);
 		buttonMapStartPositionID[i] = TheNameKeyGenerator->nameToKey( tmpString );
 		buttonMapStartPosition[i] = TheWindowManager->winGetWindowFromId( parentLanGameOptions, buttonMapStartPositionID[i] );
 		DEBUG_ASSERTCRASH(buttonMapStartPosition[i], ("Could not find the ButtonMapStartPosition[%d]",i ));
@@ -1102,6 +1129,8 @@ void DeinitLanGameGadgets()
 //-------------------------------------------------------------------------------------------------
 void LanGameOptionsMenuInit( WindowLayout *layout, void *userData )
 {
+	s_lanGameOptionsUsesGeneralsLayout =
+		layout && layout->getFilename().compareNoCase("Menus/LanGameOptionsMenuGen.wnd") == 0; // Reborn: Bind controls to the selected LAN game-options theme.
 	if (TheLAN->GetMyGame() && TheLAN->GetMyGame()->isGameInProgress())
 	{
 		Real value = 310.0f;
@@ -1242,7 +1271,7 @@ void LanGameOptionsMenuInit( WindowLayout *layout, void *userData )
 	}
 	lanUpdateSlotList();
 	LanPositionStartSpots();
-	TheTransitionHandler->setGroup("LanGameOptionsFade");
+	TheTransitionHandler->setGroup(GetLanGameOptionsTransitionGroup()); // Reborn: Start the transition belonging to the loaded LAN game-options theme.
 
 	// animate controls
 	//TheShell->registerWithAnimateManager(buttonBack, WIN_ANIMATION_SLIDE_RIGHT, TRUE, 1);
@@ -1400,7 +1429,7 @@ void LanGameOptionsMenuShutdown( WindowLayout *layout, void *userData )
 	}
 
 	TheShell->reverseAnimatewindow();
-	TheTransitionHandler->reverse("LanGameOptionsFade");
+	TheTransitionHandler->reverse(GetLanGameOptionsTransitionGroup()); // Reborn: Reverse the transition belonging to the loaded LAN game-options theme.
 	if (TheLAN)
 		TheLAN->ResetGameStartTimer();
 
@@ -1700,7 +1729,8 @@ WindowMsgHandledType LanGameOptionsMenuSystem( GameWindow *window, UnsignedInt m
 				{
 					//buttonBack->winEnable( false );
 
-					mapSelectLayout = TheWindowManager->winCreateLayout( "Menus/LanMapSelectMenu.wnd" );
+					mapSelectLayout = TheWindowManager->winCreateLayout(
+						s_lanGameOptionsUsesGeneralsLayout ? "Menus/LanMapSelectMenuGen.wnd" : "Menus/LanMapSelectMenu.wnd"); // Reborn: Preserve the selected theme in the LAN map selector.
 					mapSelectLayout->runInit();
 					mapSelectLayout->hide( FALSE );
 					mapSelectLayout->bringForward();

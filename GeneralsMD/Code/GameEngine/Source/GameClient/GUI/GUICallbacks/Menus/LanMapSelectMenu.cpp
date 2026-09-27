@@ -56,6 +56,7 @@ static GameWindow *mapList = nullptr;
 static GameWindow *winMapPreview = nullptr;
 static NameKeyType radioButtonSystemMapsID = NAMEKEY_INVALID;
 static NameKeyType radioButtonUserMapsID = NAMEKEY_INVALID;
+static Bool s_lanMapSelectUsesGeneralsLayout = FALSE; // Reborn: Track the LAN map-selector layout that is actually loaded.
 
 static GameWindow *buttonMapStartPosition[MAX_SLOTS] = {0};
 static NameKeyType buttonMapStartPositionID[MAX_SLOTS] = { NAMEKEY_INVALID,NAMEKEY_INVALID,
@@ -66,7 +67,6 @@ static NameKeyType buttonMapStartPositionID[MAX_SLOTS] = { NAMEKEY_INVALID,NAMEK
 
 // PUBLIC FUNCTIONS ///////////////////////////////////////////////////////////////////////////////
 void positionStartSpots( AsciiString mapName, GameWindow *buttonMapStartPositions[], GameWindow *mapWindow);
-static const char *layoutFilename = "LanGameOptionsMenu.wnd";
 static const char *parentName = "LanGameOptionsMenuParent";
 static const char *gadgetsToHide[] =
 {
@@ -90,10 +90,30 @@ static const char *perPlayerGadgetsToHide[] =
 	nullptr
 };
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return a child key using the prefix of the loaded LAN map-selector layout. */
+//-------------------------------------------------------------------------------------------------
+static NameKeyType GetLanMapSelectWindowKey(const char *childName)
+{
+	AsciiString windowName;
+	windowName.format("%s:%s", s_lanMapSelectUsesGeneralsLayout ? "LanMapSelectMenuGen.wnd" : "LanMapSelectMenu.wnd", childName);
+	return TheNameKeyGenerator->nameToKey(windowName);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return the underlying LAN game-options filename matching the map selector theme. */
+//-------------------------------------------------------------------------------------------------
+static const char *GetLanGameOptionsWndName()
+{
+	return s_lanMapSelectUsesGeneralsLayout ? "LanGameOptionsMenuGen.wnd" : "LanGameOptionsMenu.wnd";
+}
+
 static void showLANGameOptionsUnderlyingGUIElements( Bool show )
 {
-	ShowUnderlyingGUIElements( show, layoutFilename, parentName, gadgetsToHide, perPlayerGadgetsToHide );
-	GameWindow *win	= TheWindowManager->winGetWindowFromId( nullptr, TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:ButtonBack") );
+	ShowUnderlyingGUIElements(show, GetLanGameOptionsWndName(), parentName, gadgetsToHide, perPlayerGadgetsToHide); // Reborn: Address the game-options layout beneath the matching selector theme.
+	AsciiString backWindowName; // Reborn: Build the matching game-options Back-button key.
+	backWindowName.format("%s:ButtonBack", GetLanGameOptionsWndName()); // Reborn: Keep the child prefix synchronized with the loaded layout.
+	GameWindow *win = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(backWindowName)); // Reborn: Re-enable the themed underlying Back button.
 	if(win)
 		win->winEnable( show );
 
@@ -119,10 +139,12 @@ static void NullifyControls()
 //-------------------------------------------------------------------------------------------------
 void LanMapSelectMenuInit( WindowLayout *layout, void *userData )
 {
+	s_lanMapSelectUsesGeneralsLayout =
+		layout && layout->getFilename().compareNoCase("Menus/LanMapSelectMenuGen.wnd") == 0; // Reborn: Bind controls to the LAN map-selector layout selected by game options.
 	showLANGameOptionsUnderlyingGUIElements(FALSE);
 
 	// set keyboard focus to main parent
-	NameKeyType parentID = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:LanMapSelectMenuParent" );
+	NameKeyType parentID = GetLanMapSelectWindowKey("LanMapSelectMenuParent"); // Reborn: Resolve the active map-selector parent.
 	parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
 
 	TheWindowManager->winSetFocus( parent );
@@ -137,14 +159,14 @@ void LanMapSelectMenuInit( WindowLayout *layout, void *userData )
 	}
 
 
-	buttonBack = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:ButtonBack" );
-	buttonOK = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:ButtonOK" );
-	buttonRandomMap = TheNameKeyGenerator->nameToKey("LanMapSelectMenu.wnd:ButtonRandomMap");
-	listboxMap = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:ListboxMap" );
-	winMapPreviewID = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:WinMapPreview" );
+	buttonBack = GetLanMapSelectWindowKey("ButtonBack"); // Reborn: Resolve the active map-selector controls.
+	buttonOK = GetLanMapSelectWindowKey("ButtonOK"); // Reborn: Resolve the active map-selector controls.
+	buttonRandomMap = GetLanMapSelectWindowKey("ButtonRandomMap"); // Reborn: Resolve the active map-selector controls.
+	listboxMap = GetLanMapSelectWindowKey("ListboxMap"); // Reborn: Resolve the active map-selector controls.
+	winMapPreviewID = GetLanMapSelectWindowKey("WinMapPreview"); // Reborn: Resolve the active map-selector controls.
 
-	radioButtonSystemMapsID = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:RadioButtonSystemMaps" );
-	radioButtonUserMapsID = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:RadioButtonUserMaps" );
+	radioButtonSystemMapsID = GetLanMapSelectWindowKey("RadioButtonSystemMaps"); // Reborn: Resolve the active map-filter controls.
+	radioButtonUserMapsID = GetLanMapSelectWindowKey("RadioButtonUserMaps"); // Reborn: Resolve the active map-filter controls.
 	GameWindow *radioButtonSystemMaps = TheWindowManager->winGetWindowFromId( parent, radioButtonSystemMapsID );
 	GameWindow *radioButtonUserMaps = TheWindowManager->winGetWindowFromId( parent, radioButtonUserMapsID );
 	winMapPreview = TheWindowManager->winGetWindowFromId(parent, winMapPreviewID);
@@ -156,7 +178,7 @@ void LanMapSelectMenuInit( WindowLayout *layout, void *userData )
 	AsciiString tmpString;
 	for (Int i = 0; i < MAX_SLOTS; i++)
 	{
-		tmpString.format("LanMapSelectMenu.wnd:ButtonMapStartPosition%d", i);
+		tmpString.format("%s:ButtonMapStartPosition%d", s_lanMapSelectUsesGeneralsLayout ? "LanMapSelectMenuGen.wnd" : "LanMapSelectMenu.wnd", i); // Reborn: Resolve start-position buttons in the active layout.
 		buttonMapStartPositionID[i] = TheNameKeyGenerator->nameToKey( tmpString );
 		buttonMapStartPosition[i] = TheWindowManager->winGetWindowFromId( winMapPreview, buttonMapStartPositionID[i] );
 		DEBUG_ASSERTCRASH(buttonMapStartPosition[i], ("Could not find the ButtonMapStartPosition[%d]",i ));
@@ -165,7 +187,7 @@ void LanMapSelectMenuInit( WindowLayout *layout, void *userData )
 	}
 
 	// get the listbox window
-	NameKeyType mapListID = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:ListboxMap" );
+	NameKeyType mapListID = GetLanMapSelectWindowKey("ListboxMap"); // Reborn: Resolve the active map list.
 	mapList = TheWindowManager->winGetWindowFromId( parent, mapListID );
 	if( mapList )
 	{
@@ -227,7 +249,7 @@ WindowMsgHandledType LanMapSelectMenuInput( GameWindow *window, UnsignedInt msg,
 					//
 					if( BitIsSet( state, KEY_STATE_UP ) )
 					{
-						NameKeyType buttonID = TheNameKeyGenerator->nameToKey( "LanMapSelectMenu.wnd:ButtonBack" );
+						NameKeyType buttonID = GetLanMapSelectWindowKey("ButtonBack"); // Reborn: Route Escape through the active Back button.
 						GameWindow *button = TheWindowManager->winGetWindowFromId( window, buttonID );
 
 						TheWindowManager->winSendSystemMsg( window, GBM_SELECTED,

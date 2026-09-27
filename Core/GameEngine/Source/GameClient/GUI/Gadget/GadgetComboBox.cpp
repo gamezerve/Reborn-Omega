@@ -88,6 +88,8 @@ static void CenterGameOptionsComboBoxOnOpen(GameWindow* comboBox)
 	{
 		TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:ComboBoxStartingCash"),
 		TheNameKeyGenerator->nameToKey("LanGameOptionsMenu.wnd:ComboBoxResourceMultiplier"),
+		TheNameKeyGenerator->nameToKey("LanGameOptionsMenuGen.wnd:ComboBoxStartingCash"), // Reborn: Apply the LAN numeric combo behavior to the Generals layout.
+		TheNameKeyGenerator->nameToKey("LanGameOptionsMenuGen.wnd:ComboBoxResourceMultiplier"), // Reborn: Apply the LAN numeric combo behavior to the Generals layout.
 		TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:ComboBoxStartingCash"),
 		TheNameKeyGenerator->nameToKey("GameSpyGameOptionsMenu.wnd:ComboBoxResourceMultiplier"),
 		TheNameKeyGenerator->nameToKey("SkirmishGameOptionsMenu.wnd:ComboBoxStartingCash"),

@@ -1725,7 +1725,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				buttonPushed = TRUE;
 				dropDownWindows[DROPDOWN_MULTIPLAYER]->winHide(FALSE);
 				TheTransitionHandler->reverse("MainMenuMultiPlayerMenuTransitionToNext");
-				TheShell->push( "Menus/LanLobbyMenu.wnd" );
+				TheShell->push(s_mainMenuUsesGeneralsLayout ? "Menus/LanLobbyMenuGen.wnd" : "Menus/LanLobbyMenu.wnd"); // Reborn: Open the LAN lobby with the active Main Menu theme.
 
 				TheScriptEngine->signalUIInteract(TheShellHookNames[SHELL_SCRIPT_HOOK_MAIN_MENU_NETWORK_SELECTED]);
 			}

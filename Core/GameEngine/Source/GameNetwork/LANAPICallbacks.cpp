@@ -39,6 +39,7 @@
 #include "Common/RandomValue.h"
 #include "Common/UserPreferences.h"
 #include "GameClient/GameText.h"
+#include "GameClient/CampaignManager.h" // Reborn: Select LAN layouts from the user's active theme.
 #include "GameClient/LanguageFilter.h"
 #include "GameClient/MapUtil.h"
 #include "GameClient/MessageBox.h"
@@ -522,7 +523,7 @@ void LANAPI::OnGameJoin( ReturnType ret, LANGameInfo *theGame )
 	if (ret == RET_OK)
 	{
 		LANbuttonPushed = true;
-		TheShell->push( "Menus/LanGameOptionsMenu.wnd" );
+		TheShell->push(UseGeneralsLayout() ? "Menus/LanGameOptionsMenuGen.wnd" : "Menus/LanGameOptionsMenu.wnd"); // Reborn: Keep joined LAN games in the selected theme.
 		//lanUpdateSlotList();
 
 		LANPreferences pref;
@@ -613,7 +614,7 @@ void LANAPI::OnGameCreate( ReturnType ret )
 	{
 
 		LANbuttonPushed = true;
-		TheShell->push( "Menus/LanGameOptionsMenu.wnd" );
+		TheShell->push(UseGeneralsLayout() ? "Menus/LanGameOptionsMenuGen.wnd" : "Menus/LanGameOptionsMenu.wnd"); // Reborn: Keep hosted LAN games in the selected theme.
 
 		RequestLobbyLeave( false );
 		//RequestGameAnnounce(); // can't do this here, since we don't have a map set

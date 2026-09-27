@@ -194,7 +194,10 @@ static void refreshSaveGameList()
 
 	// populate the listbox with save games from the selected directory
 	//TheGameState->populateSaveGameListbox(listboxGames, currentLayoutType);
-	TheGameState->populateSaveGameListbox(listboxGames, currentLayoutType, isPopup && s_popupSaveLoadUsesRebornLayout);
+	const Bool useGeneralsColors = isPopup
+		? s_popupSaveLoadUsesRebornLayout
+		: s_fullScreenSaveLoadUsesGeneralsLayout; // Reborn: Apply Generals item colors to both popup and fullscreen themed save/load menus.
+	TheGameState->populateSaveGameListbox(listboxGames, currentLayoutType, useGeneralsColors);
 
 	// update button availability
 	updateMenuActions();

@@ -1342,7 +1342,9 @@ void GameState::populateSaveGameListbox(GameWindow* listbox, SaveLoadLayoutType 
 	if( layoutType != SLLT_LOAD_ONLY )
 	{
 		UnicodeString newGameText = TheGameText->fetch( "GUI:NewSaveGame" );
-		Color newGameColor = GameMakeColor( 200, 200, 255, 255 );
+		Color newGameColor = useRebornColors
+			? GameMakeColor(255, 192, 0, 255)
+			: GameMakeColor(200, 200, 255, 255); // Reborn: Match the new-save row to the selected save/load palette.
 
 		index = GadgetListBoxAddEntryText( listbox, newGameText, newGameColor, -1 );
 		GadgetListBoxSetItemData( listbox, nullptr, index );

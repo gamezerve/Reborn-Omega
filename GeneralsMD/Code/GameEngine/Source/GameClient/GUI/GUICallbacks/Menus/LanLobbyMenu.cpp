@@ -69,6 +69,25 @@ char *LANnextScreen = nullptr;
 
 static Int	initialGadgetDelay = 2;
 static Bool justEntered = FALSE;
+static Bool s_lanLobbyUsesGeneralsLayout = FALSE; // Reborn: Track the LAN lobby layout that is actually loaded.
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Resolve a child ID against the currently loaded LAN lobby theme. */
+//-------------------------------------------------------------------------------------------------
+static NameKeyType GetLanLobbyWindowKey(const char* childName)
+{
+	AsciiString windowName;
+	windowName.format("%s:%s", s_lanLobbyUsesGeneralsLayout ? "LanLobbyMenuGen.wnd" : "LanLobbyMenu.wnd", childName);
+	return TheNameKeyGenerator->nameToKey(windowName.str());
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return the transition group belonging to the loaded LAN lobby layout. */
+//-------------------------------------------------------------------------------------------------
+static const char* GetLanLobbyTransitionGroup()
+{
+	return s_lanLobbyUsesGeneralsLayout ? "LanLobbyFadeGen" : "LanLobbyFade";
+}
 
 
 
@@ -383,25 +402,27 @@ static void playerTooltip(GameWindow *window,
 //-------------------------------------------------------------------------------------------------
 void LanLobbyMenuInit( WindowLayout *layout, void *userData )
 {
+	s_lanLobbyUsesGeneralsLayout =
+		layout && layout->getFilename().compareNoCase("Menus/LanLobbyMenuGen.wnd") == 0; // Reborn: Bind controls to the selected LAN lobby theme.
 	LANnextScreen = nullptr;
 	LANbuttonPushed = false;
 	LANisShuttingDown = false;
 
 	// get the ids for our controls
-	parentLanLobbyID = TheNameKeyGenerator->nameToKey( "LanLobbyMenu.wnd:LanLobbyMenuParent" );
-	buttonBackID = TheNameKeyGenerator->nameToKey( "LanLobbyMenu.wnd:ButtonBack" );
-	buttonClearID = TheNameKeyGenerator->nameToKey( "LanLobbyMenu.wnd:ButtonClear" );
-	buttonHostID = TheNameKeyGenerator->nameToKey( "LanLobbyMenu.wnd:ButtonHost" );
-	buttonJoinID = TheNameKeyGenerator->nameToKey( "LanLobbyMenu.wnd:ButtonJoin" );
-	buttonDirectConnectID = TheNameKeyGenerator->nameToKey( "LanLobbyMenu.wnd:ButtonDirectConnect" );
-	buttonChatID = TheNameKeyGenerator->nameToKey( "LanLobbyMenu.wnd:ButtonEmote" ); // TODO Rename ButtonEmote to ButtonChat in .wnd file
-	staticToolTipID = TheNameKeyGenerator->nameToKey( "LanLobbyMenu.wnd:StaticToolTip" );
-	textEntryPlayerNameID = TheNameKeyGenerator->nameToKey( "LanLobbyMenu.wnd:TextEntryPlayerName" );
-	textEntryChatID = TheNameKeyGenerator->nameToKey( "LanLobbyMenu.wnd:TextEntryChat" );
-	listboxPlayersID = TheNameKeyGenerator->nameToKey( "LanLobbyMenu.wnd:ListboxPlayers" );
-	listboxChatWindowID = TheNameKeyGenerator->nameToKey( "LanLobbyMenu.wnd:ListboxChatWindowLanLobby" );
-	listboxGamesID = TheNameKeyGenerator->nameToKey( "LanLobbyMenu.wnd:ListboxGames" );
-	staticTextGameInfoID = TheNameKeyGenerator->nameToKey( "LanLobbyMenu.wnd:StaticTextGameInfo" );
+	parentLanLobbyID = GetLanLobbyWindowKey("LanLobbyMenuParent");
+	buttonBackID = GetLanLobbyWindowKey("ButtonBack");
+	buttonClearID = GetLanLobbyWindowKey("ButtonClear");
+	buttonHostID = GetLanLobbyWindowKey("ButtonHost");
+	buttonJoinID = GetLanLobbyWindowKey("ButtonJoin");
+	buttonDirectConnectID = GetLanLobbyWindowKey("ButtonDirectConnect");
+	buttonChatID = GetLanLobbyWindowKey("ButtonEmote");
+	staticToolTipID = GetLanLobbyWindowKey("StaticToolTip");
+	textEntryPlayerNameID = GetLanLobbyWindowKey("TextEntryPlayerName");
+	textEntryChatID = GetLanLobbyWindowKey("TextEntryChat");
+	listboxPlayersID = GetLanLobbyWindowKey("ListboxPlayers");
+	listboxChatWindowID = GetLanLobbyWindowKey("ListboxChatWindowLanLobby");
+	listboxGamesID = GetLanLobbyWindowKey("ListboxGames");
+	staticTextGameInfoID = GetLanLobbyWindowKey("StaticTextGameInfo");
 
 
 	// Get pointers to the window buttons
@@ -524,7 +545,7 @@ void LanLobbyMenuInit( WindowLayout *layout, void *userData )
 
 	justEntered = TRUE;
 	initialGadgetDelay = 2;
-	GameWindow *win = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("LanLobbyMenu.wnd:GadgetParent"));
+	GameWindow *win = TheWindowManager->winGetWindowFromId(nullptr, GetLanLobbyWindowKey("GadgetParent"));
 	if(win)
 		win->winHide(TRUE);
 
@@ -600,7 +621,7 @@ void LanLobbyMenuShutdown( WindowLayout *layout, void *userData )
 	}
 
 	TheShell->reverseAnimatewindow();
-	TheTransitionHandler->reverse("LanLobbyFade");
+	TheTransitionHandler->reverse(GetLanLobbyTransitionGroup()); // Reborn: Reverse the transition belonging to the loaded LAN lobby theme.
 	//if(	shellmapOn)
 //		TheShell->showShellMap(TRUE);
 }
@@ -620,7 +641,7 @@ void LanLobbyMenuUpdate( WindowLayout * layout, void *userData)
 	{
 		if(initialGadgetDelay == 1)
 		{
-			TheTransitionHandler->setGroup("LanLobbyFade");
+			TheTransitionHandler->setGroup(GetLanLobbyTransitionGroup()); // Reborn: Start the transition belonging to the loaded LAN lobby theme.
 			initialGadgetDelay = 2;
 			justEntered = FALSE;
 		}
@@ -842,7 +863,7 @@ WindowMsgHandledType LanLobbyMenuSystem( GameWindow *window, UnsignedInt msg,
 				else if (controlID == buttonDirectConnectID)
 				{
 					TheLAN->RequestLobbyLeave( false );
-					TheShell->push("Menus/NetworkDirectConnect.wnd");
+					TheShell->push(s_lanLobbyUsesGeneralsLayout ? "Menus/NetworkDirectConnectGen.wnd" : "Menus/NetworkDirectConnect.wnd"); // Reborn: Preserve the LAN theme in Direct Connect.
 				}
 
 				break;
