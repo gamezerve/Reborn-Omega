@@ -61,6 +61,7 @@
 #include "GameClient/GadgetPushButton.h"
 #include "GameClient/GadgetStaticText.h"
 #include "GameClient/ControlBar.h"
+#include "GameClient/GUICallbacks.h" // Reborn: Resolve the active Main Menu theme prefix.
 
 //-----------------------------------------------------------------------------
 // DEFINES ////////////////////////////////////////////////////////////////////
@@ -1032,7 +1033,7 @@ void MainMenuScaleUpTransition::init( GameWindow *win )
 		m_win->winGetSize(&m_size.x, &m_size.y);
 		m_win->winGetScreenPosition(&m_pos.x, &m_pos.y );
 	}
-	m_growWin = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinGrowMarker"));
+	m_growWin = TheWindowManager->winGetWindowFromId(nullptr, GetMainMenuWindowKey("WinGrowMarker")); // Reborn: Follow the loaded Main Menu theme.
 	if(!m_growWin)
 		return;
 

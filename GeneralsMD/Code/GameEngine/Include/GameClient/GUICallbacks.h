@@ -44,6 +44,7 @@ extern void MainMenuUpdate( WindowLayout *layout, void *userData );
 extern void MainMenuShutdown( WindowLayout *layout, void *userData );
 extern WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
 extern WindowMsgHandledType MainMenuInput( GameWindow *window, UnsignedInt msg, WindowMsgData mData1, WindowMsgData mData2 );
+extern NameKeyType GetMainMenuWindowKey(const char* childName); // Reborn: Resolve either MainMenu layout prefix.
 
 // Single Player Menu -----------------------------------------------------------------------------
 extern void SinglePlayerMenuInit( WindowLayout *layout, void *userData );

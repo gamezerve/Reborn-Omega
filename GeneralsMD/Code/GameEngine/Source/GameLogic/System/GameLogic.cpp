@@ -2395,7 +2395,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 		if (!TheGlobalData->m_headless)
 		{
 			if(TheShell->getScreenCount() == 0)
-				TheShell->push( "Menus/MainMenu.wnd" );
+				TheShell->push(UseGeneralsLayout() ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd"); // Reborn: Restore the selected Main Menu theme.
 			else if (TheShell->top())
 			{
 				TheShell->top()->hide(FALSE);

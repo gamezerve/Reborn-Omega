@@ -548,7 +548,7 @@ void Shell::showShell( Bool runInit )
     Profile::StopRange("init");
 #endif
 	//else
-		push( "Menus/MainMenu.wnd" );
+		push(UseGeneralsLayout() ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd"); // Reborn: Use the selected Main Menu theme.
   }
 	m_isShellActive = TRUE;
 }

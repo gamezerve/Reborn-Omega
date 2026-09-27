@@ -168,6 +168,14 @@ Bool TransitionWindow::init()
 {
 	m_winID = TheNameKeyGenerator->nameToKey(m_winName);
 	m_win		= TheWindowManager->winGetWindowFromId(nullptr, m_winID);
+	// Reborn: Reuse the retail Main Menu transition definitions for the Generals-themed layout.
+	if (!m_win && m_winName.startsWith("MainMenu.wnd:"))
+	{
+		AsciiString generalsWinName;
+		generalsWinName.format("MainMenuGen.wnd:%s", m_winName.str() + strlen("MainMenu.wnd:"));
+		m_winID = TheNameKeyGenerator->nameToKey(generalsWinName);
+		m_win = TheWindowManager->winGetWindowFromId(nullptr, m_winID);
+	}
 	m_currentFrameDelay = m_frameDelay;
 //	DEBUG_ASSERTCRASH( m_win, ("TransitionWindow::init Failed to find window %s", m_winName.str()));
 //	if( !m_win )

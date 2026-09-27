@@ -91,7 +91,7 @@ static void closeDownloadWindow()
 		menuLayout = nullptr;
 	}
 
-	GameWindow *mainWin = TheWindowManager->winGetWindowFromId( nullptr, NAMEKEY("MainMenu.wnd:MainMenuParent") );
+	GameWindow *mainWin = TheWindowManager->winGetWindowFromId(nullptr, GetMainMenuWindowKey("MainMenuParent")); // Reborn: Follow the loaded Main Menu theme.
 	if (mainWin)
 		TheWindowManager->winSetFocus( mainWin );
 }

@@ -108,10 +108,24 @@ void DoCompressTest();
 static Bool s_rebornOmegaAutomaticCheckStarted = FALSE;
 static Bool s_rebornOmegaAutomaticCheckPending = FALSE;
 static DWORD s_rebornOmegaAutomaticPromptTime = 0;
+static Bool s_mainMenuUsesGeneralsLayout = FALSE; // Reborn: Track the layout that is actually loaded, even if the preference changes while it is open.
 
 static std::string s_rebornOmegaAutomaticUpdateUrl;
 static Bool s_skipNextMainMenuTransition = FALSE;
 static Bool s_rebornOmegaDownloadMenuRequested = FALSE;
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Resolve a child ID against the currently loaded Main Menu theme. */
+//-------------------------------------------------------------------------------------------------
+NameKeyType GetMainMenuWindowKey(const char* childName)
+{
+	AsciiString windowName;
+	windowName.format(
+		"%s:%s",
+		s_mainMenuUsesGeneralsLayout ? "MainMenuGen.wnd" : "MainMenu.wnd",
+		childName);
+	return TheNameKeyGenerator->nameToKey(windowName.str());
+}
 
 void RequestRebornOmegaDownloadMenu()
 {
@@ -386,77 +400,77 @@ static void TimetToFileTime( time_t t, LPFILETIME pft )
 void initialHide()
 {
 GameWindow *win = nullptr;
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionGLA"));
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionGLA"));
 	if(win)
 		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionChina"));
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionChina"));
 	if(win)
 		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionUS"));
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionUS"));
 	if(win)
 		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinGrowMarker"));
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinGrowMarker"));
 	if(win)
 		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionTraining"));
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionTraining"));
 	if(win)
 		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionTrainingSmall"));
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionTrainingSmall"));
 	if(win)
 		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionTrainingMedium"));
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionTrainingMedium"));
 	if(win)
 		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionTrainingGen")); //Reborn
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionTrainingGen")); //Reborn
 	if(win)
 		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionTrainingGenSmall")); //Reborn
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionTrainingGenSmall")); //Reborn
 	if(win)
 		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionTrainingGenMedium")); //Reborn
-	if(win)
-		win->winHide(TRUE);
-
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionSkirmish"));
-	if(win)
-		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionSkirmishSmall"));
-	if(win)
-		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionSkirmishMedium"));
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionTrainingGenMedium")); //Reborn
 	if(win)
 		win->winHide(TRUE);
 
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionUS"));
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionSkirmish"));
 	if(win)
 		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionUSSmall"));
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionSkirmishSmall"));
 	if(win)
 		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionUSMedium"));
-	if(win)
-		win->winHide(TRUE);
-
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionGLA"));
-	if(win)
-		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionGLASmall"));
-	if(win)
-		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionGLAMedium"));
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionSkirmishMedium"));
 	if(win)
 		win->winHide(TRUE);
 
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionChina"));
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionUS"));
 	if(win)
 		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionChinaSmall"));
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionUSSmall"));
 	if(win)
 		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionChinaMedium"));
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionUSMedium"));
 	if(win)
 		win->winHide(TRUE);
-	win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:StaticTextSelectDifficulty"));
+
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionGLA"));
+	if(win)
+		win->winHide(TRUE);
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionGLASmall"));
+	if(win)
+		win->winHide(TRUE);
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionGLAMedium"));
+	if(win)
+		win->winHide(TRUE);
+
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionChina"));
+	if(win)
+		win->winHide(TRUE);
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionChinaSmall"));
+	if(win)
+		win->winHide(TRUE);
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionChinaMedium"));
+	if(win)
+		win->winHide(TRUE);
+	win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("StaticTextSelectDifficulty"));
 	if (win)
 		win->winHide(TRUE);
 
@@ -466,7 +480,7 @@ GameWindow *win = nullptr;
 // Originally this label does not exist in the Main Menu. It can be copied from the Options Menu.
 static void initLabelVersion()
 {
-	NameKeyType versionID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:LabelVersion" );
+	NameKeyType versionID = GetMainMenuWindowKey("LabelVersion");
 	GameWindow *labelVersion = TheWindowManager->winGetWindowFromId( nullptr, versionID );
 
 	if (labelVersion)
@@ -488,8 +502,11 @@ static void initLabelVersion()
 //-------------------------------------------------------------------------------------------------
 void MainMenuInit( WindowLayout *layout, void *userData )
 {
+	// Reborn: Derive all child IDs from the layout actually created by the shell.
+	s_mainMenuUsesGeneralsLayout = layout &&
+		layout->getFilename().compareNoCase("Menus/MainMenuGen.wnd") == 0;
 
-	SetPopupMessageUsesRebornLayout(FALSE);
+	SetPopupMessageUsesRebornLayout(s_mainMenuUsesGeneralsLayout);
 
 	TheWritableGlobalData->m_breakTheMovie = FALSE;
 
@@ -506,45 +523,45 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 		dropDownWindows[i] = nullptr;
 
 	// get ids for our windows
-	mainMenuID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:MainMenuParent" );
-//	campaignID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonCampaign" );
-	skirmishID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonSkirmish" );
-	buttonChaptersID = TheNameKeyGenerator->nameToKey("MainMenu.wnd:ButtonChapters");
-	onlineID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonOnline" );
-	networkID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonNetwork" );
-	optionsID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonOptions" );
-	exitID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonExit" );
-	motdID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonMOTD" );
-	worldBuilderID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonWorldBuilder" );
-	getUpdateID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonGetUpdate" );
-	buttonTRAININGID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonTRAINING" ); // Re-enabled Reborn
-	buttonChallengeID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonChallenge" );
-	buttonUSAID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonUSA" );
-	buttonUSAIDGen = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonUSAGen" );
-	buttonGLAID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonGLA" );
-	buttonGLAIDGen = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonGLAGen" );
-	buttonChinaID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonChina" );
-	buttonChinaIDGen = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonChinaGen" );
-	buttonUSARecentSaveID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonUSARecentSave" );
-	buttonUSALoadGameID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonUSALoadGame" );
-	buttonGLARecentSaveID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonGLARecentSave" );
-	buttonGLALoadGameID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonGLALoadGame" );
-	buttonChinaRecentSaveID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonChinaRecentSave" );
-	buttonChinaLoadGameID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonChinaLoadGame" );
-	buttonSinglePlayerID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonSinglePlayer" );
-	buttonMultiPlayerID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonMultiplayer" );
-	buttonMultiBackID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonMultiBack" );
-	buttonSingleBackID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonSingleBack" );
-	buttonLoadReplayBackID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonLoadReplayBack" );
-	buttonReplayID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonReplay" );
-	buttonLoadReplayID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonLoadReplay" );
-	buttonLoadID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonLoadGame" );
-	buttonCreditsID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonCredits" );
+	mainMenuID = GetMainMenuWindowKey("MainMenuParent");
+//	campaignID = GetMainMenuWindowKey("ButtonCampaign");
+	skirmishID = GetMainMenuWindowKey("ButtonSkirmish");
+	buttonChaptersID = GetMainMenuWindowKey("ButtonChapters");
+	onlineID = GetMainMenuWindowKey("ButtonOnline");
+	networkID = GetMainMenuWindowKey("ButtonNetwork");
+	optionsID = GetMainMenuWindowKey("ButtonOptions");
+	exitID = GetMainMenuWindowKey("ButtonExit");
+	motdID = GetMainMenuWindowKey("ButtonMOTD");
+	worldBuilderID = GetMainMenuWindowKey("ButtonWorldBuilder");
+	getUpdateID = GetMainMenuWindowKey("ButtonGetUpdate");
+	buttonTRAININGID = GetMainMenuWindowKey("ButtonTRAINING"); // Re-enabled Reborn
+	buttonChallengeID = GetMainMenuWindowKey("ButtonChallenge");
+	buttonUSAID = GetMainMenuWindowKey("ButtonUSA");
+	buttonUSAIDGen = GetMainMenuWindowKey("ButtonUSAGen");
+	buttonGLAID = GetMainMenuWindowKey("ButtonGLA");
+	buttonGLAIDGen = GetMainMenuWindowKey("ButtonGLAGen");
+	buttonChinaID = GetMainMenuWindowKey("ButtonChina");
+	buttonChinaIDGen = GetMainMenuWindowKey("ButtonChinaGen");
+	buttonUSARecentSaveID = GetMainMenuWindowKey("ButtonUSARecentSave");
+	buttonUSALoadGameID = GetMainMenuWindowKey("ButtonUSALoadGame");
+	buttonGLARecentSaveID = GetMainMenuWindowKey("ButtonGLARecentSave");
+	buttonGLALoadGameID = GetMainMenuWindowKey("ButtonGLALoadGame");
+	buttonChinaRecentSaveID = GetMainMenuWindowKey("ButtonChinaRecentSave");
+	buttonChinaLoadGameID = GetMainMenuWindowKey("ButtonChinaLoadGame");
+	buttonSinglePlayerID = GetMainMenuWindowKey("ButtonSinglePlayer");
+	buttonMultiPlayerID = GetMainMenuWindowKey("ButtonMultiplayer");
+	buttonMultiBackID = GetMainMenuWindowKey("ButtonMultiBack");
+	buttonSingleBackID = GetMainMenuWindowKey("ButtonSingleBack");
+	buttonLoadReplayBackID = GetMainMenuWindowKey("ButtonLoadReplayBack");
+	buttonReplayID = GetMainMenuWindowKey("ButtonReplay");
+	buttonLoadReplayID = GetMainMenuWindowKey("ButtonLoadReplay");
+	buttonLoadID = GetMainMenuWindowKey("ButtonLoadGame");
+	buttonCreditsID = GetMainMenuWindowKey("ButtonCredits");
 
-	buttonEasyID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonEasy" );
-	buttonMediumID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonMedium" );
-	buttonHardID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonHard" );
-	buttonDiffBackID = TheNameKeyGenerator->nameToKey( "MainMenu.wnd:ButtonDiffBack" );
+	buttonEasyID = GetMainMenuWindowKey("ButtonEasy");
+	buttonMediumID = GetMainMenuWindowKey("ButtonMedium");
+	buttonHardID = GetMainMenuWindowKey("ButtonHard");
+	buttonDiffBackID = GetMainMenuWindowKey("ButtonDiffBack");
 
 	// get pointers to the window buttons
 	parentMainMenu = TheWindowManager->winGetWindowFromId( nullptr, mainMenuID );
@@ -585,11 +602,11 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	buttonChinaRecentSave = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonChinaRecentSaveID );
 	buttonChinaLoadGame = TheWindowManager->winGetWindowFromId( parentMainMenu, buttonChinaLoadGameID );
 
-	dropDownWindows[DROPDOWN_SINGLE] = TheWindowManager->winGetWindowFromId( parentMainMenu, TheNameKeyGenerator->nameToKey( "MainMenu.wnd:MapBorder" ));
-	dropDownWindows[DROPDOWN_MULTIPLAYER] = TheWindowManager->winGetWindowFromId( parentMainMenu, TheNameKeyGenerator->nameToKey( "MainMenu.wnd:MapBorder1" ) );
-	dropDownWindows[DROPDOWN_MAIN] = TheWindowManager->winGetWindowFromId( parentMainMenu, TheNameKeyGenerator->nameToKey( "MainMenu.wnd:MapBorder2" ) );
-	dropDownWindows[DROPDOWN_LOADREPLAY] = TheWindowManager->winGetWindowFromId( parentMainMenu, TheNameKeyGenerator->nameToKey( "MainMenu.wnd:MapBorder3" ) );
-	dropDownWindows[DROPDOWN_DIFFICULTY] = TheWindowManager->winGetWindowFromId( parentMainMenu, TheNameKeyGenerator->nameToKey( "MainMenu.wnd:MapBorder4" ) );
+	dropDownWindows[DROPDOWN_SINGLE] = TheWindowManager->winGetWindowFromId( parentMainMenu, GetMainMenuWindowKey("MapBorder"));
+	dropDownWindows[DROPDOWN_MULTIPLAYER] = TheWindowManager->winGetWindowFromId( parentMainMenu, GetMainMenuWindowKey("MapBorder1") );
+	dropDownWindows[DROPDOWN_MAIN] = TheWindowManager->winGetWindowFromId( parentMainMenu, GetMainMenuWindowKey("MapBorder2") );
+	dropDownWindows[DROPDOWN_LOADREPLAY] = TheWindowManager->winGetWindowFromId( parentMainMenu, GetMainMenuWindowKey("MapBorder3") );
+	dropDownWindows[DROPDOWN_DIFFICULTY] = TheWindowManager->winGetWindowFromId( parentMainMenu, GetMainMenuWindowKey("MapBorder4") );
 	for(i = 1; i < DROPDOWN_COUNT; ++i)
 		dropDownWindows[i]->winHide(TRUE);
 
@@ -680,7 +697,7 @@ void MainMenuInit( WindowLayout *layout, void *userData )
 	//pendingDropDown =DROPDOWN_MAIN;
 
 
-	GameWindow *rule = TheWindowManager->winGetWindowFromId( parentMainMenu, TheNameKeyGenerator->nameToKey( "MainMenu.wnd:MainMenuRuler" ) );
+	GameWindow *rule = TheWindowManager->winGetWindowFromId( parentMainMenu, GetMainMenuWindowKey("MainMenuRuler") );
 	if(rule)
 		rule->winHide(TRUE);
 	campaignSelected = FALSE;
@@ -1724,8 +1741,8 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 
 				// load the options menu
 				//WindowLayout *optLayout = TheShell->getOptionsLayout(TRUE);
-				SetOptionsMenuUsesRebornLayout(FALSE);
-				WindowLayout* optLayout = TheShell->getOptionsLayout(TRUE, FALSE);
+				SetOptionsMenuUsesRebornLayout(s_mainMenuUsesGeneralsLayout); // Reborn: Open Options with the active Main Menu theme.
+				WindowLayout* optLayout = TheShell->getOptionsLayout(TRUE, s_mainMenuUsesGeneralsLayout); // Reborn: Keep the created layout and child-name prefix in sync.
 				DEBUG_ASSERTCRASH(optLayout != nullptr, ("unable to get options menu layout"));
 				optLayout->runInit();
 				optLayout->hide(FALSE);
@@ -1768,7 +1785,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 
 				// set up for the difficulty select into challenge menu
 				TheTransitionHandler->setGroup("MainMenuFactionTraining");
-				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionTraining"));
+				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionTraining"));
 				if(win)
 					win->winHide(TRUE);
 				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackTraining");
@@ -1788,7 +1805,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				TheCampaignManager->setCampaign( "TRAINING" );
 				TheTransitionHandler->setGroup("MainMenuFactionTrainingGen");
 				TheTransitionHandler->remove("MainMenuFactionTrainingGen", TRUE);
-				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionTrainingGen"));
+				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionTrainingGen"));
 				if(win)
 					win->winHide(TRUE);
 				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackTrainingGen");
@@ -1809,7 +1826,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 #endif
 				TheTransitionHandler->setGroup("MainMenuFactionUS");
 				TheTransitionHandler->remove("MainMenuFactionUS", TRUE);
-				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionUS"));
+				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionUS"));
 				if(win)
 					win->winHide(TRUE);
 				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackUS");
@@ -1837,7 +1854,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 #endif
 				TheTransitionHandler->setGroup("MainMenuFactionUS");
 				TheTransitionHandler->remove("MainMenuFactionUS", TRUE);
-				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionUS"));
+				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionUS"));
 				if(win)
 					win->winHide(TRUE);
 				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackUS");
@@ -1865,7 +1882,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 #endif
 				TheTransitionHandler->setGroup("MainMenuFactionGLA");
 				TheTransitionHandler->remove("MainMenuFactionGLA", TRUE);
-				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionGLA"));
+				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionGLA"));
 				if(win)
 					win->winHide(TRUE);
 				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackGLA");
@@ -1893,7 +1910,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 #endif
 				TheTransitionHandler->setGroup("MainMenuFactionGLA");
 				TheTransitionHandler->remove("MainMenuFactionGLA", TRUE);
-				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionGLA"));
+				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionGLA"));
 				if(win)
 					win->winHide(TRUE);
 				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackGLA");
@@ -1921,7 +1938,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 #endif
 				TheTransitionHandler->setGroup("MainMenuFactionChina");
 				TheTransitionHandler->remove("MainMenuFactionChina", TRUE);
-				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionChina"));
+				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionChina"));
 				if(win)
 					win->winHide(TRUE);
 				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackChina");
@@ -1949,7 +1966,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 #endif
 				TheTransitionHandler->setGroup("MainMenuFactionChina");
 				TheTransitionHandler->remove("MainMenuFactionChina", TRUE);
-				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, TheNameKeyGenerator->nameToKey("MainMenu.wnd:WinFactionChina"));
+				GameWindow *win = TheWindowManager->winGetWindowFromId(parentMainMenu, GetMainMenuWindowKey("WinFactionChina"));
 				if(win)
 					win->winHide(TRUE);
 				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackChina");

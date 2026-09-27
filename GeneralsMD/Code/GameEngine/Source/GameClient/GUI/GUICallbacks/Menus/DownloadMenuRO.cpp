@@ -612,9 +612,7 @@ void DownloadMenuROShutdown(
 	GameWindow* mainMenuWindow =
 		TheWindowManager->winGetWindowFromId(
 			nullptr,
-			NAMEKEY(
-				"MainMenu.wnd:"
-				"MainMenuParent"));
+			GetMainMenuWindowKey("MainMenuParent")); // Reborn: Follow the loaded Main Menu theme.
 
 	if (mainMenuWindow)
 	{
