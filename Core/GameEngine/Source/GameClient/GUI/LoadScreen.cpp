@@ -1255,20 +1255,16 @@ void ShellGameLoadScreen::init( GameInfo *game )
 	AsciiString wndFile;
 	AsciiString wndPrefix;
 
-	Bool useGenShellLoadScreen = FALSE;
+	Bool useGenShellLoadScreen = UseGeneralsLayout(); // Reborn: Follow the selected layout theme on the pre-Main Menu shell load screen.
 
-	if (IsRebornCampaign())
-	{
-		useGenShellLoadScreen = TRUE;
-	}
-	else if (
+	if (TheGlobalData->m_layoutTheme == REBORN_LAYOUT_THEME_DEFAULT && (
 		previousCampaign.compare("training") == 0 ||
 		previousCampaign.compare("usa_gen") == 0 ||
 		previousCampaign.compare("gla_gen") == 0 ||
 		previousCampaign.compare("china_gen") == 0
-		)
+		))
 	{
-		useGenShellLoadScreen = TRUE;
+		useGenShellLoadScreen = TRUE; // Reborn: Preserve the legacy campaign-return theme when Default is selected.
 	}
 
 	if (useGenShellLoadScreen)
@@ -1304,7 +1300,10 @@ void ShellGameLoadScreen::init( GameInfo *game )
 
 	if(m_loadScreen && firstLoad && TheGameLODManager && TheGameLODManager->didMemPass())
 	{
-		m_loadScreen->winSetEnabledImage(0, TheMappedImageCollection->findImageByName("TitleScreenReborn"));
+		m_loadScreen->winSetEnabledImage(
+			0,
+			TheMappedImageCollection->findImageByName(
+				useGenShellLoadScreen ? "TitleScreenGen" : "TitleScreenReborn")); // Reborn: Match the post-sizzle title image to the selected concrete theme.
 		TheWritableGlobalData->m_breakTheMovie = FALSE;
 
 		//GameWindow *win = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "ShellGameLoadScreen.wnd:StaticTextLegal" ));
