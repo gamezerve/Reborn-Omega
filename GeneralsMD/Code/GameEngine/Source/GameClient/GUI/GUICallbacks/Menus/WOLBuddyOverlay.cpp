@@ -1053,7 +1053,7 @@ void PopulateOldBuddyMessages()
 //-------------------------------------------------------------------------------------------------
 void WOLBuddyOverlayInit( WindowLayout *layout, void *userData )
 {
-	buddyOverlayWindowPrefix = IsRebornCampaign() ? "WOLBuddyOverlayGen.wnd" : "WOLBuddyOverlay.wnd";
+	buddyOverlayWindowPrefix = UseGeneralsLayout() ? "WOLBuddyOverlayGen.wnd" : "WOLBuddyOverlay.wnd"; // Reborn: Follow the selected visual theme.
 	parentID = buddyOverlayWindowID("BuddyMenuParent");
 	buttonHideID = buddyOverlayWindowID("ButtonHide");
 	buttonAddBuddyID = buddyOverlayWindowID("ButtonAdd");

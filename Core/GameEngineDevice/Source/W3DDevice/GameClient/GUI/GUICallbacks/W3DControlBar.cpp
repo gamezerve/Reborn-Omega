@@ -919,7 +919,7 @@ void W3DCommandBarHelpPopupDraw( GameWindow *window, WinInstanceData *instData )
 	static const Image* beginBar = nullptr;
 	static const Image* centerBar = nullptr;
 
-	if (IsRebornCampaign())
+	if (UseGeneralsLayout()) // Reborn: Follow the selected visual theme.
 	{
 		endBar = TheMappedImageCollection->findImageByName("Helpbox-topGen");
 		beginBar = TheMappedImageCollection->findImageByName("Helpbox-bottomGen");

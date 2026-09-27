@@ -302,14 +302,14 @@ void ScoreScreenEnableControls(Bool enable)
 
 static const char* GetScoreScreenTransitionGroup()
 {
-	if (screenType == SCORESCREEN_SINGLEPLAYER && IsRebornCampaign())
+	if (screenType == SCORESCREEN_SINGLEPLAYER && UseGeneralsLayout())
 		return "ScoreScreenShowGen";
 
 	return "ScoreScreenShow";
 }
 static void UpdateRebornScoreScreenWindows()
 {
-	if (screenType == SCORESCREEN_SINGLEPLAYER && IsRebornCampaign())
+	if (screenType == SCORESCREEN_SINGLEPLAYER && UseGeneralsLayout())
 	{
 		if (userWindow) userWindow->winHide(TRUE);
 		if (lineWindow) lineWindow->winHide(TRUE);
@@ -413,7 +413,7 @@ void ScoreScreenInit( WindowLayout *layout, void *userData )
 
 	parent = TheWindowManager->winGetWindowFromId( nullptr, parentID );
 
-	if (parent && IsRebornCampaign())
+	if (parent && UseGeneralsLayout())
 	{
 		const Image* img = TheMappedImageCollection->findImageByName("MainMenuRulerGen");
 		if (img)
@@ -1201,7 +1201,7 @@ void finishSinglePlayerInit()
 			// auto save game
 			// TheGameState->missionSave();
 			presentSaveResult( TheGameState->missionSave() );
-			if (IsRebornCampaign())
+			if (UseGeneralsLayout())
 			{
 				if (staticTextGameSavedGen)
 					staticTextGameSavedGen->winHide(FALSE);
@@ -1251,7 +1251,7 @@ void finishSinglePlayerInit()
 
 	if (screenType == SCORESCREEN_SINGLEPLAYER)
 	{
-		if (IsRebornCampaign())
+		if (UseGeneralsLayout())
 		{
 			if (buttonOk)
 				buttonOk->winHide(TRUE);
@@ -1275,7 +1275,7 @@ void finishSinglePlayerInit()
 	}
 	if (screenType == SCORESCREEN_SINGLEPLAYER)
 	{
-		if (IsRebornCampaign())
+		if (UseGeneralsLayout())
 		{
 			if (buttonContinue)
 				buttonContinue->winHide(TRUE);

@@ -59,6 +59,7 @@
 #include "GameClient/ChallengeGenerals.h"//For TheChallengeGenerals, so I can save it too.
 #include "GameClient/GameClient.h"
 #include "GameNetwork/GameInfo.h" //For Challenge Info.  It and Skirmish info are in the wrong place it seems.
+#include "Common/GlobalData.h"
 
 //-----------------------------------------------------------------------------
 // DEFINES ////////////////////////////////////////////////////////////////////
@@ -78,6 +79,36 @@ Bool IsRebornCampaign()
 		|| camp->m_name.compare("usa_gen") == 0
 		|| camp->m_name.compare("gla_gen") == 0
 		|| camp->m_name.compare("china_gen") == 0;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Select the visual layout theme while preserving hardcoded campaign behavior. */
+//-------------------------------------------------------------------------------------------------
+Bool UseGeneralsLayout()
+{
+	if (TheGlobalData)
+	{
+		switch (TheGlobalData->m_layoutTheme)
+		{
+			case REBORN_LAYOUT_THEME_ZERO_HOUR:
+				return FALSE;
+
+			case REBORN_LAYOUT_THEME_GENERALS:
+				return TRUE;
+
+			case REBORN_LAYOUT_THEME_RANDOM:
+			{
+				// Reborn: Keep Random consistent for the entire process so related layouts and images cannot disagree.
+				static const Bool randomLayoutUsesGenerals = (GetTickCount() & 1) != 0;
+				return randomLayoutUsesGenerals;
+			}
+
+			default:
+				break;
+		}
+	}
+
+	return IsRebornCampaign();
 }
 
 const FieldParse CampaignManager::m_campaignFieldParseTable[] =

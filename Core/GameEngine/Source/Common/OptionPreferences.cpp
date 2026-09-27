@@ -76,6 +76,15 @@ OptionPreferences::OptionPreferences()
 		(rebornPreferences["Challenge60FPS"] == "yes");
 	TheWritableGlobalData->m_shellMap60Fps =
 		(rebornPreferences["ShellMap60FPS"] == "yes");
+
+	// Reborn: Load the interface theme override once so IsRebornCampaign does not perform file I/O.
+	TheWritableGlobalData->m_layoutTheme = REBORN_LAYOUT_THEME_DEFAULT;
+	if (rebornPreferences["LayoutTheme"].compareNoCase("ZeroHour") == 0)
+		TheWritableGlobalData->m_layoutTheme = REBORN_LAYOUT_THEME_ZERO_HOUR;
+	else if (rebornPreferences["LayoutTheme"].compareNoCase("Generals") == 0)
+		TheWritableGlobalData->m_layoutTheme = REBORN_LAYOUT_THEME_GENERALS;
+	else if (rebornPreferences["LayoutTheme"].compareNoCase("Random") == 0)
+		TheWritableGlobalData->m_layoutTheme = REBORN_LAYOUT_THEME_RANDOM;
 }
 
 OptionPreferences::~OptionPreferences()

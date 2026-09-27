@@ -91,7 +91,7 @@ static Bool pause = FALSE;
 
 void InGamePopupMessageInit( WindowLayout *layout, void *userData )
 {
-	const char* wndName = IsRebornCampaign() ? "InGamePopupMessageGen.wnd" : "InGamePopupMessage.wnd"; // Reborn
+	const char* wndName = UseGeneralsLayout() ? "InGamePopupMessageGen.wnd" : "InGamePopupMessage.wnd"; // Reborn: Use the selected visual theme.
 
 	AsciiString parentName; parentName.format("%s:InGamePopupMessageParent", wndName); // Reborn
 	parentID = TheNameKeyGenerator->nameToKey(parentName.str()); // Reborn

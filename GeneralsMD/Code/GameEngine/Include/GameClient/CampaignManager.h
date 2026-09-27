@@ -181,6 +181,7 @@ private:
 // GLOBAL HELPERS /////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
 Bool IsRebornCampaign();
+Bool UseGeneralsLayout(); // Reborn: Apply the user-selected visual theme without changing campaign identity.
 
 //-----------------------------------------------------------------------------
 // EXTERNALS //////////////////////////////////////////////////////////////////

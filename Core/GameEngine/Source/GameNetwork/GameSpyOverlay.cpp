@@ -69,11 +69,11 @@ static const UnsignedInt BUDDY_LOGIN_TIMEOUT = 120000;
 #endif
 
 //-------------------------------------------------------------------------------------------------
-/** Reborn: Select the matching message-box theme for the current campaign UI. */
+/** Reborn: Select the matching message-box theme for the chosen visual layout. */
 //-------------------------------------------------------------------------------------------------
 static void selectGameSpyMessageBoxLayout()
 {
-	SetPopupMessageUsesRebornLayout(IsRebornCampaign());
+	SetPopupMessageUsesRebornLayout(UseGeneralsLayout());
 }
 
 Bool GameSpyIsBuddyLoginInProgress()
@@ -625,7 +625,7 @@ void GameSpyOpenOverlay( GSOverlayType overlay )
 	}
 #endif
 
-	const Bool useGeneralsBuddyOverlay = overlay == GSOVERLAY_BUDDY && IsRebornCampaign();
+	const Bool useGeneralsBuddyOverlay = overlay == GSOVERLAY_BUDDY && UseGeneralsLayout(); // Reborn: Follow the selected visual theme.
 	const char *overlayFilename = useGeneralsBuddyOverlay
 		? "Menus/WOLBuddyOverlayGen.wnd"
 		: gsOverlays[overlay];

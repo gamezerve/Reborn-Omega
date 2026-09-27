@@ -53,6 +53,16 @@ enum AIDebugOptions CPP_11(: Int);
 constexpr const Int MAX_GLOBAL_LIGHTS = 3;
 constexpr const Int SIMULATE_REPLAYS_SEQUENTIAL = -1;
 
+// Reborn: Stored interface-theme choices shared by preferences and themed UI selection.
+enum RebornLayoutTheme
+{
+	REBORN_LAYOUT_THEME_DEFAULT = 0,
+	REBORN_LAYOUT_THEME_ZERO_HOUR,
+	REBORN_LAYOUT_THEME_GENERALS,
+	REBORN_LAYOUT_THEME_RANDOM,
+	REBORN_LAYOUT_THEME_COUNT
+};
+
 //-------------------------------------------------------------------------------------------------
 // Command-line parsing state is stored here instead of in CommandLine because
 // the parsing result belongs to the GlobalData instance created during startup.
@@ -214,6 +224,7 @@ public:
 	Bool m_skirmish60Fps;
 	Bool m_challenge60Fps;
 	Bool m_shellMap60Fps;
+	RebornLayoutTheme m_layoutTheme; // Reborn: Override visual layouts without changing campaign identity.
 	Real m_minCameraHeight;
 	Real m_terrainHeightAtEdgeOfMap;
 	Real m_unitDamagedThresh;

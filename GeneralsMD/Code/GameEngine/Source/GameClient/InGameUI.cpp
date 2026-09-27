@@ -5818,7 +5818,7 @@ void InGameUI::popupMessage( const AsciiString& identifier, Int x, Int y, Int wi
 	if( pause )
 		TheGameLogic->setGamePaused(TRUE, pauseMusic);
 
-	if (IsRebornCampaign()) // Reborn: use the Generals version in Reborn Campaigns.
+	if (UseGeneralsLayout()) // Reborn: Use the player-selected visual layout theme.
 		m_popupMessageData->layout = TheWindowManager->winCreateLayout("InGamePopupMessageGen.wnd");
 	else
 		m_popupMessageData->layout = TheWindowManager->winCreateLayout("InGamePopupMessage.wnd");

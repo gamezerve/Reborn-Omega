@@ -864,6 +864,7 @@ GlobalData::GlobalData()
 	m_skirmish60Fps = FALSE;
 	m_challenge60Fps = FALSE;
 	m_shellMap60Fps = FALSE;
+	m_layoutTheme = REBORN_LAYOUT_THEME_DEFAULT; // Reborn: Default preserves campaign-based interface selection.
 	m_terrainHeightAtEdgeOfMap = 0.0f;
 
 	m_unitDamagedThresh = 0.5f;

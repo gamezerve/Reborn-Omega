@@ -67,7 +67,7 @@ Shell::~Shell()
 
 static const char* GetPopupSaveLoadLayoutName()
 {
-	return IsRebornCampaign() ? "Menus/PopupSaveLoadGen.wnd" : "Menus/PopupSaveLoad.wnd";
+	return UseGeneralsLayout() ? "Menus/PopupSaveLoadGen.wnd" : "Menus/PopupSaveLoad.wnd"; // Reborn: Follow the selected visual theme.
 }
 //-------------------------------------------------------------------------------------------------
 void Shell::construct()

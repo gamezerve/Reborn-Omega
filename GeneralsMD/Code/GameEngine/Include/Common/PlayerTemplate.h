@@ -108,7 +108,7 @@ public:
 
 	AsciiString getScoreScreen() const
 	{
-		if (IsRebornCampaign() && m_alternativeScoreScreenImage.isNotEmpty())
+		if (UseGeneralsLayout() && m_alternativeScoreScreenImage.isNotEmpty()) // Reborn: Follow the selected visual theme.
 			return m_alternativeScoreScreenImage;
 
 		return m_scoreScreenImage;

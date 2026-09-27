@@ -264,7 +264,7 @@ TOOLTIP:ShellMap60FPS
 END
 
 TOOLTIP:LayoutTheme
-"Choose the visual layout theme used by supported menus. This preference is reserved for a future update and does not currently change the interface."
+"Choose the visual layout theme used by supported menus. Default follows the current campaign, while Random selects one theme for each game session."
 END
 
 GUI:GLA08

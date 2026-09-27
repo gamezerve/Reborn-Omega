@@ -87,9 +87,10 @@ static NameKeyType buttonSaveLoad = NAMEKEY_INVALID;
 
 static Bool UseRebornQuitMenu()
 {
+	// Reborn: Keep the in-game menu restriction while honoring the selected visual theme.
 	return TheGameLogic
 		&& TheGameLogic->getGameMode() == GAME_SINGLE_PLAYER
-		&& IsRebornCampaign();
+		&& UseGeneralsLayout();
 }
 
 static NameKeyType GetPopupSaveLoadBackKey()
@@ -408,7 +409,7 @@ void ToggleQuitMenu()
 		else
 		{
 
-			Bool useRebornQuitMenu = TheGameLogic->getGameMode() == GAME_SINGLE_PLAYER && IsRebornCampaign();
+			Bool useRebornQuitMenu = TheGameLogic->getGameMode() == GAME_SINGLE_PLAYER && UseGeneralsLayout();
 
 			if (useRebornQuitMenu) // Reborn
 			{

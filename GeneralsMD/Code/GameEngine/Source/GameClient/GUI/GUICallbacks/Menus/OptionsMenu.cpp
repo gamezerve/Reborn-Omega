@@ -203,16 +203,6 @@ static Bool advancedSettingsOriginalChallenge60Fps = FALSE;
 static Bool advancedSettingsOriginalShellMap60Fps = FALSE;
 static Int advancedSettingsOriginalLayoutTheme = 0; // Reborn: Restore the unsaved layout theme selection when Advanced Settings is cancelled.
 
-// Reborn: Keep stable stored values for the future menu layout theme preference.
-enum RebornLayoutTheme
-{
-	REBORN_LAYOUT_THEME_DEFAULT = 0,
-	REBORN_LAYOUT_THEME_ZERO_HOUR,
-	REBORN_LAYOUT_THEME_GENERALS,
-	REBORN_LAYOUT_THEME_RANDOM,
-	REBORN_LAYOUT_THEME_COUNT
-};
-
 static NameKeyType    sliderTextureResolutionID = NAMEKEY_INVALID;
 static GameWindow *   sliderTextureResolution = nullptr;
 
@@ -598,8 +588,9 @@ static void saveAdvancedSettings()
 		if (selectedTheme < 0 || selectedTheme >= REBORN_LAYOUT_THEME_COUNT)
 			selectedTheme = REBORN_LAYOUT_THEME_DEFAULT;
 
-		// Reborn: Persist the selection now while deliberately leaving theme application for a later change.
+		// Reborn: Persist and apply the visual theme without changing campaign-specific game behavior.
 		rebornPreferences["LayoutTheme"] = layoutThemeValues[selectedTheme];
+		TheWritableGlobalData->m_layoutTheme = (RebornLayoutTheme)selectedTheme;
 	}
 
 	WriteRebornOmegaPreferences(rebornPreferences);
