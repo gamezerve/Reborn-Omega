@@ -189,6 +189,8 @@ static NameKeyType checkChallenge60FpsID = NAMEKEY_INVALID;
 static GameWindow* checkChallenge60Fps = nullptr;
 static NameKeyType checkShellMap60FpsID = NAMEKEY_INVALID;
 static GameWindow* checkShellMap60Fps = nullptr;
+static NameKeyType comboBoxLayoutThemeID = NAMEKEY_INVALID; // Reborn: Store the future menu layout theme preference in Advanced Settings.
+static GameWindow* comboBoxLayoutTheme = nullptr;
 static NameKeyType checkShowCommunicatorButtonID = NAMEKEY_INVALID;
 static GameWindow* checkShowCommunicatorButton = nullptr;
 static Bool advancedSettingsOriginalZoomFactor = FALSE;
@@ -199,6 +201,17 @@ static Bool advancedSettingsOriginalCinematic60Fps = FALSE;
 static Bool advancedSettingsOriginalSkirmish60Fps = FALSE;
 static Bool advancedSettingsOriginalChallenge60Fps = FALSE;
 static Bool advancedSettingsOriginalShellMap60Fps = FALSE;
+static Int advancedSettingsOriginalLayoutTheme = 0; // Reborn: Restore the unsaved layout theme selection when Advanced Settings is cancelled.
+
+// Reborn: Keep stable stored values for the future menu layout theme preference.
+enum RebornLayoutTheme
+{
+	REBORN_LAYOUT_THEME_DEFAULT = 0,
+	REBORN_LAYOUT_THEME_ZERO_HOUR,
+	REBORN_LAYOUT_THEME_GENERALS,
+	REBORN_LAYOUT_THEME_RANDOM,
+	REBORN_LAYOUT_THEME_COUNT
+};
 
 static NameKeyType    sliderTextureResolutionID = NAMEKEY_INVALID;
 static GameWindow *   sliderTextureResolution = nullptr;
@@ -474,6 +487,43 @@ static void clampOptionsMaxCameraHeightText()
 	GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Populate and select the saved future menu layout theme preference. */
+//-------------------------------------------------------------------------------------------------
+static void populateLayoutThemeComboBox(const AsciiString& savedTheme)
+{
+	if (!comboBoxLayoutTheme)
+		return;
+
+	static const char* layoutThemeLabels[REBORN_LAYOUT_THEME_COUNT] =
+	{
+		"GUI:LayoutThemeDefault",
+		"GUI:LayoutThemeZeroHour",
+		"GUI:LayoutThemeGenerals",
+		"GUI:LayoutThemeRandom"
+	};
+
+	GadgetComboBoxReset(comboBoxLayoutTheme);
+
+	const Color white = GameMakeColor(255, 255, 255, 255);
+	for (Int i = 0; i < REBORN_LAYOUT_THEME_COUNT; ++i)
+	{
+		GadgetComboBoxAddEntry(comboBoxLayoutTheme, TheGameText->fetch(layoutThemeLabels[i]), white);
+		GadgetComboBoxSetItemData(comboBoxLayoutTheme, i, (void*)(UnsignedInt)i);
+	}
+
+	Int selectedTheme = REBORN_LAYOUT_THEME_DEFAULT;
+	if (savedTheme.compareNoCase("ZeroHour") == 0)
+		selectedTheme = REBORN_LAYOUT_THEME_ZERO_HOUR;
+	else if (savedTheme.compareNoCase("Generals") == 0)
+		selectedTheme = REBORN_LAYOUT_THEME_GENERALS;
+	else if (savedTheme.compareNoCase("Random") == 0)
+		selectedTheme = REBORN_LAYOUT_THEME_RANDOM;
+
+	GadgetComboBoxSetSelectedPos(comboBoxLayoutTheme, selectedTheme, TRUE);
+	GadgetComboBoxCenterSelectedEntry(comboBoxLayoutTheme);
+}
+
 static void saveAdvancedSettings()
 {
 	UserPreferences rebornPreferences;
@@ -530,6 +580,26 @@ static void saveAdvancedSettings()
 		const Bool enabled = GadgetCheckBoxIsChecked(checkShellMap60Fps);
 		rebornPreferences["ShellMap60FPS"] = enabled ? "yes" : "no";
 		TheWritableGlobalData->m_shellMap60Fps = enabled;
+	}
+
+	if (comboBoxLayoutTheme)
+	{
+		Int selectedTheme = REBORN_LAYOUT_THEME_DEFAULT;
+		GadgetComboBoxGetSelectedPos(comboBoxLayoutTheme, &selectedTheme);
+
+		static const char* layoutThemeValues[REBORN_LAYOUT_THEME_COUNT] =
+		{
+			"Default",
+			"ZeroHour",
+			"Generals",
+			"Random"
+		};
+
+		if (selectedTheme < 0 || selectedTheme >= REBORN_LAYOUT_THEME_COUNT)
+			selectedTheme = REBORN_LAYOUT_THEME_DEFAULT;
+
+		// Reborn: Persist the selection now while deliberately leaving theme application for a later change.
+		rebornPreferences["LayoutTheme"] = layoutThemeValues[selectedTheme];
 	}
 
 	WriteRebornOmegaPreferences(rebornPreferences);
@@ -1233,6 +1303,8 @@ static void showAdvancedSettings()
 		checkChallenge60Fps && GadgetCheckBoxIsChecked(checkChallenge60Fps);
 	advancedSettingsOriginalShellMap60Fps =
 		checkShellMap60Fps && GadgetCheckBoxIsChecked(checkShellMap60Fps);
+	if (comboBoxLayoutTheme)
+		GadgetComboBoxGetSelectedPos(comboBoxLayoutTheme, &advancedSettingsOriginalLayoutTheme);
 
 	WinAdvancedSettings->winHide(FALSE);
 }
@@ -1272,6 +1344,12 @@ static void setAdvancedSettingsDefaults()
 		if (checkShellMap60Fps)
 			GadgetCheckBoxSetChecked(checkShellMap60Fps, FALSE);
 	}
+
+	if (comboBoxLayoutTheme)
+	{
+		GadgetComboBoxSetSelectedPos(comboBoxLayoutTheme, REBORN_LAYOUT_THEME_DEFAULT, TRUE);
+		GadgetComboBoxCenterSelectedEntry(comboBoxLayoutTheme);
+	}
 }
 
 static void cancelAdvancedSettings()
@@ -1292,6 +1370,11 @@ static void cancelAdvancedSettings()
 		GadgetCheckBoxSetChecked(checkChallenge60Fps, advancedSettingsOriginalChallenge60Fps);
 	if (checkShellMap60Fps)
 		GadgetCheckBoxSetChecked(checkShellMap60Fps, advancedSettingsOriginalShellMap60Fps);
+	if (comboBoxLayoutTheme)
+	{
+		GadgetComboBoxSetSelectedPos(comboBoxLayoutTheme, advancedSettingsOriginalLayoutTheme, TRUE);
+		GadgetComboBoxCenterSelectedEntry(comboBoxLayoutTheme);
+	}
 
 	if (WinAdvancedSettings)
 		WinAdvancedSettings->winHide(TRUE);
@@ -1368,6 +1451,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	checkSkirmish60FpsID = GetOptionsMenuChildKey("CheckSkirmish60FPS");
 	checkChallenge60FpsID = GetOptionsMenuChildKey("CheckChallenge60FPS");
 	checkShellMap60FpsID = GetOptionsMenuChildKey("CheckShellMap60FPS");
+	comboBoxLayoutThemeID = GetOptionsMenuChildKey("ComboBoxLayoutTheme");
 	checkShowCommunicatorButtonID = GetOptionsMenuChildKey("CheckShowCommunicatorButton");
 
 	checkDrawAnchorID = GetOptionsMenuChildKey("CheckBoxDrawAnchor");
@@ -1421,6 +1505,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	checkSkirmish60Fps = TheWindowManager->winGetWindowFromId(nullptr, checkSkirmish60FpsID);
 	checkChallenge60Fps = TheWindowManager->winGetWindowFromId(nullptr, checkChallenge60FpsID);
 	checkShellMap60Fps = TheWindowManager->winGetWindowFromId(nullptr, checkShellMap60FpsID);
+	comboBoxLayoutTheme = TheWindowManager->winGetWindowFromId(nullptr, comboBoxLayoutThemeID);
 	checkShowCommunicatorButton =
 		TheWindowManager->winGetWindowFromId(nullptr, checkShowCommunicatorButtonID);
 
@@ -1718,6 +1803,9 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 		GadgetCheckBoxSetChecked(checkChallenge60Fps, challenge60Fps);
 	if (checkShellMap60Fps)
 		GadgetCheckBoxSetChecked(checkShellMap60Fps, shellMap60Fps);
+
+	// Reborn: Missing and invalid values intentionally select Default for upgraded and new users.
+	populateLayoutThemeComboBox(rebornPreferences["LayoutTheme"]);
 
 	// populate anti aliasing modes
 	AsciiString selectedAliasingMode = (*pref)["AntiAliasing"];

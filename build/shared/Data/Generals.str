@@ -179,6 +179,26 @@ GUI:GraphicsSettings
 "GRAPHICS SETTINGS"
 END
 
+GUI:LayoutTheme
+"Layout Theme"
+END
+
+GUI:LayoutThemeDefault
+"Default"
+END
+
+GUI:LayoutThemeZeroHour
+"Zero Hour"
+END
+
+GUI:LayoutThemeGenerals
+"Generals"
+END
+
+GUI:LayoutThemeRandom
+"Random"
+END
+
 GUI:AccessibilitySettings
 "ACCESSIBILITY"
 END
@@ -241,6 +261,10 @@ END
 
 TOOLTIP:ShellMap60FPS
 "Render ShellMaps at 60 FPS while preserving the original 30 FPS simulation rate."
+END
+
+TOOLTIP:LayoutTheme
+"Choose the visual layout theme used by supported menus. This preference is reserved for a future update and does not currently change the interface."
 END
 
 GUI:GLA08
