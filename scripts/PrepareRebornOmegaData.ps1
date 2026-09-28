@@ -79,6 +79,7 @@ robocopy `
     "AI Mod Changelog.txt" `
     "AI Mod Changelog.txt.bak" `
     "GC_Background.bik" `
+    "GC_BackgroundGen.bik" `
     "VS_small.bik" `
     "*.ani"
 

@@ -1059,7 +1059,7 @@ void displayChallengeWinLoss( const Image *imageGeneral, const UnicodeString str
 	challengeWinLossText->winHide(FALSE);
 	challengeRemarks->winHide(FALSE);
 	challengePortrait->winHide(FALSE);
-	parent->winSetEnabledImage(0, TheMappedImageCollection->findImageByName("GeneralsChallengeWinLoss"));
+	parent->winSetEnabledImage(0, TheMappedImageCollection->findImageByName(UseGeneralsLayout() ? "GeneralsChallengeWinLossGen" : "GeneralsChallengeWinLoss")); // Reborn: Theme the Challenge result background without duplicating the shared ScoreScreen layout.
 
 	// display the defeated enemy general
 	challengePortrait->winSetEnabledImage(0, imageGeneral);

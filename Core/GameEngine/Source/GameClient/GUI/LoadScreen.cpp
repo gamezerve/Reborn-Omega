@@ -1002,7 +1002,7 @@ void ChallengeLoadScreen::init( GameInfo *game )
 	const GeneralPersona* generalOpponent = TheChallengeGenerals->getGeneralByGeneralName( mission->m_generalName );
 
 	// create the layout of the load screen
-	m_loadScreen = TheWindowManager->winCreateFromScript( "Menus/ChallengeLoadScreen.wnd" );
+	m_loadScreen = TheWindowManager->winCreateFromScript( UseGeneralsLayout() ? "Menus/ChallengeLoadScreenGen.wnd" : "Menus/ChallengeLoadScreen.wnd" ); // Reborn: Load the Challenge screen with the selected visual theme while preserving canonical child IDs.
 	DEBUG_ASSERTCRASH(m_loadScreen, ("Can't initialize the single player loadscreen"));
 	m_loadScreen->winHide(FALSE);
 	m_loadScreen->winBringToTop();
