@@ -1014,8 +1014,13 @@ void ChallengeLoadScreen::init( GameInfo *game )
 
 	m_ambientLoop.setEventName("LoadScreenAmbient");
 
+	// Reborn: Select the Challenge background movie independently from campaign identity.
+	AsciiString challengeMovieName = mission->m_movieLabel;
+	if (UseGeneralsLayout() && challengeMovieName.compareNoCase("GeneralsChallengeBackground") == 0)
+		challengeMovieName = "GeneralsChallengeBackgroundGen";
+
 	// create the new background video stream
-	m_videoStream = TheVideoPlayer->open( TheCampaignManager->getCurrentMission()->m_movieLabel );
+	m_videoStream = TheVideoPlayer->open(challengeMovieName);
 
 	// Create the new buffer
 	m_videoBuffer = TheDisplay->createVideoBuffer();
