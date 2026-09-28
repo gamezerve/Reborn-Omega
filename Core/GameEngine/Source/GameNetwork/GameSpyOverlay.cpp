@@ -33,6 +33,7 @@
 #include "GameClient/GadgetListBox.h"
 #include "GameClient/GadgetPushButton.h"
 #include "GameClient/GameText.h"
+#include "GameClient/GUICallbacks.h" // Reborn: Select the matching themed Options overlay callbacks.
 #include "GameClient/MessageBox.h"
 #include "GameClient/ShellHooks.h"
 //#include "GameNetwork/GameSpy.h"
@@ -320,6 +321,7 @@ static WindowLayout *overlayLayouts[GSOVERLAY_MAX] =
 };
 
 static Bool buddyOverlayUsesGeneralsTheme = FALSE;
+static Bool optionsOverlayUsesGeneralsTheme = FALSE; // Reborn: Track the cached online Options theme.
 
 #if defined(GENERALS_ONLINE)
 
@@ -626,16 +628,28 @@ void GameSpyOpenOverlay( GSOverlayType overlay )
 #endif
 
 	const Bool useGeneralsBuddyOverlay = overlay == GSOVERLAY_BUDDY && UseGeneralsLayout(); // Reborn: Follow the selected visual theme.
+	const Bool useGeneralsOptionsOverlay = overlay == GSOVERLAY_OPTIONS && UseGeneralsLayout(); // Reborn: Theme online Options like the welcome menu.
+	if (overlay == GSOVERLAY_OPTIONS)
+		SetOptionsMenuUsesRebornLayout(useGeneralsOptionsOverlay); // Reborn: Match Options callbacks to the selected WND prefix.
 	// Reborn: Keep GO overlay identities canonical; WindowLayout selects the themed map source internally.
 	const AsciiString overlayFilename = useGeneralsBuddyOverlay
 		? "Menus/WOLBuddyOverlayGen.wnd"
-		: gsOverlays[overlay];
+		: (useGeneralsOptionsOverlay ? "Menus/OptionsMenuGen.wnd" : gsOverlays[overlay]);
 
 	// Buddy overlays are cached between openings.  Recreate the cached layout
 	// when a later game in the same process uses the other campaign UI theme.
 	if (overlay == GSOVERLAY_BUDDY && overlayLayouts[overlay] &&
 		buddyOverlayUsesGeneralsTheme != useGeneralsBuddyOverlay)
 	{
+		overlayLayouts[overlay]->runShutdown();
+		overlayLayouts[overlay]->destroyWindows();
+		deleteInstance(overlayLayouts[overlay]);
+		overlayLayouts[overlay] = nullptr;
+	}
+	if (overlay == GSOVERLAY_OPTIONS && overlayLayouts[overlay] &&
+		optionsOverlayUsesGeneralsTheme != useGeneralsOptionsOverlay)
+	{
+		// Reborn: Discard a cached online Options overlay when the selected theme changed.
 		overlayLayouts[overlay]->runShutdown();
 		overlayLayouts[overlay]->destroyWindows();
 		deleteInstance(overlayLayouts[overlay]);
@@ -683,6 +697,8 @@ void GameSpyOpenOverlay( GSOverlayType overlay )
 		}
 		if (overlay == GSOVERLAY_BUDDY)
 			buddyOverlayUsesGeneralsTheme = useGeneralsBuddyOverlay;
+		if (overlay == GSOVERLAY_OPTIONS)
+			optionsOverlayUsesGeneralsTheme = useGeneralsOptionsOverlay; // Reborn: Remember the created Options theme.
 
 		overlayLayouts[overlay]->runInit();
 		overlayLayouts[overlay]->hide( FALSE );

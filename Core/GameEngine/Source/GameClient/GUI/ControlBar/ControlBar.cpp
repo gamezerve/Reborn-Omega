@@ -56,6 +56,7 @@
 #include "Common/UserPreferences.h"
 
 #include "GameClient/DisconnectMenu.h"
+#include "GameClient/CampaignManager.h" // Reborn: Select the themed money-transfer popup.
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/Object.h"
 #include "GameLogic/Module/ProductionUpdate.h"
@@ -1028,7 +1029,9 @@ static WindowMsgHandledType moneyDisplayInput(
 		}
 		else
 		{
-			s_moneyPopupLayout = TheWindowManager->winCreateLayout("MoneyPopup.wnd");
+			// Reborn: Open the money-transfer popup with the currently selected layout theme.
+			s_moneyPopupLayout = TheWindowManager->winCreateLayout(
+				UseGeneralsLayout() ? "MoneyPopupGen.wnd" : "MoneyPopup.wnd");
 
 			if (s_moneyPopupLayout)
 			{

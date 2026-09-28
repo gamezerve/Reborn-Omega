@@ -87,10 +87,8 @@ static NameKeyType buttonSaveLoad = NAMEKEY_INVALID;
 
 static Bool UseRebornQuitMenu()
 {
-	// Reborn: Keep the in-game menu restriction while honoring the selected visual theme.
-	return TheGameLogic
-		&& TheGameLogic->getGameMode() == GAME_SINGLE_PLAYER
-		&& UseGeneralsLayout();
+	// Reborn: Honor the selected visual theme for both full and no-save in-game menus.
+	return TheGameLogic && UseGeneralsLayout();
 }
 
 static NameKeyType GetPopupSaveLoadBackKey()
@@ -176,15 +174,36 @@ void destroyQuitMenu()
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Reborn: Rebuild the visible single-player quit menu without closing Options or resuming gameplay. */
+/** Reborn: Rebuild the visible quit menu without closing Options or resuming gameplay. */
 //-------------------------------------------------------------------------------------------------
 void RefreshQuitMenuLayoutTheme()
 {
-	if (!isVisible || !TheGameLogic || TheGameLogic->getGameMode() != GAME_SINGLE_PLAYER)
+	if (!isVisible || !TheGameLogic)
 		return;
 
 	TheTransitionHandler->remove("QuitFull");
 	TheTransitionHandler->remove("QuitFullGen");
+	TheTransitionHandler->remove("QuitNoSave");
+	TheTransitionHandler->remove("QuitNoSaveBack");
+
+	if (TheGameLogic->isInMultiplayerGame() || TheGameLogic->isInReplayGame())
+	{
+		// Reborn: Recreate the canonical no-save menu so WindowLayout resolves its newly selected theme.
+		if (noSaveLoadQuitMenuLayout)
+		{
+			noSaveLoadQuitMenuLayout->destroyWindows();
+			deleteInstance(noSaveLoadQuitMenuLayout);
+			noSaveLoadQuitMenuLayout = nullptr;
+		}
+
+		noSaveLoadQuitMenuLayout = TheWindowManager->winCreateLayout("Menus/QuitNoSave.wnd");
+		quitMenuLayout = noSaveLoadQuitMenuLayout;
+		initGadgetsNoSaveQuit();
+		TheTransitionHandler->setGroup("QuitNoSave");
+		DEBUG_ASSERTCRASH(quitMenuLayout != nullptr, ("Unable to refresh no-save quit menu layout"));
+		TheInGameUI->setQuitMenuVisible(TRUE);
+		return;
+	}
 
 	if (fullQuitMenuLayout)
 	{
