@@ -2427,7 +2427,9 @@ void grabMultiPlayerInfo()
 	Player *localPlayer = ThePlayerList->getLocalPlayer();
 	if (localPlayer)
 	{
-		const Image *image = TheMappedImageCollection->findImageByName("MutiPlayer_ScoreScreen");
+		// Reborn: Match the multiplayer score background to the selected concrete layout theme.
+		const Image *image = TheMappedImageCollection->findImageByName(
+			UseGeneralsLayout() ? "MutiPlayer_ScoreScreenGen" : "MutiPlayer_ScoreScreen");
 		if(image)
 		{
 			parent->winSetEnabledImage(0, image);

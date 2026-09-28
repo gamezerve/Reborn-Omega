@@ -1365,7 +1365,8 @@ MultiPlayerLoadScreen::~MultiPlayerLoadScreen()
 void MultiPlayerLoadScreen::init( GameInfo *game )
 {
 	// create the layout of the load screen
-	m_loadScreen = TheWindowManager->winCreateFromScript( "Menus/MultiplayerLoadScreen.wnd" );
+	m_loadScreen = TheWindowManager->winCreateFromScript(
+		GetThemedWindowName("Menus/MultiplayerLoadScreen.wnd")); // Reborn: Use the selected theme for LAN loading screens.
 	DEBUG_ASSERTCRASH(m_loadScreen, ("Can't initialize the Multiplayer loadscreen"));
 	m_loadScreen->winHide(FALSE);
 	m_loadScreen->winBringToTop();
@@ -1377,11 +1378,20 @@ void MultiPlayerLoadScreen::init( GameInfo *game )
 	else
 		pt = ThePlayerTemplateStore->findPlayerTemplate( TheNameKeyGenerator->nameToKey("FactionObserver") );
 
+	// Reborn: Generals-themed LAN loading uses the faction load page even in the Zero Hour executable.
+	if (UseGeneralsLayout())
+	{
+		const Image *loadScreenImage = TheMappedImageCollection->findImageByName(pt->getLoadScreen());
+		if (loadScreenImage)
+			m_loadScreen->winSetEnabledImage(0, loadScreenImage);
+	}
 #if RTS_GENERALS
 	const Image *loadScreenImage = TheMappedImageCollection->findImageByName(pt->getLoadScreen());
 	if(loadScreenImage)
 		m_loadScreen->winSetEnabledImage(0, loadScreenImage);
 #else
+	if (!UseGeneralsLayout()) // Reborn: The original Generals LAN layout does not contain Zero Hour general portrait controls.
+	{
 	// add portrait, features, and name for the local player's general
 	const GeneralPersona *localGeneral = TheChallengeGenerals->getGeneralByTemplateName( pt->getName() );
 	const Image *portrait = nullptr;
@@ -1413,6 +1423,7 @@ void MultiPlayerLoadScreen::init( GameInfo *game )
 	GadgetStaticTextSetText( m_featuresLocalGeneral, TheGameText->fetch( features.isEmpty() ? "GUI:PlayerObserver" : pt->getGeneralFeatures() ) );
 	m_nameLocalGeneral = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "MultiplayerLoadScreen.wnd:LocalGeneralName"));
 	GadgetStaticTextSetText( m_nameLocalGeneral, localName );
+	}
 #endif
 
 	AsciiString musicName = pt->getLoadScreenMusic();

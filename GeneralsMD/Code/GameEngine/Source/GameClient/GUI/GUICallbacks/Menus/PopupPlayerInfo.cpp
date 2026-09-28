@@ -883,8 +883,12 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 	Int currentRank = 0;
 	Int rankPoints = CalculateRank(stats);
 	Int i = 0;
-	while( rankPoints >= TheRankPointValues->m_ranks[i + 1])
-		++i;
+	// Reborn: A delayed GO response may arrive while online UI data is being rebuilt; keep rank lookup null-safe and bounded.
+	if (TheRankPointValues)
+	{
+		while (i < MAX_RANKS - 1 && rankPoints >= TheRankPointValues->m_ranks[i + 1])
+			++i;
+	}
 	currentRank = i;
 
 	PerGeneralMap::iterator it;
@@ -1152,7 +1156,8 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 		populateBattleHonors(stats, stats.battleHonors,stats.gamesInRowWithLastGeneral,stats.lastGeneral,stats.challengeMedals, win);
 	}
 #if defined(GENERALS_ONLINE)
-	}, EStatsRequestPolicy::BYPASS_CACHE_FORCE_REQUEST);
+	// Reborn: Restore welcome rank visuals immediately from fresh GO cache after returning from the lobby, requesting only when missing or stale.
+	}, EStatsRequestPolicy::RESPECT_CACHE_ALLOW_REQUEST);
 #endif
 }
 

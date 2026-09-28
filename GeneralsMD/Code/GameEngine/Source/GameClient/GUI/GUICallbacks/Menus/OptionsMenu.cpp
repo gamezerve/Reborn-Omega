@@ -2537,21 +2537,41 @@ void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 
 		WindowLayout* mainMenuLayout = TheShell->top();
 		const Bool isActiveGame = TheGameLogic->isInGame() && !TheGameLogic->isInShellGame();
+		const Bool isGameSpyOptionsOverlay = GameSpyIsOverlayOpen(GSOVERLAY_OPTIONS); // Reborn: Online Options is not owned by the Shell options cache.
 		const Bool reloadMainMenu = !isActiveGame && mainMenuLayout &&
 			(mainMenuLayout->getFilename().compareNoCase("Menus/MainMenu.wnd") == 0 ||
 			 mainMenuLayout->getFilename().compareNoCase("Menus/MainMenuGen.wnd") == 0);
+		const Bool reloadOnlineWelcome = !isActiveGame && mainMenuLayout &&
+			mainMenuLayout->getFilename().compareNoCase("Menus/WOLWelcomeMenu.wnd") == 0; // Reborn: Rebuild the online welcome screen behind Options.
 		// Reborn: The shell keeps MainMenu on its stack during a match; never reload it while gameplay is active.
 
-		DestroyOptionsLayout();
+		if (isGameSpyOptionsOverlay)
+			GameSpyCloseOverlay(GSOVERLAY_OPTIONS); // Reborn: Destroy the actual GO-owned Options layout before recreating its theme.
+		else
+			DestroyOptionsLayout();
 		if (isActiveGame)
 			RefreshQuitMenuLayoutTheme(); // Reborn: Keep the already-open quit menu synchronized with the new concrete theme.
 
-		if (reloadMainMenu)
+		if (reloadOnlineWelcome)
+		{
+			// Reborn: Re-theme the online welcome layout in place so its GO session and pending statistics requests remain alive.
+			mainMenuLayout->destroyWindows();
+			mainMenuLayout->load("Menus/WOLWelcomeMenu.wnd");
+			mainMenuLayout->runInit(nullptr);
+			mainMenuLayout->bringForward();
+		}
+		else if (reloadMainMenu)
 		{
 			TheShell->popImmediate(TRUE);
 			TheShell->push(
 				s_pendingGeneralsLayout ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd",
 				TRUE);
+		}
+
+		if (isGameSpyOptionsOverlay)
+		{
+			GameSpyOpenOverlay(GSOVERLAY_OPTIONS); // Reborn: Reopen online Options above the refreshed welcome layout.
+			return;
 		}
 
 		SetOptionsMenuUsesRebornLayout(s_pendingGeneralsLayout);
