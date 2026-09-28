@@ -506,8 +506,32 @@ void Shell::showShell( Bool runInit )
 
 		if( layout )
 		{
-			layout->runInit( nullptr );
-		//	layout->bringForward();
+			const Bool topIsZeroHourLanLobby =
+				layout->getFilename().compareNoCase("Menus/LanLobbyMenu.wnd") == 0;
+			const Bool topIsGeneralsLanLobby =
+				layout->getFilename().compareNoCase("Menus/LanLobbyMenuGen.wnd") == 0;
+			const Bool useGeneralsTheme = UseGeneralsLayout();
+			const Bool cachedLanThemeChanged =
+				(topIsZeroHourLanLobby && useGeneralsTheme) ||
+				(topIsGeneralsLanLobby && !useGeneralsTheme);
+
+			if (cachedLanThemeChanged)
+			{
+				// Reborn: Replace the cached LAN lobby before returning from a match while preserving the active LAN session.
+				unlinkScreen(layout);
+				layout->destroyWindows();
+				deleteInstance(layout);
+
+				layout = TheWindowManager->winCreateLayout(
+					useGeneralsTheme ? "Menus/LanLobbyMenuGen.wnd" : "Menus/LanLobbyMenu.wnd");
+				DEBUG_ASSERTCRASH(layout != nullptr, ("Unable to refresh cached LAN lobby theme"));
+				if (layout)
+					linkScreen(layout);
+			}
+
+			if (layout)
+				layout->runInit( nullptr );
+			//	layout->bringForward();
 		}
 	}
 	// @todo remove this hack
@@ -753,8 +777,7 @@ void Shell::doPop( Bool impendingPush )
 
 	// run the init for the new top of the stack if present
 	WindowLayout *newTop = top();
-	if (newTop && TheGameLogic &&
-		(!TheGameLogic->isInGame() || TheGameLogic->isInShellGame()))
+	if (newTop && TheGameLogic)
 	{
 		const Bool topIsZeroHourMainMenu =
 			newTop->getFilename().compareNoCase("Menus/MainMenu.wnd") == 0;
@@ -764,24 +787,36 @@ void Shell::doPop( Bool impendingPush )
 			newTop->getFilename().compareNoCase("Menus/ChaptersMenu.wnd") == 0;
 		const Bool topIsGeneralsChaptersMenu =
 			newTop->getFilename().compareNoCase("Menus/ChaptersMenuGen.wnd") == 0;
+		const Bool topIsZeroHourLanLobby =
+			newTop->getFilename().compareNoCase("Menus/LanLobbyMenu.wnd") == 0;
+		const Bool topIsGeneralsLanLobby =
+			newTop->getFilename().compareNoCase("Menus/LanLobbyMenuGen.wnd") == 0;
 		const Bool useGeneralsTheme = UseGeneralsLayout();
+		const Bool canRefreshShellMenu =
+			!TheGameLogic->isInGame() || TheGameLogic->isInShellGame();
 		const Bool cachedThemeChanged =
-			(topIsZeroHourMainMenu && useGeneralsTheme) ||
-			(topIsGeneralsMainMenu && !useGeneralsTheme) ||
-			(topIsZeroHourChaptersMenu && useGeneralsTheme) ||
-			(topIsGeneralsChaptersMenu && !useGeneralsTheme);
+			(canRefreshShellMenu &&
+			 ((topIsZeroHourMainMenu && useGeneralsTheme) ||
+			  (topIsGeneralsMainMenu && !useGeneralsTheme) ||
+			  (topIsZeroHourChaptersMenu && useGeneralsTheme) ||
+			  (topIsGeneralsChaptersMenu && !useGeneralsTheme))) ||
+			(topIsZeroHourLanLobby && useGeneralsTheme) ||
+			(topIsGeneralsLanLobby && !useGeneralsTheme);
 
 		if (cachedThemeChanged)
 		{
-			// Reborn: Replace a stale cached themed menu before a score screen or submenu reveals it.
+			// Reborn: Replace a stale cached themed menu, including a LAN lobby revealed while gameplay is still unwinding.
 			unlinkScreen(newTop);
 			newTop->destroyWindows();
 			deleteInstance(newTop);
 
 			const Bool isChaptersMenu = topIsZeroHourChaptersMenu || topIsGeneralsChaptersMenu;
+			const Bool isLanLobby = topIsZeroHourLanLobby || topIsGeneralsLanLobby;
 			const char* selectedLayout = isChaptersMenu
 				? (useGeneralsTheme ? "Menus/ChaptersMenuGen.wnd" : "Menus/ChaptersMenu.wnd")
-				: (useGeneralsTheme ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd");
+				: isLanLobby
+					? (useGeneralsTheme ? "Menus/LanLobbyMenuGen.wnd" : "Menus/LanLobbyMenu.wnd")
+					: (useGeneralsTheme ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd");
 			newTop = TheWindowManager->winCreateLayout(selectedLayout);
 			DEBUG_ASSERTCRASH(newTop != nullptr, ("Unable to refresh cached themed menu"));
 			if (newTop)

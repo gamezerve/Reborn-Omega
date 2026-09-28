@@ -2550,7 +2550,10 @@ void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 		else
 			DestroyOptionsLayout();
 		if (isActiveGame)
+		{
 			RefreshQuitMenuLayoutTheme(); // Reborn: Keep the already-open quit menu synchronized with the new concrete theme.
+			ResetDiplomacy(); // Reborn: Discard the cached in-game diplomacy layout so its next opening uses the selected theme.
+		}
 
 		if (reloadOnlineWelcome)
 		{
