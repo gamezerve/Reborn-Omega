@@ -58,7 +58,9 @@ static AsciiString getThemedLayoutSourceFilename( const AsciiString &layoutIdent
 		"Menus/WOLStatusMenu.wnd",
 		"Menus/WOLWelcomeMenu.wnd",
 		"Menus/QuitNoSave.wnd", // Reborn: Theme the multiplayer quit menu without changing its callback identity.
-		"Menus/ScoreScreen.wnd" // Reborn: Theme LAN and online score screens without changing their callback identity.
+		"Menus/ScoreScreen.wnd", // Reborn: Theme LAN and online score screens without changing their callback identity.
+		"Menus/SkirmishGameOptionsMenu.wnd", // Reborn: Theme the Skirmish setup menu without changing its callback identity.
+		"Menus/SkirmishMapSelectMenu.wnd" // Reborn: Theme the Skirmish map selector without changing its callback identity.
 	};
 
 	for (Int i = 0; i < ARRAY_SIZE(themedCanonicalLayouts); ++i)
