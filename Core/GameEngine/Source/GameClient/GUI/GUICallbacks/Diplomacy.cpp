@@ -226,7 +226,7 @@ void ShowDiplomacy( Bool immediate )
 		const char* layoutName = "Diplomacy.wnd";
 		s_diplomacyWndPrefix = "Diplomacy.wnd";
 
-		if (!TheRecorder->isMultiplayer() && UseGeneralsLayout()) // Reborn: Follow the selected visual theme.
+		if (UseGeneralsLayout()) // Reborn: Follow the selected visual theme in skirmish, LAN, and online games.
 		{
 			layoutName = "DiplomacyGen.wnd";
 			s_diplomacyWndPrefix = "DiplomacyGen.wnd";

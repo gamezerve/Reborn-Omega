@@ -36,14 +36,14 @@
 #include "GameClient/GameWindowManager.h"
 
 //-------------------------------------------------------------------------------------------------
-/** Reborn: Load Generals-themed online visuals while retaining the WND identity expected by GO. */
+/** Reborn: Load themed visuals while retaining the canonical WND identity expected by callbacks. */
 //-------------------------------------------------------------------------------------------------
-static AsciiString getOnlineLayoutSourceFilename( const AsciiString &layoutIdentity )
+static AsciiString getThemedLayoutSourceFilename( const AsciiString &layoutIdentity )
 {
 	if (!UseGeneralsLayout())
 		return layoutIdentity;
 
-	static const char *themedOnlineLayouts[] =
+	static const char *themedCanonicalLayouts[] =
 	{
 		"Menus/GameSpyGameOptionsMenu.wnd",
 		"Menus/PopupHostGame.wnd", // Reborn: Theme the GO create-room overlay while preserving its canonical identity.
@@ -56,13 +56,15 @@ static AsciiString getOnlineLayoutSourceFilename( const AsciiString &layoutIdent
 		"Menus/WOLMessageWindow.wnd",
 		"Menus/WOLQuickMatchMenu.wnd",
 		"Menus/WOLStatusMenu.wnd",
-		"Menus/WOLWelcomeMenu.wnd"
+		"Menus/WOLWelcomeMenu.wnd",
+		"Menus/QuitNoSave.wnd", // Reborn: Theme the multiplayer quit menu without changing its callback identity.
+		"Menus/ScoreScreen.wnd" // Reborn: Theme LAN and online score screens without changing their callback identity.
 	};
 
-	for (Int i = 0; i < ARRAY_SIZE(themedOnlineLayouts); ++i)
+	for (Int i = 0; i < ARRAY_SIZE(themedCanonicalLayouts); ++i)
 	{
-		if (layoutIdentity.compareNoCase(themedOnlineLayouts[i]) == 0)
-			return AsciiString(GetThemedWindowName(themedOnlineLayouts[i]));
+		if (layoutIdentity.compareNoCase(themedCanonicalLayouts[i]) == 0)
+			return AsciiString(GetThemedWindowName(themedCanonicalLayouts[i]));
 	}
 
 	return layoutIdentity;
@@ -242,7 +244,7 @@ Bool WindowLayout::load( AsciiString filename )
 	//
 	GameWindow *target;
 	WindowLayoutInfo info;
-	const AsciiString sourceFilename = getOnlineLayoutSourceFilename(filename); // Reborn: Keep filename as GO's canonical identity and theme only the parsed source.
+	const AsciiString sourceFilename = getThemedLayoutSourceFilename(filename); // Reborn: Keep the canonical identity and theme only the parsed source.
 
 	target = TheWindowManager->winCreateFromScript( sourceFilename, &info );
 	if( target == nullptr )

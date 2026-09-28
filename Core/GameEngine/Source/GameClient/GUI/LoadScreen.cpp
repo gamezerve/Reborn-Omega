@@ -1642,11 +1642,20 @@ GameSlot *lSlot = game->getSlot(game->getLocalSlotNum());
 	else
 		pt = ThePlayerTemplateStore->findPlayerTemplate( TheNameKeyGenerator->nameToKey("FactionObserver") );
 
+	// Reborn: Generals-themed multiplayer loading uses the faction load page even in the Zero Hour executable.
+	if (UseGeneralsLayout())
+	{
+		const Image *loadScreenImage = TheMappedImageCollection->findImageByName(pt->getLoadScreen());
+		if (loadScreenImage)
+			m_loadScreen->winSetEnabledImage(0, loadScreenImage);
+	}
 #if RTS_GENERALS
 	const Image *loadScreenImage = TheMappedImageCollection->findImageByName(pt->getLoadScreen());
 	if(loadScreenImage)
 		m_loadScreen->winSetEnabledImage(0, loadScreenImage);
 #else
+	if (!UseGeneralsLayout()) // Reborn: Generals load pages already contain their faction presentation.
+	{
 	// add portrait, features, and name for the local player's general
 	const GeneralPersona *localGeneral = TheChallengeGenerals->getGeneralByTemplateName( pt->getName() );
 	const Image *portrait = nullptr;
@@ -1678,6 +1687,7 @@ GameSlot *lSlot = game->getSlot(game->getLocalSlotNum());
 	GadgetStaticTextSetText( m_featuresLocalGeneral, TheGameText->fetch( features.isEmpty() ? "GUI:PlayerObserver" : pt->getGeneralFeatures() ) );
 	m_nameLocalGeneral = TheWindowManager->winGetWindowFromId( m_loadScreen,TheNameKeyGenerator->nameToKey( "GameSpyLoadScreen.wnd:LocalGeneralName"));
 	GadgetStaticTextSetText( m_nameLocalGeneral, localName );
+	}
 #endif
 
 	GameWindow *teamWin[MAX_SLOTS];
