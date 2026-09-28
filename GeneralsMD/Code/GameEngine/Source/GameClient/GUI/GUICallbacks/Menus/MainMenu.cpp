@@ -330,7 +330,7 @@ void setupGameStart(AsciiString mapName, GameDifficulty diff)
 			TheChallengeGenerals->setCurrentDifficulty(diff);
 
 		campaignSelected = TRUE;
-		TheShell->push( "Menus/ChallengeMenu.wnd" );
+		TheShell->push(UseGeneralsLayout() ? "Menus/ChallengeMenuGen.wnd" : "Menus/ChallengeMenu.wnd"); // Reborn: Open Challenge with the selected visual theme.
 		TheTransitionHandler->reverse("MainMenuDifficultyMenuTraining");
 	}
 	else

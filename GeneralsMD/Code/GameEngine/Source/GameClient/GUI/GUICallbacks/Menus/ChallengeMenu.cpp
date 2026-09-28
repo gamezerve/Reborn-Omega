@@ -121,6 +121,31 @@ AudioHandle lastSelectionSound = 0;
 AudioHandle lastPreviewSound = 0;
 static Int introAudioMagicNumber = 0;
 static Bool hasPlayedIntroAudio = FALSE;
+static Bool s_challengeMenuUsesGeneralsLayout = FALSE; // Reborn: Resolve Challenge child IDs and transitions against the loaded visual theme.
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Resolve a Challenge child ID against the currently loaded visual theme. */
+//-------------------------------------------------------------------------------------------------
+static NameKeyType GetChallengeMenuWindowKey(const char* windowName)
+{
+	const char* childName = strchr(windowName, ':');
+	childName = childName ? childName + 1 : windowName;
+
+	AsciiString themedName;
+	themedName.format(
+		"%s:%s",
+		s_challengeMenuUsesGeneralsLayout ? "ChallengeMenuGen.wnd" : "ChallengeMenu.wnd",
+		childName);
+	return TheNameKeyGenerator->nameToKey(themedName.str());
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Select the fade transition bound to the loaded Challenge window prefix. */
+//-------------------------------------------------------------------------------------------------
+static const char* GetChallengeMenuTransitionGroup()
+{
+	return s_challengeMenuUsesGeneralsLayout ? "ChallengeMenuFadeGen" : "ChallengeMenuFade";
+}
 
 
 //-------------------------------------------------------------------------------------------------
@@ -326,6 +351,9 @@ Bool updateBio(Int frames)
 //-------------------------------------------------------------------------------------------------
 void ChallengeMenuInit( WindowLayout *layout, void *userData )
 {
+	s_challengeMenuUsesGeneralsLayout = layout &&
+		layout->getFilename().compareNoCase("Menus/ChallengeMenuGen.wnd") == 0; // Reborn: Bind callbacks to the selected Challenge layout.
+
 	if( !TheChallengeGameInfo )
 		TheChallengeGameInfo = NEW SkirmishGameInfo;
 
@@ -338,32 +366,32 @@ void ChallengeMenuInit( WindowLayout *layout, void *userData )
 	TheShell->showShellMap(TRUE);
 
 	// init window ids and pointers
-	parentID = TheNameKeyGenerator->nameToKey( "ChallengeMenu.wnd:ParentChallengeMenu" );
+	parentID = GetChallengeMenuWindowKey("ChallengeMenu.wnd:ParentChallengeMenu");
 	parentMenu = TheWindowManager->winGetWindowFromId( nullptr, parentID );
-	buttonPlayID = TheNameKeyGenerator->nameToKey( "ChallengeMenu.wnd:ButtonPlay" );
+	buttonPlayID = GetChallengeMenuWindowKey("ChallengeMenu.wnd:ButtonPlay");
 	buttonPlay = TheWindowManager->winGetWindowFromId( parentMenu, buttonPlayID );
-	buttonBackID = TheNameKeyGenerator->nameToKey( "ChallengeMenu.wnd:ButtonBack" );
+	buttonBackID = GetChallengeMenuWindowKey("ChallengeMenu.wnd:ButtonBack");
 	buttonBack = TheWindowManager->winGetWindowFromId( parentMenu, buttonBackID );
-	bioPortraitID = TheNameKeyGenerator->nameToKey( "ChallengeMenu.wnd:BioPortrait" );
+	bioPortraitID = GetChallengeMenuWindowKey("ChallengeMenu.wnd:BioPortrait");
 	bioPortrait = TheWindowManager->winGetWindowFromId( parentMenu, bioPortraitID );
-	bioNameEntryID = TheNameKeyGenerator->nameToKey( "ChallengeMenu.wnd:BioNameEntry" );
+	bioNameEntryID = GetChallengeMenuWindowKey("ChallengeMenu.wnd:BioNameEntry");
 	bioLine1Entry = TheWindowManager->winGetWindowFromId( parentMenu, bioNameEntryID ); // this window has been repurposed
-	bioDOBEntryID = TheNameKeyGenerator->nameToKey( "ChallengeMenu.wnd:BioDOBEntry" );
+	bioDOBEntryID = GetChallengeMenuWindowKey("ChallengeMenu.wnd:BioDOBEntry");
 	bioLine2Entry = TheWindowManager->winGetWindowFromId( parentMenu, bioDOBEntryID ); // this window has been repurposed
-	bioBirthplaceEntryID = TheNameKeyGenerator->nameToKey( "ChallengeMenu.wnd:BioBirthplaceEntry" );
+	bioBirthplaceEntryID = GetChallengeMenuWindowKey("ChallengeMenu.wnd:BioBirthplaceEntry");
 	bioLine3Entry = TheWindowManager->winGetWindowFromId( parentMenu, bioBirthplaceEntryID ); // this window has been repurposed
-	bioStrategyEntryID = TheNameKeyGenerator->nameToKey( "ChallengeMenu.wnd:BioStrategyEntry" );
+	bioStrategyEntryID = GetChallengeMenuWindowKey("ChallengeMenu.wnd:BioStrategyEntry");
 	bioLine4Entry = TheWindowManager->winGetWindowFromId( parentMenu, bioStrategyEntryID ); // this window has been repurposed
-	backdropID = TheNameKeyGenerator->nameToKey( "ChallengeMenu.wnd:MainBackdrop" );
+	backdropID = GetChallengeMenuWindowKey("ChallengeMenu.wnd:MainBackdrop");
 	backdrop = TheWindowManager->winGetWindowFromId( parentMenu, backdropID);
-	bioParentID = TheNameKeyGenerator->nameToKey( "ChallengeMenu.wnd:GeneralsBioParent" );
+	bioParentID = GetChallengeMenuWindowKey("ChallengeMenu.wnd:GeneralsBioParent");
 	bioParent = TheWindowManager->winGetWindowFromId( parentMenu, bioParentID);
 
 	AsciiString strButtonName;
 	for (Int i = 0; i < NUM_GENERALS; i++)
 	{
 		strButtonName.format("ChallengeMenu.wnd:GeneralPosition%d", i);
-		buttonGeneralPositionID[i] = TheNameKeyGenerator->nameToKey( strButtonName );
+		buttonGeneralPositionID[i] = GetChallengeMenuWindowKey(strButtonName.str());
 		buttonGeneralPosition[i] = TheWindowManager->winGetWindowFromId( parentMenu, buttonGeneralPositionID[i] );
 		DEBUG_ASSERTCRASH(buttonGeneralPosition[i], ("Could not find the ButtonGeneralPosition[%d]",i ));
 
@@ -385,7 +413,7 @@ void ChallengeMenuInit( WindowLayout *layout, void *userData )
 	TheWindowManager->winSetFocus( parentMenu );
 	justEntered = TRUE;
 	initialGadgetDelay = 2;
-	GameWindow *winGadgetParent = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey("ChallengeMenu.wnd:GadgetParent"));
+	GameWindow *winGadgetParent = TheWindowManager->winGetWindowFromId(nullptr, GetChallengeMenuWindowKey("ChallengeMenu.wnd:GadgetParent"));
 	if(winGadgetParent)
 		winGadgetParent->winHide(TRUE);
 	isShuttingDown = FALSE;
@@ -410,7 +438,7 @@ void ChallengeMenuUpdate( WindowLayout *layout, void *userData )
 	{
 		if(initialGadgetDelay == 1)
 		{
-			TheTransitionHandler->setGroup("ChallengeMenuFade");
+			TheTransitionHandler->setGroup(GetChallengeMenuTransitionGroup()); // Reborn: Fade the active Challenge layout prefix.
 //			TheTransitionHandler->setGroup("ChallengeButtonsIntro");
 
 
@@ -469,7 +497,7 @@ void ChallengeMenuShutdown( WindowLayout *layout, void *userData )
 		return;
 	}
 
-	TheTransitionHandler->reverse("ChallengeMenuFade");
+	TheTransitionHandler->reverse(GetChallengeMenuTransitionGroup()); // Reborn: Reverse the active Challenge layout prefix.
 	isShuttingDown = TRUE;
 
 	delete TheChallengeGameInfo;

@@ -787,6 +787,10 @@ void Shell::doPop( Bool impendingPush )
 			newTop->getFilename().compareNoCase("Menus/ChaptersMenu.wnd") == 0;
 		const Bool topIsGeneralsChaptersMenu =
 			newTop->getFilename().compareNoCase("Menus/ChaptersMenuGen.wnd") == 0;
+		const Bool topIsZeroHourChallengeMenu =
+			newTop->getFilename().compareNoCase("Menus/ChallengeMenu.wnd") == 0;
+		const Bool topIsGeneralsChallengeMenu =
+			newTop->getFilename().compareNoCase("Menus/ChallengeMenuGen.wnd") == 0;
 		const Bool topIsZeroHourLanLobby =
 			newTop->getFilename().compareNoCase("Menus/LanLobbyMenu.wnd") == 0;
 		const Bool topIsGeneralsLanLobby =
@@ -800,7 +804,9 @@ void Shell::doPop( Bool impendingPush )
 			 ((topIsZeroHourMainMenu && useGeneralsTheme) ||
 			  (topIsGeneralsMainMenu && !useGeneralsTheme) ||
 			  (topIsZeroHourChaptersMenu && useGeneralsChaptersTheme) ||
-			  (topIsGeneralsChaptersMenu && !useGeneralsChaptersTheme))) ||
+			  (topIsGeneralsChaptersMenu && !useGeneralsChaptersTheme) ||
+			  (topIsZeroHourChallengeMenu && useGeneralsTheme) ||
+			  (topIsGeneralsChallengeMenu && !useGeneralsTheme))) ||
 			(topIsZeroHourLanLobby && useGeneralsTheme) ||
 			(topIsGeneralsLanLobby && !useGeneralsTheme);
 
@@ -812,12 +818,16 @@ void Shell::doPop( Bool impendingPush )
 			deleteInstance(newTop);
 
 			const Bool isChaptersMenu = topIsZeroHourChaptersMenu || topIsGeneralsChaptersMenu;
+			const Bool isChallengeMenu = topIsZeroHourChallengeMenu || topIsGeneralsChallengeMenu;
 			const Bool isLanLobby = topIsZeroHourLanLobby || topIsGeneralsLanLobby;
+			// Reborn: Recreate a cached Challenge screen with the currently selected visual theme.
 			const char* selectedLayout = isChaptersMenu
 				? (useGeneralsChaptersTheme ? "Menus/ChaptersMenuGen.wnd" : "Menus/ChaptersMenu.wnd")
-				: isLanLobby
-					? (useGeneralsTheme ? "Menus/LanLobbyMenuGen.wnd" : "Menus/LanLobbyMenu.wnd")
-					: (useGeneralsTheme ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd");
+				: isChallengeMenu
+					? (useGeneralsTheme ? "Menus/ChallengeMenuGen.wnd" : "Menus/ChallengeMenu.wnd")
+					: isLanLobby
+						? (useGeneralsTheme ? "Menus/LanLobbyMenuGen.wnd" : "Menus/LanLobbyMenu.wnd")
+						: (useGeneralsTheme ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd");
 			newTop = TheWindowManager->winCreateLayout(selectedLayout);
 			DEBUG_ASSERTCRASH(newTop != nullptr, ("Unable to refresh cached themed menu"));
 			if (newTop)

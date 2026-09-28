@@ -2398,6 +2398,7 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			const Bool useGeneralsChaptersMenu = UseGeneralsChaptersLayout(); // Reborn: Campaign state must not override Default Chapters visuals.
 			const char* selectedMainMenu = useGeneralsMainMenu ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd";
 			const char* selectedChaptersMenu = useGeneralsChaptersMenu ? "Menus/ChaptersMenuGen.wnd" : "Menus/ChaptersMenu.wnd";
+			const char* selectedChallengeMenu = useGeneralsMainMenu ? "Menus/ChallengeMenuGen.wnd" : "Menus/ChallengeMenu.wnd"; // Reborn: Restore Challenge with the current theme after gameplay.
 			if(TheShell->getScreenCount() == 0)
 				TheShell->push(selectedMainMenu); // Reborn: Restore the selected Main Menu theme.
 			else if (TheShell->top())
@@ -2411,11 +2412,17 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 					shellTop->getFilename().compareNoCase("Menus/ChaptersMenu.wnd") == 0;
 				const Bool topIsGeneralsChaptersMenu =
 					shellTop->getFilename().compareNoCase("Menus/ChaptersMenuGen.wnd") == 0;
+				const Bool topIsZeroHourChallengeMenu =
+					shellTop->getFilename().compareNoCase("Menus/ChallengeMenu.wnd") == 0;
+				const Bool topIsGeneralsChallengeMenu =
+					shellTop->getFilename().compareNoCase("Menus/ChallengeMenuGen.wnd") == 0;
 				const Bool cachedThemeChanged =
 					(topIsZeroHourMainMenu && useGeneralsMainMenu) ||
 					(topIsGeneralsMainMenu && !useGeneralsMainMenu) ||
 					(topIsZeroHourChaptersMenu && useGeneralsChaptersMenu) ||
-					(topIsGeneralsChaptersMenu && !useGeneralsChaptersMenu);
+					(topIsGeneralsChaptersMenu && !useGeneralsChaptersMenu) ||
+					(topIsZeroHourChallengeMenu && useGeneralsMainMenu) ||
+					(topIsGeneralsChallengeMenu && !useGeneralsMainMenu);
 
 				if (cachedThemeChanged)
 				{
@@ -2424,7 +2431,9 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 					TheShell->push(
 						topIsZeroHourChaptersMenu || topIsGeneralsChaptersMenu
 							? selectedChaptersMenu
-							: selectedMainMenu);
+							: topIsZeroHourChallengeMenu || topIsGeneralsChallengeMenu
+								? selectedChallengeMenu
+								: selectedMainMenu);
 				}
 				else
 				{
