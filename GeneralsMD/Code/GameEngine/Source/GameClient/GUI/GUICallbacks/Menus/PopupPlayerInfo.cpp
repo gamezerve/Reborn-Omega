@@ -97,6 +97,11 @@ static Bool raiseMessageBox = false;
 static Int lookAtPlayerID = 0;
 static std::string lookAtPlayerName;
 
+#if defined(GENERALS_ONLINE)
+static int64_t s_cachedLocalRankImageUserID = 0; // Reborn: Associate the retained local rank image with the signed-in GO user.
+static const Image *s_cachedLocalRankImage = nullptr; // Reborn: Preserve the resolved local rank image while online layouts are replaced.
+#endif
+
 
 static const char *const rankNames[] = {
 	"Private",
@@ -849,6 +854,15 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 		if (lookAtPlayerID <= 0 || !parent)
 			return;
 	}
+#if defined(GENERALS_ONLINE)
+	if (lookupID == localID && s_cachedLocalRankImageUserID == localID && s_cachedLocalRankImage)
+	{
+		// Reborn: Seed newly created welcome and local-persona windows before their stats callback completes.
+		GameWindow *rankWindow = findWindow(nullptr, parentWindowName, "WinRank");
+		if (rankWindow)
+			rankWindow->winSetEnabledImage(0, s_cachedLocalRankImage);
+	}
+#endif
 #if !defined(GENERALS_ONLINE)
 	else
 	{
@@ -1113,10 +1127,21 @@ void PopulatePlayerInfoWindows( AsciiString parentWindowName )
 	win = findWindow(nullptr, parentWindowName, "WinRank");
 	if(win && TheRankPointValues)
 	{
+		const Image *rankImage = nullptr;
 		if (rankPoints == 0 || pPlayerTemplate == nullptr)
-			win->winSetEnabledImage(0, TheMappedImageCollection->findImageByName("NewPlayer"));
+			rankImage = TheMappedImageCollection->findImageByName("NewPlayer");
 		else
-			win->winSetEnabledImage(0, lookupRankImage(pPlayerTemplate->getBaseSide(), currentRank));
+			rankImage = lookupRankImage(pPlayerTemplate->getBaseSide(), currentRank);
+
+		win->winSetEnabledImage(0, rankImage);
+#if defined(GENERALS_ONLINE)
+		if (lookupID == localID && rankImage)
+		{
+			// Reborn: Retain the last verified local rank image for later welcome or persona layout instances.
+			s_cachedLocalRankImageUserID = localID;
+			s_cachedLocalRankImage = rankImage;
+		}
+#endif
 //x		win->setTooltipText(rankStr);  //ex: Corporal
 	}
 
