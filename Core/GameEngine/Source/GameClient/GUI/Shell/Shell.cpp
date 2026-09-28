@@ -792,14 +792,15 @@ void Shell::doPop( Bool impendingPush )
 		const Bool topIsGeneralsLanLobby =
 			newTop->getFilename().compareNoCase("Menus/LanLobbyMenuGen.wnd") == 0;
 		const Bool useGeneralsTheme = UseGeneralsLayout();
+		const Bool useGeneralsChaptersTheme = UseGeneralsChaptersLayout(); // Reborn: Chapters Default must remain Zero Hour regardless of the selected campaign tab.
 		const Bool canRefreshShellMenu =
 			!TheGameLogic->isInGame() || TheGameLogic->isInShellGame();
 		const Bool cachedThemeChanged =
 			(canRefreshShellMenu &&
 			 ((topIsZeroHourMainMenu && useGeneralsTheme) ||
 			  (topIsGeneralsMainMenu && !useGeneralsTheme) ||
-			  (topIsZeroHourChaptersMenu && useGeneralsTheme) ||
-			  (topIsGeneralsChaptersMenu && !useGeneralsTheme))) ||
+			  (topIsZeroHourChaptersMenu && useGeneralsChaptersTheme) ||
+			  (topIsGeneralsChaptersMenu && !useGeneralsChaptersTheme))) ||
 			(topIsZeroHourLanLobby && useGeneralsTheme) ||
 			(topIsGeneralsLanLobby && !useGeneralsTheme);
 
@@ -813,7 +814,7 @@ void Shell::doPop( Bool impendingPush )
 			const Bool isChaptersMenu = topIsZeroHourChaptersMenu || topIsGeneralsChaptersMenu;
 			const Bool isLanLobby = topIsZeroHourLanLobby || topIsGeneralsLanLobby;
 			const char* selectedLayout = isChaptersMenu
-				? (useGeneralsTheme ? "Menus/ChaptersMenuGen.wnd" : "Menus/ChaptersMenu.wnd")
+				? (useGeneralsChaptersTheme ? "Menus/ChaptersMenuGen.wnd" : "Menus/ChaptersMenu.wnd")
 				: isLanLobby
 					? (useGeneralsTheme ? "Menus/LanLobbyMenuGen.wnd" : "Menus/LanLobbyMenu.wnd")
 					: (useGeneralsTheme ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd");

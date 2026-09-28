@@ -115,6 +115,29 @@ Bool UseGeneralsLayout()
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Select the Chapters layout without allowing its active campaign tab to change its theme. */
+//-------------------------------------------------------------------------------------------------
+Bool UseGeneralsChaptersLayout()
+{
+	if (!TheGlobalData)
+		return FALSE;
+
+	switch (TheGlobalData->m_layoutTheme)
+	{
+		case REBORN_LAYOUT_THEME_GENERALS:
+			return TRUE;
+
+		case REBORN_LAYOUT_THEME_RANDOM:
+			return UseGeneralsLayout(); // Reborn: Reuse the process-stable Random theme result.
+
+		case REBORN_LAYOUT_THEME_DEFAULT:
+		case REBORN_LAYOUT_THEME_ZERO_HOUR:
+		default:
+			return FALSE;
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Reborn: Insert the Generals-theme suffix into a WND filename or child-window key. */
 //-------------------------------------------------------------------------------------------------
 const char *GetThemedWindowName( const char *windowName )

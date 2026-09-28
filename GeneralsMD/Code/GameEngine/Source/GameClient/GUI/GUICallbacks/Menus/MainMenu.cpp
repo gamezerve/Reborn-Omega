@@ -1701,7 +1701,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				TheTransitionHandler->remove("MainMenuFactionSkirmish");
 				TheTransitionHandler->reverse("MainMenuSinglePlayerMenuBackSkirmish");
 
-				TheShell->push(UseGeneralsLayout() ? "Menus/ChaptersMenuGen.wnd" : "Menus/ChaptersMenu.wnd"); // Reborn: Open Chapters with the selected visual theme.
+				TheShell->push(UseGeneralsChaptersLayout() ? "Menus/ChaptersMenuGen.wnd" : "Menus/ChaptersMenu.wnd"); // Reborn: Keep Default and Zero Hour Chapters on the Zero Hour layout.
 				}
 			else if( controlID == onlineID )
 			{

@@ -685,6 +685,42 @@ void W3DNoDraw( GameWindow *window, WinInstanceData *instData )
 }
 
 void drawSkinnyBorder(Int x, Int y, Int width, Int height, Bool useGeneralsLayout); // Reborn: Allow map previews to select theme-specific border art.
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Keep Chapters preview borders tied to the loaded menu instead of its mutable campaign. */
+//-------------------------------------------------------------------------------------------------
+static Bool UseGeneralsMapPreviewBorder(GameWindow* window)
+{
+	if (window)
+	{
+		const Int windowID = window->winGetWindowId(); // Reborn: Compare the runtime window ID without an enum conversion.
+		static const NameKeyType zeroHourChaptersPreviewIDs[] =
+		{
+			NAMEKEY("ChaptersMenu.wnd:BattleLocation"),
+			NAMEKEY("ChaptersMenu.wnd:WorldMapBorder"),
+			NAMEKEY("ChaptersMenu.wnd:VSWindow"),
+			NAMEKEY("ChaptersMenu.wnd:MapWindow")
+		};
+		static const NameKeyType generalsChaptersPreviewIDs[] =
+		{
+			NAMEKEY("ChaptersMenuGen.wnd:BattleLocation"),
+			NAMEKEY("ChaptersMenuGen.wnd:WorldMapBorder"),
+			NAMEKEY("ChaptersMenuGen.wnd:VSWindow"),
+			NAMEKEY("ChaptersMenuGen.wnd:MapWindow")
+		};
+
+		for (Int i = 0; i < ARRAY_SIZE(zeroHourChaptersPreviewIDs); ++i)
+		{
+			if (windowID == zeroHourChaptersPreviewIDs[i])
+				return FALSE;
+			if (windowID == generalsChaptersPreviewIDs[i])
+				return TRUE;
+		}
+	}
+
+	return UseGeneralsLayout();
+}
+
 void W3DDrawMapPreview( GameWindow *window, WinInstanceData *instData)
 {
 	MapMetaData *mmData = (MapMetaData *)window->winGetUserData();
@@ -695,7 +731,7 @@ void W3DDrawMapPreview( GameWindow *window, WinInstanceData *instData)
 	if(!mmData)
 	{
 		W3DGameWinDefaultDraw( window, instData );
-		drawSkinnyBorder(pixelX - 1, pixelY - 1, width + 2, height + 2, UseGeneralsLayout()); // Reborn: Match the preview border to the selected layout theme.
+		drawSkinnyBorder(pixelX - 1, pixelY - 1, width + 2, height + 2, UseGeneralsMapPreviewBorder(window)); // Reborn: Match the preview border to its loaded layout theme.
 		return;
 	}
 
@@ -760,7 +796,7 @@ void W3DDrawMapPreview( GameWindow *window, WinInstanceData *instData)
 			TheDisplay->drawImage(image, pixelX + it->x, pixelY + it->y, pixelX + it->x + SUPPLY_TECH_SIZE, pixelY + it->y +SUPPLY_TECH_SIZE);
 			it++;
 		}
-	drawSkinnyBorder(pixelX - 1, pixelY - 1, width + 2, height + 2, UseGeneralsLayout()); // Reborn: Match the preview border to the selected layout theme.
+	drawSkinnyBorder(pixelX - 1, pixelY - 1, width + 2, height + 2, UseGeneralsMapPreviewBorder(window)); // Reborn: Match the preview border to its loaded layout theme.
 }
 
 //-------------------------------------------------------------------------------------------------

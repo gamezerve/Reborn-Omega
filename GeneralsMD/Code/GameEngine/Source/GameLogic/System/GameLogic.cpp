@@ -2395,8 +2395,9 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 		if (!TheGlobalData->m_headless)
 		{
 			const Bool useGeneralsMainMenu = UseGeneralsLayout();
+			const Bool useGeneralsChaptersMenu = UseGeneralsChaptersLayout(); // Reborn: Campaign state must not override Default Chapters visuals.
 			const char* selectedMainMenu = useGeneralsMainMenu ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd";
-			const char* selectedChaptersMenu = useGeneralsMainMenu ? "Menus/ChaptersMenuGen.wnd" : "Menus/ChaptersMenu.wnd";
+			const char* selectedChaptersMenu = useGeneralsChaptersMenu ? "Menus/ChaptersMenuGen.wnd" : "Menus/ChaptersMenu.wnd";
 			if(TheShell->getScreenCount() == 0)
 				TheShell->push(selectedMainMenu); // Reborn: Restore the selected Main Menu theme.
 			else if (TheShell->top())
@@ -2413,8 +2414,8 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 				const Bool cachedThemeChanged =
 					(topIsZeroHourMainMenu && useGeneralsMainMenu) ||
 					(topIsGeneralsMainMenu && !useGeneralsMainMenu) ||
-					(topIsZeroHourChaptersMenu && useGeneralsMainMenu) ||
-					(topIsGeneralsChaptersMenu && !useGeneralsMainMenu);
+					(topIsZeroHourChaptersMenu && useGeneralsChaptersMenu) ||
+					(topIsGeneralsChaptersMenu && !useGeneralsChaptersMenu);
 
 				if (cachedThemeChanged)
 				{
