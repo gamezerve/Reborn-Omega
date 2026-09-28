@@ -32,6 +32,7 @@
 
 #include "BuildVersion.h"
 #include "Common/NameKeyGenerator.h"
+#include "GameClient/CampaignManager.h" // Reborn: Resolve the selected theme for Options-owned changelog overlays.
 #include "GameClient/GadgetListBox.h"
 #include "GameClient/GadgetPushButton.h"
 #include "GameClient/GadgetStaticText.h"
@@ -793,7 +794,7 @@ void ShowChangeLogMenuRO()
 
 	GameWindow* changeLogWindow =
 		TheWindowManager->winCreateFromScript(
-			"Menus/ChangeLogMenuRO.wnd");
+			GetThemedWindowName("Menus/ChangeLogMenuRO.wnd")); // Reborn: Theme the Options-owned changelog overlay while retaining canonical child identities.
 
 	if (!changeLogWindow)
 	{

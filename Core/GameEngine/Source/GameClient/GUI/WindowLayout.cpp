@@ -57,6 +57,8 @@ static AsciiString getThemedLayoutSourceFilename( const AsciiString &layoutIdent
 		"Menus/WOLQuickMatchMenu.wnd",
 		"Menus/WOLStatusMenu.wnd",
 		"Menus/WOLWelcomeMenu.wnd",
+		"Menus/ChangeLogMenuRO.wnd", // Reborn: Theme the changelog overlay without changing the callback-visible layout identity.
+		"Menus/DownloadMenuRO.wnd", // Reborn: Theme the updater progress overlay without changing the callback-visible layout identity.
 		"Menus/QuitNoSave.wnd", // Reborn: Theme the multiplayer quit menu without changing its callback identity.
 		"Menus/ScoreScreen.wnd", // Reborn: Theme LAN and online score screens without changing their callback identity.
 		"Menus/SkirmishGameOptionsMenu.wnd", // Reborn: Theme the Skirmish setup menu without changing its callback identity.

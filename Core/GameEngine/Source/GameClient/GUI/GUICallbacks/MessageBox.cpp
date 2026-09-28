@@ -312,10 +312,16 @@ void RestoreChangeLogMessageBox()
 
 	if (s_changeLogMessageBoxFromOptions)
 	{
+		const char* optionsMenuName =
+			s_popupMessageUsesRebornLayout
+			? "OptionsMenuGen.wnd:"
+			: "OptionsMenu.wnd:"; // Reborn: Restore the concrete Options layout that owns the changelog popup.
+
 		GameWindow* optionsMenuWindow =
 			TheWindowManager->winGetWindowFromId(
 				nullptr,
-				NAMEKEY("OptionsMenu.wnd:"));
+				TheNameKeyGenerator->nameToKey(
+					optionsMenuName));
 
 		if (optionsMenuWindow)
 		{
@@ -396,6 +402,7 @@ WindowMsgHandledType MessageBoxSystem( GameWindow *window, UnsignedInt msg,
 			{
 				s_changeLogMessageBox = nullptr;
 				s_changeLogMessageBoxRestorePending = FALSE;
+				s_changeLogMessageBoxFromOptions = FALSE; // Reborn: Do not carry a destroyed Options-owned update popup into the next menu session.
 			}
 
 			delete (WindowMessageBoxData*)window->winGetUserData();

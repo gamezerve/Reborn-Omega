@@ -296,6 +296,12 @@ static const char* GetOptionsMenuWindowName()
 	return s_optionsMenuUsesRebornLayout ? "OptionsMenuGen.wnd" : "OptionsMenu.wnd";
 }
 
+static const char* GetRebornOmegaMenusFadeTransitionGroup()
+{
+	// Reborn: Fade the concrete Options and Main Menu layouts so the updater never targets missing windows from the other theme.
+	return s_optionsMenuUsesRebornLayout ? "RebornOmegaMenusFadeGen" : "RebornOmegaMenusFade";
+}
+
 static UnsignedInt lastOptionsMaxCameraHeightEditTime = 0;
 static Int lastOptionsMaxCameraHeightValue = 310;
 static Bool lastOptionsMaxCameraHeightWasEnabled = FALSE;
@@ -1427,7 +1433,7 @@ static void initLabelVersion()
 //-------------------------------------------------------------------------------------------------
 void OptionsMenuInit( WindowLayout *layout, void *userData )
 {
-	SetPopupMessageUsesRebornLayout(FALSE);
+	SetPopupMessageUsesRebornLayout(s_optionsMenuUsesRebornLayout); // Reborn: Match update and other modal popups to the concrete Options layout theme.
 
 	ignoreSelected = TRUE;
 	if (TheGameEngine->getQuitting())
@@ -2219,11 +2225,11 @@ static void RebornOmegaUpdateAccepted()
 		s_rebornOmegaDownloadTransitionPending = TRUE;
 
 		TheTransitionHandler->setGroup(
-			"RebornOmegaMenusFade",
+			GetRebornOmegaMenusFadeTransitionGroup(),
 			TRUE);
 
 		TheTransitionHandler->reverse(
-			"RebornOmegaMenusFade");
+			GetRebornOmegaMenusFadeTransitionGroup());
 	}
 	else
 	{
@@ -2275,11 +2281,11 @@ Bool RebornOmegaUpdateAcceptedFromChangeLog(
 			TRUE;
 
 		TheTransitionHandler->setGroup(
-			"RebornOmegaMenusFade",
+			GetRebornOmegaMenusFadeTransitionGroup(),
 			TRUE);
 
 		TheTransitionHandler->reverse(
-			"RebornOmegaMenusFade");
+			GetRebornOmegaMenusFadeTransitionGroup());
 	}
 
 	return TRUE;
