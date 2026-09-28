@@ -10,6 +10,9 @@ set(OBJECTDEPARSER_SRC
     "src/TextDiff.cpp"
     "include/ParsedDefinitionCatalog.h"
     "src/ParsedDefinitionCatalog.cpp"
+	# Reborn: Build the independent modeless definition-reference viewer.
+	"include/DefinitionReferenceWindow.h"
+	"src/DefinitionReferenceWindow.cpp"
     "src/ObjectDeparserLoadingDialog.cpp"
     "include/ObjectDeparserLoadingDialog.h"
 )

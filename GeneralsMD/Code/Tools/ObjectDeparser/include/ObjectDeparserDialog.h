@@ -9,12 +9,19 @@
 #include "resource.h"
 #include "ParsedDefinitionCatalog.h"
 
+#include <string>
 #include <vector>
+
+class CDefinitionReferenceWindow;
 
 class CObjectDeparserDialog : public CDialog
 {
 public:
 	CObjectDeparserDialog(CWnd* parent = nullptr);
+
+	// Reborn: Let self-deleting modeless viewers remove only their own tracking entry.
+	void onDefinitionReferenceWindowDestroyed(
+		CDefinitionReferenceWindow* window);
 
 	enum { IDD = IDD_OBJECT_DEPARSER_DIALOG };
 
@@ -45,6 +52,8 @@ protected:
 	afx_msg void OnOutputChanged();
 	afx_msg void OnTimer(UINT_PTR nIDEvent);
 	afx_msg void OnClose();
+	// Reborn: Handle RichEdit link activation in either primary editor.
+	afx_msg void OnDefinitionLink(NMHDR* notifyHeader, LRESULT* result);
 
 
 	DECLARE_MESSAGE_MAP()
@@ -78,9 +87,34 @@ private:
 		void* userData);
 
 	void pumpReloadMessages();
+	// Reborn: Share current-state deparse generation between the main and reference views.
+	Bool buildDeparsedDefinitionText(
+		const ParsedDefinition& definition,
+		std::string& output) const;
+	// Reborn: Apply safe catalog-backed link formatting without changing editor text or undo history.
+	void updateDefinitionLinks(CRichEditCtrl& edit);
+	// Reborn: Infer a type family from the current INI line to disambiguate same-name definitions.
+	AsciiString getReferenceTypeHint(
+		const CString& text,
+		long tokenStart) const;
+	// Reborn: Resolve the clicked character range against the current catalog only.
+	const ParsedDefinition* resolveDefinitionLink(
+		CRichEditCtrl& edit,
+		const CHARRANGE& range) const;
+	// Reborn: Resolve each editor's own declaration so Deparsed and Working Copy filter independently.
+	const ParsedDefinition* resolveEditorDefinition(
+		const CString& text) const;
+	// Reborn: Open one independent modeless window for every successful reference click.
+	void openDefinitionReference(
+		const ParsedDefinition& definition);
+	// Reborn: Clear child content before reload replaces engine-owned definition objects.
+	void setReferenceWindowsReloading();
+	// Reborn: Rebuild every open child from current catalog and engine state after reload.
+	void refreshReferenceWindows(Bool reloadSucceeded);
 
 	Bool m_reloadInProgress;
 	Bool m_pumpingReloadMessages;
+	Bool m_updatingDefinitionLinks;
 	DWORD m_lastReloadPumpTick;
 
 
@@ -107,11 +141,15 @@ private:
 	COLORREF m_selectionColor;
 
 	std::vector<const ParsedDefinition*> m_definitions;
+	// Reborn: Track modeless windows for reload refresh; each window owns and deletes itself.
+	std::vector<CDefinitionReferenceWindow*> m_referenceWindows;
 
 	enum
 	{
 		TIMER_COMPARE_SCROLL = 2001,
-		TIMER_COMPARE_DEBOUNCE = 2002
+		TIMER_COMPARE_DEBOUNCE = 2002,
+		// Reborn: Debounce link rescans while the working copy is being edited.
+		TIMER_DEFINITION_LINKS = 2003
 	};
 
 	Bool m_compareMode;

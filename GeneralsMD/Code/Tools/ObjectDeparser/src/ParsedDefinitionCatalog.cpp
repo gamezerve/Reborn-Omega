@@ -91,6 +91,67 @@ const std::vector<ParsedDefinition>& ParsedDefinitionCatalog::getDefinitions() c
 	return m_definitions;
 }
 
+// Reborn: Match a saved reference identity without retaining catalog element pointers.
+const ParsedDefinition* ParsedDefinitionCatalog::findDefinition(
+	const AsciiString& name,
+	const AsciiString& blockType) const
+{
+	const AsciiString family =
+		getDefinitionFamily(blockType);
+
+	for (const ParsedDefinition& definition : m_definitions)
+	{
+		if (definition.name.compareNoCase(name) == 0 &&
+			getDefinitionFamily(definition.blockType).compareNoCase(family) == 0)
+		{
+			return &definition;
+		}
+	}
+
+	return nullptr;
+}
+
+// Reborn: Prefer an exact type-family hint and reject ambiguous same-name references.
+const ParsedDefinition* ParsedDefinitionCatalog::resolveReference(
+	const AsciiString& name,
+	const AsciiString& typeHint) const
+{
+	const ParsedDefinition* uniqueMatch = nullptr;
+	const ParsedDefinition* typedMatch = nullptr;
+	Int matchCount = 0;
+	Int typedMatchCount = 0;
+
+	const AsciiString hintedFamily =
+		getDefinitionFamily(typeHint);
+
+	for (const ParsedDefinition& definition : m_definitions)
+	{
+		if (definition.name.compareNoCase(name) != 0)
+			continue;
+
+		uniqueMatch = &definition;
+		++matchCount;
+
+		if (!typeHint.isEmpty() &&
+			(getDefinitionFamily(definition.blockType).compareNoCase(hintedFamily) == 0 ||
+				definition.blockType.compareNoCase(typeHint) == 0))
+		{
+			typedMatch = &definition;
+			++typedMatchCount;
+		}
+	}
+
+	if (typedMatchCount == 1)
+		return typedMatch;
+
+	if (typedMatchCount > 1)
+		return nullptr;
+
+	return matchCount == 1
+		? uniqueMatch
+		: nullptr;
+}
+
 void ParsedDefinitionCatalog::capture(
 	const AsciiString& declaration,
 	const AsciiString& blockType,

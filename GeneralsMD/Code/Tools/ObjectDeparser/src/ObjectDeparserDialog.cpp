@@ -8,6 +8,7 @@
 #include "TextDiff.h"
 #include "ObjectDeparser.h"
 #include "ObjectDeparserDialog.h"
+#include "DefinitionReferenceWindow.h"
 
 #include "Common/ThingFactory.h"
 #include "Common/ThingTemplate.h"
@@ -17,6 +18,7 @@
 #include "GameLogic/WeaponTemplateDeparser.h"
 
 #include <tom.h>
+#include <cctype>
 
 class ScopedRichEditUndoSuspend
 {
@@ -94,6 +96,9 @@ BEGIN_MESSAGE_MAP(CObjectDeparserDialog, CDialog)
 	ON_WM_MEASUREITEM()
 	ON_WM_CTLCOLOR()
 	ON_EN_CHANGE(IDC_OUTPUT_EDIT, OnOutputChanged)
+	// Reborn: Receive clicks for catalog-backed definition links in both RichEdit controls.
+	ON_NOTIFY(EN_LINK, IDC_OUTPUT_EDIT, OnDefinitionLink)
+	ON_NOTIFY(EN_LINK, IDC_WORK_EDIT, OnDefinitionLink)
 	ON_WM_TIMER()
 	ON_WM_CLOSE()
 	ON_EN_CHANGE(IDC_SEARCH_EDIT, OnSearchChanged)
@@ -118,6 +123,7 @@ CObjectDeparserDialog::CObjectDeparserDialog(CWnd* parent)
 	m_lastWorkScroll(0, 0),
 	m_reloadInProgress(FALSE),
 	m_pumpingReloadMessages(FALSE),
+	m_updatingDefinitionLinks(FALSE),
 	m_lastReloadPumpTick(0),
 	m_backgroundColor(RGB(37, 37, 38)),
 	m_panelColor(RGB(30, 30, 30)),
@@ -366,7 +372,8 @@ BOOL CObjectDeparserDialog::OnInitDialog()
 	m_outputEdit.SendMessage(
 		EM_SETEVENTMASK,
 		0,
-		outputEventMask | ENM_CHANGE);
+		// Reborn: Preserve edit notifications and add native link activation notifications.
+		outputEventMask | ENM_CHANGE | ENM_LINK);
 
 	const DWORD workEventMask =
 		static_cast<DWORD>(
@@ -375,7 +382,8 @@ BOOL CObjectDeparserDialog::OnInitDialog()
 	m_workEdit.SendMessage(
 		EM_SETEVENTMASK,
 		0,
-		workEventMask | ENM_CHANGE);
+		// Reborn: Preserve edit notifications and add native link activation notifications.
+		workEventMask | ENM_CHANGE | ENM_LINK);
 
 	m_outputEdit.SetBackgroundColor(
 		FALSE,
@@ -1140,8 +1148,12 @@ void CObjectDeparserDialog::updateCompareButtonState()
 
 void CObjectDeparserDialog::OnWorkingCopyChanged()
 {
-	if (m_compareUpdating)
+	if (m_compareUpdating || m_updatingDefinitionLinks)
 		return;
+
+	// Reborn: Delay catalog rescanning until the user pauses typing.
+	KillTimer(TIMER_DEFINITION_LINKS);
+	SetTimer(TIMER_DEFINITION_LINKS, 180, nullptr);
 
 	restartCompareDebounce();
 	updateCompareButtonState();
@@ -1149,8 +1161,12 @@ void CObjectDeparserDialog::OnWorkingCopyChanged()
 
 void CObjectDeparserDialog::OnOutputChanged()
 {
-	if (m_compareUpdating)
+	if (m_compareUpdating || m_updatingDefinitionLinks)
 		return;
+
+	// Reborn: Delay link formatting until programmatic output replacement has settled.
+	KillTimer(TIMER_DEFINITION_LINKS);
+	SetTimer(TIMER_DEFINITION_LINKS, 180, nullptr);
 
 	restartCompareDebounce();
 	updateCompareButtonState();
@@ -1171,6 +1187,20 @@ void CObjectDeparserDialog::OnTimer(
 
 		if (m_compareMode)
 			performCompare();
+
+		return;
+	}
+
+	if (nIDEvent == TIMER_DEFINITION_LINKS)
+	{
+		KillTimer(TIMER_DEFINITION_LINKS);
+
+		// Reborn: Never consult a catalog while reload is replacing its backing entries.
+		if (!m_reloadInProgress)
+		{
+			updateDefinitionLinks(m_outputEdit);
+			updateDefinitionLinks(m_workEdit);
+		}
 
 		return;
 	}
@@ -1321,6 +1351,546 @@ void CObjectDeparserDialog::OnDrawItem(
 	dc.Detach();
 }
 
+// Reborn: Treat the characters used by registered INI identifiers as one clickable token.
+static Bool isDefinitionReferenceCharacter(
+	TCHAR character)
+{
+	return _istalnum(character) ||
+		character == '_' ||
+		character == '-' ||
+		character == '.' ||
+		character == ':';
+}
+
+// Reborn: Numeric scalars can share names with Rank definitions but are never identifier references.
+static Bool isPotentialDefinitionReferenceToken(
+	const CString& token)
+{
+	if (token.IsEmpty())
+		return FALSE;
+
+	const TCHAR firstCharacter = token.GetAt(0);
+	return _istalpha(firstCharacter) || firstCharacter == '_';
+}
+
+// Reborn: Collapse CRLF to RichEdit's single internal paragraph mark for exact selection indices.
+static void getRichEditIndexText(
+	CRichEditCtrl& edit,
+	CString& indexText)
+{
+	CString windowText;
+	edit.GetWindowText(windowText);
+
+	indexText.Empty();
+	LPTSTR output = indexText.GetBuffer(windowText.GetLength());
+	Int outputLength = 0;
+
+	for (Int index = 0; index < windowText.GetLength(); ++index)
+	{
+		const TCHAR character = windowText.GetAt(index);
+
+		if (character == '\n' &&
+			index > 0 &&
+			windowText.GetAt(index - 1) == '\r')
+		{
+			continue;
+		}
+
+		output[outputLength++] = character;
+	}
+
+	indexText.ReleaseBuffer(outputLength);
+}
+
+// Reborn: Find the definition declared by one editor without relying on the other editor's selection.
+const ParsedDefinition* CObjectDeparserDialog::resolveEditorDefinition(
+	const CString& text) const
+{
+	const ParsedDefinitionCatalog& catalog =
+		ObjectDeparserApp()->getDefinitionCatalog();
+
+	long lineStart = 0;
+	const long textLength = text.GetLength();
+
+	while (lineStart < textLength)
+	{
+		long lineEnd = lineStart;
+
+		while (lineEnd < textLength &&
+			text.GetAt(lineEnd) != '\r' &&
+			text.GetAt(lineEnd) != '\n')
+		{
+			++lineEnd;
+		}
+
+		CString line =
+			text.Mid(lineStart, lineEnd - lineStart);
+		line.Trim();
+
+		if (!line.IsEmpty() && line.GetAt(0) != ';')
+		{
+			long typeStart = 0;
+
+			while (typeStart < line.GetLength() &&
+				!isDefinitionReferenceCharacter(line.GetAt(typeStart)))
+			{
+				++typeStart;
+			}
+
+			long typeEnd = typeStart;
+
+			while (typeEnd < line.GetLength() &&
+				isDefinitionReferenceCharacter(line.GetAt(typeEnd)))
+			{
+				++typeEnd;
+			}
+
+			long nameStart = typeEnd;
+
+			while (nameStart < line.GetLength() &&
+				!isDefinitionReferenceCharacter(line.GetAt(nameStart)))
+			{
+				++nameStart;
+			}
+
+			long nameEnd = nameStart;
+
+			while (nameEnd < line.GetLength() &&
+				isDefinitionReferenceCharacter(line.GetAt(nameEnd)))
+			{
+				++nameEnd;
+			}
+
+			if (typeEnd > typeStart && nameEnd > nameStart)
+			{
+				const CString type =
+					line.Mid(typeStart, typeEnd - typeStart);
+				const CString name =
+					line.Mid(nameStart, nameEnd - nameStart);
+
+				const CStringA typeAnsi(type);
+				const CStringA nameAnsi(name);
+
+				const ParsedDefinition* definition =
+					catalog.findDefinition(
+						nameAnsi.GetString(),
+						typeAnsi.GetString());
+
+				if (definition)
+					return definition;
+			}
+		}
+
+		lineStart = lineEnd + 1;
+	}
+
+	return nullptr;
+}
+
+// Reborn: Read the assignment key or declaration keyword that supplies a safe type hint.
+AsciiString CObjectDeparserDialog::getReferenceTypeHint(
+	const CString& text,
+	long tokenStart) const
+{
+	long lineStart = tokenStart;
+
+	while (lineStart > 0 &&
+		text.GetAt(lineStart - 1) != '\r' &&
+		text.GetAt(lineStart - 1) != '\n')
+	{
+		--lineStart;
+	}
+
+	long hintEnd = -1;
+
+	for (long index = lineStart; index < tokenStart; ++index)
+	{
+		if (text.GetAt(index) == '=')
+			hintEnd = index;
+	}
+
+	long hintStart = lineStart;
+
+	if (hintEnd >= 0)
+	{
+		while (hintEnd > lineStart &&
+			!isDefinitionReferenceCharacter(text.GetAt(hintEnd - 1)))
+		{
+			--hintEnd;
+		}
+
+		hintStart = hintEnd;
+
+		while (hintStart > lineStart &&
+			isDefinitionReferenceCharacter(text.GetAt(hintStart - 1)))
+		{
+			--hintStart;
+		}
+	}
+	else
+	{
+		while (hintStart < tokenStart &&
+			!isDefinitionReferenceCharacter(text.GetAt(hintStart)))
+		{
+			++hintStart;
+		}
+
+		hintEnd = hintStart;
+
+		while (hintEnd < tokenStart &&
+			isDefinitionReferenceCharacter(text.GetAt(hintEnd)))
+		{
+			++hintEnd;
+		}
+	}
+
+	if (hintEnd <= hintStart || hintStart == tokenStart)
+		return AsciiString::TheEmptyString;
+
+	const CString hint =
+		text.Mid(hintStart, hintEnd - hintStart);
+
+	const CStringA hintAnsi(hint);
+	return hintAnsi.GetString();
+}
+
+// Reborn: Mark only references that resolve to exactly one current catalog name/type target.
+void CObjectDeparserDialog::updateDefinitionLinks(
+	CRichEditCtrl& edit)
+{
+	if (m_reloadInProgress ||
+		m_updatingDefinitionLinks ||
+		!::IsWindow(edit.GetSafeHwnd()))
+	{
+		return;
+	}
+
+	CString text;
+	// Reborn: Calculate every CFE_LINK range in the same coordinate space used by SetSel.
+	getRichEditIndexText(edit, text);
+
+	long oldStart = 0;
+	long oldEnd = 0;
+	edit.GetSel(oldStart, oldEnd);
+
+	const CPoint oldScroll = getEditorScroll(edit);
+	ScopedRichEditUndoSuspend undo(edit);
+
+	if (!undo.isActive())
+		return;
+
+	m_updatingDefinitionLinks = TRUE;
+	edit.SetRedraw(FALSE);
+
+	CHARFORMAT2 linkFormat = {};
+	linkFormat.cbSize = sizeof(linkFormat);
+	linkFormat.dwMask = CFM_LINK;
+	linkFormat.dwEffects = 0;
+
+	edit.SetSel(0, -1);
+	edit.SetSelectionCharFormat(linkFormat);
+
+	const ParsedDefinitionCatalog& catalog =
+		ObjectDeparserApp()->getDefinitionCatalog();
+	// Reborn: Self-link filtering belongs to this editor's declaration, not the main list selection.
+	const ParsedDefinition* editorDefinition =
+		resolveEditorDefinition(text);
+
+	long tokenStart = 0;
+	const long textLength = text.GetLength();
+
+	while (tokenStart < textLength)
+	{
+		while (tokenStart < textLength &&
+			!isDefinitionReferenceCharacter(text.GetAt(tokenStart)))
+		{
+			++tokenStart;
+		}
+
+		long tokenEnd = tokenStart;
+
+		while (tokenEnd < textLength &&
+			isDefinitionReferenceCharacter(text.GetAt(tokenEnd)))
+		{
+			++tokenEnd;
+		}
+
+		if (tokenEnd > tokenStart)
+		{
+			const CString token =
+				text.Mid(tokenStart, tokenEnd - tokenStart);
+
+			if (isPotentialDefinitionReferenceToken(token))
+			{
+				const CStringA tokenAnsi(token);
+				const AsciiString typeHint =
+					getReferenceTypeHint(text, tokenStart);
+
+				const ParsedDefinition* definition =
+					catalog.resolveReference(
+						tokenAnsi.GetString(),
+						typeHint);
+
+				if (definition && definition != editorDefinition)
+				{
+					linkFormat.dwEffects = CFE_LINK;
+					edit.SetSel(tokenStart, tokenEnd);
+					edit.SetSelectionCharFormat(linkFormat);
+					linkFormat.dwEffects = 0;
+				}
+			}
+		}
+
+		tokenStart = tokenEnd + 1;
+	}
+
+	edit.SetSel(oldStart, oldEnd);
+	edit.SendMessage(
+		EM_SETSCROLLPOS,
+		0,
+		reinterpret_cast<LPARAM>(&oldScroll));
+
+	edit.SetRedraw(TRUE);
+	edit.Invalidate(FALSE);
+	m_updatingDefinitionLinks = FALSE;
+}
+
+// Reborn: Re-resolve clicked text so delayed edits or reloads can never use stale link targets.
+const ParsedDefinition* CObjectDeparserDialog::resolveDefinitionLink(
+	CRichEditCtrl& edit,
+	const CHARRANGE& range) const
+{
+	if (range.cpMin < 0 || range.cpMax <= range.cpMin)
+		return nullptr;
+
+	CString text;
+	// Reborn: EN_LINK ranges use RichEdit coordinates, so resolve from the normalized index text.
+	getRichEditIndexText(edit, text);
+
+	if (range.cpMax > text.GetLength())
+		return nullptr;
+
+	const CString token =
+		text.Mid(range.cpMin, range.cpMax - range.cpMin);
+
+	// Reborn: Reject stale or externally formatted numeric links at activation time as well.
+	if (!isPotentialDefinitionReferenceToken(token))
+		return nullptr;
+
+	const CStringA tokenAnsi(token);
+	const AsciiString typeHint =
+		getReferenceTypeHint(text, range.cpMin);
+
+	const ParsedDefinition* definition =
+		ObjectDeparserApp()->getDefinitionCatalog().resolveReference(
+		tokenAnsi.GetString(),
+		typeHint);
+
+	const ParsedDefinition* editorDefinition =
+		resolveEditorDefinition(text);
+
+	return definition == editorDefinition
+		? nullptr
+		: definition;
+}
+
+// Reborn: Route a RichEdit link click to a fresh, independent modeless reference viewer.
+void CObjectDeparserDialog::OnDefinitionLink(
+	NMHDR* notifyHeader,
+	LRESULT* result)
+{
+	*result = 0;
+
+	if (m_reloadInProgress || !notifyHeader)
+		return;
+
+	const ENLINK* link =
+		reinterpret_cast<const ENLINK*>(notifyHeader);
+
+	// Reborn: RichEdit reliably reports linked text activation on button-down, as in WorldBuilder.
+	if (link->msg != WM_LBUTTONDOWN)
+		return;
+
+	CRichEditCtrl* edit =
+		notifyHeader->idFrom == IDC_OUTPUT_EDIT
+		? &m_outputEdit
+		: &m_workEdit;
+
+	const ParsedDefinition* definition =
+		resolveDefinitionLink(*edit, link->chrg);
+
+	if (!definition)
+	{
+		m_reloadStatus.SetWindowText(
+			"Reference is ambiguous or no longer available.");
+		return;
+	}
+
+	openDefinitionReference(*definition);
+}
+
+// Reborn: Give every click a separately allocated owned window with freshly generated text.
+void CObjectDeparserDialog::openDefinitionReference(
+	const ParsedDefinition& definition)
+{
+	std::string output;
+
+	if (!buildDeparsedDefinitionText(definition, output))
+		return;
+
+	CDefinitionReferenceWindow* window =
+		new CDefinitionReferenceWindow(
+			this,
+			definition.blockType,
+			definition.name);
+
+	if (!window->createWindow(this))
+	{
+		// Reborn: CFrameWnd releases itself through PostNcDestroy when creation fails.
+		return;
+	}
+
+	m_referenceWindows.push_back(window);
+	window->setContent(CString(output.c_str()));
+	window->ShowWindow(SW_SHOW);
+	window->BringWindowToTop();
+}
+
+// Reborn: Remove a closed self-deleting viewer while leaving every sibling window intact.
+void CObjectDeparserDialog::onDefinitionReferenceWindowDestroyed(
+	CDefinitionReferenceWindow* window)
+{
+	m_referenceWindows.erase(
+		std::remove(
+			m_referenceWindows.begin(),
+			m_referenceWindows.end(),
+			window),
+		m_referenceWindows.end());
+}
+
+// Reborn: Clear all child deparse snapshots before their source engine objects are replaced.
+void CObjectDeparserDialog::setReferenceWindowsReloading()
+{
+	for (CDefinitionReferenceWindow* window : m_referenceWindows)
+	{
+		if (window && ::IsWindow(window->GetSafeHwnd()))
+			window->setReloading();
+	}
+}
+
+// Reborn: Refresh children from stable name/type identities after the new catalog is complete.
+void CObjectDeparserDialog::refreshReferenceWindows(
+	Bool reloadSucceeded)
+{
+	const ParsedDefinitionCatalog& catalog =
+		ObjectDeparserApp()->getDefinitionCatalog();
+
+	for (CDefinitionReferenceWindow* window : m_referenceWindows)
+	{
+		if (!window || !::IsWindow(window->GetSafeHwnd()))
+			continue;
+
+		if (!reloadSucceeded)
+		{
+			window->setContent(
+				"; Reload failed. Reference content was not regenerated.\r\n");
+			continue;
+		}
+
+		const ParsedDefinition* definition =
+			catalog.findDefinition(
+				window->getDefinitionName(),
+				window->getBlockType());
+
+		if (!definition)
+		{
+			window->setContent(
+				"; This definition no longer exists after reload.\r\n");
+			continue;
+		}
+
+		std::string output;
+		buildDeparsedDefinitionText(*definition, output);
+		window->setContent(CString(output.c_str()));
+	}
+}
+
+// Reborn: Produce deparse text from a short-lived catalog lookup shared by main and child views.
+Bool CObjectDeparserDialog::buildDeparsedDefinitionText(
+	const ParsedDefinition& definition,
+	std::string& output) const
+{
+	output.clear();
+
+	const CString& loadTime =
+		ObjectDeparserApp()->getLastObjectIniLoadTime();
+
+	CStringA loadTimeAnsi(loadTime);
+
+	output += "; INI Load Completed: ";
+	output += loadTimeAnsi.GetString();
+	output += "\r\n";
+
+	std::string sourceFilename =
+		definition.filename.str();
+
+	std::replace(
+		sourceFilename.begin(),
+		sourceFilename.end(),
+		'\\',
+		'/');
+
+	output += "; Source: ";
+	output += sourceFilename;
+	output += "\r\n\r\n";
+
+	if (isDefinitionImplemented(&definition))
+	{
+		const ThingTemplate* thing =
+			TheThingFactory->findTemplate(
+				definition.name,
+				FALSE);
+
+		if (thing)
+		{
+			output += ThingTemplateDeparser::deparse(thing);
+		}
+		else
+		{
+			output += definition.declaration.str();
+			output += "\r\n\r\n";
+			output += "; ThingTemplate was not found.\r\n";
+		}
+	}
+	else if (definition.blockType.compareNoCase("Weapon") == 0)
+	{
+		const WeaponTemplate* weapon =
+			TheWeaponStore->findWeaponTemplate(
+				definition.name);
+
+		if (weapon)
+		{
+			output += WeaponTemplateDeparser::deparse(
+				weapon);
+		}
+		else
+		{
+			output += definition.declaration.str();
+			output += "\r\n\r\n";
+			output += "; WeaponTemplate was not found.\r\n";
+		}
+	}
+	else
+	{
+		output += definition.declaration.str();
+		output += "\r\n\r\n";
+		output += "; Deparser for this definition type is not implemented yet.\r\n";
+	}
+
+	return TRUE;
+}
+
+// Reborn: Render the selected definition and immediately expose its safe catalog references.
 void CObjectDeparserDialog::OnDeparseNow()
 {
 	clearCompareHighlight();
@@ -1339,72 +1909,12 @@ void CObjectDeparserDialog::OnDeparseNow()
 
 	std::string output;
 
-	const CString& loadTime =
-		ObjectDeparserApp()->getLastObjectIniLoadTime();
-
-	CStringA loadTimeAnsi(loadTime);
-
-	output += "; INI Load Completed: ";
-	output += loadTimeAnsi.GetString();
-	output += "\r\n";
-
-	std::string sourceFilename =
-		definition->filename.str();
-
-	std::replace(
-		sourceFilename.begin(),
-		sourceFilename.end(),
-		'\\',
-		'/');
-
-	output += "; Source: ";
-	output += sourceFilename;
-	output += "\r\n\r\n";
-
-	if (isDefinitionImplemented(definition))
-	{
-		const ThingTemplate* thing =
-			TheThingFactory->findTemplate(
-				definition->name,
-				FALSE);
-
-		if (thing)
-		{
-			output += ThingTemplateDeparser::deparse(thing);
-		}
-		else
-		{
-			output += definition->declaration.str();
-			output += "\r\n\r\n";
-			output += "; ThingTemplate was not found.\r\n";
-		}
-	}
-	else if (definition->blockType.compareNoCase("Weapon") == 0)
-	{
-		const WeaponTemplate* weapon =
-			TheWeaponStore->findWeaponTemplate(
-				definition->name);
-
-		if (weapon)
-		{
-			output += WeaponTemplateDeparser::deparse(
-				weapon);
-		}
-		else
-		{
-			output += definition->declaration.str();
-			output += "\r\n\r\n";
-			output += "; WeaponTemplate was not found.\r\n";
-		}
-	}
-	else
-	{
-		output += definition->declaration.str();
-		output += "\r\n\r\n";
-		output += "; Deparser for this definition type is not implemented yet.\r\n";
-	}
+	// Reborn: Use the same fresh deparse path used by modeless reference windows.
+	if (!buildDeparsedDefinitionText(*definition, output))
+		return;
 
 	m_outputEdit.SetWindowText(output.c_str());
+	updateDefinitionLinks(m_outputEdit);
 
 	if (m_compareMode)
 		restartCompareDebounce();
@@ -1456,6 +1966,9 @@ void CObjectDeparserDialog::OnReloadINI()
 	m_reloadInProgress = TRUE;
 	m_pumpingReloadMessages = FALSE;
 	m_lastReloadPumpTick = ::GetTickCount() - 30;
+	// Reborn: Stop pending link scans and clear child snapshots before engine replacement starts.
+	KillTimer(TIMER_DEFINITION_LINKS);
+	setReferenceWindowsReloading();
 
 	m_deparseButton.EnableWindow(FALSE);
 	m_transferButton.EnableWindow(FALSE);
@@ -1508,6 +2021,10 @@ void CObjectDeparserDialog::OnReloadINI()
 	m_reloadButton.EnableWindow(TRUE);
 
 	updateCompareButtonState();
+	// Reborn: Child windows now resolve identity against only the newly completed catalog.
+	refreshReferenceWindows(success);
+	updateDefinitionLinks(m_outputEdit);
+	updateDefinitionLinks(m_workEdit);
 
 	if (!success)
 	{
