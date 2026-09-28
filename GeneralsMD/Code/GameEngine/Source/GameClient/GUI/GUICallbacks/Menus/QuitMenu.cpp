@@ -472,7 +472,7 @@ void ToggleQuitMenu()
 		else
 		{
 
-			Bool useRebornQuitMenu = TheGameLogic->getGameMode() == GAME_SINGLE_PLAYER && UseGeneralsLayout();
+			const Bool useRebornQuitMenu = UseRebornQuitMenu(); // Reborn: Apply the selected theme to Skirmish as well as campaign quit menus.
 
 			if (useRebornQuitMenu) // Reborn
 			{

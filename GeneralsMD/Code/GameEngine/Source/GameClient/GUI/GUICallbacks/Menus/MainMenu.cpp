@@ -1686,7 +1686,7 @@ WindowMsgHandledType MainMenuSystem( GameWindow *window, UnsignedInt msg,
 				prepareCampaignGame(DIFFICULTY_NORMAL);
 				break;
 #endif
-				TheShell->push( "Menus/SkirmishGameOptionsMenu.wnd" );
+				TheShell->push(UseGeneralsLayout() ? "Menus/SkirmishGameOptionsMenuGen.wnd" : "Menus/SkirmishGameOptionsMenu.wnd"); // Reborn: Preserve the selected theme identity while Skirmish is cached behind gameplay.
 				TheScriptEngine->signalUIInteract(TheShellHookNames[SHELL_SCRIPT_HOOK_MAIN_MENU_SKIRMISH_SELECTED]);
 			}
 			else if (controlID == buttonChaptersID)

@@ -510,21 +510,29 @@ void Shell::showShell( Bool runInit )
 				layout->getFilename().compareNoCase("Menus/LanLobbyMenu.wnd") == 0;
 			const Bool topIsGeneralsLanLobby =
 				layout->getFilename().compareNoCase("Menus/LanLobbyMenuGen.wnd") == 0;
+			const Bool topIsZeroHourSkirmishMenu =
+				layout->getFilename().compareNoCase("Menus/SkirmishGameOptionsMenu.wnd") == 0;
+			const Bool topIsGeneralsSkirmishMenu =
+				layout->getFilename().compareNoCase("Menus/SkirmishGameOptionsMenuGen.wnd") == 0;
 			const Bool useGeneralsTheme = UseGeneralsLayout();
-			const Bool cachedLanThemeChanged =
+			const Bool cachedShellThemeChanged =
 				(topIsZeroHourLanLobby && useGeneralsTheme) ||
-				(topIsGeneralsLanLobby && !useGeneralsTheme);
+				(topIsGeneralsLanLobby && !useGeneralsTheme) ||
+				(topIsZeroHourSkirmishMenu && useGeneralsTheme) ||
+				(topIsGeneralsSkirmishMenu && !useGeneralsTheme);
 
-			if (cachedLanThemeChanged)
+			if (cachedShellThemeChanged)
 			{
-				// Reborn: Replace the cached LAN lobby before returning from a match while preserving the active LAN session.
+				// Reborn: Replace a cached LAN or Skirmish setup screen with the theme selected during gameplay.
 				unlinkScreen(layout);
 				layout->destroyWindows();
 				deleteInstance(layout);
 
-				layout = TheWindowManager->winCreateLayout(
-					useGeneralsTheme ? "Menus/LanLobbyMenuGen.wnd" : "Menus/LanLobbyMenu.wnd");
-				DEBUG_ASSERTCRASH(layout != nullptr, ("Unable to refresh cached LAN lobby theme"));
+				const Bool isSkirmishMenu = topIsZeroHourSkirmishMenu || topIsGeneralsSkirmishMenu;
+				layout = TheWindowManager->winCreateLayout(isSkirmishMenu
+					? (useGeneralsTheme ? "Menus/SkirmishGameOptionsMenuGen.wnd" : "Menus/SkirmishGameOptionsMenu.wnd")
+					: (useGeneralsTheme ? "Menus/LanLobbyMenuGen.wnd" : "Menus/LanLobbyMenu.wnd"));
+				DEBUG_ASSERTCRASH(layout != nullptr, ("Unable to refresh cached LAN or Skirmish theme"));
 				if (layout)
 					linkScreen(layout);
 			}
@@ -795,6 +803,10 @@ void Shell::doPop( Bool impendingPush )
 			newTop->getFilename().compareNoCase("Menus/LanLobbyMenu.wnd") == 0;
 		const Bool topIsGeneralsLanLobby =
 			newTop->getFilename().compareNoCase("Menus/LanLobbyMenuGen.wnd") == 0;
+		const Bool topIsZeroHourSkirmishMenu =
+			newTop->getFilename().compareNoCase("Menus/SkirmishGameOptionsMenu.wnd") == 0;
+		const Bool topIsGeneralsSkirmishMenu =
+			newTop->getFilename().compareNoCase("Menus/SkirmishGameOptionsMenuGen.wnd") == 0;
 		const Bool useGeneralsTheme = UseGeneralsLayout();
 		const Bool useGeneralsChaptersTheme = UseGeneralsChaptersLayout(); // Reborn: Chapters Default must remain Zero Hour regardless of the selected campaign tab.
 		const Bool canRefreshShellMenu =
@@ -806,7 +818,9 @@ void Shell::doPop( Bool impendingPush )
 			  (topIsZeroHourChaptersMenu && useGeneralsChaptersTheme) ||
 			  (topIsGeneralsChaptersMenu && !useGeneralsChaptersTheme) ||
 			  (topIsZeroHourChallengeMenu && useGeneralsTheme) ||
-			  (topIsGeneralsChallengeMenu && !useGeneralsTheme))) ||
+			  (topIsGeneralsChallengeMenu && !useGeneralsTheme) ||
+			  (topIsZeroHourSkirmishMenu && useGeneralsTheme) ||
+			  (topIsGeneralsSkirmishMenu && !useGeneralsTheme))) ||
 			(topIsZeroHourLanLobby && useGeneralsTheme) ||
 			(topIsGeneralsLanLobby && !useGeneralsTheme);
 
@@ -820,14 +834,17 @@ void Shell::doPop( Bool impendingPush )
 			const Bool isChaptersMenu = topIsZeroHourChaptersMenu || topIsGeneralsChaptersMenu;
 			const Bool isChallengeMenu = topIsZeroHourChallengeMenu || topIsGeneralsChallengeMenu;
 			const Bool isLanLobby = topIsZeroHourLanLobby || topIsGeneralsLanLobby;
-			// Reborn: Recreate a cached Challenge screen with the currently selected visual theme.
+			const Bool isSkirmishMenu = topIsZeroHourSkirmishMenu || topIsGeneralsSkirmishMenu;
+			// Reborn: Recreate cached themed screens with the currently selected visual theme.
 			const char* selectedLayout = isChaptersMenu
 				? (useGeneralsChaptersTheme ? "Menus/ChaptersMenuGen.wnd" : "Menus/ChaptersMenu.wnd")
 				: isChallengeMenu
 					? (useGeneralsTheme ? "Menus/ChallengeMenuGen.wnd" : "Menus/ChallengeMenu.wnd")
 					: isLanLobby
 						? (useGeneralsTheme ? "Menus/LanLobbyMenuGen.wnd" : "Menus/LanLobbyMenu.wnd")
-						: (useGeneralsTheme ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd");
+						: isSkirmishMenu
+							? (useGeneralsTheme ? "Menus/SkirmishGameOptionsMenuGen.wnd" : "Menus/SkirmishGameOptionsMenu.wnd")
+							: (useGeneralsTheme ? "Menus/MainMenuGen.wnd" : "Menus/MainMenu.wnd");
 			newTop = TheWindowManager->winCreateLayout(selectedLayout);
 			DEBUG_ASSERTCRASH(newTop != nullptr, ("Unable to refresh cached themed menu"));
 			if (newTop)

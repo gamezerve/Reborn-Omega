@@ -1606,6 +1606,9 @@ void SkirmishGameOptionsMenuUpdate( WindowLayout * layout, void *userData)
 	// in which case this transition isn't wanted until the load is done.
 	if(stillNeedsToSetOptions && !TheGameLogic->isLoadingMap())
 	{
+		// Reborn: Rebuild map metadata and markers after a themed menu is recreated behind the shell-map load.
+		skirmishUpdateSlotList();
+		positionStartSpots(TheSkirmishGameInfo, buttonMapStartPosition, windowMap);
 		TheTransitionHandler->setGroup("SkirmishGameOptionsMenuFade");
 		stillNeedsToSetOptions = FALSE;
 	}
