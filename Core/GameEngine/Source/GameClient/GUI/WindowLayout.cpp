@@ -46,6 +46,8 @@ static AsciiString getOnlineLayoutSourceFilename( const AsciiString &layoutIdent
 	static const char *themedOnlineLayouts[] =
 	{
 		"Menus/GameSpyGameOptionsMenu.wnd",
+		"Menus/PopupHostGame.wnd", // Reborn: Theme the GO create-room overlay while preserving its canonical identity.
+		"Menus/PopupPlayerInfo.wnd", // Reborn: Theme the GO persona overlay while preserving its canonical identity.
 		"Menus/PopupGameSpyCreateGame.wnd",
 		"Menus/WOLCustomLobby.wnd",
 		"Menus/WOLLadderScreen.wnd",
