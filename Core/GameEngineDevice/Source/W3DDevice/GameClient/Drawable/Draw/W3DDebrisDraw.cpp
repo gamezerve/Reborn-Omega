@@ -180,6 +180,24 @@ void W3DDebrisDraw::setAnimNames(AsciiString initial, AsciiString flying, AsciiS
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Hide a named helper mesh on debris models created directly from W3D assets. */
+//-------------------------------------------------------------------------------------------------
+void W3DDebrisDraw::hideSubObject(AsciiString name)
+{
+	if (m_renderObject == nullptr || name.isEmpty())
+	{
+		return;
+	}
+
+	RenderObjClass* subObject = m_renderObject->Get_Sub_Object_By_Name(name.str());
+	if (subObject != nullptr)
+	{
+		subObject->Set_Hidden(TRUE);
+		subObject->Release_Ref();
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
 static Bool isAnimationComplete(RenderObjClass* r)
 {
 	if (r->Class_ID() == RenderObjClass::CLASSID_HLOD)

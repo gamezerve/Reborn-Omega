@@ -66,6 +66,7 @@ public:
 
 	virtual void setModelName(AsciiString name, Color color, ShadowType t) override;
 	virtual void setAnimNames(AsciiString initial, AsciiString flying, AsciiString finalAnim, const FXList* finalFX) override;
+	virtual void hideSubObject(AsciiString name) override; // Reborn: Hide debris-only helper meshes requested by OCL data.
 
 	virtual DebrisDrawInterface* getDebrisDrawInterface() override { return this; }
 	virtual const DebrisDrawInterface* getDebrisDrawInterface() const override { return this; }

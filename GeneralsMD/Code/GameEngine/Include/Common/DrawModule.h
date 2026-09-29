@@ -124,6 +124,7 @@ class DebrisDrawInterface
 public:
 	virtual void setModelName(AsciiString name, Color color, ShadowType t) = 0;
 	virtual void setAnimNames(AsciiString initial, AsciiString flying, AsciiString finalAnim, const FXList* finalFX) = 0;
+	virtual void hideSubObject(AsciiString name) = 0; // Reborn: Allow OCL debris to suppress always-visible helper meshes such as muzzle flashes.
 };
 
 //-------------------------------------------------------------------------------------------------

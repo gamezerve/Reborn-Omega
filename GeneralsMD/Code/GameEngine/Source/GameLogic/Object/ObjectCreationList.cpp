@@ -900,6 +900,7 @@ public:
 			{ "ModelNames",							parseDebrisObjectNames,							nullptr,					0 },
 			{ "Mass",										INI::parsePositiveNonZeroReal,			nullptr,					offsetof( GenericObjectCreationNugget, m_mass ) },
 			{ "AnimationSet",						parseAnimSet,												nullptr,					offsetof( GenericObjectCreationNugget, m_animSets) },
+			{ "HideSubObject",					INI::parseAsciiStringVectorAppend,		nullptr,					offsetof( GenericObjectCreationNugget, m_hiddenSubObjectNames) }, // Reborn: Hide always-visible helper meshes on debris models.
 			{ "FXFinal",								INI::parseFXList,										nullptr,					offsetof( GenericObjectCreationNugget, m_fxFinal) },
 			{ "OkToChangeModelColor",		INI::parseBool,											nullptr,					offsetof(GenericObjectCreationNugget, m_okToChangeModelColor) },
 			{ "MinLODRequired",					INI::parseStaticGameLODLevel,				nullptr,					offsetof(GenericObjectCreationNugget, m_minLODRequired) },
@@ -974,6 +975,11 @@ protected:
 				if (di)
 				{
 					di->setModelName(modelName, m_okToChangeModelColor ? obj->getIndicatorColor() : 0, m_shadowType);
+					for (std::vector<AsciiString>::const_iterator hiddenName = m_hiddenSubObjectNames.begin(); hiddenName != m_hiddenSubObjectNames.end(); ++hiddenName)
+					{
+						// Reborn: Apply OCL-requested helper-mesh visibility after the debris model is created.
+						di->hideSubObject(*hiddenName);
+					}
 					if (!m_animSets.empty())
 					{
 						Int which = GameLogicRandomValue(0, m_animSets.size()-1);
@@ -1485,6 +1491,7 @@ private:
 	std::vector<AsciiString>	m_names;
 	AsciiString								m_putInContainer;
 	std::vector<AnimSet>			m_animSets;
+	std::vector<AsciiString>	m_hiddenSubObjectNames; // Reborn: Helper meshes hidden after a debris model is assigned.
 	const FXList*							m_fxFinal;
 	AsciiString								m_particleSysName;
 	Int												m_debrisToGenerate;
