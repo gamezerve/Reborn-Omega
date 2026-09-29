@@ -124,7 +124,7 @@ public:
 			{ "StayOnSameLayerAsMaster", INI::parseBool, nullptr, offsetof( SlavedUpdateModuleData, m_stayOnSameLayerAsMaster ) },
 			{ "IsRebornExtention", INI::parseBool, nullptr, offsetof(SlavedUpdateModuleData, m_isRebornExtention) },
 			{ "UpgradeToRemoveOnSell", INI::parseAsciiString, nullptr, offsetof(SlavedUpdateModuleData, m_upgradeToRemoveOnSell) },
-			{ 0, 0, 0, 0 }
+			{ nullptr, nullptr, nullptr, 0 }
 		};
     p.add(dataFieldParse);
 	}

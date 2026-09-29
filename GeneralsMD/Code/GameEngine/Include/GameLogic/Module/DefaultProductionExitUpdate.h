@@ -74,8 +74,8 @@ public:
 			{ "SpecialSpawnForwardOffset", INI::parseReal, nullptr, offsetof(DefaultProductionExitUpdateModuleData, m_specialSpawnForwardOffset) },
 			{ "SpecialSpawnLateralOffset", INI::parseReal, nullptr, offsetof(DefaultProductionExitUpdateModuleData, m_specialSpawnLateralOffset) },
 			{ "SpecialObjectSpawnsRotated", INI::parseBool, nullptr, offsetof(DefaultProductionExitUpdateModuleData, m_specialObjectSpawnsRotated) },
-      { "SpecialObjectUsesCustomRallyPoint", INI::parseBool, nullptr, offsetof(DefaultProductionExitUpdateModuleData, m_specialObjectUsesCustomRallyPoint) },
-			{ 0, 0, 0, 0 }
+            { "SpecialObjectUsesCustomRallyPoint", INI::parseBool, nullptr, offsetof(DefaultProductionExitUpdateModuleData, m_specialObjectUsesCustomRallyPoint) },
+			{ nullptr, nullptr, nullptr, 0 }
 		};
     p.add(dataFieldParse);
 	}
