@@ -232,6 +232,7 @@ const char *const theSoundTypeNames[] =
 	"EVERYONE",
 	nullptr
 };
+static_assert(equalsEnumBitFlagsCount(ARRAY_SIZE(theSoundTypeNames) - 1, SOUND_TYPE_END), "Incorrect array size");
 
 const char *const theAudioControlNames[] =
 {
@@ -242,4 +243,5 @@ const char *const theAudioControlNames[] =
 	"INTERRUPT",
 	nullptr
 };
+static_assert(equalsEnumBitFlagsCount(ARRAY_SIZE(theAudioControlNames) - 1, AUDIO_CONTROL_END), "Incorrect array size");
 

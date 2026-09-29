@@ -100,7 +100,9 @@ enum CommandOption CPP_11(: Int)
 	USES_MINE_CLEARING_WEAPONSET= 0x00200000,	// uses the special mine-clearing weaponset, even if not current
 	CAN_USE_WAYPOINTS						= 0x00400000, // button has option to use a waypoint path
 	MUST_BE_STOPPED							= 0x00800000, // Unit must be stopped in order to be able to use button.
-	EXTENSION_QUEUE_EXCLUSIVE   = 0x01000000, // Reborn: if one such extension upgrade is in queue, other extension buttons of same group are disabled
+	EXTENSION_QUEUE_EXCLUSIVE = 0x01000000, // Reborn: if one such extension upgrade is in queue, other extension buttons of same group are disabled
+
+	COMMAND_OPTION_END // keep after the last named flag
 };
 
 #ifdef DEFINE_COMMAND_OPTION_NAMES
@@ -138,6 +140,7 @@ static const char *const TheCommandOptionNames[] =
 
 	nullptr
 };
+static_assert(equalsEnumBitFlagsCount(ARRAY_SIZE(TheCommandOptionNames) - 1, COMMAND_OPTION_END), "Incorrect array size");
 #endif  // end DEFINE_COMMAND_OPTION_NAMES
 
 // convenient bit masks to group some command options together
