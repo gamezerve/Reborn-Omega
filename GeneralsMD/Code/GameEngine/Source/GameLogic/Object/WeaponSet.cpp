@@ -79,6 +79,10 @@ const char* const WeaponSetFlags::s_bitNameList[] =
 	"WEAPON_RIDER6",
 	"WEAPON_RIDER7",
 	"WEAPON_RIDER8",
+	"WEAPON_RIDER9",
+	"WEAPON_RIDER10",
+	"WEAPON_RIDER11",
+	"WEAPON_RIDER12",
 
 	nullptr
 };

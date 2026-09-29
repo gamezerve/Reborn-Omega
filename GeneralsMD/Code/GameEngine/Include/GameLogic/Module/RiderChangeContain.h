@@ -33,7 +33,7 @@
 #include "Common/STLTypedefs.h"
 #include "GameLogic/Module/TransportContain.h"
 
-#define MAX_RIDERS 9 //***NOTE: If you change this, make sure you update the parsing section!
+#define MAX_RIDERS 13 //***NOTE: If you change this, make sure you update the parsing section!
 
 enum WeaponSetType CPP_11(: Int);
 enum ObjectStatusType CPP_11(: Int);
@@ -45,6 +45,7 @@ struct RiderInfo
 	AsciiStringList m_templateAliases;
 	WeaponSetType m_weaponSetFlag;
 	ModelConditionFlagType m_modelConditionFlagType;
+	ModelConditionFlagType m_additionalModelConditionFlagType;
 	ObjectStatusType m_objectStatusType;
 	AsciiString m_commandSet;
 	LocomotorSetType m_locomotorSetType;
@@ -64,6 +65,7 @@ public:
 	static void buildFieldParse(MultiIniFieldParse& p);
 	static void parseRiderInfo( INI* ini, void *instance, void *store, const void* /*userData*/ );
 	static void parseRiderAlias(INI* ini, void* instance, void* store, const void* userData);
+	static void parseAdditionalRiderModelCondition(INI* ini, void* instance, void* store, const void* userData);
 
 };
 

@@ -172,6 +172,10 @@ const char* const ModelConditionFlags::s_bitNameList[] =
 
 	"STEALTHED",
 	"DISGUISED",
+	"RIDER9",
+	"RIDER10",
+	"RIDER11",
+	"RIDER12",
 
 	nullptr
 };

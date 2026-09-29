@@ -89,6 +89,10 @@ enum ObjectStatusTypes CPP_11(: Int)
 	OBJECT_STATUS_IMMOBILE,							///< Do not move!
 	OBJECT_STATUS_DISGUISED,						///< Object is disguised (a type of stealth)
 	OBJECT_STATUS_DEPLOYED,							///< Object is deployed.
+	OBJECT_STATUS_RIDER9,
+	OBJECT_STATUS_RIDER10,
+	OBJECT_STATUS_RIDER11,
+	OBJECT_STATUS_RIDER12,
 	// add more status types here and don't forget to add to the string table ObjectStatusMaskType::s_bitNameList[]
 
 	OBJECT_STATUS_COUNT

@@ -64,6 +64,11 @@ RiderChangeContainModuleData::RiderChangeContainModuleData()
 {
 	m_scuttleFrames = 0;
 	m_scuttleState = MODELCONDITION_TOPPLED;
+	// Reborn: Keep the optional faction-specific rider visual disabled unless INI data supplies one.
+	for (Int i = 0; i < MAX_RIDERS; ++i)
+	{
+		m_riders[i].m_additionalModelConditionFlagType = MODELCONDITION_INVALID;
+	}
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -106,6 +111,15 @@ void RiderChangeContainModuleData::parseRiderAlias(INI* ini, void* instance, voi
 }
 
 // ------------------------------------------------------------------------------------------------
+/** Reborn: Parse a second model condition used only to select a faction-specific rider mesh. */
+// ------------------------------------------------------------------------------------------------
+void RiderChangeContainModuleData::parseAdditionalRiderModelCondition(INI* ini, void* instance, void* store, const void* /*userData*/)
+{
+	RiderInfo* rider = (RiderInfo*)store;
+	INI::parseIndexList(ini, instance, &(rider->m_additionalModelConditionFlagType), ModelConditionFlags::getBitNames());
+}
+
+// ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
 void RiderChangeContainModuleData::buildFieldParse(MultiIniFieldParse& p)
 {
@@ -139,6 +153,22 @@ void RiderChangeContainModuleData::buildFieldParse(MultiIniFieldParse& p)
 
 		{ "Rider9", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[8]) },
 		{ "RiderAlias9", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[8]) },
+
+		{ "Rider10", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[9]) }, // Reborn: Toxin Worker rider.
+		{ "RiderAlias10", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[9]) },
+		{ "RiderModelCondition10", parseAdditionalRiderModelCondition, nullptr, offsetof(RiderChangeContainModuleData, m_riders[9]) },
+
+		{ "Rider11", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[10]) }, // Reborn: Toxin Rebel rider.
+		{ "RiderAlias11", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[10]) },
+		{ "RiderModelCondition11", parseAdditionalRiderModelCondition, nullptr, offsetof(RiderChangeContainModuleData, m_riders[10]) },
+
+		{ "Rider12", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[11]) }, // Reborn: Toxin RPG rider.
+		{ "RiderAlias12", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[11]) },
+		{ "RiderModelCondition12", parseAdditionalRiderModelCondition, nullptr, offsetof(RiderChangeContainModuleData, m_riders[11]) },
+
+		{ "Rider13", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[12]) }, // Reborn: Toxin Terrorist rider.
+		{ "RiderAlias13", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[12]) },
+		{ "RiderModelCondition13", parseAdditionalRiderModelCondition, nullptr, offsetof(RiderChangeContainModuleData, m_riders[12]) },
 
 		{ "ScuttleDelay", INI::parseDurationUnsignedInt, nullptr, offsetof(RiderChangeContainModuleData, m_scuttleFrames) },
 		{ "ScuttleStatus", INI::parseIndexList, ModelConditionFlags::getBitNames(), offsetof(RiderChangeContainModuleData, m_scuttleState) },
@@ -349,6 +379,11 @@ void RiderChangeContain::onContaining(Object* rider, Bool wasSelected)
 
 			//This is our rider, so set the correct model condition.
 			obj->setModelConditionState(data->m_riders[i].m_modelConditionFlagType);
+			if (data->m_riders[i].m_additionalModelConditionFlagType != MODELCONDITION_INVALID)
+			{
+				// Reborn: Layer the faction-specific infantry mesh selection over the shared bike-body state.
+				obj->setModelConditionState(data->m_riders[i].m_additionalModelConditionFlagType);
+			}
 
 			//Also set the correct weaponset flag
 			obj->setWeaponSetFlag(data->m_riders[i].m_weaponSetFlag, FALSE);
@@ -424,6 +459,11 @@ void RiderChangeContain::onRemoving(Object* rider)
 		{
 			//This is our rider, so clear the current model condition.
 			bike->clearModelConditionFlags(MAKE_MODELCONDITION_MASK2(data->m_riders[i].m_modelConditionFlagType, MODELCONDITION_DOOR_1_CLOSING));
+			if (data->m_riders[i].m_additionalModelConditionFlagType != MODELCONDITION_INVALID)
+			{
+				// Reborn: Clear the faction-specific rider mesh selection when its rider exits.
+				bike->clearModelConditionFlags(MAKE_MODELCONDITION_MASK(data->m_riders[i].m_additionalModelConditionFlagType));
+			}
 
 			//Also clear the current weaponset flag
 			bike->clearWeaponSetFlag(data->m_riders[i].m_weaponSetFlag, FALSE);
