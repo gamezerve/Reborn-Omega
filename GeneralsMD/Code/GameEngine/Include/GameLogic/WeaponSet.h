@@ -83,7 +83,7 @@ static_assert(ARRAY_SIZE(TheWeaponSlotTypeNamesLookupList) == WEAPONSLOT_COUNT +
 
 //Purpose: Whenever you change a weaponset, the model condition state associated with it
 //will be properly set exclusively.
-static const ModelConditionFlagType TheWeaponSetTypeToModelConditionTypeMap[WEAPONSET_COUNT] =
+static const ModelConditionFlagType TheWeaponSetTypeToModelConditionTypeMap[] =
 {
 	/*WEAPONSET_VETERAN*/								MODELCONDITION_WEAPONSET_VETERAN,
 	/*WEAPONSET_ELITE*/									MODELCONDITION_WEAPONSET_ELITE,
@@ -109,6 +109,7 @@ static const ModelConditionFlagType TheWeaponSetTypeToModelConditionTypeMap[WEAP
 	/*WEAPONSET_RIDER13*/								MODELCONDITION_RIDER13,
 	/*WEAPONSET_POWERED*/               MODELCONDITION_INVALID, // Reborn: Power-dependent weapons do not change artwork.
 };
+static_assert(ARRAY_SIZE(TheWeaponSetTypeToModelConditionTypeMap) == WEAPONSET_COUNT, "Incorrect array size");
 #endif
 
 //-------------------------------------------------------------------------------------------------
