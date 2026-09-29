@@ -8,8 +8,11 @@
 
 #include "resource.h"
 #include "ParsedDefinitionCatalog.h"
+#include "TextDiff.h"
 
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 class CDefinitionReferenceWindow;
@@ -28,6 +31,8 @@ public:
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;
 	virtual BOOL OnInitDialog() override;
+	// Reborn: Route editor find shortcuts before the dialog consumes Enter and Escape.
+	virtual BOOL PreTranslateMessage(MSG* message) override;
 
 	virtual void OnOK() override;
 	virtual void OnCancel() override;
@@ -40,6 +45,11 @@ protected:
 	afx_msg void OnTransfer();
 	afx_msg void OnReloadINI();
 	afx_msg void OnCompare();
+	// Reborn: Navigate the active editor's incremental find results in either direction.
+	afx_msg void OnEditorFindChanged();
+	afx_msg void OnEditorFindPrevious();
+	afx_msg void OnEditorFindNext();
+	afx_msg void OnEditorFindClose();
 	afx_msg void OnWorkingCopyChanged();
 	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
 	afx_msg void OnMeasureItem(int nIDCtl, LPMEASUREITEMSTRUCT lpMeasureItemStruct);
@@ -67,6 +77,17 @@ private:
 	void updateReloadProgress(Int progress, const char* status);
 	void clearCompareHighlight();
 	void highlightLines(CRichEditCtrl& edit, const std::vector<Int>& lines, COLORREF color);
+	// Reborn: Paint line numbers and compact compare-state symbols beside one editor.
+	void drawCompareGutter(
+		LPDRAWITEMSTRUCT drawItem,
+		CRichEditCtrl& edit,
+		const std::unordered_map<Int, Int>& markers);
+	// Reborn: Replace both gutter marker sets atomically from the latest diff result.
+	void updateCompareGutterMarkers(const TextDiffResult& result);
+	// Reborn: Repaint gutters only when their editor scroll positions actually change.
+	void refreshCompareGutters();
+	// Reborn: Align diff hunks visually through paragraph spacing without changing editor text.
+	void applyCompareLineGaps(CRichEditCtrl& edit, const std::vector<TextDiffLineGap>& gaps);
 	void updateCompareButtonState();
 	Bool isDefinitionImplemented(const ParsedDefinition* definition) const;
 	void calculatePaneGeometry(CRect& leftPane,	CRect& firstSplitter,	CRect& middlePane, CRect& secondSplitter, CRect& rightPane) const;
@@ -78,6 +99,19 @@ private:
 	void stopCompareMode();
 	void synchronizeCompareScroll();
 	void restartCompareDebounce();
+	// Reborn: Show one find bar bound to the editor that owned the Ctrl+F shortcut.
+	void showEditorFindBar(CRichEditCtrl& edit);
+	void hideEditorFindBar();
+	void findInActiveEditor(Bool backwards, Bool startFromSelection);
+	// Reborn: Mark every exact occurrence of the custom double-click token without editing text.
+	void highlightTokenOccurrences(
+		CRichEditCtrl& edit,
+		const CString& token,
+		long selectedStart,
+		long selectedEnd);
+	void clearTokenOccurrenceHighlights();
+	// Reborn: Handle only an actual editor double-click without subscribing to every mouse move.
+	Bool selectEditorTokenAtPoint(CRichEditCtrl& edit, CPoint point);
 	static void reloadBlockParsedCallback(
 		const AsciiString& declaration,
 		const AsciiString& blockType,
@@ -101,12 +135,23 @@ private:
 	const ParsedDefinition* resolveDefinitionLink(
 		CRichEditCtrl& edit,
 		const CHARRANGE& range) const;
+	// Reborn: Resolve a clicked Generals.str label independently from parsed INI definitions.
+	Bool resolveGameTextLink(
+		CRichEditCtrl& edit,
+		const CHARRANGE& range,
+		AsciiString& label) const;
+	// Reborn: Fetch current localized text directly from the initialized game string subsystem.
+	Bool buildGameTextDefinition(
+		const AsciiString& label,
+		CString& output) const;
 	// Reborn: Resolve each editor's own declaration so Deparsed and Working Copy filter independently.
 	const ParsedDefinition* resolveEditorDefinition(
 		const CString& text) const;
 	// Reborn: Open one independent modeless window for every successful reference click.
 	void openDefinitionReference(
 		const ParsedDefinition& definition);
+	// Reborn: Open one independent viewer for a resolved Generals.str label.
+	void openGameTextReference(const AsciiString& label);
 	// Reborn: Clear child content before reload replaces engine-owned definition objects.
 	void setReferenceWindowsReloading();
 	// Reborn: Rebuild every open child from current catalog and engine state after reload.
@@ -115,6 +160,8 @@ private:
 	Bool m_reloadInProgress;
 	Bool m_pumpingReloadMessages;
 	Bool m_updatingDefinitionLinks;
+	// Reborn: Suppress edit/debounce work for background-only token highlighting.
+	Bool m_updatingOccurrenceHighlights;
 	DWORD m_lastReloadPumpTick;
 
 
@@ -129,6 +176,13 @@ private:
 	CProgressCtrl m_reloadProgress;
 	CStatic m_reloadStatus;
 	CButton m_compareButton;
+	CEdit m_editorFindEdit;
+	CButton m_editorFindPrevious;
+	CButton m_editorFindNext;
+	CButton m_editorFindClose;
+	// Reborn: Owner-drawn gutters provide persistent line numbers and compare operation markers.
+	CStatic m_outputGutter;
+	CStatic m_workGutter;
 	CFont m_outputFont;
 	CBrush m_backgroundBrush;
 	CBrush m_editBrush;
@@ -141,21 +195,47 @@ private:
 	COLORREF m_selectionColor;
 
 	std::vector<const ParsedDefinition*> m_definitions;
+	// Reborn: Cache live Generals.str resolutions so repeated labels do not refetch during link scans.
+	mutable std::unordered_map<std::string, CString> m_gameTextDefinitionCache;
+	mutable std::unordered_set<std::string> m_missingGameTextLabels;
 	// Reborn: Track modeless windows for reload refresh; each window owns and deletes itself.
 	std::vector<CDefinitionReferenceWindow*> m_referenceWindows;
+	// Reborn: Store one precedence-resolved compare marker code per physical editor line.
+	std::unordered_map<Int, Int> m_outputGutterMarkers;
+	std::unordered_map<Int, Int> m_workGutterMarkers;
 
 	enum
 	{
 		TIMER_COMPARE_SCROLL = 2001,
 		TIMER_COMPARE_DEBOUNCE = 2002,
 		// Reborn: Debounce link rescans while the working copy is being edited.
-		TIMER_DEFINITION_LINKS = 2003
+		TIMER_DEFINITION_LINKS = 2003,
+		// Reborn: Track independent editor scrolling for line-number gutter repainting.
+		TIMER_GUTTER_REFRESH = 2004
 	};
 
 	Bool m_compareMode;
 	Bool m_compareUpdating;
+	// Reborn: Keep search state independent from definition-list filtering.
+	Bool m_editorFindVisible;
+	CRichEditCtrl* m_editorFindTarget;
+	// Reborn: Remember which editor owns transient same-token highlighting.
+	CRichEditCtrl* m_occurrenceHighlightEdit;
+	struct OccurrenceHighlightFormat
+	{
+		CHARRANGE range;
+		COLORREF backgroundColor;
+		Bool automaticBackground;
+	};
+	// Reborn: Restore exact pre-highlight backgrounds without recomputing the complete diff.
+	std::vector<OccurrenceHighlightFormat> m_occurrenceHighlightFormats;
 
 	CPoint m_lastOutputScroll;
 	CPoint m_lastWorkScroll;
+	CPoint m_lastOutputGutterScroll;
+	CPoint m_lastWorkGutterScroll;
+	// Reborn: Detect structural line insertions/removals even if a RichEdit change notification is delayed.
+	Int m_lastComparedOutputLineCount;
+	Int m_lastComparedWorkLineCount;
 
 };

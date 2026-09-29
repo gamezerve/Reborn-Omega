@@ -23,6 +23,13 @@
 #define IDC_RELOAD_PROGRESS 1013
 #define IDC_RELOAD_STATUS 1014
 #define IDC_COMPARE 1015
+#define IDC_EDITOR_FIND_EDIT 1018
+#define IDC_EDITOR_FIND_PREVIOUS 1019
+#define IDC_EDITOR_FIND_NEXT 1020
+#define IDC_EDITOR_FIND_CLOSE 1021
+// Reborn: Runtime owner-drawn gutters for editor line numbers and compare markers.
+#define IDC_OUTPUT_GUTTER 1022
+#define IDC_WORK_GUTTER 1023
 
 #define IDD_OBJECT_DEPARSER_LOADING 101
 

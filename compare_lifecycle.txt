@@ -1,0 +1,816 @@
+160-
+161-CObjectDeparserDialog::CObjectDeparserDialog(CWnd* parent)
+162-	: CDialog(IDD_OBJECT_DEPARSER_DIALOG, parent),
+163-	m_draggingSplitter(FALSE),
+164-	m_activeSplitter(0),
+165-	m_firstSplitterRatio(0.20),
+166-	m_secondSplitterRatio(0.60),
+167-	m_compareMode(FALSE),
+168:	m_compareUpdating(FALSE),
+169-	m_editorFindVisible(FALSE),
+170-	m_editorFindTarget(nullptr),
+171-	m_occurrenceHighlightEdit(nullptr),
+172-	m_lastOutputScroll(0, 0),
+173-	m_lastWorkScroll(0, 0),
+174-	m_lastOutputGutterScroll(-1, -1),
+175-	m_lastWorkGutterScroll(-1, -1),
+176-	m_lastComparedOutputLineCount(-1),
+177-	m_lastComparedWorkLineCount(-1),
+178-	m_reloadInProgress(FALSE),
+179-	m_pumpingReloadMessages(FALSE),
+180:	m_updatingDefinitionLinks(FALSE),
+181:	m_updatingOccurrenceHighlights(FALSE),
+182-	m_lastReloadPumpTick(0),
+183-	m_backgroundColor(RGB(37, 37, 38)),
+184-	m_panelColor(RGB(30, 30, 30)),
+185-	m_textColor(RGB(212, 212, 212)),
+186-	m_secondaryTextColor(RGB(160, 160, 160)),
+187-	m_borderColor(RGB(63, 63, 70)),
+188-	m_unsupportedColor(RGB(240, 106, 106)),
+189-	m_selectionColor(RGB(9, 71, 113))
+190-{
+191-	m_backgroundBrush.CreateSolidBrush(m_backgroundColor);
+192-	m_editBrush.CreateSolidBrush(m_panelColor);
+193-
+194-}
+195-
+196-void CObjectDeparserDialog::DoDataExchange(CDataExchange* pDX)
+197-{
+198-	CDialog::DoDataExchange(pDX);
+199-
+--
+463-	// Reborn: Create lightweight owner-drawn gutters without adding editable resource controls.
+464-	const CRect initialGutterRect(0, 0, 1, 1);
+465-	m_outputGutter.Create("", WS_CHILD | WS_VISIBLE | SS_OWNERDRAW,
+466-		initialGutterRect, this, IDC_OUTPUT_GUTTER);
+467-	m_workGutter.Create("", WS_CHILD | WS_VISIBLE | SS_OWNERDRAW,
+468-		initialGutterRect, this, IDC_WORK_GUTTER);
+469-	m_outputGutter.SetFont(&m_outputFont);
+470-	m_workGutter.SetFont(&m_outputFont);
+471:	SetTimer(TIMER_GUTTER_REFRESH, 50, nullptr);
+472-
+473-	// Reborn: The editor find bar is revealed only by Ctrl+F in one of the two text panes.
+474-	m_editorFindEdit.ShowWindow(SW_HIDE);
+475-	m_editorFindPrevious.ShowWindow(SW_HIDE);
+476-	m_editorFindNext.ShowWindow(SW_HIDE);
+477-	m_editorFindClose.ShowWindow(SW_HIDE);
+478-	m_editorFindEdit.SendMessage(EM_SETCUEBANNER, TRUE, reinterpret_cast<LPARAM>(L"Find in editor"));
+479-
+480-	m_reloadProgress.SendMessage(
+481-		PBM_SETBKCOLOR,
+482-		0,
+483-		m_panelColor);
+484-
+485-	m_reloadProgress.SendMessage(
+486-		PBM_SETBARCOLOR,
+487-		0,
+488-		RGB(0, 122, 204));
+489-
+--
+1057-		m_borderColor);
+1058-
+1059-	dc.FillSolidRect(
+1060-		secondSplitter,
+1061-		m_borderColor);
+1062-}
+1063-
+1064-
+1065:void CObjectDeparserDialog::clearCompareHighlight()
+1066-{
+1067-	// Reborn: Discard transient token ranges before compare/deparse formatting replaces their positions.
+1068-	clearTokenOccurrenceHighlights();
+1069-
+1070-	// Reborn: Read-only output needs temporary write access for reliable paragraph-gap removal.
+1071-	ScopedRichEditWritable outputWritable(m_outputEdit);
+1072-	ScopedRichEditUndoSuspend outputUndo(m_outputEdit);
+1073-	ScopedRichEditUndoSuspend workUndo(m_workEdit);
+1074-
+1075-	if (!outputUndo.isActive() || !workUndo.isActive())
+1076-		return;
+1077-
+1078-	CHARFORMAT2 format = {};
+1079-	format.cbSize = sizeof(format);
+1080-	format.dwMask = CFM_BACKCOLOR | CFM_COLOR;
+1081-	format.dwEffects = CFE_AUTOBACKCOLOR;
+1082-	format.crTextColor = m_textColor;
+1083-
+--
+1181-	}
+1182-
+1183-	edit.SetSel(oldStart, oldEnd);
+1184-}
+1185-
+1186-//-------------------------------------------------------------------------------------------------
+1187-/** Reborn: Add Notepad++-style visual alignment gaps without inserting synthetic blank lines. */
+1188-//-------------------------------------------------------------------------------------------------
+1189:void CObjectDeparserDialog::applyCompareLineGaps(
+1190-	CRichEditCtrl& edit,
+1191-	const std::vector<TextDiffLineGap>& gaps)
+1192-{
+1193-	if (gaps.empty())
+1194-		return;
+1195-
+1196-	// Reborn: Apply the same paragraph-spacing path to read-only Deparsed and editable Working panes.
+1197-	ScopedRichEditWritable writable(edit);
+1198-	ScopedRichEditUndoSuspend undo(edit);
+1199-	if (!undo.isActive())
+1200-		return;
+1201-
+1202-	long oldStart;
+1203-	long oldEnd;
+1204-	edit.GetSel(oldStart, oldEnd);
+1205-
+1206-	CClientDC dc(&edit);
+1207-	CFont* oldFont = nullptr;
+--
+1307-		return;
+1308-	}
+1309-
+1310-	m_compareMode = TRUE;
+1311-
+1312-	m_compareButton.SetWindowText(
+1313-		"Stop Compare");
+1314-
+1315:	performCompare();
+1316-
+1317-	CPoint top(0, 0);
+1318-
+1319-	m_outputEdit.SendMessage(
+1320-		EM_SETSCROLLPOS,
+1321-		0,
+1322-		reinterpret_cast<LPARAM>(&top));
+1323-
+1324-	m_workEdit.SendMessage(
+1325-		EM_SETSCROLLPOS,
+1326-		0,
+1327-		reinterpret_cast<LPARAM>(&top));
+1328-
+1329-	m_lastOutputScroll =
+1330-		getEditorScroll(m_outputEdit);
+1331-
+1332-	m_lastWorkScroll =
+1333-		getEditorScroll(m_workEdit);
+1334-
+1335:	SetTimer(
+1336-		TIMER_COMPARE_SCROLL,
+1337-		30,
+1338-		nullptr);
+1339-
+1340-	updateCompareButtonState();
+1341-}
+1342-
+1343-void CObjectDeparserDialog::stopCompareMode()
+1344-{
+1345-	if (!m_compareMode)
+1346-		return;
+1347-
+1348:	KillTimer(TIMER_COMPARE_SCROLL);
+1349:	KillTimer(TIMER_COMPARE_DEBOUNCE);
+1350-
+1351-	m_compareMode = FALSE;
+1352:	m_compareUpdating = TRUE;
+1353-
+1354-	const CPoint outputScroll =
+1355-		getEditorScroll(m_outputEdit);
+1356-
+1357-	const CPoint workScroll =
+1358-		getEditorScroll(m_workEdit);
+1359-
+1360-	m_outputEdit.SetRedraw(FALSE);
+1361-	m_workEdit.SetRedraw(FALSE);
+1362-
+1363:	clearCompareHighlight();
+1364-
+1365-	m_outputEdit.SendMessage(
+1366-		EM_SETSCROLLPOS,
+1367-		0,
+1368-		reinterpret_cast<LPARAM>(&outputScroll));
+1369-
+1370-	m_workEdit.SendMessage(
+1371-		EM_SETSCROLLPOS,
+1372-		0,
+1373-		reinterpret_cast<LPARAM>(&workScroll));
+1374-
+1375-	m_outputEdit.SetRedraw(TRUE);
+1376-	m_workEdit.SetRedraw(TRUE);
+1377-
+1378-	m_outputEdit.Invalidate(FALSE);
+1379-	m_workEdit.Invalidate(FALSE);
+1380-	m_outputGutterMarkers.clear();
+1381-	m_workGutterMarkers.clear();
+1382-	m_outputGutter.Invalidate(FALSE);
+1383-	m_workGutter.Invalidate(FALSE);
+1384-
+1385:	m_compareUpdating = FALSE;
+1386-
+1387-	m_compareButton.SetWindowText(
+1388-		"Compare");
+1389-
+1390-	m_reloadStatus.SetWindowText(
+1391-		"Compare mode off.");
+1392-
+1393-	updateCompareButtonState();
+1394-}
+1395-
+1396:void CObjectDeparserDialog::restartCompareDebounce()
+1397-{
+1398:	if (!m_compareMode || m_compareUpdating)
+1399-		return;
+1400-
+1401:	KillTimer(TIMER_COMPARE_DEBOUNCE);
+1402-
+1403:	SetTimer(
+1404-		TIMER_COMPARE_DEBOUNCE,
+1405-		500,
+1406-		nullptr);
+1407-}
+1408-
+1409-void CObjectDeparserDialog::updateCompareButtonState()
+1410-{
+1411-	m_compareButton.EnableWindow(
+1412-		m_compareMode ||
+1413-		(m_outputEdit.GetWindowTextLength() > 0 &&
+1414-			m_workEdit.GetWindowTextLength() > 0));
+1415-}
+1416-
+1417-void CObjectDeparserDialog::OnWorkingCopyChanged()
+1418-{
+1419:	if (m_compareUpdating || m_updatingDefinitionLinks || m_updatingOccurrenceHighlights)
+1420-		return;
+1421-
+1422-	// Reborn: Delay catalog rescanning until the user pauses typing.
+1423:	KillTimer(TIMER_DEFINITION_LINKS);
+1424:	SetTimer(TIMER_DEFINITION_LINKS, 180, nullptr);
+1425-
+1426:	restartCompareDebounce();
+1427-	updateCompareButtonState();
+1428-	m_workGutter.Invalidate(FALSE);
+1429-}
+1430-
+1431-void CObjectDeparserDialog::OnOutputChanged()
+1432-{
+1433:	if (m_compareUpdating || m_updatingDefinitionLinks || m_updatingOccurrenceHighlights)
+1434-		return;
+1435-
+1436-	// Reborn: Delay link formatting until programmatic output replacement has settled.
+1437:	KillTimer(TIMER_DEFINITION_LINKS);
+1438:	SetTimer(TIMER_DEFINITION_LINKS, 180, nullptr);
+1439-
+1440:	restartCompareDebounce();
+1441-	updateCompareButtonState();
+1442-	m_outputGutter.Invalidate(FALSE);
+1443-}
+1444-
+1445-void CObjectDeparserDialog::OnTimer(
+1446-	UINT_PTR nIDEvent)
+1447-{
+1448-	if (nIDEvent == TIMER_COMPARE_SCROLL)
+1449-	{
+1450-		synchronizeCompareScroll();
+1451-		return;
+1452-	}
+1453-
+1454-	if (nIDEvent == TIMER_COMPARE_DEBOUNCE)
+1455-	{
+1456:		KillTimer(TIMER_COMPARE_DEBOUNCE);
+1457-
+1458-		if (m_compareMode)
+1459:			performCompare();
+1460-
+1461-		return;
+1462-	}
+1463-
+1464-	if (nIDEvent == TIMER_DEFINITION_LINKS)
+1465-	{
+1466:		KillTimer(TIMER_DEFINITION_LINKS);
+1467-
+1468-		// Reborn: Never consult a catalog while reload is replacing its backing entries.
+1469-		if (!m_reloadInProgress)
+1470-		{
+1471:			updateDefinitionLinks(m_outputEdit);
+1472:			updateDefinitionLinks(m_workEdit);
+1473-		}
+1474-
+1475-		return;
+1476-	}
+1477-
+1478-	if (nIDEvent == TIMER_GUTTER_REFRESH)
+1479-	{
+1480-		refreshCompareGutters();
+1481-		return;
+1482-	}
+1483-
+1484-	CDialog::OnTimer(nIDEvent);
+1485-}
+1486-
+1487-void CObjectDeparserDialog::OnTransfer()
+1488-{
+1489-	CString text;
+1490-	m_outputEdit.GetWindowText(text);
+1491-
+1492-	m_workEdit.SetWindowText(text);
+1493-
+1494-	if (m_compareMode)
+1495:		restartCompareDebounce();
+1496-
+1497-	m_workEdit.SetFocus();
+1498-
+1499:	clearCompareHighlight();
+1500-	updateCompareButtonState();
+1501-}
+1502-
+1503-void CObjectDeparserDialog::OnSearchChanged()
+1504-{
+1505-	refreshDefinitionList();
+1506-}
+1507-
+1508-void CObjectDeparserDialog::OnSelectionChanged()
+1509-{
+1510-	m_deparseButton.EnableWindow(
+1511-		m_resultsList.GetCurSel() != LB_ERR);
+1512-}
+1513-
+1514-void CObjectDeparserDialog::OnResultDoubleClicked()
+1515-{
+1516-	OnDeparseNow();
+1517-}
+--
+1653-//-------------------------------------------------------------------------------------------------
+1654-/** Reborn: Keep owner-drawn line numbers attached to independently scrolling RichEdit controls. */
+1655-//-------------------------------------------------------------------------------------------------
+1656-void CObjectDeparserDialog::refreshCompareGutters()
+1657-{
+1658-	if (!m_outputEdit.GetSafeHwnd() || !m_workEdit.GetSafeHwnd())
+1659-		return;
+1660-
+1661:	if (m_compareMode && !m_compareUpdating &&
+1662-		(m_outputEdit.GetLineCount() != m_lastComparedOutputLineCount ||
+1663-			m_workEdit.GetLineCount() != m_lastComparedWorkLineCount))
+1664-	{
+1665-		// Reborn: Apply new alignment rows immediately instead of waiting behind the heavier link scan.
+1666:		performCompare();
+1667-		return;
+1668-	}
+1669-
+1670-	const CPoint outputScroll = getEditorScroll(m_outputEdit);
+1671-	const CPoint workScroll = getEditorScroll(m_workEdit);
+1672-	if (outputScroll != m_lastOutputGutterScroll)
+1673-	{
+1674-		m_lastOutputGutterScroll = outputScroll;
+1675-		m_outputGutter.Invalidate(FALSE);
+1676-	}
+1677-	if (workScroll != m_lastWorkGutterScroll)
+1678-	{
+1679-		m_lastWorkGutterScroll = workScroll;
+1680-		m_workGutter.Invalidate(FALSE);
+1681-	}
+1682-}
+1683-
+1684-void CObjectDeparserDialog::OnDrawItem(
+--
+1850-	if (!undo.isActive())
+1851-		return;
+1852-
+1853-	long oldStart = 0;
+1854-	long oldEnd = 0;
+1855-	edit->GetSel(oldStart, oldEnd);
+1856-	const CPoint oldScroll = getEditorScroll(*edit);
+1857-
+1858:	m_updatingOccurrenceHighlights = TRUE;
+1859-	edit->SetRedraw(FALSE);
+1860-	for (const OccurrenceHighlightFormat& previous : m_occurrenceHighlightFormats)
+1861-	{
+1862-		CHARFORMAT2 format = {};
+1863-		format.cbSize = sizeof(format);
+1864-		format.dwMask = CFM_BACKCOLOR;
+1865-		format.dwEffects = previous.automaticBackground ? CFE_AUTOBACKCOLOR : 0;
+1866-		format.crBackColor = previous.backgroundColor;
+1867-		edit->SetSel(previous.range.cpMin, previous.range.cpMax);
+1868-		edit->SetSelectionCharFormat(format);
+1869-	}
+1870-	m_occurrenceHighlightFormats.clear();
+1871-	edit->SetSel(oldStart, oldEnd);
+1872-	edit->SendMessage(EM_SETSCROLLPOS, 0, reinterpret_cast<LPARAM>(&oldScroll));
+1873-	edit->SetRedraw(TRUE);
+1874-	edit->Invalidate(FALSE);
+1875:	m_updatingOccurrenceHighlights = FALSE;
+1876-}
+1877-
+1878-//-------------------------------------------------------------------------------------------------
+1879-/** Reborn: Highlight every boundary-safe occurrence and retain the originally double-clicked range. */
+1880-//-------------------------------------------------------------------------------------------------
+1881-void CObjectDeparserDialog::highlightTokenOccurrences(
+1882-	CRichEditCtrl& edit,
+1883-	const CString& token,
+1884-	long selectedStart,
+1885-	long selectedEnd)
+1886-{
+1887-	clearTokenOccurrenceHighlights();
+1888-	if (token.IsEmpty())
+1889-		return;
+1890-
+1891-	CString text;
+1892-	getRichEditIndexText(edit, text);
+1893-	ScopedRichEditUndoSuspend undo(edit);
+--
+1895-		return;
+1896-
+1897-	CHARFORMAT2 format = {};
+1898-	format.cbSize = sizeof(format);
+1899-	format.dwMask = CFM_BACKCOLOR;
+1900-	format.crBackColor = RGB(105, 85, 25);
+1901-
+1902-	const CPoint oldScroll = getEditorScroll(edit);
+1903:	m_updatingOccurrenceHighlights = TRUE;
+1904-	edit.SetRedraw(FALSE);
+1905-	Int searchStart = 0;
+1906-	while (searchStart < text.GetLength())
+1907-	{
+1908-		const Int occurrence = text.Find(token, searchStart);
+1909-		if (occurrence < 0)
+1910-			break;
+1911-
+1912-		const Int occurrenceEnd = occurrence + token.GetLength();
+1913-		const Bool leftBoundary = occurrence == 0 || !isEditorWordCharacter(text.GetAt(occurrence - 1));
+1914-		const Bool rightBoundary = occurrenceEnd >= text.GetLength() ||
+1915-			!isEditorWordCharacter(text.GetAt(occurrenceEnd));
+1916-
+1917-		if (leftBoundary && rightBoundary)
+1918-		{
+1919-			edit.SetSel(occurrence, occurrenceEnd);
+1920-
+1921-			OccurrenceHighlightFormat previous = {};
+--
+1942-	}
+1943-
+1944-	m_occurrenceHighlightEdit = &edit;
+1945-	edit.SetSel(selectedStart, selectedEnd);
+1946-	// Reborn: Formatting selections must never navigate to the last matching token.
+1947-	edit.SendMessage(EM_SETSCROLLPOS, 0, reinterpret_cast<LPARAM>(&oldScroll));
+1948-	edit.SetRedraw(TRUE);
+1949-	edit.Invalidate(FALSE);
+1950:	m_updatingOccurrenceHighlights = FALSE;
+1951-}
+1952-
+1953-//-------------------------------------------------------------------------------------------------
+1954-/** Reborn: Expand RichEdit double-clicks across underscores and highlight identical whole tokens. */
+1955-//-------------------------------------------------------------------------------------------------
+1956-Bool CObjectDeparserDialog::selectEditorTokenAtPoint(
+1957-	CRichEditCtrl& edit,
+1958-	CPoint point)
+1959-{
+1960-	long character = edit.CharFromPos(point);
+1961-
+1962-	CString text;
+1963-	getRichEditIndexText(edit, text);
+1964-	if (character < 0 || character >= text.GetLength() || !isEditorWordCharacter(text.GetAt(character)))
+1965-		return FALSE;
+1966-
+1967-	long wordStart = character;
+1968-	long wordEnd = character + 1;
+--
+2014-	CRichEditCtrl* target = m_editorFindTarget;
+2015-	m_editorFindVisible = FALSE;
+2016-	layoutControls();
+2017-
+2018-	if (target && target->GetSafeHwnd())
+2019-		target->SetFocus();
+2020-
+2021-	if (m_compareMode)
+2022:		performCompare();
+2023-	else
+2024-		m_reloadStatus.SetWindowText("Find closed.");
+2025-}
+2026-
+2027-//-------------------------------------------------------------------------------------------------
+2028-/** Reborn: Locate the next or previous case-insensitive match with wraparound in the active editor. */
+2029-//-------------------------------------------------------------------------------------------------
+2030-void CObjectDeparserDialog::findInActiveEditor(Bool backwards, Bool startFromSelection)
+2031-{
+2032-	if (!m_editorFindTarget || !m_editorFindTarget->GetSafeHwnd())
+2033-		return;
+2034-
+2035-	CString needle;
+2036-	m_editorFindEdit.GetWindowText(needle);
+2037-	if (needle.IsEmpty())
+2038-		return;
+2039-
+2040-	CString text;
+--
+2422-		translated.data());
+2423-	output = CString(formatted);
+2424-	// Reborn: Store formatted viewer content as the existence/value cache for later scans and clicks.
+2425-	m_gameTextDefinitionCache.emplace(cacheKey, output);
+2426-	return TRUE;
+2427-}
+2428-
+2429-// Reborn: Mark only references that resolve to exactly one current catalog name/type target.
+2430:void CObjectDeparserDialog::updateDefinitionLinks(
+2431-	CRichEditCtrl& edit)
+2432-{
+2433-	if (m_reloadInProgress ||
+2434:		m_updatingDefinitionLinks ||
+2435-		!::IsWindow(edit.GetSafeHwnd()))
+2436-	{
+2437-		return;
+2438-	}
+2439-
+2440-	CString text;
+2441-	// Reborn: Calculate every CFE_LINK range in the same coordinate space used by SetSel.
+2442-	getRichEditIndexText(edit, text);
+2443-
+2444-	long oldStart = 0;
+2445-	long oldEnd = 0;
+2446-	edit.GetSel(oldStart, oldEnd);
+2447-
+2448-	const CPoint oldScroll = getEditorScroll(edit);
+2449-	ScopedRichEditUndoSuspend undo(edit);
+2450-
+2451-	if (!undo.isActive())
+2452-		return;
+2453-
+2454:	m_updatingDefinitionLinks = TRUE;
+2455-	edit.SetRedraw(FALSE);
+2456-
+2457-	CHARFORMAT2 linkFormat = {};
+2458-	linkFormat.cbSize = sizeof(linkFormat);
+2459-	linkFormat.dwMask = CFM_LINK;
+2460-	linkFormat.dwEffects = 0;
+2461-
+2462-	edit.SetSel(0, -1);
+2463-	edit.SetSelectionCharFormat(linkFormat);
+2464-
+2465-	const ParsedDefinitionCatalog& catalog =
+2466-		ObjectDeparserApp()->getDefinitionCatalog();
+2467-	// Reborn: Self-link filtering belongs to this editor's declaration, not the main list selection.
+2468-	const ParsedDefinition* editorDefinition =
+2469-		resolveEditorDefinition(text);
+2470-
+2471-	long tokenStart = 0;
+2472-	const long textLength = text.GetLength();
+--
+2528-	edit.SetSel(oldStart, oldEnd);
+2529-	edit.SendMessage(
+2530-		EM_SETSCROLLPOS,
+2531-		0,
+2532-		reinterpret_cast<LPARAM>(&oldScroll));
+2533-
+2534-	edit.SetRedraw(TRUE);
+2535-	edit.Invalidate(FALSE);
+2536:	m_updatingDefinitionLinks = FALSE;
+2537-}
+2538-
+2539-// Reborn: Re-resolve clicked text so delayed edits or reloads can never use stale link targets.
+2540-const ParsedDefinition* CObjectDeparserDialog::resolveDefinitionLink(
+2541-	CRichEditCtrl& edit,
+2542-	const CHARRANGE& range) const
+2543-{
+2544-	if (range.cpMin < 0 || range.cpMax <= range.cpMin)
+2545-		return nullptr;
+2546-
+2547-	CString text;
+2548-	// Reborn: EN_LINK ranges use RichEdit coordinates, so resolve from the normalized index text.
+2549-	getRichEditIndexText(edit, text);
+2550-
+2551-	if (range.cpMax > text.GetLength())
+2552-		return nullptr;
+2553-
+2554-	const CString token =
+--
+2849-	}
+2850-
+2851-	return TRUE;
+2852-}
+2853-
+2854-// Reborn: Render the selected definition and immediately expose its safe catalog references.
+2855-void CObjectDeparserDialog::OnDeparseNow()
+2856-{
+2857:	clearCompareHighlight();
+2858-
+2859-	const int index = m_resultsList.GetCurSel();
+2860-
+2861-	if (index == LB_ERR)
+2862-		return;
+2863-
+2864-	const ParsedDefinition* definition =
+2865-		static_cast<const ParsedDefinition*>(
+2866-			m_resultsList.GetItemDataPtr(index));
+2867-
+2868-	if (!definition)
+2869-		return;
+2870-
+2871-	std::string output;
+2872-
+2873-	// Reborn: Use the same fresh deparse path used by modeless reference windows.
+2874-	if (!buildDeparsedDefinitionText(*definition, output))
+2875-		return;
+2876-
+2877-	m_outputEdit.SetWindowText(output.c_str());
+2878:	updateDefinitionLinks(m_outputEdit);
+2879-
+2880-	if (m_compareMode)
+2881:		restartCompareDebounce();
+2882-
+2883-	m_transferButton.EnableWindow(TRUE);
+2884-
+2885-	updateCompareButtonState();
+2886-}
+2887-
+2888-void CObjectDeparserDialog::OnOK()
+2889-{
+2890-}
+2891-
+2892-void CObjectDeparserDialog::OnCancel()
+2893-{
+2894-
+2895-	if (m_reloadInProgress)
+2896-		return;
+2897-
+2898-	const int result = MessageBox(
+2899-		"Are you sure you want to exit?",
+--
+2923-			selectedIndex,
+2924-			selectedName);
+2925-	}
+2926-
+2927-	m_reloadInProgress = TRUE;
+2928-	m_pumpingReloadMessages = FALSE;
+2929-	m_lastReloadPumpTick = ::GetTickCount() - 30;
+2930-	// Reborn: Stop pending link scans and clear child snapshots before engine replacement starts.
+2931:	KillTimer(TIMER_DEFINITION_LINKS);
+2932-	setReferenceWindowsReloading();
+2933-
+2934-	m_deparseButton.EnableWindow(FALSE);
+2935-	m_transferButton.EnableWindow(FALSE);
+2936-	m_compareButton.EnableWindow(FALSE);
+2937-	m_reloadButton.EnableWindow(FALSE);
+2938-	m_searchEdit.EnableWindow(FALSE);
+2939-	m_resultsList.EnableWindow(FALSE);
+2940-	m_workEdit.SetReadOnly(TRUE);
+2941-
+2942-	m_resultsList.SetRedraw(FALSE);
+2943-	m_resultsList.ResetContent();
+2944-	m_definitions.clear();
+2945-	m_resultsList.SetRedraw(TRUE);
+2946-	m_resultsList.Invalidate(FALSE);
+2947-
+2948-	m_outputEdit.SetWindowText("");
+2949-	m_objectCount.SetWindowText("Reloading...");
+--
+2979-	m_searchEdit.EnableWindow(TRUE);
+2980-	m_resultsList.EnableWindow(TRUE);
+2981-	m_workEdit.SetReadOnly(FALSE);
+2982-	m_reloadButton.EnableWindow(TRUE);
+2983-
+2984-	updateCompareButtonState();
+2985-	// Reborn: Child windows now resolve identity against only the newly completed catalog.
+2986-	refreshReferenceWindows(success);
+2987:	updateDefinitionLinks(m_outputEdit);
+2988:	updateDefinitionLinks(m_workEdit);
+2989-
+2990-	if (!success)
+2991-	{
+2992-		MessageBox(
+2993-			"Failed to reload Object INI files.",
+2994-			"Object Deparser",
+2995-			MB_OK | MB_ICONERROR);
+2996-
+2997-		return;
+2998-	}
+2999-
+3000-	if (!selectedName.IsEmpty())
+3001-	{
+3002-		selectDefinitionByDeclaration(
+3003-			selectedName);
+3004-	}
+3005-}
+3006-
+--
+3036-	edit.SendMessage(
+3037-		EM_SETSCROLLPOS,
+3038-		0,
+3039-		reinterpret_cast<LPARAM>(&position));
+3040-}
+3041-
+3042-void CObjectDeparserDialog::synchronizeCompareScroll()
+3043-{
+3044:	if (!m_compareMode || m_compareUpdating)
+3045-		return;
+3046-
+3047-	const CPoint outputScroll =
+3048-		getEditorScroll(m_outputEdit);
+3049-
+3050-	const CPoint workScroll =
+3051-		getEditorScroll(m_workEdit);
+3052-
+3053-	const Bool outputChanged =
+3054-		outputScroll.y != m_lastOutputScroll.y;
+3055-
+3056-	const Bool workChanged =
+3057-		workScroll.y != m_lastWorkScroll.y;
+3058-
+3059-	if (!outputChanged && !workChanged)
+3060-		return;
+3061-
+3062-	if (outputChanged &&
+--
+3076-
+3077-	m_lastOutputScroll =
+3078-		getEditorScroll(m_outputEdit);
+3079-
+3080-	m_lastWorkScroll =
+3081-		getEditorScroll(m_workEdit);
+3082-}
+3083-
+3084:void CObjectDeparserDialog::performCompare()
+3085-{
+3086-	if (!m_compareMode)
+3087-		return;
+3088-
+3089-	// Reborn: An immediate structural refresh supersedes any older delayed text refresh.
+3090:	KillTimer(TIMER_COMPARE_DEBOUNCE);
+3091-
+3092-	const CPoint outputScroll =
+3093-		getEditorScroll(m_outputEdit);
+3094-
+3095-	const CPoint workScroll =
+3096-		getEditorScroll(m_workEdit);
+3097-
+3098-	const LONG commonY =
+3099-		::GetFocus() == m_workEdit.GetSafeHwnd()
+3100-		? workScroll.y
+3101-		: outputScroll.y;
+3102-
+3103-	CString leftText;
+3104-	CString rightText;
+3105-
+3106-	m_outputEdit.GetWindowText(leftText);
+3107-	m_workEdit.GetWindowText(rightText);
+3108-
+--
+3112-	const TextDiffResult result =
+3113-		TextDiff::compare(
+3114-			leftAnsi.GetString(),
+3115-			rightAnsi.GetString());
+3116-
+3117-	// Reborn: Publish operation markers from the same immutable result used for highlights and gaps.
+3118-	updateCompareGutterMarkers(result);
+3119-
+3120:	m_compareUpdating = TRUE;
+3121-
+3122-	m_outputEdit.SetRedraw(FALSE);
+3123-	m_workEdit.SetRedraw(FALSE);
+3124-
+3125:	clearCompareHighlight();
+3126-
+3127:	applyCompareLineGaps(
+3128-		m_outputEdit,
+3129-		result.leftGaps);
+3130-
+3131:	applyCompareLineGaps(
+3132-		m_workEdit,
+3133-		result.rightGaps);
+3134-
+3135-	highlightLines(
+3136-		m_outputEdit,
+3137-		result.leftRemovedLines,
+3138-		RGB(255, 195, 195));
+3139-
+3140-	highlightLines(
+3141-		m_workEdit,
+3142-		result.rightAddedLines,
+3143-		RGB(195, 255, 195));
+3144-
+3145-	highlightLines(
+3146-		m_outputEdit,
+3147-		result.leftModifiedLines,
+3148-		RGB(255, 238, 170));
+3149-
+--
+3182-		getEditorScroll(m_outputEdit);
+3183-
+3184-	m_lastWorkScroll =
+3185-		getEditorScroll(m_workEdit);
+3186-
+3187-	m_lastComparedOutputLineCount = m_outputEdit.GetLineCount();
+3188-	m_lastComparedWorkLineCount = m_workEdit.GetLineCount();
+3189-
+3190:	m_compareUpdating = FALSE;
+3191-
+3192-	CString status;
+3193-
+3194-	status.Format(
+3195-		"Compare: %d added, %d removed, %d changed, %d moved",
+3196-		result.addedCount,
+3197-		result.removedCount,
+3198-		result.modifiedCount,
+3199-		result.movedCount);
+3200-
+3201-	m_reloadStatus.SetWindowText(status);
+3202-}
+3203-
+3204-
+3205-void CObjectDeparserDialog::reloadBlockParsedCallback(
+3206-	const AsciiString& declaration,
+3207-	const AsciiString& blockType,
+3208-	const AsciiString& filename,

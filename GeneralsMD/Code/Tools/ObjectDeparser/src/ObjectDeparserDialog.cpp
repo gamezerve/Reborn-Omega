@@ -16,6 +16,7 @@
 
 #include "GameLogic/Weapon.h"
 #include "GameLogic/WeaponTemplateDeparser.h"
+#include "GameClient/GameText.h"
 
 #include <tom.h>
 #include <cctype>
@@ -24,7 +25,8 @@ class ScopedRichEditUndoSuspend
 {
 public:
 	explicit ScopedRichEditUndoSuspend(CRichEditCtrl& edit)
-		: m_document(nullptr)
+		: m_document(nullptr),
+		m_frozen(FALSE)
 	{
 		IUnknown* ole = nullptr;
 
@@ -51,12 +53,23 @@ public:
 			m_document->Release();
 			m_document = nullptr;
 		}
+		else
+		{
+			// Reborn: Batch formatting without recalculating RichEdit layout for every selected range.
+			LONG freezeCount = 0;
+			m_frozen = SUCCEEDED(m_document->Freeze(&freezeCount));
+		}
 	}
 
 	~ScopedRichEditUndoSuspend()
 	{
 		if (m_document)
 		{
+			if (m_frozen)
+			{
+				LONG freezeCount = 0;
+				m_document->Unfreeze(&freezeCount);
+			}
 			m_document->Undo(tomResume, nullptr);
 			m_document->Release();
 		}
@@ -75,6 +88,35 @@ public:
 
 private:
 	ITextDocument* m_document;
+	Bool m_frozen;
+};
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Temporarily permit programmatic paragraph formatting on a read-only RichEdit control. */
+//-------------------------------------------------------------------------------------------------
+class ScopedRichEditWritable
+{
+public:
+	explicit ScopedRichEditWritable(CRichEditCtrl& edit)
+		: m_edit(edit),
+		m_restoreReadOnly((edit.GetStyle() & ES_READONLY) != 0)
+	{
+		if (m_restoreReadOnly)
+			m_edit.SendMessage(EM_SETREADONLY, FALSE);
+	}
+
+	~ScopedRichEditWritable()
+	{
+		if (m_restoreReadOnly && ::IsWindow(m_edit.GetSafeHwnd()))
+			m_edit.SendMessage(EM_SETREADONLY, TRUE);
+	}
+
+	ScopedRichEditWritable(const ScopedRichEditWritable&) = delete;
+	ScopedRichEditWritable& operator=(const ScopedRichEditWritable&) = delete;
+
+private:
+	CRichEditCtrl& m_edit;
+	Bool m_restoreReadOnly;
 };
 
 
@@ -108,6 +150,11 @@ BEGIN_MESSAGE_MAP(CObjectDeparserDialog, CDialog)
 	ON_BN_CLICKED(IDC_TRANSFER, OnTransfer)
 	ON_BN_CLICKED(IDC_RELOAD_INI, OnReloadINI)
 	ON_BN_CLICKED(IDC_COMPARE, OnCompare)
+	// Reborn: Keep editor searching separate from the definition-list search control.
+	ON_EN_CHANGE(IDC_EDITOR_FIND_EDIT, OnEditorFindChanged)
+	ON_BN_CLICKED(IDC_EDITOR_FIND_PREVIOUS, OnEditorFindPrevious)
+	ON_BN_CLICKED(IDC_EDITOR_FIND_NEXT, OnEditorFindNext)
+	ON_BN_CLICKED(IDC_EDITOR_FIND_CLOSE, OnEditorFindClose)
 	ON_EN_CHANGE(IDC_WORK_EDIT, OnWorkingCopyChanged)
 END_MESSAGE_MAP()
 
@@ -119,11 +166,19 @@ CObjectDeparserDialog::CObjectDeparserDialog(CWnd* parent)
 	m_secondSplitterRatio(0.60),
 	m_compareMode(FALSE),
 	m_compareUpdating(FALSE),
+	m_editorFindVisible(FALSE),
+	m_editorFindTarget(nullptr),
+	m_occurrenceHighlightEdit(nullptr),
 	m_lastOutputScroll(0, 0),
 	m_lastWorkScroll(0, 0),
+	m_lastOutputGutterScroll(-1, -1),
+	m_lastWorkGutterScroll(-1, -1),
+	m_lastComparedOutputLineCount(-1),
+	m_lastComparedWorkLineCount(-1),
 	m_reloadInProgress(FALSE),
 	m_pumpingReloadMessages(FALSE),
 	m_updatingDefinitionLinks(FALSE),
+	m_updatingOccurrenceHighlights(FALSE),
 	m_lastReloadPumpTick(0),
 	m_backgroundColor(RGB(37, 37, 38)),
 	m_panelColor(RGB(30, 30, 30)),
@@ -153,6 +208,10 @@ void CObjectDeparserDialog::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_RELOAD_PROGRESS, m_reloadProgress);
 	DDX_Control(pDX, IDC_RELOAD_STATUS, m_reloadStatus);
 	DDX_Control(pDX, IDC_COMPARE, m_compareButton);
+	DDX_Control(pDX, IDC_EDITOR_FIND_EDIT, m_editorFindEdit);
+	DDX_Control(pDX, IDC_EDITOR_FIND_PREVIOUS, m_editorFindPrevious);
+	DDX_Control(pDX, IDC_EDITOR_FIND_NEXT, m_editorFindNext);
+	DDX_Control(pDX, IDC_EDITOR_FIND_CLOSE, m_editorFindClose);
 }
 
 HBRUSH CObjectDeparserDialog::OnCtlColor(
@@ -401,6 +460,23 @@ BOOL CObjectDeparserDialog::OnInitDialog()
 	m_outputEdit.SetDefaultCharFormat(textFormat);
 	m_workEdit.SetDefaultCharFormat(textFormat);
 
+	// Reborn: Create lightweight owner-drawn gutters without adding editable resource controls.
+	const CRect initialGutterRect(0, 0, 1, 1);
+	m_outputGutter.Create("", WS_CHILD | WS_VISIBLE | SS_OWNERDRAW,
+		initialGutterRect, this, IDC_OUTPUT_GUTTER);
+	m_workGutter.Create("", WS_CHILD | WS_VISIBLE | SS_OWNERDRAW,
+		initialGutterRect, this, IDC_WORK_GUTTER);
+	m_outputGutter.SetFont(&m_outputFont);
+	m_workGutter.SetFont(&m_outputFont);
+	SetTimer(TIMER_GUTTER_REFRESH, 50, nullptr);
+
+	// Reborn: The editor find bar is revealed only by Ctrl+F in one of the two text panes.
+	m_editorFindEdit.ShowWindow(SW_HIDE);
+	m_editorFindPrevious.ShowWindow(SW_HIDE);
+	m_editorFindNext.ShowWindow(SW_HIDE);
+	m_editorFindClose.ShowWindow(SW_HIDE);
+	m_editorFindEdit.SendMessage(EM_SETCUEBANNER, TRUE, reinterpret_cast<LPARAM>(L"Find in editor"));
+
 	m_reloadProgress.SendMessage(
 		PBM_SETBKCOLOR,
 		0,
@@ -635,17 +711,65 @@ void CObjectDeparserDialog::layoutControls()
 		leftPane.Width(),
 		leftPane.Height());
 
-	m_outputEdit.MoveWindow(
-		middlePane.left,
-		middlePane.top,
-		middlePane.Width(),
-		middlePane.Height());
+	CRect outputEditRect(middlePane);
+	CRect workEditRect(rightPane);
 
-	m_workEdit.MoveWindow(
-		rightPane.left,
-		rightPane.top,
-		rightPane.Width(),
-		rightPane.Height());
+	if (m_editorFindVisible && m_editorFindTarget)
+	{
+		// Reborn: Place the shared find bar above only the editor that invoked Ctrl+F.
+		const int findBarHeight = 24;
+		const int findControlGap = 4;
+		const int previousWidth = 72;
+		const int nextWidth = 50;
+		const int closeWidth = 28;
+		CRect findPane = m_editorFindTarget == &m_outputEdit ? middlePane : rightPane;
+
+		const int closeLeft = findPane.right - closeWidth;
+		const int nextLeft = closeLeft - findControlGap - nextWidth;
+		const int previousLeft = nextLeft - findControlGap - previousWidth;
+		// Reborn: Normalize MFC LONG coordinates before using the engine's strongly typed max helper.
+		const int findEditWidth = max(40, previousLeft - findControlGap - static_cast<int>(findPane.left));
+
+		m_editorFindEdit.MoveWindow(findPane.left, findPane.top, findEditWidth, findBarHeight);
+		m_editorFindPrevious.MoveWindow(previousLeft, findPane.top, previousWidth, findBarHeight);
+		m_editorFindNext.MoveWindow(nextLeft, findPane.top, nextWidth, findBarHeight);
+		m_editorFindClose.MoveWindow(closeLeft, findPane.top, closeWidth, findBarHeight);
+
+		m_editorFindEdit.ShowWindow(SW_SHOW);
+		m_editorFindPrevious.ShowWindow(SW_SHOW);
+		m_editorFindNext.ShowWindow(SW_SHOW);
+		m_editorFindClose.ShowWindow(SW_SHOW);
+
+		// Reborn: Reserve the same vertical strip above both editors so Compare rows remain aligned.
+		outputEditRect.top += findBarHeight + findControlGap;
+		workEditRect.top += findBarHeight + findControlGap;
+	}
+	else
+	{
+		m_editorFindEdit.ShowWindow(SW_HIDE);
+		m_editorFindPrevious.ShowWindow(SW_HIDE);
+		m_editorFindNext.ShowWindow(SW_HIDE);
+		m_editorFindClose.ShowWindow(SW_HIDE);
+	}
+
+
+	// Reborn: Reserve a fixed marker and line-number column without reducing scrollable text coordinates.
+	const int gutterWidth = 58;
+	m_outputGutter.MoveWindow(
+		outputEditRect.left,
+		outputEditRect.top,
+		gutterWidth,
+		outputEditRect.Height());
+	m_workGutter.MoveWindow(
+		workEditRect.left,
+		workEditRect.top,
+		gutterWidth,
+		workEditRect.Height());
+	outputEditRect.left += gutterWidth;
+	workEditRect.left += gutterWidth;
+
+	m_outputEdit.MoveWindow(outputEditRect);
+	m_workEdit.MoveWindow(workEditRect);
 
 	m_objectCount.MoveWindow(
 		leftPane.left,
@@ -940,6 +1064,11 @@ void CObjectDeparserDialog::OnPaint()
 
 void CObjectDeparserDialog::clearCompareHighlight()
 {
+	// Reborn: Discard transient token ranges before compare/deparse formatting replaces their positions.
+	clearTokenOccurrenceHighlights();
+
+	// Reborn: Read-only output needs temporary write access for reliable paragraph-gap removal.
+	ScopedRichEditWritable outputWritable(m_outputEdit);
 	ScopedRichEditUndoSuspend outputUndo(m_outputEdit);
 	ScopedRichEditUndoSuspend workUndo(m_workEdit);
 
@@ -952,18 +1081,35 @@ void CObjectDeparserDialog::clearCompareHighlight()
 	format.dwEffects = CFE_AUTOBACKCOLOR;
 	format.crTextColor = m_textColor;
 
-	long start;
-	long end;
+	long outputStart;
+	long outputEnd;
+	long workStart;
+	long workEnd;
 
-	m_outputEdit.GetSel(start, end);
+	m_outputEdit.GetSel(outputStart, outputEnd);
 	m_outputEdit.SetSel(0, -1);
 	m_outputEdit.SetSelectionCharFormat(format);
-	m_outputEdit.SetSel(start, end);
+	m_outputEdit.SetSel(outputStart, outputEnd);
 
-	m_workEdit.GetSel(start, end);
+	m_workEdit.GetSel(workStart, workEnd);
 	m_workEdit.SetSel(0, -1);
 	m_workEdit.SetSelectionCharFormat(format);
-	m_workEdit.SetSel(start, end);
+	m_workEdit.SetSel(workStart, workEnd);
+
+	// Reborn: Remove visual diff padding while leaving both editor buffers and undo histories untouched.
+	PARAFORMAT2 paragraphFormat = {};
+	paragraphFormat.cbSize = sizeof(paragraphFormat);
+	paragraphFormat.dwMask = PFM_SPACEBEFORE | PFM_SPACEAFTER;
+	paragraphFormat.dySpaceBefore = 0;
+	paragraphFormat.dySpaceAfter = 0;
+
+	m_outputEdit.SetSel(0, -1);
+	m_outputEdit.SendMessage(EM_SETPARAFORMAT, 0, reinterpret_cast<LPARAM>(&paragraphFormat));
+	m_outputEdit.SetSel(outputStart, outputEnd);
+
+	m_workEdit.SetSel(0, -1);
+	m_workEdit.SendMessage(EM_SETPARAFORMAT, 0, reinterpret_cast<LPARAM>(&paragraphFormat));
+	m_workEdit.SetSel(workStart, workEnd);
 }
 
 
@@ -973,6 +1119,9 @@ void CObjectDeparserDialog::highlightLines(
 	const std::vector<Int>& lines,
 	COLORREF color)
 {
+	if (lines.empty())
+		return;
+
 	ScopedRichEditUndoSuspend undo(edit);
 
 	if (!undo.isActive())
@@ -989,25 +1138,163 @@ void CObjectDeparserDialog::highlightLines(
 	format.crBackColor = color;
 	format.crTextColor = RGB(0, 0, 0);
 
-	const int lineCount = edit.GetLineCount();
+	const Int lineCount = edit.GetLineCount();
+	std::vector<Int> sortedLines = lines;
+	std::sort(sortedLines.begin(), sortedLines.end());
+	sortedLines.erase(
+		std::unique(sortedLines.begin(), sortedLines.end()),
+		sortedLines.end());
 
-	for (Int line : lines)
+	for (size_t index = 0; index < sortedLines.size();)
 	{
-		if (line < 0 || line >= lineCount)
+		const Int firstLine = sortedLines[index];
+		if (firstLine < 0 || firstLine >= lineCount)
+		{
+			++index;
 			continue;
+		}
 
-		const long start = edit.LineIndex(line);
+		Int lastLine = firstLine;
+		while (index + 1 < sortedLines.size() &&
+			sortedLines[index + 1] == lastLine + 1 &&
+			sortedLines[index + 1] < lineCount)
+		{
+			++index;
+			lastLine = sortedLines[index];
+		}
 
-		const long end =
-			line + 1 < lineCount
-			? edit.LineIndex(line + 1)
-			: edit.GetTextLength();
+		const long start = edit.LineIndex(firstLine);
+		const long lastStart = edit.LineIndex(lastLine);
 
-		if (start < 0)
+		if (start < 0 || lastStart < 0)
+		{
+			++index;
 			continue;
+		}
+
+		// Reborn: Format one contiguous marker run and stop before its final CR/LF to prevent color leakage.
+		const long end = lastStart + max(0, static_cast<Int>(edit.LineLength(lastStart)));
 
 		edit.SetSel(start, end);
 		edit.SetSelectionCharFormat(format);
+		++index;
+	}
+
+	edit.SetSel(oldStart, oldEnd);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Add Notepad++-style visual alignment gaps without inserting synthetic blank lines. */
+//-------------------------------------------------------------------------------------------------
+void CObjectDeparserDialog::applyCompareLineGaps(
+	CRichEditCtrl& edit,
+	const std::vector<TextDiffLineGap>& gaps)
+{
+	if (gaps.empty())
+		return;
+
+	// Reborn: Apply the same paragraph-spacing path to read-only Deparsed and editable Working panes.
+	ScopedRichEditWritable writable(edit);
+	ScopedRichEditUndoSuspend undo(edit);
+	if (!undo.isActive())
+		return;
+
+	long oldStart;
+	long oldEnd;
+	edit.GetSel(oldStart, oldEnd);
+
+	CClientDC dc(&edit);
+	CFont* oldFont = nullptr;
+	if (edit.GetFont())
+		oldFont = dc.SelectObject(edit.GetFont());
+
+	TEXTMETRIC metrics = {};
+	dc.GetTextMetrics(&metrics);
+	const Int measuredDpiY = dc.GetDeviceCaps(LOGPIXELSY);
+	Int lineHeightPixels = metrics.tmHeight + metrics.tmExternalLeading;
+	const Int dpiY = measuredDpiY > 0 ? measuredDpiY : 1;
+
+	if (oldFont)
+		dc.SelectObject(oldFont);
+
+	const Int lineCount = edit.GetLineCount();
+	if (lineCount > 1)
+	{
+		// Reborn: Measure RichEdit's actual rendered baseline advance to prevent cumulative gap drift.
+		const long firstIndex = edit.LineIndex(0);
+		const long secondIndex = edit.LineIndex(1);
+		if (firstIndex >= 0 && secondIndex >= 0)
+		{
+			const CPoint firstPosition = edit.PosFromChar(firstIndex);
+			const CPoint secondPosition = edit.PosFromChar(secondIndex);
+			const Int renderedAdvance = secondPosition.y - firstPosition.y;
+			if (renderedAdvance > 0)
+				lineHeightPixels = renderedAdvance;
+		}
+	}
+	lineHeightPixels = max(1, lineHeightPixels);
+
+	std::vector<Int> boundaryGapCounts(static_cast<size_t>(lineCount + 1), 0);
+	for (const TextDiffLineGap& gap : gaps)
+	{
+		if (gap.count <= 0)
+			continue;
+		const Int boundary = gap.afterLine ? gap.line + 1 : gap.line;
+		if (boundary >= 0 && boundary <= lineCount)
+			boundaryGapCounts[boundary] += gap.count;
+	}
+
+	for (Int boundary = 0; boundary <= lineCount; ++boundary)
+	{
+		const Int gapCount = boundaryGapCounts[boundary];
+		if (gapCount <= 0)
+			continue;
+
+		const LONG totalSpacing = MulDiv(lineHeightPixels * gapCount, 1440, dpiY);
+		const LONG safeParagraphSpacing = 31500;
+		LONG beforeSpacing = boundary < lineCount
+			? min(totalSpacing, safeParagraphSpacing)
+			: 0;
+		LONG afterSpacing = boundary > 0
+			? totalSpacing - beforeSpacing
+			: 0;
+		if (afterSpacing > safeParagraphSpacing && boundary < lineCount)
+		{
+			afterSpacing = safeParagraphSpacing;
+			beforeSpacing = totalSpacing - afterSpacing;
+		}
+
+		if (afterSpacing > 0 && boundary > 0)
+		{
+			// Reborn: Put overflow on the preceding paragraph at the same visual boundary.
+			const long previousStart = edit.LineIndex(boundary - 1);
+			if (previousStart >= 0)
+			{
+				PARAFORMAT2 afterFormat = {};
+				afterFormat.cbSize = sizeof(afterFormat);
+				afterFormat.dwMask = PFM_SPACEAFTER;
+				afterFormat.dySpaceAfter = afterSpacing;
+				edit.SetSel(previousStart, previousStart);
+				edit.SendMessage(EM_SETPARAFORMAT, 0,
+					reinterpret_cast<LPARAM>(&afterFormat));
+			}
+		}
+
+		if (beforeSpacing > 0 && boundary < lineCount)
+		{
+			// Reborn: Keep the remaining height before the next real line so the gap stays contiguous.
+			const long nextStart = edit.LineIndex(boundary);
+			if (nextStart >= 0)
+			{
+				PARAFORMAT2 beforeFormat = {};
+				beforeFormat.cbSize = sizeof(beforeFormat);
+				beforeFormat.dwMask = PFM_SPACEBEFORE;
+				beforeFormat.dySpaceBefore = beforeSpacing;
+				edit.SetSel(nextStart, nextStart);
+				edit.SendMessage(EM_SETPARAFORMAT, 0,
+					reinterpret_cast<LPARAM>(&beforeFormat));
+			}
+		}
 	}
 
 	edit.SetSel(oldStart, oldEnd);
@@ -1044,6 +1331,8 @@ void CObjectDeparserDialog::OnCompare()
 	}
 
 	m_compareMode = TRUE;
+	// Reborn: Compare exclusively owns editor presentation until the user stops it.
+	KillTimer(TIMER_DEFINITION_LINKS);
 
 	m_compareButton.SetWindowText(
 		"Stop Compare");
@@ -1113,8 +1402,15 @@ void CObjectDeparserDialog::stopCompareMode()
 
 	m_outputEdit.Invalidate(FALSE);
 	m_workEdit.Invalidate(FALSE);
+	m_outputGutterMarkers.clear();
+	m_workGutterMarkers.clear();
+	m_outputGutter.Invalidate(FALSE);
+	m_workGutter.Invalidate(FALSE);
 
 	m_compareUpdating = FALSE;
+	// Reborn: Rebuild links once after compare releases all background and paragraph formatting.
+	updateDefinitionLinks(m_outputEdit);
+	updateDefinitionLinks(m_workEdit);
 
 	m_compareButton.SetWindowText(
 		"Compare");
@@ -1148,28 +1444,32 @@ void CObjectDeparserDialog::updateCompareButtonState()
 
 void CObjectDeparserDialog::OnWorkingCopyChanged()
 {
-	if (m_compareUpdating || m_updatingDefinitionLinks)
+	if (m_compareUpdating || m_updatingDefinitionLinks || m_updatingOccurrenceHighlights)
 		return;
 
-	// Reborn: Delay catalog rescanning until the user pauses typing.
+	// Reborn: Defer link formatting while Compare exclusively owns editor presentation.
 	KillTimer(TIMER_DEFINITION_LINKS);
-	SetTimer(TIMER_DEFINITION_LINKS, 180, nullptr);
+	if (!m_compareMode)
+		SetTimer(TIMER_DEFINITION_LINKS, 180, nullptr);
 
 	restartCompareDebounce();
 	updateCompareButtonState();
+	m_workGutter.Invalidate(FALSE);
 }
 
 void CObjectDeparserDialog::OnOutputChanged()
 {
-	if (m_compareUpdating || m_updatingDefinitionLinks)
+	if (m_compareUpdating || m_updatingDefinitionLinks || m_updatingOccurrenceHighlights)
 		return;
 
-	// Reborn: Delay link formatting until programmatic output replacement has settled.
+	// Reborn: Defer link formatting while Compare exclusively owns editor presentation.
 	KillTimer(TIMER_DEFINITION_LINKS);
-	SetTimer(TIMER_DEFINITION_LINKS, 180, nullptr);
+	if (!m_compareMode)
+		SetTimer(TIMER_DEFINITION_LINKS, 180, nullptr);
 
 	restartCompareDebounce();
 	updateCompareButtonState();
+	m_outputGutter.Invalidate(FALSE);
 }
 
 void CObjectDeparserDialog::OnTimer(
@@ -1195,13 +1495,19 @@ void CObjectDeparserDialog::OnTimer(
 	{
 		KillTimer(TIMER_DEFINITION_LINKS);
 
-		// Reborn: Never consult a catalog while reload is replacing its backing entries.
-		if (!m_reloadInProgress)
+		// Reborn: Never let delayed link formatting mutate an active compare presentation.
+		if (!m_reloadInProgress && !m_compareMode)
 		{
 			updateDefinitionLinks(m_outputEdit);
 			updateDefinitionLinks(m_workEdit);
 		}
 
+		return;
+	}
+
+	if (nIDEvent == TIMER_GUTTER_REFRESH)
+	{
+		refreshCompareGutters();
 		return;
 	}
 
@@ -1267,10 +1573,159 @@ void CObjectDeparserDialog::OnMeasureItem(
 		lpMeasureItemStruct);
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Paint physical line numbers at RichEdit-rendered positions with compact diff symbols. */
+//-------------------------------------------------------------------------------------------------
+void CObjectDeparserDialog::drawCompareGutter(
+	LPDRAWITEMSTRUCT drawItem,
+	CRichEditCtrl& edit,
+	const std::unordered_map<Int, Int>& markers)
+{
+	CDC dc;
+	dc.Attach(drawItem->hDC);
+	const CRect gutterRect(drawItem->rcItem);
+	dc.FillSolidRect(&gutterRect, m_backgroundColor);
+	dc.SetBkMode(TRANSPARENT);
+
+	CFont* oldFont = dc.SelectObject(&m_outputFont);
+	TEXTMETRIC metrics = {};
+	dc.GetTextMetrics(&metrics);
+	const Int lineHeight = max(1,
+		static_cast<Int>(metrics.tmHeight + metrics.tmExternalLeading));
+	const Int firstVisible = max(0, static_cast<Int>(edit.SendMessage(EM_GETFIRSTVISIBLELINE)) - 1);
+	const Int lineCount = edit.GetLineCount();
+
+	for (Int line = firstVisible; line < lineCount; ++line)
+	{
+		const long character = edit.LineIndex(line);
+		if (character < 0)
+			continue;
+
+		const CPoint position = edit.PosFromChar(character);
+		if (position.y > drawItem->rcItem.bottom)
+			break;
+		if (position.y + lineHeight < drawItem->rcItem.top)
+			continue;
+
+		CRect numberRect(17, position.y,
+			drawItem->rcItem.right - 3, position.y + lineHeight);
+		CString number;
+		number.Format("%d", line + 1);
+		dc.SetTextColor(m_secondaryTextColor);
+		dc.DrawText(number, &numberRect,
+			DT_SINGLELINE | DT_RIGHT | DT_VCENTER | DT_NOPREFIX);
+
+		const auto marker = markers.find(line);
+		if (marker == markers.end())
+			continue;
+
+		COLORREF markerColor = m_secondaryTextColor;
+		CString symbol;
+		switch (marker->second)
+		{
+		case 1:
+			markerColor = RGB(220, 80, 80);
+			symbol = "-";
+			break;
+		case 2:
+			markerColor = RGB(80, 180, 100);
+			symbol = "+";
+			break;
+		case 3:
+			markerColor = RGB(220, 175, 70);
+			symbol = "~";
+			break;
+		case 4:
+			markerColor = RGB(70, 140, 220);
+			symbol = ">";
+			break;
+		}
+
+		CRect markerRect(1, position.y, 15, position.y + lineHeight);
+		dc.FillSolidRect(&markerRect, markerColor);
+		dc.SetTextColor(RGB(15, 15, 15));
+		dc.DrawText(symbol, &markerRect,
+			DT_SINGLELINE | DT_CENTER | DT_VCENTER | DT_NOPREFIX);
+	}
+
+	dc.FillSolidRect(gutterRect.right - 1, gutterRect.top,
+		1, gutterRect.Height(), m_borderColor);
+	if (oldFont)
+		dc.SelectObject(oldFont);
+	dc.Detach();
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Resolve result precedence into one visible operation marker per physical line. */
+//-------------------------------------------------------------------------------------------------
+void CObjectDeparserDialog::updateCompareGutterMarkers(const TextDiffResult& result)
+{
+	m_outputGutterMarkers.clear();
+	m_workGutterMarkers.clear();
+
+	for (Int line : result.leftRemovedLines)
+		m_outputGutterMarkers[line] = 1;
+	for (Int line : result.rightAddedLines)
+		m_workGutterMarkers[line] = 2;
+	for (Int line : result.leftModifiedLines)
+		m_outputGutterMarkers[line] = 3;
+	for (Int line : result.rightModifiedLines)
+		m_workGutterMarkers[line] = 3;
+	for (Int line : result.leftMovedLines)
+		m_outputGutterMarkers[line] = 4;
+	for (Int line : result.rightMovedLines)
+		m_workGutterMarkers[line] = 4;
+
+	m_outputGutter.Invalidate(FALSE);
+	m_workGutter.Invalidate(FALSE);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Keep owner-drawn line numbers attached to independently scrolling RichEdit controls. */
+//-------------------------------------------------------------------------------------------------
+void CObjectDeparserDialog::refreshCompareGutters()
+{
+	if (!m_outputEdit.GetSafeHwnd() || !m_workEdit.GetSafeHwnd())
+		return;
+
+	if (m_compareMode && !m_compareUpdating &&
+		(m_outputEdit.GetLineCount() != m_lastComparedOutputLineCount ||
+			m_workEdit.GetLineCount() != m_lastComparedWorkLineCount))
+	{
+		// Reborn: Apply new alignment rows immediately instead of waiting behind the heavier link scan.
+		performCompare();
+		return;
+	}
+
+	const CPoint outputScroll = getEditorScroll(m_outputEdit);
+	const CPoint workScroll = getEditorScroll(m_workEdit);
+	if (outputScroll != m_lastOutputGutterScroll)
+	{
+		m_lastOutputGutterScroll = outputScroll;
+		m_outputGutter.Invalidate(FALSE);
+	}
+	if (workScroll != m_lastWorkGutterScroll)
+	{
+		m_lastWorkGutterScroll = workScroll;
+		m_workGutter.Invalidate(FALSE);
+	}
+}
+
 void CObjectDeparserDialog::OnDrawItem(
 	int nIDCtl,
 	LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
+	if (nIDCtl == IDC_OUTPUT_GUTTER)
+	{
+		drawCompareGutter(lpDrawItemStruct, m_outputEdit, m_outputGutterMarkers);
+		return;
+	}
+	if (nIDCtl == IDC_WORK_GUTTER)
+	{
+		drawCompareGutter(lpDrawItemStruct, m_workEdit, m_workGutterMarkers);
+		return;
+	}
+
 	if (nIDCtl != IDC_RESULTS_LIST)
 	{
 		CDialog::OnDrawItem(
@@ -1373,6 +1828,12 @@ static Bool isPotentialDefinitionReferenceToken(
 	return _istalpha(firstCharacter) || firstCharacter == '_';
 }
 
+// Reborn: Treat underscores as part of editor words while punctuation remains a double-click boundary.
+static Bool isEditorWordCharacter(TCHAR character)
+{
+	return _istalnum(character) || character == '_';
+}
+
 // Reborn: Collapse CRLF to RichEdit's single internal paragraph mark for exact selection indices.
 static void getRichEditIndexText(
 	CRichEditCtrl& edit,
@@ -1400,6 +1861,381 @@ static void getRichEditIndexText(
 	}
 
 	indexText.ReleaseBuffer(outputLength);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Restore only the ranges touched by the previous token overlay. */
+//-------------------------------------------------------------------------------------------------
+void CObjectDeparserDialog::clearTokenOccurrenceHighlights()
+{
+	CRichEditCtrl* edit = m_occurrenceHighlightEdit;
+	m_occurrenceHighlightEdit = nullptr;
+	if (!edit || !::IsWindow(edit->GetSafeHwnd()))
+	{
+		m_occurrenceHighlightFormats.clear();
+		return;
+	}
+
+	ScopedRichEditUndoSuspend undo(*edit);
+	if (!undo.isActive())
+		return;
+
+	long oldStart = 0;
+	long oldEnd = 0;
+	edit->GetSel(oldStart, oldEnd);
+	const CPoint oldScroll = getEditorScroll(*edit);
+
+	m_updatingOccurrenceHighlights = TRUE;
+	edit->SetRedraw(FALSE);
+	for (const OccurrenceHighlightFormat& previous : m_occurrenceHighlightFormats)
+	{
+		CHARFORMAT2 format = {};
+		format.cbSize = sizeof(format);
+		format.dwMask = CFM_BACKCOLOR;
+		format.dwEffects = previous.automaticBackground ? CFE_AUTOBACKCOLOR : 0;
+		format.crBackColor = previous.backgroundColor;
+		edit->SetSel(previous.range.cpMin, previous.range.cpMax);
+		edit->SetSelectionCharFormat(format);
+	}
+	m_occurrenceHighlightFormats.clear();
+	edit->SetSel(oldStart, oldEnd);
+	edit->SendMessage(EM_SETSCROLLPOS, 0, reinterpret_cast<LPARAM>(&oldScroll));
+	edit->SetRedraw(TRUE);
+	edit->Invalidate(FALSE);
+	m_updatingOccurrenceHighlights = FALSE;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Highlight every boundary-safe occurrence and retain the originally double-clicked range. */
+//-------------------------------------------------------------------------------------------------
+void CObjectDeparserDialog::highlightTokenOccurrences(
+	CRichEditCtrl& edit,
+	const CString& token,
+	long selectedStart,
+	long selectedEnd)
+{
+	clearTokenOccurrenceHighlights();
+	if (token.IsEmpty())
+		return;
+
+	CString text;
+	getRichEditIndexText(edit, text);
+	ScopedRichEditUndoSuspend undo(edit);
+	if (!undo.isActive())
+		return;
+
+	CHARFORMAT2 format = {};
+	format.cbSize = sizeof(format);
+	format.dwMask = CFM_BACKCOLOR;
+	format.crBackColor = RGB(105, 85, 25);
+
+	const CPoint oldScroll = getEditorScroll(edit);
+	m_updatingOccurrenceHighlights = TRUE;
+	edit.SetRedraw(FALSE);
+	Int searchStart = 0;
+	while (searchStart < text.GetLength())
+	{
+		const Int occurrence = text.Find(token, searchStart);
+		if (occurrence < 0)
+			break;
+
+		const Int occurrenceEnd = occurrence + token.GetLength();
+		const Bool leftBoundary = occurrence == 0 || !isEditorWordCharacter(text.GetAt(occurrence - 1));
+		const Bool rightBoundary = occurrenceEnd >= text.GetLength() ||
+			!isEditorWordCharacter(text.GetAt(occurrenceEnd));
+
+		if (leftBoundary && rightBoundary)
+		{
+			edit.SetSel(occurrence, occurrenceEnd);
+
+			OccurrenceHighlightFormat previous = {};
+			previous.range.cpMin = occurrence;
+			previous.range.cpMax = occurrenceEnd;
+			previous.automaticBackground = TRUE;
+
+			if (m_compareMode)
+			{
+				// Reborn: Read prior colors only when Compare may have supplied a non-default background.
+				CHARFORMAT2 previousFormat = {};
+				previousFormat.cbSize = sizeof(previousFormat);
+				edit.GetSelectionCharFormat(previousFormat);
+				previous.backgroundColor = previousFormat.crBackColor;
+				previous.automaticBackground =
+					(previousFormat.dwEffects & CFE_AUTOBACKCOLOR) != 0;
+			}
+			m_occurrenceHighlightFormats.push_back(previous);
+
+			edit.SetSelectionCharFormat(format);
+		}
+
+		searchStart = occurrence + 1;
+	}
+
+	m_occurrenceHighlightEdit = &edit;
+	edit.SetSel(selectedStart, selectedEnd);
+	// Reborn: Formatting selections must never navigate to the last matching token.
+	edit.SendMessage(EM_SETSCROLLPOS, 0, reinterpret_cast<LPARAM>(&oldScroll));
+	edit.SetRedraw(TRUE);
+	edit.Invalidate(FALSE);
+	m_updatingOccurrenceHighlights = FALSE;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Expand RichEdit double-clicks across underscores and highlight identical whole tokens. */
+//-------------------------------------------------------------------------------------------------
+Bool CObjectDeparserDialog::selectEditorTokenAtPoint(
+	CRichEditCtrl& edit,
+	CPoint point)
+{
+	long character = edit.CharFromPos(point);
+
+	CString text;
+	getRichEditIndexText(edit, text);
+	if (character < 0 || character >= text.GetLength() || !isEditorWordCharacter(text.GetAt(character)))
+		return FALSE;
+
+	long wordStart = character;
+	long wordEnd = character + 1;
+	while (wordStart > 0 && isEditorWordCharacter(text.GetAt(wordStart - 1)))
+		--wordStart;
+	while (wordEnd < text.GetLength() && isEditorWordCharacter(text.GetAt(wordEnd)))
+		++wordEnd;
+
+	const CString token = text.Mid(wordStart, wordEnd - wordStart);
+	highlightTokenOccurrences(edit, token, wordStart, wordEnd);
+	return TRUE;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Show the shared find bar over the editor that received Ctrl+F. */
+//-------------------------------------------------------------------------------------------------
+void CObjectDeparserDialog::showEditorFindBar(CRichEditCtrl& edit)
+{
+	long selectionStart = 0;
+	long selectionEnd = 0;
+	edit.GetSel(selectionStart, selectionEnd);
+
+	CString selectedText;
+	if (selectionEnd > selectionStart)
+	{
+		CString indexText;
+		getRichEditIndexText(edit, indexText);
+		if (selectionStart >= 0 && selectionEnd <= indexText.GetLength())
+			selectedText = indexText.Mid(selectionStart, selectionEnd - selectionStart);
+	}
+
+	m_editorFindTarget = &edit;
+	m_editorFindVisible = TRUE;
+	layoutControls();
+
+	// Reborn: Seed Ctrl+F from the current single-line editor selection when one exists.
+	if (!selectedText.IsEmpty() && selectedText.Find('\r') < 0 && selectedText.Find('\n') < 0)
+		m_editorFindEdit.SetWindowText(selectedText);
+
+	m_editorFindEdit.SetFocus();
+	m_editorFindEdit.SetSel(0, -1);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Close editor search and return keyboard focus to its originating text pane. */
+//-------------------------------------------------------------------------------------------------
+void CObjectDeparserDialog::hideEditorFindBar()
+{
+	CRichEditCtrl* target = m_editorFindTarget;
+	m_editorFindVisible = FALSE;
+	layoutControls();
+
+	if (target && target->GetSafeHwnd())
+		target->SetFocus();
+
+	if (m_compareMode)
+		performCompare();
+	else
+		m_reloadStatus.SetWindowText("Find closed.");
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Locate the next or previous case-insensitive match with wraparound in the active editor. */
+//-------------------------------------------------------------------------------------------------
+void CObjectDeparserDialog::findInActiveEditor(Bool backwards, Bool startFromSelection)
+{
+	if (!m_editorFindTarget || !m_editorFindTarget->GetSafeHwnd())
+		return;
+
+	CString needle;
+	m_editorFindEdit.GetWindowText(needle);
+	if (needle.IsEmpty())
+		return;
+
+	CString text;
+	getRichEditIndexText(*m_editorFindTarget, text);
+	CString lowerText(text);
+	CString lowerNeedle(needle);
+	lowerText.MakeLower();
+	lowerNeedle.MakeLower();
+
+	long selectionStart;
+	long selectionEnd;
+	m_editorFindTarget->GetSel(selectionStart, selectionEnd);
+	Int match = -1;
+
+	if (!backwards)
+	{
+		const Int start = startFromSelection ? static_cast<Int>(selectionEnd) : 0;
+		match = lowerText.Find(lowerNeedle, start);
+		if (match < 0 && startFromSelection)
+			match = lowerText.Find(lowerNeedle, 0);
+	}
+	else
+	{
+		const Int lastPossible = max(0, lowerText.GetLength() - lowerNeedle.GetLength());
+		const Int limit = startFromSelection ? static_cast<Int>(selectionStart) - 1 : lastPossible;
+		Int scan = 0;
+
+		while (scan <= limit)
+		{
+			const Int candidate = lowerText.Find(lowerNeedle, scan);
+			if (candidate < 0 || candidate > limit)
+				break;
+			match = candidate;
+			scan = candidate + 1;
+		}
+
+		if (match < 0 && startFromSelection)
+		{
+			scan = 0;
+			while (scan <= lastPossible)
+			{
+				const Int candidate = lowerText.Find(lowerNeedle, scan);
+				if (candidate < 0)
+					break;
+				match = candidate;
+				scan = candidate + 1;
+			}
+		}
+	}
+
+	if (match < 0)
+	{
+		CString status;
+		status.Format("Find: no match for '%s'.", needle.GetString());
+		m_reloadStatus.SetWindowText(status);
+		return;
+	}
+
+	m_editorFindTarget->SetSel(match, match + needle.GetLength());
+	// Reborn: Reveal the match first, then center its rendered pixel position even across Compare gaps.
+	m_editorFindTarget->SendMessage(EM_SCROLLCARET);
+	CRect clientRect;
+	m_editorFindTarget->GetClientRect(&clientRect);
+	const CPoint matchPosition = m_editorFindTarget->PosFromChar(match);
+	CPoint centeredScroll = getEditorScroll(*m_editorFindTarget);
+	centeredScroll.y = max(
+		static_cast<LONG>(0),
+		centeredScroll.y + matchPosition.y - clientRect.Height() / 2);
+	m_editorFindTarget->SendMessage(
+		EM_SETSCROLLPOS,
+		0,
+		reinterpret_cast<LPARAM>(&centeredScroll));
+	m_reloadStatus.SetWindowText(backwards ? "Find: previous match." : "Find: next match.");
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Update the active editor selection while the user refines the find text. */
+//-------------------------------------------------------------------------------------------------
+void CObjectDeparserDialog::OnEditorFindChanged()
+{
+	if (m_editorFindVisible)
+		findInActiveEditor(FALSE, FALSE);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Select the preceding editor match, wrapping at the beginning. */
+//-------------------------------------------------------------------------------------------------
+void CObjectDeparserDialog::OnEditorFindPrevious()
+{
+	findInActiveEditor(TRUE, TRUE);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Select the following editor match, wrapping at the end. */
+//-------------------------------------------------------------------------------------------------
+void CObjectDeparserDialog::OnEditorFindNext()
+{
+	findInActiveEditor(FALSE, TRUE);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Close the editor find bar from its dedicated button. */
+//-------------------------------------------------------------------------------------------------
+void CObjectDeparserDialog::OnEditorFindClose()
+{
+	hideEditorFindBar();
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Provide Ctrl+F, Enter, F3, Shift navigation and Escape for editor-local search. */
+//-------------------------------------------------------------------------------------------------
+BOOL CObjectDeparserDialog::PreTranslateMessage(MSG* message)
+{
+	if (message && message->message == WM_LBUTTONDBLCLK)
+	{
+		CRichEditCtrl* edit = nullptr;
+		if (message->hwnd == m_outputEdit.GetSafeHwnd())
+			edit = &m_outputEdit;
+		else if (message->hwnd == m_workEdit.GetSafeHwnd())
+			edit = &m_workEdit;
+
+		if (edit)
+		{
+			// Reborn: Filter only the double-click itself; ordinary mouse movement stays on the fast path.
+			const CPoint point(
+				static_cast<short>(LOWORD(message->lParam)),
+				static_cast<short>(HIWORD(message->lParam)));
+			if (selectEditorTokenAtPoint(*edit, point))
+				return TRUE;
+		}
+	}
+
+	if (message && message->message == WM_KEYDOWN)
+	{
+		const Bool controlDown = (::GetKeyState(VK_CONTROL) & 0x8000) != 0;
+		const Bool shiftDown = (::GetKeyState(VK_SHIFT) & 0x8000) != 0;
+		const HWND focus = ::GetFocus();
+
+		if (controlDown && message->wParam == 'F')
+		{
+			if (focus == m_outputEdit.GetSafeHwnd())
+				showEditorFindBar(m_outputEdit);
+			else if (focus == m_workEdit.GetSafeHwnd())
+				showEditorFindBar(m_workEdit);
+			else if (m_editorFindVisible && m_editorFindTarget)
+				showEditorFindBar(*m_editorFindTarget);
+			else
+				return CDialog::PreTranslateMessage(message);
+			return TRUE;
+		}
+
+		if (m_editorFindVisible && focus == m_editorFindEdit.GetSafeHwnd() && message->wParam == VK_RETURN)
+		{
+			findInActiveEditor(shiftDown, TRUE);
+			return TRUE;
+		}
+
+		if (m_editorFindVisible && message->wParam == VK_F3)
+		{
+			findInActiveEditor(shiftDown, TRUE);
+			return TRUE;
+		}
+
+		if (m_editorFindVisible && message->wParam == VK_ESCAPE)
+		{
+			hideEditorFindBar();
+			return TRUE;
+		}
+	}
+
+	return CDialog::PreTranslateMessage(message);
 }
 
 // Reborn: Find the definition declared by one editor without relying on the other editor's selection.
@@ -1554,11 +2390,78 @@ AsciiString CObjectDeparserDialog::getReferenceTypeHint(
 	return hintAnsi.GetString();
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Format one existing Generals.str entry through the game's live localized text store. */
+//-------------------------------------------------------------------------------------------------
+Bool CObjectDeparserDialog::buildGameTextDefinition(
+	const AsciiString& label,
+	CString& output) const
+{
+	output.Empty();
+	if (!TheGameText || label.isEmpty() || !strchr(label.str(), ':'))
+		return FALSE;
+
+	const std::string cacheKey(label.str());
+	const auto cached = m_gameTextDefinitionCache.find(cacheKey);
+	if (cached != m_gameTextDefinitionCache.end())
+	{
+		output = cached->second;
+		return TRUE;
+	}
+	if (m_missingGameTextLabels.find(cacheKey) != m_missingGameTextLabels.end())
+		return FALSE;
+
+	Bool exists = FALSE;
+	const UnicodeString localized = TheGameText->fetch(label, &exists);
+	if (!exists)
+	{
+		// Reborn: Remember negative lookups because arbitrary colon tokens can repeat many times.
+		m_missingGameTextLabels.insert(cacheKey);
+		return FALSE;
+	}
+
+	const Int bufferLength = ::WideCharToMultiByte(
+		CP_ACP,
+		0,
+		localized.str(),
+		-1,
+		nullptr,
+		0,
+		nullptr,
+		nullptr);
+
+	if (bufferLength <= 0)
+		return FALSE;
+
+	std::vector<Char> translated(static_cast<size_t>(bufferLength));
+	::WideCharToMultiByte(
+		CP_ACP,
+		0,
+		localized.str(),
+		-1,
+		translated.data(),
+		bufferLength,
+		nullptr,
+		nullptr);
+
+	// Reborn: Mirror the source Generals.str entry shape requested by the reference viewer.
+	CStringA formatted;
+	formatted.Format(
+		"%s\r\n\"%s\"\r\nEND\r\n",
+		label.str(),
+		translated.data());
+	output = CString(formatted);
+	// Reborn: Store formatted viewer content as the existence/value cache for later scans and clicks.
+	m_gameTextDefinitionCache.emplace(cacheKey, output);
+	return TRUE;
+}
+
 // Reborn: Mark only references that resolve to exactly one current catalog name/type target.
 void CObjectDeparserDialog::updateDefinitionLinks(
 	CRichEditCtrl& edit)
 {
 	if (m_reloadInProgress ||
+		m_compareMode ||
 		m_updatingDefinitionLinks ||
 		!::IsWindow(edit.GetSafeHwnd()))
 	{
@@ -1631,7 +2534,16 @@ void CObjectDeparserDialog::updateDefinitionLinks(
 						tokenAnsi.GetString(),
 						typeHint);
 
-				if (definition && definition != editorDefinition)
+				Bool shouldLink = definition && definition != editorDefinition;
+				if (!shouldLink && token.Find(':') > 0)
+				{
+					// Reborn: Link only labels that the live Generals.str subsystem confirms exist.
+					CString gameTextDefinition;
+					const AsciiString label(tokenAnsi.GetString());
+					shouldLink = buildGameTextDefinition(label, gameTextDefinition);
+				}
+
+				if (shouldLink)
 				{
 					linkFormat.dwEffects = CFE_LINK;
 					edit.SetSel(tokenStart, tokenEnd);
@@ -1694,6 +2606,39 @@ const ParsedDefinition* CObjectDeparserDialog::resolveDefinitionLink(
 		: definition;
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Revalidate a clicked string label against the current Generals.str store. */
+//-------------------------------------------------------------------------------------------------
+Bool CObjectDeparserDialog::resolveGameTextLink(
+	CRichEditCtrl& edit,
+	const CHARRANGE& range,
+	AsciiString& label) const
+{
+	label.clear();
+	if (range.cpMin < 0 || range.cpMax <= range.cpMin)
+		return FALSE;
+
+	CString text;
+	getRichEditIndexText(edit, text);
+	if (range.cpMax > text.GetLength())
+		return FALSE;
+
+	const CString token = text.Mid(range.cpMin, range.cpMax - range.cpMin);
+	if (token.Find(':') <= 0)
+		return FALSE;
+
+	const CStringA tokenAnsi(token);
+	label = tokenAnsi.GetString();
+	CString output;
+	if (!buildGameTextDefinition(label, output))
+	{
+		label.clear();
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
 // Reborn: Route a RichEdit link click to a fresh, independent modeless reference viewer.
 void CObjectDeparserDialog::OnDefinitionLink(
 	NMHDR* notifyHeader,
@@ -1719,14 +2664,25 @@ void CObjectDeparserDialog::OnDefinitionLink(
 	const ParsedDefinition* definition =
 		resolveDefinitionLink(*edit, link->chrg);
 
+	if (definition)
+	{
+		openDefinitionReference(*definition);
+		return;
+	}
+
+	AsciiString gameTextLabel;
+	if (resolveGameTextLink(*edit, link->chrg, gameTextLabel))
+	{
+		openGameTextReference(gameTextLabel);
+		return;
+	}
+
 	if (!definition)
 	{
 		m_reloadStatus.SetWindowText(
 			"Reference is ambiguous or no longer available.");
 		return;
 	}
-
-	openDefinitionReference(*definition);
 }
 
 // Reborn: Give every click a separately allocated owned window with freshly generated text.
@@ -1752,6 +2708,31 @@ void CObjectDeparserDialog::openDefinitionReference(
 
 	m_referenceWindows.push_back(window);
 	window->setContent(CString(output.c_str()));
+	window->ShowWindow(SW_SHOW);
+	window->BringWindowToTop();
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Open a fresh modeless child containing one live Generals.str entry. */
+//-------------------------------------------------------------------------------------------------
+void CObjectDeparserDialog::openGameTextReference(
+	const AsciiString& label)
+{
+	CString output;
+	if (!buildGameTextDefinition(label, output))
+		return;
+
+	CDefinitionReferenceWindow* window =
+		new CDefinitionReferenceWindow(
+			this,
+			"GameText",
+			label);
+
+	if (!window->createWindow(this))
+		return;
+
+	m_referenceWindows.push_back(window);
+	window->setContent(output);
 	window->ShowWindow(SW_SHOW);
 	window->BringWindowToTop();
 }
@@ -1794,6 +2775,17 @@ void CObjectDeparserDialog::refreshReferenceWindows(
 		{
 			window->setContent(
 				"; Reload failed. Reference content was not regenerated.\r\n");
+			continue;
+		}
+
+		if (window->getBlockType().compareNoCase("GameText") == 0)
+		{
+			// Reborn: String windows retain only their label and refetch after every reload boundary.
+			CString output;
+			if (buildGameTextDefinition(window->getDefinitionName(), output))
+				window->setContent(output);
+			else
+				window->setContent("; This Generals.str entry is no longer available.\r\n");
 			continue;
 		}
 
@@ -2125,6 +3117,10 @@ void CObjectDeparserDialog::performCompare()
 	if (!m_compareMode)
 		return;
 
+	// Reborn: An immediate structural refresh supersedes any older delayed text refresh.
+	KillTimer(TIMER_COMPARE_DEBOUNCE);
+	KillTimer(TIMER_DEFINITION_LINKS);
+
 	const CPoint outputScroll =
 		getEditorScroll(m_outputEdit);
 
@@ -2150,6 +3146,9 @@ void CObjectDeparserDialog::performCompare()
 			leftAnsi.GetString(),
 			rightAnsi.GetString());
 
+	// Reborn: Publish operation markers from the same immutable result used for highlights and gaps.
+	updateCompareGutterMarkers(result);
+
 	m_compareUpdating = TRUE;
 
 	m_outputEdit.SetRedraw(FALSE);
@@ -2157,15 +3156,43 @@ void CObjectDeparserDialog::performCompare()
 
 	clearCompareHighlight();
 
+	applyCompareLineGaps(
+		m_outputEdit,
+		result.leftGaps);
+
+	applyCompareLineGaps(
+		m_workEdit,
+		result.rightGaps);
+
 	highlightLines(
 		m_outputEdit,
-		result.leftChangedLines,
-		RGB(255, 210, 210));
+		result.leftRemovedLines,
+		RGB(255, 195, 195));
 
 	highlightLines(
 		m_workEdit,
-		result.rightChangedLines,
-		RGB(210, 255, 210));
+		result.rightAddedLines,
+		RGB(195, 255, 195));
+
+	highlightLines(
+		m_outputEdit,
+		result.leftModifiedLines,
+		RGB(255, 238, 170));
+
+	highlightLines(
+		m_workEdit,
+		result.rightModifiedLines,
+		RGB(255, 238, 170));
+
+	highlightLines(
+		m_outputEdit,
+		result.leftMovedLines,
+		RGB(190, 220, 255));
+
+	highlightLines(
+		m_workEdit,
+		result.rightMovedLines,
+		RGB(190, 220, 255));
 
 	setEditorVerticalScroll(
 		m_outputEdit,
@@ -2180,6 +3207,8 @@ void CObjectDeparserDialog::performCompare()
 
 	m_outputEdit.Invalidate(FALSE);
 	m_workEdit.Invalidate(FALSE);
+	m_outputGutter.Invalidate(FALSE);
+	m_workGutter.Invalidate(FALSE);
 
 	m_lastOutputScroll =
 		getEditorScroll(m_outputEdit);
@@ -2187,14 +3216,21 @@ void CObjectDeparserDialog::performCompare()
 	m_lastWorkScroll =
 		getEditorScroll(m_workEdit);
 
+	m_lastComparedOutputLineCount = m_outputEdit.GetLineCount();
+	m_lastComparedWorkLineCount = m_workEdit.GetLineCount();
+
 	m_compareUpdating = FALSE;
+	// Reborn: Discard formatting notifications queued by this completed compare transaction.
+	KillTimer(TIMER_COMPARE_DEBOUNCE);
 
 	CString status;
 
 	status.Format(
-		"Compare: %d added, %d removed",
+		"Compare: %d added, %d removed, %d changed, %d moved",
 		result.addedCount,
-		result.removedCount);
+		result.removedCount,
+		result.modifiedCount,
+		result.movedCount);
 
 	m_reloadStatus.SetWindowText(status);
 }

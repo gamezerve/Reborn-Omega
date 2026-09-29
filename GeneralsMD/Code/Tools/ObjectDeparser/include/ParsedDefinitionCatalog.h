@@ -9,6 +9,8 @@
 #include "Common/AsciiString.h"
 #include "Common/INI.h"
 
+#include <string>
+#include <unordered_map>
 #include <vector>
 
 struct ParsedDefinition
@@ -55,4 +57,7 @@ public:
 
 private:
 	std::vector<ParsedDefinition> m_definitions;
+	// Reborn: Resolve link candidates by indexed lowercase identity instead of scanning every definition.
+	std::unordered_map<std::string, size_t> m_identityIndex;
+	std::unordered_map<std::string, std::vector<size_t>> m_nameIndex;
 };

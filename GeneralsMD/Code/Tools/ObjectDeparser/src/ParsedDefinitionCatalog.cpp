@@ -8,6 +8,7 @@
 #include "ParsedDefinitionCatalog.h"
 
 #include <algorithm>
+#include <cctype>
 #include <sstream>
 #include <string>
 
@@ -36,9 +37,39 @@ static AsciiString getDefinitionFamily(const AsciiString& blockType)
 	return blockType;
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Build locale-independent lowercase keys for case-insensitive catalog indexes. */
+//-------------------------------------------------------------------------------------------------
+static std::string normalizeCatalogKey(const AsciiString& value)
+{
+	std::string key(value.str());
+	std::transform(
+		key.begin(),
+		key.end(),
+		key.begin(),
+		[](unsigned char character)
+		{
+			return static_cast<char>(std::tolower(character));
+		});
+	return key;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Combine normalized family and name into one unambiguous direct-lookup key. */
+//-------------------------------------------------------------------------------------------------
+static std::string makeDefinitionIdentityKey(
+	const AsciiString& family,
+	const AsciiString& name)
+{
+	return normalizeCatalogKey(family) + "\x1f" + normalizeCatalogKey(name);
+}
+
 void ParsedDefinitionCatalog::clear()
 {
 	m_definitions.clear();
+	// Reborn: A reload invalidates both direct lookup indexes together with their backing records.
+	m_identityIndex.clear();
+	m_nameIndex.clear();
 }
 
 void ParsedDefinitionCatalog::add(
@@ -59,19 +90,19 @@ void ParsedDefinitionCatalog::add(
 
 	if (!name.isEmpty())
 	{
-		for (ParsedDefinition& definition : m_definitions)
+		const std::string identityKey = makeDefinitionIdentityKey(family, name);
+		const auto existing = m_identityIndex.find(identityKey);
+		if (existing != m_identityIndex.end())
 		{
-			if (getDefinitionFamily(definition.blockType).compareNoCase(family) == 0 &&
-				definition.name.compareNoCase(name) == 0)
-			{
-				definition.declaration = normalizedDeclaration;
-				definition.blockType = blockType;
-				definition.name = name;
-				definition.filename = filename;
-				definition.line = line;
-				definition.loadType = loadType;
-				return;
-			}
+			// Reborn: Reload overrides update the indexed record without a full catalog scan.
+			ParsedDefinition& definition = m_definitions[existing->second];
+			definition.declaration = normalizedDeclaration;
+			definition.blockType = blockType;
+			definition.name = name;
+			definition.filename = filename;
+			definition.line = line;
+			definition.loadType = loadType;
+			return;
 		}
 	}
 
@@ -83,7 +114,14 @@ void ParsedDefinitionCatalog::add(
 	definition.line = line;
 	definition.loadType = loadType;
 
+	const size_t index = m_definitions.size();
 	m_definitions.push_back(definition);
+	if (!name.isEmpty())
+	{
+		// Reborn: Store stable vector indices so reallocations cannot invalidate the lookup tables.
+		m_identityIndex[makeDefinitionIdentityKey(family, name)] = index;
+		m_nameIndex[normalizeCatalogKey(name)].push_back(index);
+	}
 }
 
 const std::vector<ParsedDefinition>& ParsedDefinitionCatalog::getDefinitions() const
@@ -99,16 +137,10 @@ const ParsedDefinition* ParsedDefinitionCatalog::findDefinition(
 	const AsciiString family =
 		getDefinitionFamily(blockType);
 
-	for (const ParsedDefinition& definition : m_definitions)
-	{
-		if (definition.name.compareNoCase(name) == 0 &&
-			getDefinitionFamily(definition.blockType).compareNoCase(family) == 0)
-		{
-			return &definition;
-		}
-	}
-
-	return nullptr;
+	const auto match = m_identityIndex.find(makeDefinitionIdentityKey(family, name));
+	return match == m_identityIndex.end()
+		? nullptr
+		: &m_definitions[match->second];
 }
 
 // Reborn: Prefer an exact type-family hint and reject ambiguous same-name references.
@@ -124,10 +156,13 @@ const ParsedDefinition* ParsedDefinitionCatalog::resolveReference(
 	const AsciiString hintedFamily =
 		getDefinitionFamily(typeHint);
 
-	for (const ParsedDefinition& definition : m_definitions)
+	const auto candidates = m_nameIndex.find(normalizeCatalogKey(name));
+	if (candidates == m_nameIndex.end())
+		return nullptr;
+
+	for (size_t index : candidates->second)
 	{
-		if (definition.name.compareNoCase(name) != 0)
-			continue;
+		const ParsedDefinition& definition = m_definitions[index];
 
 		uniqueMatch = &definition;
 		++matchCount;
