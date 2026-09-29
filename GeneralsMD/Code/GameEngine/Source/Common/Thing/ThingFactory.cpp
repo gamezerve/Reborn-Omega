@@ -481,30 +481,14 @@ void ThingFactory::parseObjectDefinition(INI* ini, const AsciiString& name, cons
 		else if (ini->getLoadType() != INI_LOAD_CREATE_OVERRIDES)
 		{
 			//
-			// Reborn: The parent may be defined in a later INI file.
-			// Parse and capture the child block now so the INI stream can continue,
-			// then rebuild the child from its parent after all object INIs are loaded.
+			// Reborn: The parent may be defined in a later INI file. Capture the child block
+			// without parsing parent-dependent fields, then replay it after inheritance resolves.
 			//
-			ini->beginBlockCapture();
-
-			if (reskinOnly)
-			{
-				ini->initFromINI(
-					thingTemplate,
-					thingTemplate->getReskinFieldParse());
-			}
-			else
-			{
-				ini->initFromINI(
-					thingTemplate,
-					thingTemplate->getFieldParse());
-			}
-
 			PendingObjectInheritance pending;
 			pending.m_template = thingTemplate;
 			pending.m_name = name;
 			pending.m_parentName = inheritFrom;
-			pending.m_blockText = ini->endBlockCapture();
+			pending.m_blockText = ini->captureBlockWithoutParsing();
 			pending.m_sourceFilename = ini->getFilename();
 			pending.m_loadType = static_cast<Int>(ini->getLoadType());
 			pending.m_reskinOnly = reskinOnly;

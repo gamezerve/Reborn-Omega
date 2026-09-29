@@ -34,6 +34,7 @@
 #include "Common/GameMemory.h"
 #include "Common/SubsystemInterface.h"
 #include <map>
+#include <vector>
 
 struct FieldParse;
 class INI;
@@ -88,12 +89,17 @@ public:
 	UnsignedInt setStatus( UnsignedInt bit );			///< set status bit
 	UnsignedInt clearStatus( UnsignedInt bit );		///< clear status bit
 	UnsignedInt getStatus() const;								///< get status bits
+	void copyFrom( const Image *image ); // Reborn: Copy mapped-image definition data while preserving this image's identity.
+	Int getOverlayCount() const; // Reborn: Return the number of overlay slots defined for this mapped image.
+	const Image *getOverlay( Int index ) const; // Reborn: Return a resolved overlay image by draw order.
 
 
 	// for parsing from INI
 	const FieldParse *getFieldParse() const { return m_imageFieldParseTable; }
+	const FieldParse *getInheritFieldParse() const { return m_imageInheritFieldParseTable; } // Reborn: Allow overlays only on inherited mapped images.
 	static void parseImageCoords( INI* ini, void *instance, void *store, const void* /*userData*/ );
 	static void parseImageStatus( INI* ini, void *instance, void *store, const void* /*userData*/ );
+	static void parseImageOverlay( INI* ini, void *instance, void *store, const void *userData ); // Reborn: Parse an ordered mapped-image overlay reference.
 
 protected:
 
@@ -106,9 +112,33 @@ friend class ImageCollection;
 	ICoord2D m_imageSize;			///< dimensions of image
 	void *m_rawTextureData;		///< raw texture data
 	UnsignedInt m_status;			///< status bits from ImageStatus
+	std::vector<AsciiString> m_overlayNames; // Reborn: Overlay names retained until every mapped image has loaded.
+	std::vector<const Image *> m_overlays; // Reborn: Resolved overlays drawn over this image in numeric order.
 
 	static const FieldParse m_imageFieldParseTable[];		///< the parse table for INI definition
+	static const FieldParse m_imageInheritFieldParseTable[]; // Reborn: Inherited image fields plus Overlay1...Overlay8.
 
+};
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Holds an inherited mapped image whose parent has not been loaded yet. */
+//-------------------------------------------------------------------------------------------------
+struct PendingMappedImageInheritance
+{
+	Image *m_image;
+	AsciiString m_name;
+	AsciiString m_parentName;
+	AsciiString m_blockText;
+	AsciiString m_sourceFilename;
+	Int m_loadType;
+	Bool m_resolved;
+
+	PendingMappedImageInheritance() :
+		m_image(nullptr),
+		m_loadType(0),
+		m_resolved(FALSE)
+	{
+	}
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -136,6 +166,11 @@ public:
   /// adds the given image to the collection, transfers ownership to this object
   void addImage(Image *image);
 
+	// Reborn: Defer and resolve mapped-image inheritance when a parent is declared later.
+	void addPendingInheritance( const PendingMappedImageInheritance& pending );
+	void resolvePendingInheritances();
+	Bool hasPendingInheritance( const AsciiString& name ) const;
+
   /// enumerates the list of existing images
   Image *Enum(unsigned index)
   {
@@ -146,7 +181,13 @@ public:
   }
 
 protected:
+	PendingMappedImageInheritance *findPendingInheritance( const AsciiString& name );
+	Bool resolvePendingInheritance( PendingMappedImageInheritance& pending, std::vector<AsciiString>& resolving );
+	void resolveOverlays(); // Reborn: Resolve overlay names after all mapped-image INIs are loaded.
+	Bool validateOverlayChain( const Image *image, std::vector<const Image *>& resolving ) const; // Reborn: Reject recursive overlay graphs.
+
   ImageMap m_imageMap;  ///< maps named keys to images
+	std::vector<PendingMappedImageInheritance> m_pendingInheritances; // Reborn: Inherited images awaiting their parents.
 };
 
 // INLINING ///////////////////////////////////////////////////////////////////////////////////////
@@ -166,6 +207,8 @@ inline Int Image::getImageHeight() const { return m_imageSize.y; }
 inline void Image::setRawTextureData( void *data ) { m_rawTextureData = data; }
 inline const void *Image::getRawTextureData() const { return m_rawTextureData; }
 inline UnsignedInt Image::getStatus() const { return m_status; }
+inline Int Image::getOverlayCount() const { return static_cast<Int>( m_overlays.size() ); }
+inline const Image *Image::getOverlay( Int index ) const { return index >= 0 && index < getOverlayCount() ? m_overlays[index] : nullptr; }
 
 // EXTERNALS //////////////////////////////////////////////////////////////////////////////////////
 extern ImageCollection *TheMappedImageCollection;  ///< mapped images

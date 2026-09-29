@@ -3000,6 +3000,14 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 		tex->Release_Ref();
 	}
 
+	// Reborn: Draw inherited mapped-image overlays over the same destination so each source overlay is scaled to the base image.
+	for( Int overlayIndex = 0; overlayIndex < image->getOverlayCount(); ++overlayIndex )
+	{
+		const Image *overlay = image->getOverlay( overlayIndex );
+		if( overlay )
+			drawImage( overlay, startX, startY, endX, endY, color, mode );
+	}
+
 }
 
 //============================================================================

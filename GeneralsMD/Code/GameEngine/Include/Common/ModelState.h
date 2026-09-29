@@ -238,6 +238,7 @@ enum ModelConditionFlagType CPP_11(: Int)
 	MODELCONDITION_RIDER10,
 	MODELCONDITION_RIDER11,
 	MODELCONDITION_RIDER12,
+	MODELCONDITION_RIDER13,
 //
 // Note: these values are saved in save files, so you MUST NOT REMOVE OR CHANGE
 // existing values!

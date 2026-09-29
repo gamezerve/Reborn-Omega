@@ -55,6 +55,26 @@ const FieldParse Image::m_imageFieldParseTable[] =
 
 };
 
+// Reborn: Inherited mapped images may layer up to eight mapped images over their inherited base.
+const FieldParse Image::m_imageInheritFieldParseTable[] =
+{
+	{ "Texture",       INI::parseAsciiString, nullptr,   offsetof( Image, m_filename ) },
+	{ "TextureWidth",  INI::parseInt,         nullptr,   offsetof( Image, m_textureSize.x ) },
+	{ "TextureHeight", INI::parseInt,         nullptr,   offsetof( Image, m_textureSize.y ) },
+	{ "Coords",        Image::parseImageCoords, nullptr, offsetof( Image, m_UVCoords ) },
+	{ "Status",        Image::parseImageStatus, nullptr, offsetof( Image, m_status ) },
+	{ "Overlay1",      Image::parseImageOverlay, (void *)0, 0 },
+	{ "Overlay2",      Image::parseImageOverlay, (void *)1, 0 },
+	{ "Overlay3",      Image::parseImageOverlay, (void *)2, 0 },
+	{ "Overlay4",      Image::parseImageOverlay, (void *)3, 0 },
+	{ "Overlay5",      Image::parseImageOverlay, (void *)4, 0 },
+	{ "Overlay6",      Image::parseImageOverlay, (void *)5, 0 },
+	{ "Overlay7",      Image::parseImageOverlay, (void *)6, 0 },
+	{ "Overlay8",      Image::parseImageOverlay, (void *)7, 0 },
+
+	{ nullptr, nullptr, nullptr, 0 }
+};
+
 // PRIVATE FUNCTIONS //////////////////////////////////////////////////////////////////////////////
 //-------------------------------------------------------------------------------------------------
 /** Parse an image coordinates in the form of
@@ -165,6 +185,41 @@ Image::~Image()
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Parse an overlay name without requiring the referenced mapped image to load first. */
+//-------------------------------------------------------------------------------------------------
+void Image::parseImageOverlay( INI *ini, void *instance, void *store, const void *userData )
+{
+	Image *image = static_cast<Image *>( instance );
+	const Int overlayIndex = (Int)userData;
+	const AsciiString overlayName = ini->getNextToken();
+
+	if( image->m_overlayNames.size() <= static_cast<size_t>( overlayIndex ) )
+		image->m_overlayNames.resize( overlayIndex + 1 );
+
+	image->m_overlayNames[overlayIndex] = overlayName;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Copy mapped-image definition data without changing the child's name or sharing runtime texture data. */
+//-------------------------------------------------------------------------------------------------
+void Image::copyFrom( const Image *image )
+{
+	DEBUG_ASSERTCRASH( image != nullptr, ("Image::copyFrom received a null parent image") );
+
+	if( !image )
+		return;
+
+	m_filename = image->m_filename;
+	m_textureSize = image->m_textureSize;
+	m_UVCoords = image->m_UVCoords;
+	m_imageSize = image->m_imageSize;
+	m_rawTextureData = nullptr;
+	m_status = image->m_status & ~IMAGE_STATUS_RAW_TEXTURE;
+	m_overlayNames = image->m_overlayNames;
+	m_overlays.clear();
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Set a status bit into the existing status, return the previous status
 	* bit collection from before the set */
 //-------------------------------------------------------------------------------------------------
@@ -214,6 +269,181 @@ ImageCollection::~ImageCollection()
 void ImageCollection::addImage( Image *image )
 {
   m_imageMap[TheNameKeyGenerator->nameToLowercaseKey(image->getName())]=image;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Queue a mapped image until its inherited parent becomes available. */
+//-------------------------------------------------------------------------------------------------
+void ImageCollection::addPendingInheritance( const PendingMappedImageInheritance& pending )
+{
+	m_pendingInheritances.push_back( pending );
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Find a deferred mapped-image inheritance by its case-insensitive mapped-image name. */
+//-------------------------------------------------------------------------------------------------
+PendingMappedImageInheritance *ImageCollection::findPendingInheritance( const AsciiString& name )
+{
+	for( std::vector<PendingMappedImageInheritance>::iterator it = m_pendingInheritances.begin();
+		 it != m_pendingInheritances.end(); ++it )
+	{
+		if( it->m_name.compareNoCase( name ) == 0 )
+			return &(*it);
+	}
+
+	return nullptr;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Report whether a mapped image exists only as an unresolved inherited placeholder. */
+//-------------------------------------------------------------------------------------------------
+Bool ImageCollection::hasPendingInheritance( const AsciiString& name ) const
+{
+	for( std::vector<PendingMappedImageInheritance>::const_iterator it = m_pendingInheritances.begin();
+		 it != m_pendingInheritances.end(); ++it )
+	{
+		if( !it->m_resolved && it->m_name.compareNoCase( name ) == 0 )
+			return TRUE;
+	}
+
+	return FALSE;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Resolve one deferred mapped image, resolving inherited parent chains first. */
+//-------------------------------------------------------------------------------------------------
+Bool ImageCollection::resolvePendingInheritance(
+	PendingMappedImageInheritance& pending,
+	std::vector<AsciiString>& resolving )
+{
+	if( pending.m_resolved )
+		return TRUE;
+
+	for( std::vector<AsciiString>::const_iterator it = resolving.begin(); it != resolving.end(); ++it )
+	{
+		if( it->compareNoCase( pending.m_name ) == 0 )
+		{
+			DEBUG_CRASH(( "Circular MappedImage inheritance detected while resolving '%s'.", pending.m_name.str() ));
+			throw INI_INVALID_DATA;
+		}
+	}
+
+	resolving.push_back( pending.m_name );
+
+	PendingMappedImageInheritance *pendingParent = findPendingInheritance( pending.m_parentName );
+	if( pendingParent && !pendingParent->m_resolved )
+		resolvePendingInheritance( *pendingParent, resolving );
+
+	const Image *parentImage = findImageByName( pending.m_parentName );
+	if( !parentImage || (pendingParent && !pendingParent->m_resolved) )
+	{
+		DEBUG_CRASH(( "Unable to resolve inherited MappedImage '%s': parent '%s' does not exist.", pending.m_name.str(), pending.m_parentName.str() ));
+		REBORN_LOG(
+			"INI_INVALID_DATA: Unable to resolve deferred MappedImage '%s'. Parent '%s' does not exist. OriginalINIFile='%s'.",
+			pending.m_name.str(),
+			pending.m_parentName.str(),
+			pending.m_sourceFilename.str() );
+		throw INI_INVALID_DATA;
+	}
+
+	pending.m_image->copyFrom( parentImage );
+
+	INI replayIni;
+	replayIni.initFromCapturedBlock(
+		pending.m_image,
+		pending.m_image->getInheritFieldParse(),
+		pending.m_blockText,
+		static_cast<INILoadType>( pending.m_loadType ),
+		pending.m_sourceFilename );
+
+	pending.m_resolved = TRUE;
+	resolving.pop_back();
+	return TRUE;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Resolve overlay names and reject missing images before any image can be rendered. */
+//-------------------------------------------------------------------------------------------------
+void ImageCollection::resolveOverlays()
+{
+	for( ImageMap::iterator imageIt = m_imageMap.begin(); imageIt != m_imageMap.end(); ++imageIt )
+	{
+		Image *image = imageIt->second;
+		image->m_overlays.clear();
+		image->m_overlays.resize( image->m_overlayNames.size(), nullptr );
+
+		for( size_t index = 0; index < image->m_overlayNames.size(); ++index )
+		{
+			const AsciiString& overlayName = image->m_overlayNames[index];
+			if( overlayName.isEmpty() || overlayName.compareNoCase( "None" ) == 0 )
+				continue;
+
+			const Image *overlay = findImageByName( overlayName );
+			if( !overlay )
+			{
+				DEBUG_CRASH(( "MappedImage '%s' references missing Overlay%d image '%s'.", image->getName().str(), static_cast<Int>( index ) + 1, overlayName.str() ));
+				REBORN_LOG(
+					"INI_INVALID_DATA: MappedImage '%s' references missing Overlay%d image '%s'.",
+					image->getName().str(),
+					static_cast<Int>( index ) + 1,
+					overlayName.str() );
+				throw INI_INVALID_DATA;
+			}
+
+			image->m_overlays[index] = overlay;
+		}
+	}
+
+	for( ImageMap::const_iterator imageIt = m_imageMap.begin(); imageIt != m_imageMap.end(); ++imageIt )
+	{
+		std::vector<const Image *> resolving;
+		validateOverlayChain( imageIt->second, resolving );
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Validate overlay nesting so recursive overlays cannot recurse forever while drawing. */
+//-------------------------------------------------------------------------------------------------
+Bool ImageCollection::validateOverlayChain( const Image *image, std::vector<const Image *>& resolving ) const
+{
+	for( std::vector<const Image *>::const_iterator it = resolving.begin(); it != resolving.end(); ++it )
+	{
+		if( *it == image )
+		{
+			DEBUG_CRASH(( "Circular MappedImage overlay detected at '%s'.", image->getName().str() ));
+			REBORN_LOG( "INI_INVALID_DATA: Circular MappedImage overlay detected at '%s'.", image->getName().str() );
+			throw INI_INVALID_DATA;
+		}
+	}
+
+	resolving.push_back( image );
+	for( Int index = 0; index < image->getOverlayCount(); ++index )
+	{
+		const Image *overlay = image->getOverlay( index );
+		if( overlay )
+			validateOverlayChain( overlay, resolving );
+	}
+	resolving.pop_back();
+
+	return TRUE;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Resolve every mapped image whose inherited parent was declared later in the load. */
+//-------------------------------------------------------------------------------------------------
+void ImageCollection::resolvePendingInheritances()
+{
+	for( std::vector<PendingMappedImageInheritance>::iterator it = m_pendingInheritances.begin();
+		 it != m_pendingInheritances.end(); ++it )
+	{
+		if( !it->m_resolved )
+		{
+			std::vector<AsciiString> resolving;
+			resolvePendingInheritance( *it, resolving );
+		}
+	}
+
+	m_pendingInheritances.clear();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -268,6 +498,10 @@ void ImageCollection::load( Int textureSize )
 	ini.loadDirectory( AsciiString( buffer ), INI_LOAD_OVERWRITE, nullptr );
 
 	ini.loadDirectory("Data\\INI\\MappedImages\\HandCreated", INI_LOAD_OVERWRITE, nullptr );
+
+	// Reborn: All mapped-image sources are now loaded, so late parents can safely be resolved.
+	resolvePendingInheritances();
+	resolveOverlays(); // Reborn: Bind ordered overlays only after every possible mapped image exists.
 
 
 }

@@ -133,9 +133,20 @@ void GUIEditDisplay::drawImage( const Image *image,
 {
 
 	TheEditWindow->drawImage( image,
-														startX, startY,
-														endX, endY,
-														color );
+												startX, startY,
+												endX, endY,
+												color );
+
+	// Reborn: Preview inherited mapped-image overlays at the same scaled destination in GUIEdit.
+	if( image )
+	{
+		for( Int overlayIndex = 0; overlayIndex < image->getOverlayCount(); ++overlayIndex )
+		{
+			const Image *overlay = image->getOverlay( overlayIndex );
+			if( overlay )
+				drawImage( overlay, startX, startY, endX, endY, color, mode );
+		}
+	}
 
 
 }

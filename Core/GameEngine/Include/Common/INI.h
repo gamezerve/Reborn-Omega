@@ -190,6 +190,7 @@ public:
 	// Reborn: Capture an INI block so it can be reapplied after deferred inheritance is resolved.
 	void beginBlockCapture();
 	AsciiString endBlockCapture();
+	AsciiString captureBlockWithoutParsing();
 
 	void initFromCapturedBlock(
 		void* what,
@@ -225,6 +226,7 @@ public:
 	static void parseWaterTransparencyDefinition( INI *ini );
 	static void parseWeatherDefinition( INI *ini );
 	static void parseMappedImageDefinition( INI *ini );
+	static void parseMappedImageInheritDefinition( INI *ini ); // Reborn: Create a mapped image by inheriting another mapped image definition.
 	static void parseArmorDefinition( INI *ini );
 	static void parseDamageFXDefinition( INI *ini );
 	static void parseDrawGroupNumberDefinition( INI *ini );
@@ -429,6 +431,7 @@ protected:
 	// Reborn: Used to preserve ObjectInherit/ObjectReskin override blocks for deferred inheritance.
 	Bool m_captureBlockLines;
 	AsciiString m_capturedBlockText;
+	Int m_currentBlockIndent;
 
 #ifdef DEBUG_CRASHING
 	char m_curBlockStart[ INI_MAX_CHARS_PER_LINE+1 ];	///< first line of cur block

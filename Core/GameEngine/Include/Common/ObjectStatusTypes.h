@@ -93,6 +93,7 @@ enum ObjectStatusTypes CPP_11(: Int)
 	OBJECT_STATUS_RIDER10,
 	OBJECT_STATUS_RIDER11,
 	OBJECT_STATUS_RIDER12,
+	OBJECT_STATUS_RIDER13,
 	// add more status types here and don't forget to add to the string table ObjectStatusMaskType::s_bitNameList[]
 
 	OBJECT_STATUS_COUNT

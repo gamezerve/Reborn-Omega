@@ -110,14 +110,7 @@ void RiderChangeContainModuleData::parseRiderAlias(INI* ini, void* instance, voi
 	rider->m_templateAliases.push_back(name);
 }
 
-// ------------------------------------------------------------------------------------------------
-/** Reborn: Parse a second model condition used only to select a faction-specific rider mesh. */
-// ------------------------------------------------------------------------------------------------
-void RiderChangeContainModuleData::parseAdditionalRiderModelCondition(INI* ini, void* instance, void* store, const void* /*userData*/)
-{
-	RiderInfo* rider = (RiderInfo*)store;
-	INI::parseIndexList(ini, instance, &(rider->m_additionalModelConditionFlagType), ModelConditionFlags::getBitNames());
-}
+
 
 // ------------------------------------------------------------------------------------------------
 // ------------------------------------------------------------------------------------------------
@@ -154,21 +147,20 @@ void RiderChangeContainModuleData::buildFieldParse(MultiIniFieldParse& p)
 		{ "Rider9", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[8]) },
 		{ "RiderAlias9", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[8]) },
 
-		{ "Rider10", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[9]) }, // Reborn: Toxin Worker rider.
+		{ "Rider10", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[9]) },
 		{ "RiderAlias10", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[9]) },
-		{ "RiderModelCondition10", parseAdditionalRiderModelCondition, nullptr, offsetof(RiderChangeContainModuleData, m_riders[9]) },
 
-		{ "Rider11", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[10]) }, // Reborn: Toxin Rebel rider.
+		{ "Rider11", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[10]) },
 		{ "RiderAlias11", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[10]) },
-		{ "RiderModelCondition11", parseAdditionalRiderModelCondition, nullptr, offsetof(RiderChangeContainModuleData, m_riders[10]) },
 
-		{ "Rider12", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[11]) }, // Reborn: Toxin RPG rider.
+		{ "Rider12", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[11]) },
 		{ "RiderAlias12", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[11]) },
-		{ "RiderModelCondition12", parseAdditionalRiderModelCondition, nullptr, offsetof(RiderChangeContainModuleData, m_riders[11]) },
 
-		{ "Rider13", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[12]) }, // Reborn: Toxin Terrorist rider.
+		{ "Rider13", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[12]) },
 		{ "RiderAlias13", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[12]) },
-		{ "RiderModelCondition13", parseAdditionalRiderModelCondition, nullptr, offsetof(RiderChangeContainModuleData, m_riders[12]) },
+
+		{ "Rider14", parseRiderInfo, nullptr, offsetof(RiderChangeContainModuleData, m_riders[13]) },
+		{ "RiderAlias14", parseRiderAlias, nullptr, offsetof(RiderChangeContainModuleData, m_riders[13]) },
 
 		{ "ScuttleDelay", INI::parseDurationUnsignedInt, nullptr, offsetof(RiderChangeContainModuleData, m_scuttleFrames) },
 		{ "ScuttleStatus", INI::parseIndexList, ModelConditionFlags::getBitNames(), offsetof(RiderChangeContainModuleData, m_scuttleState) },

@@ -126,6 +126,7 @@ static const BlockParse theTypeTable[] =
 	{ "MapCache",                       INI::parseMapCacheDefinition },
 	{ "MapData",                        INI::parseMapDataDefinition },
 	{ "MappedImage",                    INI::parseMappedImageDefinition },
+	{ "MappedImageInherit",             INI::parseMappedImageInheritDefinition }, // Reborn: Support inherited mapped-image definitions.
 	{ "MiscAudio",                      INI::parseMiscAudio },
 	{ "Mouse",                          INI::parseMouseDefinition },
 	{ "MouseCursor",                    INI::parseMouseCursorDefinition },
@@ -198,6 +199,7 @@ INI::INI()
 
 	m_captureBlockLines = FALSE;
 	m_capturedBlockText.clear();
+	m_currentBlockIndent = 0;
 
 #ifdef DEBUG_CRASHING
 	m_curBlockStart[0]	= 0;
@@ -429,6 +431,11 @@ UnsignedInt INI::load( AsciiString filename, INILoadType loadType, Xfer *pXfer )
 			readLine();
 
 			AsciiString currentLine = m_buffer;
+			m_currentBlockIndent = 0;
+			while (currentLine.str()[m_currentBlockIndent] == ' ')
+			{
+				++m_currentBlockIndent;
+			}
 
 			// the first word is the type of data we're processing
 			const char* token = strtok(m_buffer, getSeps());
@@ -532,6 +539,52 @@ AsciiString INI::endBlockCapture()
 
 	AsciiString result = m_capturedBlockText;
 	m_capturedBlockText.clear();
+
+	return result;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Capture the current INI block without applying its fields to an incomplete target. */
+//-------------------------------------------------------------------------------------------------
+AsciiString INI::captureBlockWithoutParsing()
+{
+	beginBlockCapture();
+
+	Bool foundEnd = FALSE;
+	const Int endTokenLength = static_cast<Int>(strlen(getEndToken()));
+
+	while (!m_endOfFile)
+	{
+		readLine();
+
+		Int lineIndent = 0;
+		while (m_buffer[lineIndent] == ' ')
+		{
+			++lineIndent;
+		}
+
+		const char* token = m_buffer + lineIndent;
+		if (lineIndent == m_currentBlockIndent &&
+			strnicmp(token, getEndToken(), endTokenLength) == 0 &&
+			(token[endTokenLength] == 0 || strchr(getSeps(), token[endTokenLength]) != nullptr))
+		{
+			foundEnd = TRUE;
+			break;
+		}
+	}
+
+	AsciiString result = endBlockCapture();
+
+	if (!foundEnd)
+	{
+		DEBUG_CRASH(("Error capturing block in INI file '%s'. Missing '%s' token",
+			getFilename().str(), getEndToken()));
+		REBORN_LOG(
+			"INI_MISSING_END_TOKEN: Reached end of file while capturing a deferred block. INIFile='%s', INILine=%d.",
+			getFilename().str(),
+			getLineNum());
+		throw INI_MISSING_END_TOKEN;
+	}
 
 	return result;
 }

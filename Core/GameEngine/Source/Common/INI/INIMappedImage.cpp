@@ -74,3 +74,48 @@ void INI::parseMappedImageDefinition( INI* ini )
 	ini->initFromINI( image, image->getFieldParse());
 
 }
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Parse a mapped image which inherits the complete definition of another mapped image. */
+//-------------------------------------------------------------------------------------------------
+void INI::parseMappedImageInheritDefinition( INI *ini )
+{
+	const AsciiString name = ini->getNextToken();
+	const AsciiString parentName = ini->getNextToken();
+
+	if( !TheMappedImageCollection )
+	{
+		return;
+	}
+
+	if( TheMappedImageCollection->findImageByName( name ) )
+	{
+		DEBUG_CRASH(( "[LINE: %d in '%s'] Duplicate inherited mapped image '%s' found!", ini->getLineNum(), ini->getFilename().str(), name.str() ));
+		throw INI_INVALID_DATA;
+	}
+
+	Image *image = newInstance( Image );
+	image->setName( name );
+	TheMappedImageCollection->addImage( image );
+
+	const Image *parentImage = TheMappedImageCollection->findImageByName( parentName );
+	const Bool parentIsPending = TheMappedImageCollection->hasPendingInheritance( parentName );
+
+	if( parentImage && !parentIsPending )
+	{
+		image->copyFrom( parentImage );
+		ini->initFromINI( image, image->getInheritFieldParse() );
+		return;
+	}
+
+	// Reborn: Capture the child fields without parsing them until a later parent is resolved.
+
+	PendingMappedImageInheritance pending;
+	pending.m_image = image;
+	pending.m_name = name;
+	pending.m_parentName = parentName;
+	pending.m_blockText = ini->captureBlockWithoutParsing();
+	pending.m_sourceFilename = ini->getFilename();
+	pending.m_loadType = static_cast<Int>( ini->getLoadType() );
+	TheMappedImageCollection->addPendingInheritance( pending );
+}
