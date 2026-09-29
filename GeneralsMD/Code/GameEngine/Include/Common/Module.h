@@ -170,6 +170,11 @@ public: \
 	static void friend_parseModuleData(INI* ini, ModuleData* moduleData) \
 	{ \
 		if (ini) ini->initFromINIMultiProc(static_cast<clsmd*>(moduleData), clsmd::buildFieldParse); \
+	} \
+	/* Reborn: Expose the module's canonical field chain to source-driven deparsers. */ \
+	static void friend_buildModuleFieldParse(MultiIniFieldParse& fields) \
+	{ \
+		clsmd::buildFieldParse(fields); \
 	}
 //-------------------------------------------------------------------------------------------------
 #define MAKE_STANDARD_MODULE_MACRO_WITH_MODULE_DATA( cls, clsmd ) \

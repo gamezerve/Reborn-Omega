@@ -136,6 +136,8 @@ public:
 	const FieldParse* getFieldParse() const;
 
 	void friend_setName(const AsciiString& n) { m_name = n; }
+	// Reborn: Expose the registered INI name so references can be deparsed without a duplicate lookup table.
+	const AsciiString& getName() const { return m_name; }
 
 	void validate();
 

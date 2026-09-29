@@ -106,6 +106,8 @@ public:
 	virtual void update() override { }
 
 	const ArmorTemplate* findArmorTemplate(NameKeyType namekey) const;
+	// Reborn: Resolve a stored ArmorTemplate pointer back to its registered INI name for deparsing.
+	AsciiString getNameForArmorTemplate(const ArmorTemplate* armorTemplate) const;
 	/**
 		Find the Armor with the given name. If no such Armor exists, return null.
 	*/

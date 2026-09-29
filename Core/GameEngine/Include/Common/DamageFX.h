@@ -148,6 +148,8 @@ public:
 		Find the DamageFX with the given name. If no such DamageFX exists, return null.
 	*/
 	const DamageFX *findDamageFX( NameKeyType namekey ) const;
+	// Reborn: Resolve a stored DamageFX pointer back to its registered INI name for deparsing.
+	AsciiString getNameForDamageFX(const DamageFX* damageFX) const;
 	const DamageFX *findDamageFX( const AsciiString& name ) const;
 	const DamageFX *findDamageFX( const char* name ) const;
 

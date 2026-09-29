@@ -149,6 +149,10 @@ public:
 	Bool testWeaponSetFlag( WeaponSetType wst ) const;
 	Bool isSharedReloadTime() const { return m_isReloadTimeShared; }
 	Bool isWeaponLockSharedAcrossSets() const {return m_isWeaponLockSharedAcrossSets; }
+	// Reborn: Share the canonical weapon-slot INI names with deparsers and other readers.
+	static const char* const* getWeaponSlotTypeNames();
+	// Reborn: Share the canonical command-source INI names with deparsers and other readers.
+	static const char* const* getCommandSourceMaskNames();
 
 	Bool hasAnyWeapons() const;
 	inline const WeaponTemplate* getNth(WeaponSlotType n) const { return m_template[n]; }

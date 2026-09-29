@@ -628,6 +628,25 @@ Bool ModuleFactory::parseModuleDataFromINI(
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Build the same layered FieldParse chain used to load a registered module. */
+//-------------------------------------------------------------------------------------------------
+Bool ModuleFactory::buildModuleFieldParse(
+	const AsciiString& name,
+	ModuleType type,
+	MultiIniFieldParse& fields)
+{
+	if (name.isEmpty())
+		return false;
+
+	const ModuleTemplate* moduleTemplate = findModuleTemplate(name, type);
+	if (moduleTemplate == nullptr || moduleTemplate->m_buildFieldParseProc == nullptr)
+		return false;
+
+	(*moduleTemplate->m_buildFieldParseProc)(fields);
+	return true;
+}
+
+//-------------------------------------------------------------------------------------------------
 ModuleData* ModuleFactory::newModuleDataFromINI(INI* ini, const AsciiString& name, ModuleType type,
 																								const AsciiString& moduleTag)
 {
@@ -739,7 +758,7 @@ Module *ModuleFactory::newModule( Thing *thing, const AsciiString& name, const M
 /** Add a module template to our list of templates */
 //-------------------------------------------------------------------------------------------------
 //void ModuleFactory::addModuleInternal( NewModuleProc proc, NewModuleDataProc dataproc, ModuleType type, const AsciiString& name, Int whichIntf )
-void ModuleFactory::addModuleInternal( NewModuleProc proc, NewModuleDataProc dataproc, CloneModuleDataProc cloneproc, ParseModuleDataProc parseproc, ModuleType type, const AsciiString& name, Int whichIntf)
+void ModuleFactory::addModuleInternal( NewModuleProc proc, NewModuleDataProc dataproc, CloneModuleDataProc cloneproc, ParseModuleDataProc parseproc, BuildModuleFieldParseProc buildfieldproc, ModuleType type, const AsciiString& name, Int whichIntf)
 {
 	NameKeyType namekey = makeDecoratedNameKey(name, type);
 	ModuleTemplate& mtm = m_moduleTemplateMap[namekey];	// this creates it if it does not exist already
@@ -747,6 +766,7 @@ void ModuleFactory::addModuleInternal( NewModuleProc proc, NewModuleDataProc dat
 	mtm.m_createDataProc = dataproc;
 	mtm.m_cloneDataProc = cloneproc;
 	mtm.m_parseDataProc = parseproc;
+	mtm.m_buildFieldParseProc = buildfieldproc;
 	mtm.m_whichInterfaces = whichIntf;
 }
 

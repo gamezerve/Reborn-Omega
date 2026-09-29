@@ -91,6 +91,14 @@
 }
 
 //=============================================================================
+/** Reborn: Return the same geometry name table used by the INI parser. */
+//=============================================================================
+/*static*/ const char* const* GeometryInfo::getGeometryTypeNames()
+{
+	return GeometryNames;
+}
+
+//=============================================================================
 /*static*/ void GeometryInfo::parseGeometryIsSmall(INI* ini, void* /*instance*/, void* store, const void* /*userData*/)
 {
 	GeometryInfo* geometry = static_cast<GeometryInfo*>(store);

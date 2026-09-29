@@ -123,6 +123,14 @@ const LocomotorTemplateVector* AIUpdateModuleData::findLocomotorTemplateVector(L
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Return the original Locomotor set names consumed by the game parser. */
+//-------------------------------------------------------------------------------------------------
+const char* const* AIUpdateModuleData::getLocomotorSetNames()
+{
+	return TheLocomotorSetNames;
+}
+
+//-------------------------------------------------------------------------------------------------
 /*static*/ void AIUpdateModuleData::buildFieldParse(MultiIniFieldParse& p)
 {
   ModuleData::buildFieldParse(p);

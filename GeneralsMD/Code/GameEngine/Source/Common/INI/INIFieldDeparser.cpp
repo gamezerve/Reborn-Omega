@@ -6,9 +6,28 @@
 
 #include "Common/INIFieldDeparser.h"
 
+#include "Common/AudioEventRTS.h"
+#include "Common/DamageFX.h"
 #include "Common/GameCommon.h"
 #include "Common/GameType.h"
 #include "Common/INI.h"
+#include "Common/KindOf.h"
+#include "Common/ModelState.h"
+#include "Common/ObjectStatusTypes.h"
+#include "Common/Science.h"
+#include "Common/SpecialPower.h"
+#include "Common/ThingTemplate.h"
+#include "Common/Upgrade.h"
+#include "GameClient/ClientRandomValue.h"
+#include "GameClient/FXList.h"
+#include "GameClient/Image.h"
+#include "GameClient/ParticleSys.h"
+#include "GameLogic/Armor.h"
+#include "GameLogic/ArmorSet.h"
+#include "GameLogic/Damage.h"
+#include "GameLogic/ObjectCreationList.h"
+#include "GameLogic/Weapon.h"
+#include "GameLogic/WeaponSetFlags.h"
 
 #include <cmath>
 #include <cstdint>
@@ -87,6 +106,59 @@ static std::string formatBitString(
 	return result.empty()
 		? "NONE"
 		: result;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Format any game BitFlags specialization through its own canonical bit-name table. */
+//-------------------------------------------------------------------------------------------------
+template<typename Flags>
+static std::string formatRegisteredFlags(const Flags& flags, Int count)
+{
+	const char* const* names = Flags::getBitNames();
+	std::string result;
+	for (Int bit = 0; bit < count && names[bit] != nullptr; ++bit)
+	{
+		if (!flags.test(bit))
+			continue;
+		if (!result.empty())
+			result += " ";
+		result += names[bit];
+	}
+	return result.empty() ? "NONE" : result;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Preserve every bit of wide game BitFlags while emitting normalized additive syntax. */
+//-------------------------------------------------------------------------------------------------
+template<typename Flags>
+static std::string formatAdditiveRegisteredFlags(const Flags& flags, Int count)
+{
+	const char* const* names = Flags::getBitNames();
+	std::string result = "NONE";
+	for (Int bit = 0; bit < count && names[bit] != nullptr; ++bit)
+	{
+		if (!flags.test(bit))
+			continue;
+		result += " +";
+		result += names[bit];
+	}
+	return result;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Emit a normalized NONE-plus-flags expression through a parser-owned name table. */
+//-------------------------------------------------------------------------------------------------
+static std::string formatAdditiveFlags(UnsignedInt flags, const char* const* names, Int count)
+{
+	std::string result = "NONE";
+	for (Int bit = 0; bit < count && names[bit] != nullptr; ++bit)
+	{
+		if ((flags & (1u << bit)) == 0)
+			continue;
+		result += " +";
+		result += names[bit];
+	}
+	return result;
 }
 
 static UnsignedInt durationFramesToMilliseconds(
@@ -169,9 +241,131 @@ Bool INIFieldDeparser::deparseField(
 		return FALSE;
 	}
 
+	// Reborn: Prefer the custom deparser stored beside the field's canonical parse-table record.
+	if (field.deparse)
+		return field.deparse(field, instance, output, indent);
+
 	const char* store =
 		reinterpret_cast<const char*>(instance) +
 		field.offset;
+
+	// Reborn: Preserve dynamic and embedded audio event names used by Object model fields.
+	if (field.parse == INI::parseDynamicAudioEventRTS)
+	{
+		const RefCountPtr<DynamicAudioEventRTS>& event =
+			*reinterpret_cast<
+			const RefCountPtr<DynamicAudioEventRTS>*>(store);
+
+		appendField(
+			output,
+			field.token,
+			event
+			? formatAsciiString(event->getEventName())
+			: "NoSound",
+			indent);
+
+		return TRUE;
+	}
+
+	// Reborn: Preserve non-dynamic audio events handled by the same generic field table walker.
+	if (field.parse == INI::parseAudioEventRTS)
+	{
+		const AudioEventRTS& event =
+			*reinterpret_cast<const AudioEventRTS*>(store);
+
+		appendField(
+			output,
+			field.token,
+			event.getEventName().isEmpty()
+			? "NoSound"
+			: formatAsciiString(event.getEventName()),
+			indent);
+
+		return TRUE;
+	}
+
+	// Reborn: Resolve registered definition pointers through the names retained by their game-owned objects and stores.
+	if (field.parse == INI::parseThingTemplate)
+	{
+		const ThingTemplate* value = *reinterpret_cast<const ThingTemplate* const*>(store);
+		appendField(output, field.token, value ? value->getName().str() : "None", indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseArmorTemplate)
+	{
+		const ArmorTemplate* value = *reinterpret_cast<const ArmorTemplate* const*>(store);
+		const AsciiString name = TheArmorStore ? TheArmorStore->getNameForArmorTemplate(value) : AsciiString();
+		appendField(output, field.token, name.isEmpty() ? "None" : name.str(), indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseDamageFX)
+	{
+		const DamageFX* value = *reinterpret_cast<const DamageFX* const*>(store);
+		const AsciiString name = TheDamageFXStore ? TheDamageFXStore->getNameForDamageFX(value) : AsciiString();
+		appendField(output, field.token, name.isEmpty() ? "None" : name.str(), indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseWeaponTemplate)
+	{
+		const WeaponTemplate* value = *reinterpret_cast<const WeaponTemplate* const*>(store);
+		appendField(output, field.token, value ? value->getName().str() : "None", indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseFXList)
+	{
+		const FXList* value = *reinterpret_cast<const FXList* const*>(store);
+		const AsciiString name = TheFXListStore ? TheFXListStore->getNameForList(value) : AsciiString();
+		appendField(output, field.token, name.isEmpty() ? "None" : name.str(), indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseParticleSystemTemplate)
+	{
+		const ParticleSystemTemplate* value = *reinterpret_cast<const ParticleSystemTemplate* const*>(store);
+		appendField(output, field.token, value ? value->getName().str() : "None", indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseObjectCreationList)
+	{
+		const ObjectCreationList* value = *reinterpret_cast<const ObjectCreationList* const*>(store);
+		const AsciiString name = TheObjectCreationListStore ? TheObjectCreationListStore->getNameForList(value) : AsciiString();
+		appendField(output, field.token, name.isEmpty() ? "None" : name.str(), indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseUpgradeTemplate)
+	{
+		const UpgradeTemplate* value = *reinterpret_cast<const UpgradeTemplate* const*>(store);
+		appendField(output, field.token, value ? value->getUpgradeName().str() : "None", indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseSpecialPowerTemplate)
+	{
+		const SpecialPowerTemplate* value = *reinterpret_cast<const SpecialPowerTemplate* const*>(store);
+		appendField(output, field.token, value ? value->getName().str() : "None", indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseMappedImage)
+	{
+		const Image* value = *reinterpret_cast<const Image* const*>(store);
+		appendField(output, field.token, value ? value->getName().str() : "None", indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseScience)
+	{
+		const ScienceType value = *reinterpret_cast<const ScienceType*>(store);
+		const AsciiString name = TheScienceStore ? TheScienceStore->getInternalNameForScience(value) : AsciiString();
+		appendField(output, field.token, name.isEmpty() ? "None" : name.str(), indent);
+		return TRUE;
+	}
 
 	if (field.parse == INI::parseUnsignedByte)
 	{
@@ -273,7 +467,9 @@ Bool INIFieldDeparser::deparseField(
 		return TRUE;
 	}
 
-	if (field.parse == INI::parseAsciiStringVector)
+	if (field.parse == INI::parseAsciiStringVector ||
+		field.parse == INI::parseAsciiStringVectorAppend ||
+		field.parse == INI::parseSoundsList)
 	{
 		const std::vector<AsciiString>& values =
 			*reinterpret_cast<
@@ -295,6 +491,47 @@ Bool INIFieldDeparser::deparseField(
 			value,
 			indent);
 
+		return TRUE;
+	}
+
+	// Reborn: Format parser-owned color and random-value structures directly from their canonical storage types.
+	if (field.parse == INI::parseRGBColor)
+	{
+		const RGBColor& value = *reinterpret_cast<const RGBColor*>(store);
+		appendField(output, field.token,
+			"R:" + std::to_string(static_cast<Int>(value.red * 255.0f)) +
+			" G:" + std::to_string(static_cast<Int>(value.green * 255.0f)) +
+			" B:" + std::to_string(static_cast<Int>(value.blue * 255.0f)), indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseRGBAColorInt)
+	{
+		const RGBAColorInt& value = *reinterpret_cast<const RGBAColorInt*>(store);
+		appendField(output, field.token,
+			"R:" + std::to_string(value.red) + " G:" + std::to_string(value.green) +
+			" B:" + std::to_string(value.blue) + " A:" + std::to_string(value.alpha), indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseColorInt)
+	{
+		const UnsignedInt value = static_cast<UnsignedInt>(*reinterpret_cast<const Color*>(store));
+		appendField(output, field.token,
+			"R:" + std::to_string((value >> 16) & 0xff) +
+			" G:" + std::to_string((value >> 8) & 0xff) +
+			" B:" + std::to_string(value & 0xff) +
+			" A:" + std::to_string((value >> 24) & 0xff), indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseGameClientRandomVariable)
+	{
+		const GameClientRandomVariable& value = *reinterpret_cast<const GameClientRandomVariable*>(store);
+		const Int distribution = static_cast<Int>(value.getDistributionType());
+		appendField(output, field.token,
+			formatReal(value.getMinimumValue()) + " " + formatReal(value.getMaximumValue()) + " " +
+			formatIndex(distribution, GameClientRandomVariable::DistributionTypeNames), indent);
 		return TRUE;
 	}
 
@@ -402,6 +639,72 @@ Bool INIFieldDeparser::deparseField(
 			formatReal(degrees),
 			indent);
 
+		return TRUE;
+	}
+
+	// Reborn: Match registered flag parser functions and read names from the same BitFlags types.
+	if (field.parse == KindOfMaskType::parseFromINI)
+	{
+		appendField(output, field.token,
+			formatRegisteredFlags(*reinterpret_cast<const KindOfMaskType*>(store), KINDOF_COUNT), indent);
+		return TRUE;
+	}
+
+	if (field.parse == ObjectStatusMaskType::parseFromINI)
+	{
+		appendField(output, field.token,
+			formatRegisteredFlags(*reinterpret_cast<const ObjectStatusMaskType*>(store), OBJECT_STATUS_COUNT), indent);
+		return TRUE;
+	}
+
+	if (field.parse == ModelConditionFlags::parseFromINI)
+	{
+		appendField(output, field.token,
+			formatRegisteredFlags(*reinterpret_cast<const ModelConditionFlags*>(store), MODELCONDITION_COUNT), indent);
+		return TRUE;
+	}
+
+	if (field.parse == WeaponSetFlags::parseFromINI)
+	{
+		appendField(output, field.token,
+			formatRegisteredFlags(*reinterpret_cast<const WeaponSetFlags*>(store), WEAPONSET_COUNT), indent);
+		return TRUE;
+	}
+
+	if (field.parse == ArmorSetFlags::parseFromINI)
+	{
+		appendField(output, field.token,
+			formatRegisteredFlags(*reinterpret_cast<const ArmorSetFlags*>(store), ARMORSET_COUNT), indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseDamageTypeFlags)
+	{
+		const DamageTypeFlags& flags = *reinterpret_cast<const DamageTypeFlags*>(store);
+		appendField(output, field.token,
+			formatAdditiveRegisteredFlags(flags, DAMAGE_NUM_TYPES), indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseDeathTypeFlags)
+	{
+		appendField(output, field.token,
+			formatAdditiveFlags(*reinterpret_cast<const DeathTypeFlags*>(store), INI::getDeathTypeNames(), DEATH_NUM_TYPES), indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseVeterancyLevelFlags)
+	{
+		appendField(output, field.token,
+			formatAdditiveFlags(*reinterpret_cast<const VeterancyLevelFlags*>(store), TheVeterancyNames, LEVEL_COUNT), indent);
+		return TRUE;
+	}
+
+	if (field.parse == INI::parseAngularVelocityReal)
+	{
+		const Real radiansPerFrame = *reinterpret_cast<const Real*>(store);
+		appendField(output, field.token,
+			formatReal(radiansPerFrame / (SECONDS_PER_LOGICFRAME_REAL * (PI / 180.0f))), indent);
 		return TRUE;
 	}
 

@@ -54,6 +54,7 @@
 #include "Common/RebornLog.h"
 #include "Common/Science.h"
 #include "Common/ThingTemplate.h"
+#include "Common/ThingTemplateDeparser.h" // Reborn: Bind custom deparsers beside their canonical Object field records.
 #include "Common/ThingFactory.h"
 #include "Common/ThingSort.h"
 #include "Common/BitFlagsIO.h"
@@ -152,14 +153,14 @@ static void parseKindOfFromINI(INI* ini, void* instance, void *store, const void
 // NOTE NOTE NOTE -- s_objectFieldParseTable and s_objectReskinFieldParseTable must be updated in tandem -- see comment above
 const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 {
-	{ "DisplayName",					INI::parseAndTranslateLabel,					nullptr,								offsetof( ThingTemplate, m_displayName ) },
+	{ "DisplayName",					INI::parseAndTranslateLabel,					reinterpret_cast<const void*>(offsetof( ThingTemplate, m_displayNameLabel )), offsetof( ThingTemplate, m_displayName ), ThingTemplateDeparser::deparseTranslatedLabel },
 	{ "RadarPriority",				INI::parseByteSizedIndexList,					RadarPriorityNames, offsetof( ThingTemplate, m_radarPriority ) },
 	{ "TransportSlotCount",		INI::parseUnsignedByte,								nullptr,		offsetof( ThingTemplate, m_transportSlotCount ) },
 	{ "FenceWidth",						INI::parseReal,												nullptr,		offsetof( ThingTemplate, m_fenceWidth ) },
 	{ "FenceXOffset",					INI::parseReal,												nullptr,		offsetof( ThingTemplate, m_fenceXOffset ) },
 	{ "IsBridge",							INI::parseBool,												nullptr,		offsetof( ThingTemplate, m_isBridge ) },
-	{ "ArmorSet",							ThingTemplate::parseArmorTemplateSet, nullptr, 0},
-	{ "WeaponSet",						ThingTemplate::parseWeaponTemplateSet,nullptr, 0},
+	{ "ArmorSet",							ThingTemplate::parseArmorTemplateSet, nullptr, 0, ThingTemplateDeparser::deparseArmorSets },
+	{ "WeaponSet",						ThingTemplate::parseWeaponTemplateSet,nullptr, 0, ThingTemplateDeparser::deparseWeaponSets },
 	{ "VisionRange",					INI::parseReal,												nullptr,		offsetof( ThingTemplate, m_visionRange ) },
 	{ "ShroudClearingRange",	INI::parseReal,												nullptr,		offsetof( ThingTemplate, m_shroudClearingRange ) },
 	{ "ShroudRevealToAllRange",	INI::parseReal,											nullptr,		offsetof( ThingTemplate, m_shroudRevealToAllRange ) },
@@ -169,9 +170,9 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "FactoryExitWidth",			INI::parseReal,												nullptr,		offsetof( ThingTemplate, m_factoryExitWidth ) },
 	{ "FactoryExtraBibWidth",	INI::parseReal,												nullptr,		offsetof( ThingTemplate, m_factoryExtraBibWidth ) },
 
-	{ "SkillPointValue",			ThingTemplate::parseIntList,					(void*)LEVEL_COUNT,		offsetof( ThingTemplate, m_skillPointValues ) },
-	{ "ExperienceValue",			ThingTemplate::parseIntList,					(void*)LEVEL_COUNT,		offsetof( ThingTemplate, m_experienceValues ) },
-	{ "ExperienceRequired",		ThingTemplate::parseIntList,					(void*)LEVEL_COUNT,		offsetof( ThingTemplate, m_experienceRequired ) },
+	{ "SkillPointValue",			ThingTemplate::parseIntList,					(void*)LEVEL_COUNT,		offsetof( ThingTemplate, m_skillPointValues ), ThingTemplateDeparser::deparseIntList },
+	{ "ExperienceValue",			ThingTemplate::parseIntList,					(void*)LEVEL_COUNT,		offsetof( ThingTemplate, m_experienceValues ), ThingTemplateDeparser::deparseIntList },
+	{ "ExperienceRequired",		ThingTemplate::parseIntList,					(void*)LEVEL_COUNT,		offsetof( ThingTemplate, m_experienceRequired ), ThingTemplateDeparser::deparseIntList },
 	{ "IsTrainable",					INI::parseBool,												nullptr,									offsetof( ThingTemplate, m_isTrainable ) },
 	{ "EnterGuard",						INI::parseBool,												nullptr,									offsetof( ThingTemplate, m_enterGuard ) },
 	{ "HijackGuard",					INI::parseBool,												nullptr,									offsetof( ThingTemplate, m_hijackGuard ) },
@@ -179,7 +180,7 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "Side",									INI::parseAsciiString,								nullptr,	offsetof( ThingTemplate, m_defaultOwningSide ) },
 
 // NOTE NOTE NOTE -- s_objectFieldParseTable and s_objectReskinFieldParseTable must be updated in tandem -- see comment above
-	{ "Prerequisites",				ThingTemplate::parsePrerequisites,	nullptr, 0 },
+	{ "Prerequisites",				ThingTemplate::parsePrerequisites,	nullptr, 0, ThingTemplateDeparser::deparsePrerequisites },
 	{ "Buildable",						INI::parseByteSizedIndexList,				BuildableStatusNames, offsetof( ThingTemplate, m_buildable) },
 	{ "BuildCost",						INI::parseUnsignedShort,						nullptr,		offsetof( ThingTemplate, m_buildCost ) },
 	{ "BuildTime",						INI::parseReal,											nullptr,		offsetof( ThingTemplate, m_buildTime ) },
@@ -189,19 +190,19 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "EnergyBonus",					INI::parseInt,											nullptr,   offsetof( ThingTemplate, m_energyBonus ) },
 	{ "IsForbidden",					INI::parseBool,											nullptr,		offsetof( ThingTemplate, m_isForbidden ) },
 	{ "IsPrerequisite",				INI::parseBool,											nullptr,		offsetof( ThingTemplate, m_isPrerequisite ) },
-	{ "DisplayColor",					INI::parseColorInt,									nullptr,		offsetof( ThingTemplate, m_displayColor ) },
+	{ "DisplayColor",					INI::parseColorInt,									nullptr,		offsetof( ThingTemplate, m_displayColor ), ThingTemplateDeparser::deparseDisplayColor },
 	{ "EditorSorting",				INI::parseByteSizedIndexList,				EditorSortingNames, offsetof( ThingTemplate, m_editorSorting ) },
 //	{ "KindOf",								KindOfMaskType::parseFromINI,				nullptr,		offsetof( ThingTemplate, m_kindof ) },
-	{ "KindOf",								parseKindOfFromINI,					nullptr,		offsetof( ThingTemplate, m_kindof ) },
+	{ "KindOf",								parseKindOfFromINI,					nullptr,		offsetof( ThingTemplate, m_kindof ), ThingTemplateDeparser::deparseKindOf },
 	{ "RebornFakeBaseObject",	INI::parseAsciiString,				nullptr,		offsetof( ThingTemplate, m_rebornfakebaseobject ) },
 	{ "CommandSet",						INI::parseAsciiString,							nullptr,		offsetof( ThingTemplate, m_commandSetString ) },
 	{ "BuildVariations",			INI::parseAsciiStringVector,				nullptr,		offsetof( ThingTemplate, m_buildVariations ) },
 
 // NOTE NOTE NOTE -- s_objectFieldParseTable and s_objectReskinFieldParseTable must be updated in tandem -- see comment above
-	{ "Behavior",							ThingTemplate::parseModuleName,		(const void*)MODULETYPE_BEHAVIOR, offsetof(ThingTemplate, m_behaviorModuleInfo) },
-	{ "Body",									ThingTemplate::parseModuleName,		(const void*)999, offsetof(ThingTemplate, m_behaviorModuleInfo) },
-	{ "Draw",									ThingTemplate::parseModuleName,		(const void*)MODULETYPE_DRAW, offsetof(ThingTemplate, m_drawModuleInfo) },
-	{ "ClientUpdate",					ThingTemplate::parseModuleName,		(const void*)MODULETYPE_CLIENT_UPDATE, offsetof(ThingTemplate, m_clientUpdateModuleInfo) },
+	{ "Behavior",							ThingTemplate::parseModuleName,		(const void*)MODULETYPE_BEHAVIOR, offsetof(ThingTemplate, m_behaviorModuleInfo), ThingTemplateDeparser::deparseModules },
+	{ "Body",									ThingTemplate::parseModuleName,		(const void*)999, offsetof(ThingTemplate, m_behaviorModuleInfo), ThingTemplateDeparser::deparseModules },
+	{ "Draw",									ThingTemplate::parseModuleName,		(const void*)MODULETYPE_DRAW, offsetof(ThingTemplate, m_drawModuleInfo), ThingTemplateDeparser::deparseModules },
+	{ "ClientUpdate",					ThingTemplate::parseModuleName,		(const void*)MODULETYPE_CLIENT_UPDATE, offsetof(ThingTemplate, m_clientUpdateModuleInfo), ThingTemplateDeparser::deparseModules },
 // NOTE NOTE NOTE -- s_objectFieldParseTable and s_objectReskinFieldParseTable must be updated in tandem -- see comment above
 
 	{ "SelectPortrait",					INI::parseAsciiString,	nullptr,		offsetof( ThingTemplate, m_selectedPortraitImageName ) },
@@ -262,15 +263,15 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "SoundPromotedHero",		INI::parseDynamicAudioEventRTS,	nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundPromotedHero ]) },
 	{ "SoundFallingFromPlane",INI::parseDynamicAudioEventRTS, nullptr,		offsetof( ThingTemplate, m_audioarray.m_audio[TTAUDIO_soundFalling ]) },
 
-	{ "UnitSpecificSounds",		ThingTemplate::parsePerUnitSounds, nullptr, offsetof(ThingTemplate, m_perUnitSounds) },
-	{ "UnitSpecificFX",				ThingTemplate::parsePerUnitFX, nullptr, offsetof(ThingTemplate, m_perUnitFX) },
+	{ "UnitSpecificSounds",		ThingTemplate::parsePerUnitSounds, nullptr, offsetof(ThingTemplate, m_perUnitSounds), ThingTemplateDeparser::deparsePerUnitSounds },
+	{ "UnitSpecificFX",				ThingTemplate::parsePerUnitFX, nullptr, offsetof(ThingTemplate, m_perUnitFX), ThingTemplateDeparser::deparsePerUnitFX },
 	{ "Scale",								INI::parseReal,						nullptr,		offsetof( ThingTemplate, m_assetScale ) },
-	{ "Geometry",							GeometryInfo::parseGeometryType,				nullptr,  offsetof( ThingTemplate, m_geometryInfo ) },
-	{ "GeometryMajorRadius",	GeometryInfo::parseGeometryMajorRadius,	nullptr,		offsetof( ThingTemplate, m_geometryInfo ) },
-	{ "GeometryMinorRadius",	GeometryInfo::parseGeometryMinorRadius,	nullptr,		offsetof( ThingTemplate, m_geometryInfo ) },
-	{ "GeometryHeight",				GeometryInfo::parseGeometryHeight,			nullptr,		offsetof( ThingTemplate, m_geometryInfo ) },
-	{ "GeometryIsSmall",			GeometryInfo::parseGeometryIsSmall,			nullptr,		offsetof( ThingTemplate, m_geometryInfo ) },
-	{ "GeometryBlock",				GeometryInfo::parseGeometry,						nullptr,		offsetof( ThingTemplate, m_geometryInfo ) },
+	{ "Geometry",							GeometryInfo::parseGeometryType,				nullptr,  offsetof( ThingTemplate, m_geometryInfo ), ThingTemplateDeparser::ignoreLegacyGeometry },
+	{ "GeometryMajorRadius",	GeometryInfo::parseGeometryMajorRadius,	nullptr,		offsetof( ThingTemplate, m_geometryInfo ), ThingTemplateDeparser::ignoreLegacyGeometry },
+	{ "GeometryMinorRadius",	GeometryInfo::parseGeometryMinorRadius,	nullptr,		offsetof( ThingTemplate, m_geometryInfo ), ThingTemplateDeparser::ignoreLegacyGeometry },
+	{ "GeometryHeight",				GeometryInfo::parseGeometryHeight,			nullptr,		offsetof( ThingTemplate, m_geometryInfo ), ThingTemplateDeparser::ignoreLegacyGeometry },
+	{ "GeometryIsSmall",			GeometryInfo::parseGeometryIsSmall,			nullptr,		offsetof( ThingTemplate, m_geometryInfo ), ThingTemplateDeparser::ignoreLegacyGeometry },
+	{ "GeometryBlock",				GeometryInfo::parseGeometry,						nullptr,		offsetof( ThingTemplate, m_geometryInfo ), ThingTemplateDeparser::deparseGeometryBlock },
 	{ "Shadow",								INI::parseBitString8,		TheShadowNames,		offsetof( ThingTemplate, m_shadowType ) },
 	{ "ShadowSizeX",					INI::parseReal,						nullptr,	offsetof( ThingTemplate, m_shadowSizeX ) },
 	{ "ShadowSizeY",					INI::parseReal,						nullptr,	offsetof( ThingTemplate, m_shadowSizeY ) },
@@ -278,20 +279,20 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "ShadowOffsetY",				INI::parseReal,						nullptr,	offsetof( ThingTemplate, m_shadowOffsetY ) },
 	{ "ShadowTexture",				INI::parseAsciiString,		nullptr,	offsetof( ThingTemplate, m_shadowTextureName ) },
 	{ "OcclusionDelay",					INI::parseDurationUnsignedInt,		nullptr, offsetof( ThingTemplate, m_occlusionDelay ) },
-	{ "AddModule",						ThingTemplate::parseAddModule,			nullptr, 0 },
-	{ "RemoveModule",					ThingTemplate::parseRemoveModule,		nullptr, 0 },
-	{ "ReplaceModule",				ThingTemplate::parseReplaceModule,	nullptr, 0 },
-	{ "OverrideModule",				ThingTemplate::parseOverrideModule, nullptr, 0 },
-	{ "InheritableModule",		ThingTemplate::parseInheritableModule,	nullptr, 0 },
+	{ "AddModule",						ThingTemplate::parseAddModule,			nullptr, 0, ThingTemplateDeparser::ignoreFinalizedParseOperation },
+	{ "RemoveModule",					ThingTemplate::parseRemoveModule,		nullptr, 0, ThingTemplateDeparser::ignoreFinalizedParseOperation },
+	{ "ReplaceModule",				ThingTemplate::parseReplaceModule,	nullptr, 0, ThingTemplateDeparser::ignoreFinalizedParseOperation },
+	{ "OverrideModule",				ThingTemplate::parseOverrideModule, nullptr, 0, ThingTemplateDeparser::ignoreFinalizedParseOperation },
+	{ "InheritableModule",		ThingTemplate::parseInheritableModule,	nullptr, 0, ThingTemplateDeparser::ignoreFinalizedParseOperation },
 
-  { "OverrideableByLikeKind",		ThingTemplate::OverrideableByLikeKind,	nullptr, 0 },
+  { "OverrideableByLikeKind",		ThingTemplate::OverrideableByLikeKind,	nullptr, 0, ThingTemplateDeparser::ignoreFinalizedParseOperation },
 
-	{ "Locomotor",						AIUpdateModuleData::parseLocomotorSet, nullptr, 0 },
+	{ "Locomotor",						AIUpdateModuleData::parseLocomotorSet, nullptr, 0, ThingTemplateDeparser::deparseLocomotorSets },
 	{ "InstanceScaleFuzziness",	INI::parseReal,					nullptr, offsetof(ThingTemplate, m_instanceScaleFuzziness ) },
 	{ "StructureRubbleHeight",	INI::parseUnsignedByte,					nullptr, offsetof(ThingTemplate, m_structureRubbleHeight ) },
 	{ "ThreatValue",						INI::parseUnsignedShort,		nullptr, offsetof(ThingTemplate, m_threatValue ) },
-  { "MaxSimultaneousOfType",	ThingTemplate::parseMaxSimultaneous,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousOfType ) },
-  { "MaxSimultaneousLinkKey",	NameKeyGenerator::parseStringAsNameKeyType,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousLinkKey ) },
+  { "MaxSimultaneousOfType",	ThingTemplate::parseMaxSimultaneous,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousOfType ), ThingTemplateDeparser::deparseMaxSimultaneous },
+  { "MaxSimultaneousLinkKey",	NameKeyGenerator::parseStringAsNameKeyType,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousLinkKey ), ThingTemplateDeparser::deparseMaxSimultaneousLinkKey },
 	{ "CrusherLevel",					INI::parseUnsignedByte,			nullptr, offsetof( ThingTemplate, m_crusherLevel ) },
 	{ "CrushableLevel",				INI::parseUnsignedByte,			nullptr, offsetof( ThingTemplate, m_crushableLevel ) },
 
@@ -303,20 +304,20 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 // NOTE NOTE NOTE -- s_objectFieldParseTable and s_objectReskinFieldParseTable must be updated in tandem -- see comment above
 const FieldParse ThingTemplate::s_objectReskinFieldParseTable[] =
 {
-	{ "Draw",									ThingTemplate::parseModuleName,		(const void*)MODULETYPE_DRAW, offsetof(ThingTemplate, m_drawModuleInfo) },
+	{ "Draw",									ThingTemplate::parseModuleName,		(const void*)MODULETYPE_DRAW, offsetof(ThingTemplate, m_drawModuleInfo), ThingTemplateDeparser::deparseModules },
 
-	{ "Geometry",							GeometryInfo::parseGeometryType,				nullptr,  offsetof( ThingTemplate, m_geometryInfo ) },
-	{ "GeometryMajorRadius",	GeometryInfo::parseGeometryMajorRadius,	nullptr,		offsetof( ThingTemplate, m_geometryInfo ) },
-	{ "GeometryMinorRadius",	GeometryInfo::parseGeometryMinorRadius,	nullptr,		offsetof( ThingTemplate, m_geometryInfo ) },
-	{ "GeometryHeight",				GeometryInfo::parseGeometryHeight,			nullptr,		offsetof( ThingTemplate, m_geometryInfo ) },
-	{ "GeometryIsSmall",			GeometryInfo::parseGeometryIsSmall,			nullptr,		offsetof( ThingTemplate, m_geometryInfo ) },
-	{ "GeometryBlock",				GeometryInfo::parseGeometry,						nullptr,		offsetof(ThingTemplate, m_geometryInfo) },
+	{ "Geometry",							GeometryInfo::parseGeometryType,				nullptr,  offsetof( ThingTemplate, m_geometryInfo ), ThingTemplateDeparser::ignoreLegacyGeometry },
+	{ "GeometryMajorRadius",	GeometryInfo::parseGeometryMajorRadius,	nullptr,		offsetof( ThingTemplate, m_geometryInfo ), ThingTemplateDeparser::ignoreLegacyGeometry },
+	{ "GeometryMinorRadius",	GeometryInfo::parseGeometryMinorRadius,	nullptr,		offsetof( ThingTemplate, m_geometryInfo ), ThingTemplateDeparser::ignoreLegacyGeometry },
+	{ "GeometryHeight",				GeometryInfo::parseGeometryHeight,			nullptr,		offsetof( ThingTemplate, m_geometryInfo ), ThingTemplateDeparser::ignoreLegacyGeometry },
+	{ "GeometryIsSmall",			GeometryInfo::parseGeometryIsSmall,			nullptr,		offsetof( ThingTemplate, m_geometryInfo ), ThingTemplateDeparser::ignoreLegacyGeometry },
+	{ "GeometryBlock",				GeometryInfo::parseGeometry,						nullptr,		offsetof(ThingTemplate, m_geometryInfo), ThingTemplateDeparser::deparseGeometryBlock },
 	{ "FenceWidth",						INI::parseReal,													nullptr,		offsetof( ThingTemplate, m_fenceWidth ) },
 	{ "FenceXOffset",					INI::parseReal,													nullptr,		offsetof( ThingTemplate, m_fenceXOffset ) },
 
   // Needed to avoid some cheats with the scud storm rebuild hole
-  { "MaxSimultaneousOfType",	ThingTemplate::parseMaxSimultaneous,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousOfType ) },
-  { "MaxSimultaneousLinkKey",	NameKeyGenerator::parseStringAsNameKeyType,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousLinkKey ) },
+  { "MaxSimultaneousOfType",	ThingTemplate::parseMaxSimultaneous,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousOfType ), ThingTemplateDeparser::deparseMaxSimultaneous },
+  { "MaxSimultaneousLinkKey",	NameKeyGenerator::parseStringAsNameKeyType,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousLinkKey ), ThingTemplateDeparser::deparseMaxSimultaneousLinkKey },
 
 	{ nullptr, nullptr, nullptr, 0 }
 
@@ -1484,6 +1485,23 @@ AIUpdateModuleData *ThingTemplate::friend_getAIModuleInfo()
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Find final AI module data through a const ThingTemplate view. */
+//-------------------------------------------------------------------------------------------------
+const AIUpdateModuleData *ThingTemplate::friend_getAIModuleInfo() const
+{
+	Int numModInfos = m_behaviorModuleInfo.getCount();
+	for (int j = 0; j < numModInfos; ++j)
+	{
+		if (m_behaviorModuleInfo.getNthData(j) && m_behaviorModuleInfo.getNthData(j)->isAiModuleData())
+		{
+			return static_cast<const AIUpdateModuleData*>(m_behaviorModuleInfo.getNthData(j));
+		}
+	}
+
+	return nullptr;
+}
+
+//-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 void ThingTemplate::validateAudio()
 {
@@ -1812,6 +1830,8 @@ void ThingTemplate::initForLTA(const AsciiString& name)
 	m_instanceScaleFuzziness = 0.0f;	///< tolerance to randomly vary scale per instance
 	m_structureRubbleHeight = 0.0f;		// zero means "use global default"
 	m_displayName.translate( name );
+	// Reborn: LTA-generated templates retain the same label used to create their translated display name.
+	m_displayNameLabel = name;
 	m_shadowType = SHADOW_VOLUME;
 
 	m_geometryInfo.set(GEOMETRY_SPHERE, false, 10.0, 10.0, 10.0);

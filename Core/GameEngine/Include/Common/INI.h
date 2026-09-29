@@ -31,6 +31,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include <stddef.h>	// for offsetof, which we don't use but everyone who includes us does
+#include <string>
 #include "Common/STLTypedefs.h"
 #include "Common/AsciiString.h"
 #include "Common/GameCommon.h"
@@ -94,6 +95,10 @@ enum
 //-------------------------------------------------------------------------------------------------
 typedef void (*INIFieldParseProc)( INI *ini, void *instance, void *store, const void* userData );
 
+struct FieldParse;
+// Reborn: Allow a parse-table row to carry its matching deparse operation in the same source record.
+typedef Bool (*INIFieldDeparseProc)(const FieldParse& field, const void* instance, std::string& output, const char* indent);
+
 //-------------------------------------------------------------------------------------------------
 typedef const char* const ConstCharPtr;
 typedef ConstCharPtr* ConstCharPtrArray;
@@ -115,13 +120,15 @@ struct FieldParse
 	INIFieldParseProc		parse;						///< the parse function
 	const void*					userData;					///< field-specific data
 	Int									offset;						///< offset to data field
+	INIFieldDeparseProc deparse;					///< optional deparse operation for custom field parsers
 
-	void set(const char* t, INIFieldParseProc p, const void* u, Int o)
+	void set(const char* t, INIFieldParseProc p, const void* u, Int o, INIFieldDeparseProc d = nullptr)
 	{
 		token = t;
 		parse = p;
 		userData = u;
 		offset = o;
+		deparse = d;
 	}
 };
 
@@ -393,6 +400,8 @@ public:
 
 	static Int scanIndexList(const char* token, ConstCharPtrArray nameList);
 	static Int scanLookupList(const char* token, ConstLookupListRecArray lookupList);
+	// Reborn: Expose the canonical death-type parser table to source-driven deparsers.
+	static ConstCharPtrArray getDeathTypeNames();
 
 	static Bool scanBool(const char* token);
 

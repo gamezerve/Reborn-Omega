@@ -209,6 +209,8 @@ public:
 	virtual Bool isAiModuleData() const override { return true; }
 
 	const LocomotorTemplateVector* findLocomotorTemplateVector(LocomotorSetType t) const;
+	// Reborn: Return the canonical parser name table used by parseLocomotorSet.
+	static const char* const* getLocomotorSetNames();
 	static void buildFieldParse(MultiIniFieldParse& p);
 	static void parseLocomotorSet( INI* ini, void *instance, void *store, const void* /*userData*/ );
 

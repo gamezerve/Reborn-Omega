@@ -97,6 +97,15 @@ public:
 	Int getAllPossibleBuildFacilityTemplates(const ThingTemplate* tmpls[], Int maxtmpls) const;
 
 	Int getNumUnitPrereqs() const { return (Int)m_prereqUnits.size(); }
+	// Reborn: Expose stored science prerequisites so the Object deparser can reconstruct the block.
+	Int getNumSciencePrereqs() const { return (Int)m_prereqSciences.size(); }
+	// Reborn: Return one stored science prerequisite without exposing the mutable collection.
+	ScienceType getSciencePrereq(Int index) const
+	{
+		return (index >= 0 && index < (Int)m_prereqSciences.size())
+			? m_prereqSciences[index]
+			: SCIENCE_INVALID;
+	}
 
 	const ThingTemplate* getUnitPrereq(Int index) const
 	{

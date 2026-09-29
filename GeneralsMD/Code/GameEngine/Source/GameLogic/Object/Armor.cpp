@@ -130,6 +130,26 @@ const ArmorTemplate* ArmorStore::findArmorTemplate(NameKeyType namekey) const
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Resolve a stored ArmorTemplate pointer back to its registered INI name. */
+//-------------------------------------------------------------------------------------------------
+AsciiString ArmorStore::getNameForArmorTemplate(
+	const ArmorTemplate* armorTemplate) const
+{
+	if (!armorTemplate)
+		return AsciiString();
+
+	for (ArmorTemplateMap::const_iterator it = m_armorTemplates.begin();
+		it != m_armorTemplates.end();
+		++it)
+	{
+		if (&it->second == armorTemplate)
+			return TheNameKeyGenerator->keyToName(it->first);
+	}
+
+	return AsciiString();
+}
+
+//-------------------------------------------------------------------------------------------------
 const ArmorTemplate* ArmorStore::findArmorTemplate(const AsciiString& name) const
 {
 	return findArmorTemplate(TheNameKeyGenerator->nameToKey(name));

@@ -53,6 +53,8 @@
 #include "GameClient/GameText.h"
 #include "GameClient/Image.h"
 #include "GameClient/ParticleSys.h"
+
+#include <cstdint>
 #include "GameLogic/Armor.h"
 #include "GameLogic/ExperienceTracker.h"
 #include "GameLogic/FPUControl.h"
@@ -987,9 +989,17 @@ AsciiString INI::getNextAsciiString()
 /** Parse a string label, get the *translated* actual text from the label and store
 	* into a *UNICODE* string. */
 //-------------------------------------------------------------------------------------------------
-void INI::parseAndTranslateLabel( INI* ini, void * /*instance*/, void *store, const void* /*userData*/ )
+void INI::parseAndTranslateLabel( INI* ini, void *instance, void *store, const void* userData )
 {
 	const char *token = ini->getNextToken();
+
+	// Reborn: A field may opt in to retaining its source label by supplying an AsciiString member offset.
+	if (instance && userData)
+	{
+		AsciiString* sourceLabel = reinterpret_cast<AsciiString*>(
+			reinterpret_cast<char*>(instance) + reinterpret_cast<std::uintptr_t>(userData));
+		sourceLabel->set(token);
+	}
 
 	// translate
 	UnicodeString translated = TheGameText->fetch( token );
@@ -2345,6 +2355,14 @@ void INI::parseDamageTypeFlags(INI* ini, void* /*instance*/, void* store, const 
 		throw INI_UNKNOWN_TOKEN;
 	}
 	*(DamageTypeFlags*)store = flags;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return the exact death-type names consumed by parseDeathTypeFlags. */
+//-------------------------------------------------------------------------------------------------
+ConstCharPtrArray INI::getDeathTypeNames()
+{
+	return TheDeathNames;
 }
 
 //-------------------------------------------------------------------------------------------------

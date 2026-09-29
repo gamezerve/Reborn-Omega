@@ -122,6 +122,22 @@ Bool WeaponTemplateSet::hasAnyWeapons() const
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Return the same weapon-slot name table used by the INI parser. */
+//-------------------------------------------------------------------------------------------------
+/*static*/ const char* const* WeaponTemplateSet::getWeaponSlotTypeNames()
+{
+	return TheWeaponSlotTypeNames;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return the same command-source name table used by the INI parser. */
+//-------------------------------------------------------------------------------------------------
+/*static*/ const char* const* WeaponTemplateSet::getCommandSourceMaskNames()
+{
+	return TheCommandSourceMaskNames;
+}
+
+//-------------------------------------------------------------------------------------------------
 void WeaponTemplateSet::parseWeapon(INI* ini, void *instance, void * /*store*/, const void* userData)
 {
 	WeaponTemplateSet* self = (WeaponTemplateSet*)instance;

@@ -331,6 +331,12 @@ public:
 		return nullptr;
 	}
 
+	// Reborn: Expose the registered interface mask so source-driven deparsing can distinguish Body modules.
+	Int getNthInterfaceMask(size_t i) const
+	{
+		return i < m_info.size() ? m_info[i].interfaceMask : 0;
+	}
+
 	// for use only by ThingTemplate::friend_getAIModuleInfo
 	ModuleData* friend_getNthData(Int i);
 
@@ -450,6 +456,8 @@ public:
 
 	// This function is only for use by the AIUpdateModuleData::parseLocomotorSet function.
 	AIUpdateModuleData *friend_getAIModuleInfo();
+	// Reborn: Allow source-driven deparsers to inspect final AI module data without mutating it.
+	const AIUpdateModuleData *friend_getAIModuleInfo() const;
 
 	ShadowType getShadowType() const { return (ShadowType)m_shadowType; }
 	Real getShadowSizeX() const { return m_shadowSizeX; }
@@ -643,6 +651,12 @@ public:
 	AsciiString getUpgradeCameoName( Int n)const{ return m_upgradeCameoUpgradeNames[n];	}
 
 	const WeaponTemplateSetVector& getWeaponTemplateSets() const {return m_weaponTemplateSets;}
+	// Reborn: Expose final ArmorSet data as read-only input for Object deparsing.
+	const ArmorTemplateSetVector& getArmorTemplateSets() const { return m_armorTemplateSets; }
+	// Reborn: Expose final per-unit sound data as read-only input for Object deparsing.
+	const PerUnitSoundMap& getPerUnitSoundsForDeparser() const { return m_perUnitSounds; }
+	// Reborn: Expose final per-unit FX data as read-only input for Object deparsing.
+	const PerUnitFXMap& getPerUnitFXForDeparser() const { return m_perUnitFX; }
 
 protected:
 
@@ -690,6 +704,8 @@ private:
 
 	// ---- Strings
 	UnicodeString			m_displayName;			///< UI display for onscreen display
+	// Reborn: Preserve the canonical INI label so source-driven deparsing does not reverse translated text.
+	AsciiString				m_displayNameLabel;
 	AsciiString				m_nameString;					///< name of this thing template
 	AsciiString				m_defaultOwningSide;	///< default owning side (owning player is inferred)
 	AsciiString				m_commandSetString;

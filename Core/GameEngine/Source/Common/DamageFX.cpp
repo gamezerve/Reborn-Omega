@@ -286,6 +286,26 @@ const DamageFX *DamageFXStore::findDamageFX(NameKeyType namekey) const
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Resolve a stored DamageFX pointer back to its registered INI name. */
+//-------------------------------------------------------------------------------------------------
+AsciiString DamageFXStore::getNameForDamageFX(
+	const DamageFX* damageFX) const
+{
+	if (!damageFX)
+		return AsciiString();
+
+	for (DamageFXMap::const_iterator it = m_dfxmap.begin();
+		it != m_dfxmap.end();
+		++it)
+	{
+		if (&it->second == damageFX)
+			return TheNameKeyGenerator->keyToName(it->first);
+	}
+
+	return AsciiString();
+}
+
+//-------------------------------------------------------------------------------------------------
 const DamageFX *DamageFXStore::findDamageFX(const AsciiString& name) const
 {
 	return findDamageFX(TheNameKeyGenerator->nameToKey(name));

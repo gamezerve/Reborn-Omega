@@ -57,6 +57,7 @@ typedef Module *(*NewModuleProc)(Thing *thing, const ModuleData* moduleData);
 typedef ModuleData* (*NewModuleDataProc)(INI* ini);
 typedef ModuleData* (*CloneModuleDataProc)(const ModuleData* moduleData);
 typedef void (*ParseModuleDataProc)(INI* ini, ModuleData* moduleData);
+typedef void (*BuildModuleFieldParseProc)(MultiIniFieldParse& fields); // Reborn: Reuse canonical module field chains while deparsing.
 
 //-------------------------------------------------------------------------------------------------
 /** We use TheModuleFactory to register classes that will be attached
@@ -89,6 +90,15 @@ public:
 
 	ModuleData* cloneModuleData(const AsciiString& name, ModuleType type, const ModuleData* source);
 	Bool parseModuleDataFromINI(INI* ini, const AsciiString& name, ModuleType type, ModuleData* data);
+	Bool buildModuleFieldParse(const AsciiString& name, ModuleType type, MultiIniFieldParse& fields); // Reborn: Read registered module fields without duplicating them in tools.
+
+	// Reborn: Use a registered module's canonical field builder when its legacy declaration exposes one.
+	template<typename ModuleClass>
+	static void buildRegisteredModuleFieldParse(MultiIniFieldParse& fields)
+	{
+		if constexpr (requires { ModuleClass::friend_buildModuleFieldParse(fields); })
+			ModuleClass::friend_buildModuleFieldParse(fields);
+	}
 
 protected:
 
@@ -96,7 +106,7 @@ protected:
 	class ModuleTemplate
 	{
 	public:
-		ModuleTemplate() : m_createProc(nullptr), m_createDataProc(nullptr), m_cloneDataProc(nullptr), m_parseDataProc(nullptr), m_whichInterfaces(0)
+		ModuleTemplate() : m_createProc(nullptr), m_createDataProc(nullptr), m_cloneDataProc(nullptr), m_parseDataProc(nullptr), m_buildFieldParseProc(nullptr), m_whichInterfaces(0)
 		{
 		}
 
@@ -104,6 +114,7 @@ protected:
 		NewModuleDataProc m_createDataProc;	///< creation method
 		CloneModuleDataProc m_cloneDataProc;
 		ParseModuleDataProc m_parseDataProc;
+		BuildModuleFieldParseProc m_buildFieldParseProc; ///< Reborn: canonical module field-chain builder
 		Int m_whichInterfaces;
 	};
 
@@ -111,13 +122,14 @@ protected:
 
 	/// adding a new module template to the factory, and assisting macro to make it easier
 	//void addModuleInternal( NewModuleProc proc, NewModuleDataProc dataproc, ModuleType type, const AsciiString& name, Int whichIntf );
-	void addModuleInternal(	NewModuleProc proc,	NewModuleDataProc dataproc,	CloneModuleDataProc cloneproc, ParseModuleDataProc parseproc,	ModuleType type, const AsciiString& name,	Int whichIntf);
+	void addModuleInternal(	NewModuleProc proc,	NewModuleDataProc dataproc,	CloneModuleDataProc cloneproc, ParseModuleDataProc parseproc, BuildModuleFieldParseProc buildfieldproc,	ModuleType type, const AsciiString& name,	Int whichIntf);
 	#define addModule( classname ) \
 		addModuleInternal( \
 			classname::friend_newModuleInstance, \
 			classname::friend_newModuleData, \
 			classname::friend_cloneModuleData, \
 			classname::friend_parseModuleData, \
+			ModuleFactory::buildRegisteredModuleFieldParse<classname>, \
 			classname::getModuleType(), \
 			AsciiString( #classname ), \
 			classname::getInterfaceMask())

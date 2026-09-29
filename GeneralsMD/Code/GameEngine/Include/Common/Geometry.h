@@ -145,6 +145,8 @@ public:
 	static void parseGeometry(INI* ini, void* instance, void* store, const void* userData);
 	static void parseShape(INI* ini, void* instance, void* store, const void* userData);
 	static void parseGeometryIsSmallNested(INI* ini, void* instance, void* store, const void* userData);
+	// Reborn: Share the canonical geometry INI names with deparsers and other readers.
+	static const char* const* getGeometryTypeNames();
 
 	GeometryInfo(GeometryType type, Bool isSmall, Real height, Real majorRadius, Real minorRadius)
 	{
