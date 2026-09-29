@@ -62,6 +62,7 @@
 #include "Common/GlobalData.h"
 
 #include <map> // Reborn: Keep generated themed WND names stable for legacy const-char pointers.
+#include <random> // Reborn: Select a genuinely random process-stable layout instead of the unseeded C RNG.
 #include <string> // Reborn: Build themed WND names without maintaining duplicate lookup tables.
 
 //-----------------------------------------------------------------------------
@@ -101,8 +102,13 @@ Bool UseGeneralsLayout()
 
 			case REBORN_LAYOUT_THEME_RANDOM:
 			{
-				// Reborn: Keep Random consistent for the entire process so related layouts and images cannot disagree.
-				static const Bool randomLayoutUsesGenerals = (rand() % 2) != 0;
+				// Reborn: Choose Random once per process from the system entropy source so every themed asset remains consistent.
+				static const Bool randomLayoutUsesGenerals = []() -> Bool
+				{
+					std::random_device randomDevice;
+					std::uniform_int_distribution<Int> themeDistribution(0, 1);
+					return themeDistribution(randomDevice) != 0;
+				}();
 				return randomLayoutUsesGenerals;
 			}
 

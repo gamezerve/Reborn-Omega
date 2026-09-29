@@ -108,8 +108,23 @@ public:
 
 	AsciiString getScoreScreen() const
 	{
-		if (UseGeneralsLayout() && m_alternativeScoreScreenImage.isNotEmpty()) // Reborn: Follow the selected visual theme.
-			return m_alternativeScoreScreenImage;
+		if (UseGeneralsLayout())
+		{
+			// Reborn: Prefer an explicit Generals score image, then keep inherited/custom player templates in the selected theme.
+			if (m_alternativeScoreScreenImage.isNotEmpty())
+				return m_alternativeScoreScreenImage;
+
+			if (m_baseSide.compareNoCase("USA") == 0)
+				return "America_ScoreScreenGen";
+
+			if (m_baseSide.compareNoCase("China") == 0)
+				return "China_ScoreScreenGen";
+
+			if (m_baseSide.compareNoCase("GLA") == 0)
+				return "GLA_ScoreScreenGen";
+
+			return "MutiPlayer_ScoreScreenGen";
+		}
 
 		return m_scoreScreenImage;
 	}

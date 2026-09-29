@@ -43,6 +43,7 @@
 #include "Common/ThingFactory.h"
 #include "GameClient/InGameUI.h"
 #include "GameClient/Image.h"
+#include "GameLogic/Module/RiderChangeContain.h"
 
 
 const char *const TheUpgradeTypeNames[] =
@@ -256,6 +257,84 @@ static const char* GetUpgradeReferenceExceptionReason(const ThingTemplate* thing
 	return nullptr;
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return whether a configured rider legitimately owns an upgrade reference omitted from
+ * the containing object's UpgradeCameos. */
+//-------------------------------------------------------------------------------------------------
+static Bool IsUpgradeReferenceCoveredByRider(const AsciiString& riderName, const char* upgradeName)
+{
+	if (TheThingFactory == nullptr || riderName.isEmpty() || upgradeName == nullptr || upgradeName[0] == 0)
+		return FALSE;
+
+	const ThingTemplate* rider = TheThingFactory->findTemplate(riderName, FALSE);
+	if (rider == nullptr)
+		return FALSE;
+
+	std::map<AsciiString, ThingTemplateUpgradeReportEntry>::const_iterator report =
+		g_thingTemplateUpgradeReport.find(rider->getName());
+	if (report == g_thingTemplateUpgradeReport.end())
+		return FALSE;
+
+	const AsciiString upgrade(upgradeName);
+	if (report->second.refs.find(upgrade) == report->second.refs.end())
+		return FALSE;
+
+	if (report->second.cameos.find(upgrade) != report->second.cameos.end())
+		return TRUE;
+
+	return GetUpgradeReferenceExceptionReason(rider, upgradeName) != nullptr;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Exclude a carrier upgrade reference when one of its RiderChangeContain riders handles
+ * the same reference without producing a missing UpgradeCameo error. */
+//-------------------------------------------------------------------------------------------------
+static Bool IsRiderChangeContainUpgradeReferenceException(const ThingTemplate* thing, const char* upgradeName)
+{
+	if (thing == nullptr || upgradeName == nullptr || upgradeName[0] == 0)
+		return FALSE;
+
+	const ModuleInfo& behaviorModules = thing->getBehaviorModuleInfo();
+	for (Int moduleIndex = 0; moduleIndex < behaviorModules.getCount(); ++moduleIndex)
+	{
+		const RiderChangeContainModuleData* riderContain =
+			dynamic_cast<const RiderChangeContainModuleData*>(behaviorModules.getNthData(moduleIndex));
+		if (riderContain == nullptr)
+			continue;
+
+		for (Int riderIndex = 0; riderIndex < MAX_RIDERS; ++riderIndex)
+		{
+			const RiderInfo& riderInfo = riderContain->m_riders[riderIndex];
+			if (IsUpgradeReferenceCoveredByRider(riderInfo.m_templateName, upgradeName))
+				return TRUE;
+
+			for (AsciiStringList::const_iterator alias = riderInfo.m_templateAliases.begin();
+				alias != riderInfo.m_templateAliases.end(); ++alias)
+			{
+				if (IsUpgradeReferenceCoveredByRider(*alias, upgradeName))
+					return TRUE;
+			}
+		}
+	}
+
+	return FALSE;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Apply both ordinary upgrade-report exceptions and RiderChangeContain ownership rules. */
+//-------------------------------------------------------------------------------------------------
+static const char* GetThingTemplateUpgradeReferenceExceptionReason(const ThingTemplate* thing, const char* upgradeName)
+{
+	const char* reason = GetUpgradeReferenceExceptionReason(thing, upgradeName);
+	if (reason != nullptr)
+		return reason;
+
+	if (IsRiderChangeContainUpgradeReferenceException(thing, upgradeName))
+		return "handled by RiderChangeContain rider (Excluded)";
+
+	return nullptr;
+}
+
 void FlushThingTemplateUpgradeReport()
 {
 	if (!g_upgradeReportDirty)
@@ -281,7 +360,7 @@ void FlushThingTemplateUpgradeReport()
 
 		for (std::set<AsciiString>::const_iterator r = it->second.refs.begin(); r != it->second.refs.end(); ++r)
 		{
-			const char* exceptionReason = GetUpgradeReferenceExceptionReason(thing, r->str());
+			const char* exceptionReason = GetThingTemplateUpgradeReferenceExceptionReason(thing, r->str());
 			if (exceptionReason != nullptr)
 			{
 				exceptionRefCount++;
@@ -324,7 +403,7 @@ void FlushThingTemplateUpgradeReport()
 				fprintf(overflowFp, "  AllUpgradeReferences:\n");
 				for (std::set<AsciiString>::const_iterator r = it->second.refs.begin(); r != it->second.refs.end(); ++r)
 				{
-					const char* exceptionReason = GetUpgradeReferenceExceptionReason(thing, r->str());
+					const char* exceptionReason = GetThingTemplateUpgradeReferenceExceptionReason(thing, r->str());
 					if (exceptionReason != nullptr)
 						fprintf(overflowFp, "    %s (%s)\n", r->str(), exceptionReason);
 					else
@@ -348,7 +427,7 @@ void FlushThingTemplateUpgradeReport()
 		fprintf(fp, "  AllUpgradeReferences:\n");
 		for (std::set<AsciiString>::const_iterator r = it->second.refs.begin(); r != it->second.refs.end(); ++r)
 		{
-			const char* exceptionReason = GetUpgradeReferenceExceptionReason(thing, r->str());
+			const char* exceptionReason = GetThingTemplateUpgradeReferenceExceptionReason(thing, r->str());
 			if (exceptionReason != nullptr)
 				fprintf(fp, "    %s (%s)\n", r->str(), exceptionReason);
 			else
