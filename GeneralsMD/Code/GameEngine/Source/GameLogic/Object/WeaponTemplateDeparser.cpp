@@ -103,10 +103,13 @@ static void appendWeaponBonusFields(
 					static_cast<WeaponBonus::Field>(
 						field));
 
-			if (value == 1.0f)
+			// Reborn: Export named upgrade requirements together with their configured bonus values.
+			const char* upgrade = bonuses->getUpgradeRequirement(
+				static_cast<WeaponBonusConditionType>(condition), static_cast<WeaponBonus::Field>(field));
+			if (value == 1.0f && !upgrade)
 				continue;
 
-			const std::string text =
+			std::string text =
 				std::string(TheWeaponBonusNames[condition]) +
 				" " +
 				TheWeaponBonusFieldNames[field] +
@@ -114,6 +117,8 @@ static void appendWeaponBonusFields(
 				INIFieldDeparser::formatReal(
 					value * 100.0f) +
 				"%";
+			if (upgrade)
+				text += std::string(" ") + upgrade;
 
 			INIFieldDeparser::appendField(
 				output,

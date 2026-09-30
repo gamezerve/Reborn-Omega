@@ -47,6 +47,7 @@ class Weapon;
 class WeaponTemplate;
 class INI;
 class ParticleSystemTemplate;
+class UpgradeTemplate; // Reborn: Optional weapon-bonus upgrade requirements are resolved after INI loading.
 enum NameKeyType CPP_11(: Int);
 
 //-------------------------------------------------------------------------------------------------
@@ -312,9 +313,21 @@ class WeaponBonusSet : public MemoryPoolObject
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE( WeaponBonusSet, "WeaponBonusSet" )
 private:
 	WeaponBonus m_bonus[WEAPONBONUSCONDITION_COUNT];
+	// Reborn: Keep upgrade-gated bonuses separate so legacy flags cannot activate or duplicate them.
+	struct UpgradeBonus
+	{
+		WeaponBonusConditionType condition;
+		WeaponBonus::Field field;
+		Real value;
+		AsciiString upgradeName;
+		mutable const UpgradeTemplate* upgrade;
+	};
+	std::vector<UpgradeBonus> m_upgradeBonuses;
 
 public:
-	void appendBonuses(WeaponBonusConditionFlags flags, WeaponBonus& bonus) const;
+	void appendBonuses(WeaponBonusConditionFlags flags, WeaponBonus& bonus, const Object* source = nullptr) const; // Reborn: Evaluate named upgrades on the firing player's account.
+	void resolveUpgrades() const; // Reborn: Validate optional player upgrades after Upgrade.ini is loaded.
+	void recordUpgradeReferences() const; // Reborn: Include weapon-level upgrade requirements in the owning object's report.
 
 	void parseWeaponBonusSet(INI* ini);
 	static void parseWeaponBonusSet(INI* ini, void *instance, void* /*store*/, const void* /*userData*/);
@@ -322,7 +335,20 @@ public:
 
 	Real getField(WeaponBonusConditionType condition,	WeaponBonus::Field field) const
 	{
+		// Reborn: Return the configured gated value for INI export, while runtime evaluates its requirement separately.
+		for (std::vector<UpgradeBonus>::const_iterator it = m_upgradeBonuses.begin(); it != m_upgradeBonuses.end(); ++it)
+			if (it->condition == condition && it->field == field)
+				return it->value;
 		return m_bonus[condition].getField(field);
+	}
+
+	// Reborn: Preserve the optional upgrade name when a weapon is exported back to INI.
+	const char* getUpgradeRequirement(WeaponBonusConditionType condition, WeaponBonus::Field field) const
+	{
+		for (std::vector<UpgradeBonus>::const_iterator it = m_upgradeBonuses.begin(); it != m_upgradeBonuses.end(); ++it)
+			if (it->condition == condition && it->field == field)
+				return it->upgradeName.str();
+		return nullptr;
 	}
 
 };

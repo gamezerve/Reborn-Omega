@@ -48,6 +48,7 @@
 #include "Common/RebornLog.h"
 #include "Common/ThingFactory.h"
 #include "Common/ThingTemplate.h"
+#include "Common/Upgrade.h" // Reborn: Resolve and check named weapon-bonus upgrades independently of shared flags.
 #include "Common/Xfer.h"
 
 #include "GameClient/Drawable.h"
@@ -407,6 +408,10 @@ void WeaponTemplate::reset()
 //-------------------------------------------------------------------------------------------------
 void WeaponTemplate::postProcessLoad()
 {
+	// Reborn: Weapon.ini is loaded before Upgrade.ini, so resolve named bonus requirements here.
+	if (m_extraBonus)
+		m_extraBonus->resolveUpgrades();
+
 	if (!TheThingFactory)
 	{
 		DEBUG_CRASH(("you must call this after TheThingFactory is inited"));
@@ -1918,10 +1923,10 @@ void Weapon::computeBonus(const Object *source, WeaponBonusConditionFlags extraB
 	}
 
 	if (TheGlobalData->m_weaponBonusSet)
-		TheGlobalData->m_weaponBonusSet->appendBonuses(flags, bonus);
+		TheGlobalData->m_weaponBonusSet->appendBonuses(flags, bonus, source); // Reborn: Supply the owner for optional named upgrade checks.
 	const WeaponBonusSet* extra = m_template->getExtraBonus();
 	if (extra)
-		extra->appendBonuses(flags, bonus);
+		extra->appendBonuses(flags, bonus, source); // Reborn: Named PLAYER_UPGRADE bonuses do not depend on the shared upgrade flag.
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -3606,13 +3611,76 @@ void WeaponBonusSet::parseWeaponBonusSet(INI* ini)
 {
 	WeaponBonusConditionType wb = (WeaponBonusConditionType)INI::scanIndexList(ini->getNextToken(), TheWeaponBonusNames);
 	WeaponBonus::Field wf = (WeaponBonus::Field)INI::scanIndexList(ini->getNextToken(), TheWeaponBonusFieldNames);
-	m_bonus[wb].setField(wf, INI::scanPercentToReal(ini->getNextToken()));
+	// Reborn: An optional fourth token names the player upgrade that activates this individual bonus field.
+	const Real value = INI::scanPercentToReal(ini->getNextToken());
+	const char* upgradeToken = ini->getNextTokenOrNull();
+	AsciiString upgradeName;
+	if (upgradeToken)
+		upgradeName = upgradeToken;
+	if (ini->getNextTokenOrNull())
+	{
+		DEBUG_CRASH(("WeaponBonus accepts at most one upgrade requirement"));
+		throw INI_INVALID_DATA;
+	}
+
+	// Reborn: Preserve last-definition-wins behavior when maps override a previously gated or legacy field.
+	for (std::vector<UpgradeBonus>::iterator it = m_upgradeBonuses.begin(); it != m_upgradeBonuses.end(); ++it)
+	{
+		if (it->condition == wb && it->field == wf)
+		{
+			m_upgradeBonuses.erase(it);
+			break;
+		}
+	}
+	if (upgradeName.isEmpty())
+	{
+		m_bonus[wb].setField(wf, value);
+	}
+	else
+	{
+		UpgradeBonus required;
+		required.condition = wb;
+		required.field = wf;
+		required.value = value;
+		required.upgradeName = upgradeName;
+		required.upgrade = nullptr;
+		m_upgradeBonuses.push_back(required);
+		m_bonus[wb].setField(wf, 1.0f);
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
-void WeaponBonusSet::appendBonuses(WeaponBonusConditionFlags flags, WeaponBonus& bonus) const
+/** Reborn: Resolve named player upgrades once definitions are available, rejecting invalid requirements. */
+//-------------------------------------------------------------------------------------------------
+void WeaponBonusSet::resolveUpgrades() const
 {
-	if (flags == 0)
+	for (std::vector<UpgradeBonus>::const_iterator it = m_upgradeBonuses.begin(); it != m_upgradeBonuses.end(); ++it)
+	{
+		if (!it->upgrade)
+			it->upgrade = TheUpgradeCenter ? TheUpgradeCenter->findUpgrade(it->upgradeName) : nullptr;
+		if (!it->upgrade || it->upgrade->getUpgradeType() != UPGRADE_TYPE_PLAYER)
+		{
+			DEBUG_CRASH(("WeaponBonus requires a valid PLAYER upgrade: %s", it->upgradeName.str()));
+			throw INI_INVALID_DATA;
+		}
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Capture weapon-level upgrade dependencies when this weapon is assigned to an object. */
+//-------------------------------------------------------------------------------------------------
+void WeaponBonusSet::recordUpgradeReferences() const
+{
+	for (std::vector<UpgradeBonus>::const_iterator it = m_upgradeBonuses.begin(); it != m_upgradeBonuses.end(); ++it)
+		RecordThingTemplateUpgradeToken(it->upgradeName.str());
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Combine legacy flag bonuses with individually gated player-upgrade bonuses exactly once. */
+//-------------------------------------------------------------------------------------------------
+void WeaponBonusSet::appendBonuses(WeaponBonusConditionFlags flags, WeaponBonus& bonus, const Object* source) const
+{
+	if (flags == 0 && m_upgradeBonuses.empty())
 		return;	// my, that was easy
 
 	for (int i = 0; i < WEAPONBONUSCONDITION_COUNT; ++i)
@@ -3621,6 +3689,19 @@ void WeaponBonusSet::appendBonuses(WeaponBonusConditionFlags flags, WeaponBonus&
 			continue;
 
 		this->m_bonus[i].appendBonuses(bonus);
+	}
+
+	if (!source || m_upgradeBonuses.empty())
+		return;
+	resolveUpgrades();
+	const Player* player = source->getControllingPlayer();
+	for (std::vector<UpgradeBonus>::const_iterator it = m_upgradeBonuses.begin(); it != m_upgradeBonuses.end(); ++it)
+	{
+		// Reborn: Named PLAYER_UPGRADE checks ownership directly; other conditions must also have their flag active.
+		if (it->condition != WEAPONBONUSCONDITION_PLAYER_UPGRADE && (flags & (1 << it->condition)) == 0)
+			continue;
+		if (player && player->hasUpgradeComplete(it->upgrade))
+			bonus.setField(it->field, bonus.getField(it->field) + it->value - 1.0f);
 	}
 }
 
