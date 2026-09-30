@@ -92,14 +92,20 @@ public:
 	void copyFrom( const Image *image ); // Reborn: Copy mapped-image definition data while preserving this image's identity.
 	Int getOverlayCount() const; // Reborn: Return the number of overlay slots defined for this mapped image.
 	const Image *getOverlay( Int index ) const; // Reborn: Return a resolved overlay image by draw order.
+	Int getBuffNerfOverlayCount() const; // Reborn: Return the number of positioned buff/nerf icon slots.
+	const Image *getBuffNerfOverlay( Int index ) const; // Reborn: Return a positioned buff/nerf icon by field order.
+	Bool getBuffNerfOverlayCenter( Int index, ICoord2D *center ) const; // Reborn: Return the reference-PNG center for a buff/nerf icon field.
 
 
 	// for parsing from INI
 	const FieldParse *getFieldParse() const { return m_imageFieldParseTable; }
 	const FieldParse *getInheritFieldParse() const { return m_imageInheritFieldParseTable; } // Reborn: Allow overlays only on inherited mapped images.
+	const FieldParse *getBuffNerfOverlayFieldParse() const { return m_imageBuffNerfOverlayFieldParseTable; } // Reborn: Parse up to four positioned buff/nerf icons.
 	static void parseImageCoords( INI* ini, void *instance, void *store, const void* /*userData*/ );
 	static void parseImageStatus( INI* ini, void *instance, void *store, const void* /*userData*/ );
 	static void parseImageOverlay( INI* ini, void *instance, void *store, const void *userData ); // Reborn: Parse an ordered mapped-image overlay reference.
+	static void parseBuffNerfOverlayModule( INI* ini, void *instance, void *store, const void *userData ); // Reborn: Parse the nested MappedImageOverlay module.
+	static void parseBuffNerfOverlay( INI* ini, void *instance, void *store, const void *userData ); // Reborn: Parse a positioned buff/nerf mapped-image reference.
 
 protected:
 
@@ -114,9 +120,12 @@ friend class ImageCollection;
 	UnsignedInt m_status;			///< status bits from ImageStatus
 	std::vector<AsciiString> m_overlayNames; // Reborn: Overlay names retained until every mapped image has loaded.
 	std::vector<const Image *> m_overlays; // Reborn: Resolved overlays drawn over this image in numeric order.
+	std::vector<AsciiString> m_buffNerfOverlayNames; // Reborn: Buff/nerf icon names retained until every mapped image has loaded.
+	std::vector<const Image *> m_buffNerfOverlays; // Reborn: Buff/nerf icons positioned from the 150x150 reference layouts.
 
 	static const FieldParse m_imageFieldParseTable[];		///< the parse table for INI definition
 	static const FieldParse m_imageInheritFieldParseTable[]; // Reborn: Inherited image fields plus Overlay1...Overlay8.
+	static const FieldParse m_imageBuffNerfOverlayFieldParseTable[]; // Reborn: Inherited image fields with MappedImage1...MappedImage4 slots.
 
 };
 
@@ -209,6 +218,8 @@ inline const void *Image::getRawTextureData() const { return m_rawTextureData; }
 inline UnsignedInt Image::getStatus() const { return m_status; }
 inline Int Image::getOverlayCount() const { return static_cast<Int>( m_overlays.size() ); }
 inline const Image *Image::getOverlay( Int index ) const { return index >= 0 && index < getOverlayCount() ? m_overlays[index] : nullptr; }
+inline Int Image::getBuffNerfOverlayCount() const { return static_cast<Int>( m_buffNerfOverlays.size() ); }
+inline const Image *Image::getBuffNerfOverlay( Int index ) const { return index >= 0 && index < getBuffNerfOverlayCount() ? m_buffNerfOverlays[index] : nullptr; }
 
 // EXTERNALS //////////////////////////////////////////////////////////////////////////////////////
 extern ImageCollection *TheMappedImageCollection;  ///< mapped images

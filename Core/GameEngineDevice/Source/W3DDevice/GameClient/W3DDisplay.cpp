@@ -3008,6 +3008,30 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 			drawImage( overlay, startX, startY, endX, endY, color, mode );
 	}
 
+	// Reborn: Draw buff/nerf icons at their reference-PNG centers while preserving native icon size at 150x150.
+	const Real destinationScaleX = (Real)( endX - startX ) / 150.0f;
+	const Real destinationScaleY = (Real)( endY - startY ) / 150.0f;
+	for( Int overlayIndex = 0; overlayIndex < image->getBuffNerfOverlayCount(); ++overlayIndex )
+	{
+		const Image *overlay = image->getBuffNerfOverlay( overlayIndex );
+		ICoord2D referenceCenter;
+		if( !overlay || !image->getBuffNerfOverlayCenter( overlayIndex, &referenceCenter ) )
+			continue;
+
+		const Int overlayWidth = static_cast<Int>( overlay->getImageWidth() * destinationScaleX + 0.5f );
+		const Int overlayHeight = static_cast<Int>( overlay->getImageHeight() * destinationScaleY + 0.5f );
+		const Int centerX = startX + static_cast<Int>( referenceCenter.x * destinationScaleX + 0.5f );
+		const Int centerY = startY + static_cast<Int>( referenceCenter.y * destinationScaleY + 0.5f );
+		drawImage(
+			overlay,
+			centerX - overlayWidth / 2,
+			centerY - overlayHeight / 2,
+			centerX - overlayWidth / 2 + overlayWidth,
+			centerY - overlayHeight / 2 + overlayHeight,
+			color,
+			mode );
+	}
+
 }
 
 //============================================================================

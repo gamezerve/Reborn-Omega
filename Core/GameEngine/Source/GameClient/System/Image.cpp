@@ -71,6 +71,18 @@ const FieldParse Image::m_imageInheritFieldParseTable[] =
 	{ "Overlay6",      Image::parseImageOverlay, (void *)5, 0 },
 	{ "Overlay7",      Image::parseImageOverlay, (void *)6, 0 },
 	{ "Overlay8",      Image::parseImageOverlay, (void *)7, 0 },
+	{ "MappedImageOverlay", Image::parseBuffNerfOverlayModule, nullptr, 0 },
+
+	{ nullptr, nullptr, nullptr, 0 }
+};
+
+// Reborn: The nested MappedImageOverlay module accepts four reference-positioned icon fields.
+const FieldParse Image::m_imageBuffNerfOverlayFieldParseTable[] =
+{
+	{ "MappedImage1", Image::parseBuffNerfOverlay, (void *)0, 0 },
+	{ "MappedImage2", Image::parseBuffNerfOverlay, (void *)1, 0 },
+	{ "MappedImage3", Image::parseBuffNerfOverlay, (void *)2, 0 },
+	{ "MappedImage4", Image::parseBuffNerfOverlay, (void *)3, 0 },
 
 	{ nullptr, nullptr, nullptr, 0 }
 };
@@ -200,6 +212,80 @@ void Image::parseImageOverlay( INI *ini, void *instance, void *store, const void
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Parse a MappedImageOverlay module nested directly inside MappedImageInherit. */
+//-------------------------------------------------------------------------------------------------
+void Image::parseBuffNerfOverlayModule( INI *ini, void *instance, void *store, const void *userData )
+{
+	Image *image = static_cast<Image *>( instance );
+	ini->initFromINI( image, image->getBuffNerfOverlayFieldParse() );
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Parse a buff/nerf icon field while allowing its mapped image to be declared later. */
+//-------------------------------------------------------------------------------------------------
+void Image::parseBuffNerfOverlay( INI *ini, void *instance, void *store, const void *userData )
+{
+	Image *image = static_cast<Image *>( instance );
+	const Int overlayIndex = (Int)userData;
+	const AsciiString overlayName = ini->getNextToken();
+
+	if( image->m_buffNerfOverlayNames.size() <= static_cast<size_t>( overlayIndex ) )
+		image->m_buffNerfOverlayNames.resize( overlayIndex + 1 );
+
+	image->m_buffNerfOverlayNames[overlayIndex] = overlayName;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return the icon center measured from the supplied 150x150 reference PNG layouts. */
+//-------------------------------------------------------------------------------------------------
+Bool Image::getBuffNerfOverlayCenter( Int index, ICoord2D *center ) const
+{
+	if( center == nullptr || index < 0 || index >= getBuffNerfOverlayCount() )
+		return FALSE;
+
+	static const ICoord2D centerForOne = { 121, 112 };
+	static const ICoord2D centersForTwo[] =
+	{
+		{ 121, 95 },
+		{ 121, 129 }
+	};
+	static const ICoord2D centersForThree[] =
+	{
+		{ 112, 94 },
+		{ 94, 131 },
+		{ 131, 131 }
+	};
+	static const ICoord2D centersForFour[] =
+	{
+		{ 94, 94 },
+		{ 131, 94 },
+		{ 94, 131 },
+		{ 131, 131 }
+	};
+
+	if( getBuffNerfOverlayCount() == 1 )
+	{
+		*center = centerForOne;
+		return TRUE;
+	}
+
+	if( getBuffNerfOverlayCount() == 2 )
+	{
+		*center = centersForTwo[index];
+		return TRUE;
+	}
+
+	if( getBuffNerfOverlayCount() == 3 )
+	{
+		*center = centersForThree[index];
+		return TRUE;
+	}
+
+	*center = centersForFour[index];
+	return TRUE;
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Reborn: Copy mapped-image definition data without changing the child's name or sharing runtime texture data. */
 //-------------------------------------------------------------------------------------------------
 void Image::copyFrom( const Image *image )
@@ -217,6 +303,8 @@ void Image::copyFrom( const Image *image )
 	m_status = image->m_status & ~IMAGE_STATUS_RAW_TEXTURE;
 	m_overlayNames = image->m_overlayNames;
 	m_overlays.clear();
+	m_buffNerfOverlayNames = image->m_buffNerfOverlayNames;
+	m_buffNerfOverlays.clear();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -392,6 +480,32 @@ void ImageCollection::resolveOverlays()
 
 			image->m_overlays[index] = overlay;
 		}
+
+		image->m_buffNerfOverlays.clear();
+		image->m_buffNerfOverlays.resize( image->m_buffNerfOverlayNames.size(), nullptr );
+		for( size_t index = 0; index < image->m_buffNerfOverlayNames.size(); ++index )
+		{
+			const AsciiString& overlayName = image->m_buffNerfOverlayNames[index];
+			if( overlayName.isEmpty() || overlayName.compareNoCase( "None" ) == 0 )
+			{
+				DEBUG_CRASH(( "MappedImageOverlay '%s' must define MappedImage fields consecutively starting at MappedImage1.", image->getName().str() ));
+				throw INI_INVALID_DATA;
+			}
+
+			const Image *overlay = findImageByName( overlayName );
+			if( !overlay )
+			{
+				DEBUG_CRASH(( "MappedImageOverlay '%s' references missing MappedImage%d '%s'.", image->getName().str(), static_cast<Int>( index ) + 1, overlayName.str() ));
+				REBORN_LOG(
+					"INI_INVALID_DATA: MappedImageOverlay '%s' references missing MappedImage%d '%s'.",
+					image->getName().str(),
+					static_cast<Int>( index ) + 1,
+					overlayName.str() );
+				throw INI_INVALID_DATA;
+			}
+
+			image->m_buffNerfOverlays[index] = overlay;
+		}
 	}
 
 	for( ImageMap::const_iterator imageIt = m_imageMap.begin(); imageIt != m_imageMap.end(); ++imageIt )
@@ -420,6 +534,12 @@ Bool ImageCollection::validateOverlayChain( const Image *image, std::vector<cons
 	for( Int index = 0; index < image->getOverlayCount(); ++index )
 	{
 		const Image *overlay = image->getOverlay( index );
+		if( overlay )
+			validateOverlayChain( overlay, resolving );
+	}
+	for( Int index = 0; index < image->getBuffNerfOverlayCount(); ++index )
+	{
+		const Image *overlay = image->getBuffNerfOverlay( index );
 		if( overlay )
 			validateOverlayChain( overlay, resolving );
 	}
