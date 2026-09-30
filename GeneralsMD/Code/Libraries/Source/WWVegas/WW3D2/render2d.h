@@ -108,7 +108,8 @@ public:
 	void	Set_Texture( const char * filename );
 	void	Enable_Additive(bool b);
 	void	Enable_Alpha(bool b);
-	void	Enable_Grayscale(bool b);///<added for generals to draw disabled button states - MW
+	// Reborn: Alpha preservation is opt-in for transparent disabled overlays.
+	void	Enable_Grayscale(bool b, bool preserveAlpha = false);
 	void  Enable_Texturing(bool b);
 
 	ShaderClass *			Get_Shader() { return &Shader; }
@@ -173,6 +174,7 @@ protected:
 	unsigned long								PreAllocatedColors[60];
 	bool											IsHidden;
 	bool											IsGrayScale;
+	bool PreserveGrayScaleAlpha; // Reborn: Keep legacy grayscale rendering unchanged unless explicitly requested.
 	float											ZValue;
 
 	static RectClass							ScreenResolution;

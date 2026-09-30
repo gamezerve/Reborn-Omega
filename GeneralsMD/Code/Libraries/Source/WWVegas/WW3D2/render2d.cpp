@@ -71,6 +71,7 @@ Render2DClass::Render2DClass( TextureClass* tex ) :
 	ZValue(0),
 	IsHidden( false ),
 	IsGrayScale (false),
+	PreserveGrayScaleAlpha(false), // Reborn: Default to the original opaque grayscale path.
 	Indices(sizeof(PreAllocatedIndices)/sizeof(unsigned short),PreAllocatedIndices),
 	Vertices(sizeof(PreAllocatedVertices)/sizeof(Vector2),PreAllocatedVertices),
 	UVCoordinates(sizeof(PreAllocatedUVCoordinates)/sizeof(Vector2),PreAllocatedUVCoordinates),
@@ -138,10 +139,11 @@ void Render2DClass::Set_Texture( const char * filename)
 	}
 }
 
-/**added for generals to draw disabled button states - MW*/
-void Render2DClass::Enable_Grayscale(bool b)
+/** Reborn: Enable grayscale with optional alpha preservation for mapped-image overlays. */
+void Render2DClass::Enable_Grayscale(bool b, bool preserveAlpha)
 {
 	IsGrayScale = b;
+	PreserveGrayScaleAlpha = b && preserveAlpha;
 }
 
 void Render2DClass::Enable_Alpha(bool b)
@@ -687,6 +689,30 @@ void Render2DClass::Render()
 			// TheSuperHackers @bugfix Stubbjax 08/01/2026 Fix possible greyscale rendering issues on hardware without DOT3 support.
 			DX8Wrapper::Set_DX8_Texture_Stage_State( 1, D3DTSS_COLOROP, D3DTOP_DISABLE);
 		}
+		if (PreserveGrayScaleAlpha)
+		{
+			// Reborn: DOT3 also replaces alpha; recover the original texture alpha after the luminance stage.
+			DX8Wrapper::Set_DX8_Render_State(D3DRS_ALPHABLENDENABLE, TRUE);
+			DX8Wrapper::Set_DX8_Render_State(D3DRS_SRCBLEND, D3DBLEND_SRCALPHA);
+			DX8Wrapper::Set_DX8_Render_State(D3DRS_DESTBLEND, D3DBLEND_INVSRCALPHA);
+			if (DX8Wrapper::Get_Current_Caps()->Support_Dot3())
+			{
+				DX8Wrapper::Set_Texture(2, Texture);
+				DX8Wrapper::Apply_Render_State_Changes();
+				DX8Wrapper::Set_DX8_Texture_Stage_State(2, D3DTSS_TEXCOORDINDEX, 0);
+				DX8Wrapper::Set_DX8_Texture_Stage_State(2, D3DTSS_COLORARG1, D3DTA_CURRENT);
+				DX8Wrapper::Set_DX8_Texture_Stage_State(2, D3DTSS_COLOROP, D3DTOP_SELECTARG1);
+				DX8Wrapper::Set_DX8_Texture_Stage_State(2, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+				DX8Wrapper::Set_DX8_Texture_Stage_State(2, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+				DX8Wrapper::Set_DX8_Texture_Stage_State(2, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+			}
+			else
+			{
+				DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_ALPHAARG1, D3DTA_TEXTURE);
+				DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_ALPHAARG2, D3DTA_DIFFUSE);
+				DX8Wrapper::Set_DX8_Texture_Stage_State(0, D3DTSS_ALPHAOP, D3DTOP_MODULATE);
+			}
+		}
 	}
 	else
 		DX8Wrapper::Set_Shader(Shader);
@@ -694,6 +720,14 @@ void Render2DClass::Render()
 
 	DX8Wrapper::Set_Transform(D3DTS_VIEW,view);
 	DX8Wrapper::Set_Transform(D3DTS_PROJECTION,proj);
+	if (IsGrayScale && PreserveGrayScaleAlpha && DX8Wrapper::Get_Current_Caps()->Support_Dot3())
+	{
+		// Reborn: Remove the overlay-only alpha recovery stage before any subsequent GUI draw.
+		DX8Wrapper::Set_DX8_Texture_Stage_State(2, D3DTSS_COLOROP, D3DTOP_DISABLE);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(2, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(2, D3DTSS_TEXCOORDINDEX, 2);
+		DX8Wrapper::Set_Texture(2, nullptr);
+	}
 	if (IsGrayScale)
 		ShaderClass::Invalidate();	//force both stages to be reset.
 

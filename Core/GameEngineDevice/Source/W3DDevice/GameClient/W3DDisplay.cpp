@@ -691,6 +691,12 @@ void W3DDisplay::setup2DRenderState(TextureClass *tex, DrawImageMode mode, Bool 
 				m_2DRender->Enable_Alpha(TRUE);
 				m_2DRender->Enable_Grayscale(TRUE);
 				break;
+			case DRAW_IMAGE_GRAYSCALE_ALPHA:
+				// Reborn: Only transparent overlay layers opt into alpha-preserving grayscale.
+				m_2DRender->Enable_Additive(FALSE);
+				m_2DRender->Enable_Alpha(TRUE);
+				m_2DRender->Enable_Grayscale(TRUE, TRUE);
+				break;
 			case DRAW_IMAGE_ADDITIVE:
 				m_2DRender->Enable_Additive(TRUE);
 				m_2DRender->Enable_Alpha(FALSE);
@@ -2876,7 +2882,7 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 	else
 		tex = WW3DAssetManager::Get_Instance()->Get_Texture(image->getFilename().str(), MIP_LEVELS_1);
 
-	Bool grayscale = (mode == DRAW_IMAGE_GRAYSCALE);
+	Bool grayscale = (mode == DRAW_IMAGE_GRAYSCALE || mode == DRAW_IMAGE_GRAYSCALE_ALPHA); // Reborn: Track both grayscale modes for batching.
 	setup2DRenderState(tex, mode, grayscale);
 
 	RectClass screen_rect(startX,startY,endX,endY);
@@ -3001,11 +3007,13 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 	}
 
 	// Reborn: Draw inherited mapped-image overlays over the same destination so each source overlay is scaled to the base image.
+	// Reborn: Keep the base disabled image on the legacy path while preserving each overlay's transparency.
+	const DrawImageMode overlayMode = mode == DRAW_IMAGE_GRAYSCALE ? DRAW_IMAGE_GRAYSCALE_ALPHA : mode;
 	for( Int overlayIndex = 0; overlayIndex < image->getOverlayCount(); ++overlayIndex )
 	{
 		const Image *overlay = image->getOverlay( overlayIndex );
 		if( overlay )
-			drawImage( overlay, startX, startY, endX, endY, color, mode );
+			drawImage( overlay, startX, startY, endX, endY, color, overlayMode );
 	}
 
 	// Reborn: Draw buff/nerf icons at their reference-PNG centers while preserving native icon size at 150x150.
@@ -3029,7 +3037,7 @@ void W3DDisplay::drawImage( const Image *image, Int startX, Int startY,
 			centerX - overlayWidth / 2 + overlayWidth,
 			centerY - overlayHeight / 2 + overlayHeight,
 			color,
-			mode );
+			overlayMode );
 	}
 
 }
