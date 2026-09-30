@@ -1843,24 +1843,24 @@ void W3DView::update()
 	m_terrainHeightAtPivot = getHeightAroundPos(m_pos.x, m_pos.y);
 	m_currentHeightAboveGround = getCameraOffsetZ() * m_zoom - m_terrainHeightAtPivot;
 
-	if (!TheGlobalData->m_mapName.compareNoCase("Maps\\ShellMapMD\\ShellMapMD.map"))
-	{
-		DEBUG_LOG((
-			"CAM MD CAMERA UPDATE: user=%d scripted=%d "
-			"pos=(%.2f, %.2f, %.2f) zoom=%.4f "
-			"heightAboveGround=%.2f currentHeightAboveGround=%.2f "
-			"maxHeightAboveGround=%.2f terrainHeight=%.2f",
-			m_isUserControlled,
-			isDoingScriptedCamera(),
-			m_pos.x,
-			m_pos.y,
-			m_pos.z,
-			m_zoom,
-			m_heightAboveGround,
-			m_currentHeightAboveGround,
-			m_maxHeightAboveGround,
-			m_terrainHeightAtPivot));
-	}
+	//if (!TheGlobalData->m_mapName.compareNoCase("Maps\\ShellMapMD\\ShellMapMD.map"))
+	//{
+	//	DEBUG_LOG((
+	//		"CAM MD CAMERA UPDATE: user=%d scripted=%d "
+	//		"pos=(%.2f, %.2f, %.2f) zoom=%.4f "
+	//		"heightAboveGround=%.2f currentHeightAboveGround=%.2f "
+	//		"maxHeightAboveGround=%.2f terrainHeight=%.2f",
+	//		m_isUserControlled,
+	//		isDoingScriptedCamera(),
+	//		m_pos.x,
+	//		m_pos.y,
+	//		m_pos.z,
+	//		m_zoom,
+	//		m_heightAboveGround,
+	//		m_currentHeightAboveGround,
+	//		m_maxHeightAboveGround,
+	//		m_terrainHeightAtPivot));
+	//}
 
 	if (m_okToAdjustHeight)
 	{

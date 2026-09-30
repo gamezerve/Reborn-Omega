@@ -2040,14 +2040,14 @@ void W3DModelDraw::setHidden(Bool hidden)
 {
 	if (hidden)
 	{
-#if defined(RTS_DEBUG)
-		DEBUG_LOG((
-			"MUZZLE DEBUG: source=setHidden state='%s' stateModel='%s' renderModel='%s'\n",
-			m_curState ? m_curState->m_description.str() : "<null>",
-			m_curState ? m_curState->m_modelName.str() : "<null>",
-			m_renderObject ? m_renderObject->Get_Name() : "<null>"
-			));
-#endif
+//#if defined(RTS_DEBUG)
+//		DEBUG_LOG((
+//			"MUZZLE DEBUG: source=setHidden state='%s' stateModel='%s' renderModel='%s'\n",
+//			m_curState ? m_curState->m_description.str() : "<null>",
+//			m_curState ? m_curState->m_modelName.str() : "<null>",
+//			m_renderObject ? m_renderObject->Get_Name() : "<null>"
+//			));
+//#endif
 		hideAllMuzzleFlashes(m_curState, m_renderObject);
 		rebuildWeaponRecoilInfo(m_curState);
 	}
@@ -3180,16 +3180,16 @@ void W3DModelDraw::hideAllMuzzleFlashes(const ModelConditionInfo* state, RenderO
 		{
 			if (it->m_muzzleFlashBone != 0)
 			{
-#if defined(RTS_DEBUG)
-				DEBUG_LOG((
-					"MUZZLE DEBUG: hideAll state='%s' stateModel='%s' renderModel='%s' muzzle='%s' boneIndex=%d\n",
-					state->m_description.str(),
-					state->m_modelName.str(),
-					renderObject->Get_Name(),
-					it->m_muzzleFlashBoneName.str(),
-					it->m_muzzleFlashBone
-					));
-#endif
+//#if defined(RTS_DEBUG)
+//				DEBUG_LOG((
+//					"MUZZLE DEBUG: hideAll state='%s' stateModel='%s' renderModel='%s' muzzle='%s' boneIndex=%d\n",
+//					state->m_description.str(),
+//					state->m_modelName.str(),
+//					renderObject->Get_Name(),
+//					it->m_muzzleFlashBoneName.str(),
+//					it->m_muzzleFlashBone
+//					));
+//#endif
 				it->setMuzzleFlashHidden(renderObject, true);
 			}
 		}

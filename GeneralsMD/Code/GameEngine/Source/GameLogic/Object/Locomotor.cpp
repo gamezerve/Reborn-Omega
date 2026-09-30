@@ -2273,18 +2273,18 @@ PhysicsTurningType Locomotor::rotateObjAroundLocoPivot(Object* obj, const Coord3
 			turn = TURN_NONE;
 		}
 
-		if (obj->getTemplate()->getName().compare("AmericaVehicleComanche") == 0)
-		{
-			DEBUG_LOG((
-				"COMANCHE TURN id=%u frame=%u angle=%.9f desired=%.9f amount=%.9f turn=%d\n",
-				obj->getID(),
-				TheGameLogic->getFrame(),
-				angle,
-				desiredAngle,
-				amount,
-				(Int)turn
-				));
-		}
+		//if (obj->getTemplate()->getName().compare("AmericaVehicleComanche") == 0)
+		//{
+		//	DEBUG_LOG((
+		//		"COMANCHE TURN id=%u frame=%u angle=%.9f desired=%.9f amount=%.9f turn=%d\n",
+		//		obj->getID(),
+		//		TheGameLogic->getFrame(),
+		//		angle,
+		//		desiredAngle,
+		//		amount,
+		//		(Int)turn
+		//		));
+		//}
 
 		obj->setOrientation( normalizeAngle(angle + amount) );
 	}

@@ -1624,9 +1624,9 @@ StateReturnType AIInternalMoveToState::onEnter()
 		return STATE_FAILURE;
 	}
 
-	DEBUG_LOG(("AIInternalMoveToState::onEnter object=%s locomotor=%p\n",
-		obj->getTemplate()->getName().str(),
-		ai->getCurLocomotor()));
+	//DEBUG_LOG(("AIInternalMoveToState::onEnter object=%s locomotor=%p\n",
+	//	obj->getTemplate()->getName().str(),
+	//	ai->getCurLocomotor()));
 
 	if (ai->getCurLocomotor()) {
 		ai->getCurLocomotor()->startMove();
@@ -1674,11 +1674,11 @@ StateReturnType AIInternalMoveToState::onEnter()
 	// request a path to the destination
 	Bool pathResult = computePath();
 
-	DEBUG_LOG(("AIInternalMoveToState computePath object=%s result=%d path=%p waiting=%d\n",
-		obj->getTemplate()->getName().str(),
-		pathResult,
-		ai->getPath(),
-		ai->isWaitingForPath()));
+	//DEBUG_LOG(("AIInternalMoveToState computePath object=%s result=%d path=%p waiting=%d\n",
+	//	obj->getTemplate()->getName().str(),
+	//	pathResult,
+	//	ai->getPath(),
+	//	ai->isWaitingForPath()));
 
 	if (!pathResult)
 	{
