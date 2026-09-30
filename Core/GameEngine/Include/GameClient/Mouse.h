@@ -53,6 +53,7 @@
 #include "Common/SubsystemInterface.h"
 #include "Common/AsciiString.h"
 #include "Common/UnicodeString.h"
+#include "GameClient/CampaignManager.h"
 
 // FORWARD REFERENCES /////////////////////////////////////////////////////////
 
@@ -352,6 +353,7 @@ public:
 	RGBAColorInt m_tooltipColorShadow;
 	RGBAColorInt m_tooltipColorBackground;
 	RGBAColorInt m_tooltipColorBorder;
+	RGBAColorInt m_tooltipColorBorderGen; ///< Reborn: Used for Generals theme layout
 	RedrawMode	m_currentRedrawMode;	///< mouse cursor drawing method
 	Bool m_useTooltipAltTextColor;		///< draw tooltip text with house colors?
 	Bool m_useTooltipAltBackColor;		///< draw tooltip backgrounds with house colors?

@@ -100,6 +100,7 @@ static const FieldParse TheMouseFieldParseTable[] =
 	{ "TooltipShadowColor",					INI::parseRGBAColorInt,	nullptr,		offsetof( Mouse, m_tooltipColorShadow ) },
 	{ "TooltipBackgroundColor",			INI::parseRGBAColorInt,	nullptr,		offsetof( Mouse, m_tooltipColorBackground ) },
 	{ "TooltipBorderColor",					INI::parseRGBAColorInt,	nullptr,		offsetof( Mouse, m_tooltipColorBorder ) },
+	{ "TooltipBorderColorGen",			INI::parseRGBAColorInt,	nullptr,		offsetof( Mouse, m_tooltipColorBorderGen ) }, ///< Reborn: Used for Generals theme layout
 	{ "TooltipWidth",								INI::parsePercentToReal,nullptr,		offsetof( Mouse, m_tooltipWidth ) },
 	{ "CursorMode",									INI::parseInt,					nullptr,		offsetof( Mouse, m_currentRedrawMode ) },
 	{ "UseTooltipAltTextColor",			INI::parseBool,					nullptr,		offsetof( Mouse, m_useTooltipAltTextColor ) },
@@ -509,6 +510,7 @@ Mouse::Mouse()
 	setColor(m_tooltipColorShadow, 0, 0, 0, 255);
 	setColor(m_tooltipColorBackground, 20, 20, 0, 127);
 	setColor(m_tooltipColorBorder, 0, 0, 0, 255);
+	setColor(m_tooltipColorBorderGen, 255, 255, 255, 255);
 #undef setColor
 
 	m_tooltipWidth = 15.0f;
@@ -1193,7 +1195,9 @@ void Mouse::drawTooltip()
 #define GMC(x) GameMakeColor(x.red, x.green, x.blue, x.alpha)
 #define COLOR(x) GMC(m_tooltipColor##x)
 		TheDisplay->drawFillRect(xPos, yPos, boxWidth + 2,height + 2, GMC(m_tooltipBackColor));//GameMakeColor(0,0,0,125));
-		TheDisplay->drawOpenRect(xPos, yPos, boxWidth + 2,height + 2, 1.0, COLOR(Border));//GameMakeColor(20,20,20,255));
+		//TheDisplay->drawOpenRect(xPos, yPos, boxWidth + 2,height + 2, 1.0, COLOR(Border));//GameMakeColor(20,20,20,255));
+		const RGBAColorInt& borderColor = UseGeneralsLayout() ? m_tooltipColorBorderGen : m_tooltipColorBorder; // Reborn: Select the tooltip border color based on the layout.
+		TheDisplay->drawOpenRect(xPos, yPos, boxWidth + 2,height + 2,	1.0, GameMakeColor(borderColor.red, borderColor.green, borderColor.blue, borderColor.alpha));
 
 		// build clip rect
 		IRegion2D clipRegion;
