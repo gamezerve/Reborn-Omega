@@ -76,7 +76,8 @@ public:
 #if RETAIL_COMPATIBLE_PATHFINDING_ALLOCATION
 	// TheSuperHackers @info isObstructionInvalid() and clearObstruction() only used during retail compatible pathfinding failover cleanup
 	Bool isObstructionInvalid() const { return m_obstacleID != INVALID_ID && m_info == nullptr && (m_type == CELL_OBSTACLE || m_type == CELL_IMPASSABLE); }
-	void clearObstruction() { m_type = CELL_CLEAR; m_obstacleID = INVALID_ID; m_obstacleIsFence = false; m_obstacleIsTransparent = false; }
+	void clearObstruction() { m_type = CELL_CLEAR; m_obstacleID = INVALID_ID; m_obstacleIsFence = false; m_obstacleIsTransparent = false; m_obstacleWasWater = false;
+	}
 #endif
 
 	inline Bool isObstacleTransparent() const;
@@ -172,6 +173,7 @@ private:
 	UnsignedInt m_blockedByAlly : 1;          ///< True if this cell is blocked by an allied unit.
 	UnsignedInt m_obstacleIsFence : 1;        ///< True if occupied by a fence.
 	UnsignedInt m_obstacleIsTransparent : 1;  ///< True if obstacle is transparent (undefined if obstacleid is invalid)
+	UnsignedInt m_obstacleWasWater : 1;       ///< Reborn: Restore water cells when boat obstacles are removed.
 
 	zoneStorageType m_zone : 14;              ///< Zone. Each zone is a set of adjacent terrain type.  If from & to in the same zone, you can successfully pathfind.  If not,
 	                                          /// you still may be able to if you can cross multiple terrain types.
