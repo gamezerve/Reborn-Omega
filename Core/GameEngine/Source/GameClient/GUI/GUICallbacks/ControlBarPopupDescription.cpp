@@ -941,6 +941,69 @@ static Bool getDisplaySpeedForLocomotorSetAndCondition(
 	return TRUE;
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Keep the command hotkey visible when a tooltip uses a faction-prefixed object name. */
+//-------------------------------------------------------------------------------------------------
+static UnicodeString getHotkeyMarkedThingTooltipName(const CommandButton* commandButton, const ThingTemplate* thing)
+{
+	UnicodeString title = ControlBar::getSidePrefixedThingName(thing);
+	UnicodeString objectName = thing->getDisplayName();
+	if (objectName.isEmpty())
+		objectName.translate(thing->getName());
+
+	UnicodeString cleanTitle, cleanObjectName;
+	for (Int i = 0; i < title.getLength(); ++i)
+		if (title.getCharAt(i) != L'&')
+			cleanTitle.concat(title.getCharAt(i));
+	for (Int i = 0; i < objectName.getLength(); ++i)
+		if (objectName.getCharAt(i) != L'&')
+			cleanObjectName.concat(objectName.getCharAt(i));
+
+	UnicodeString label = TheGameText->fetch(commandButton->getTextLabel().str());
+	const WideChar* marker = label.find(L'&');
+	if (!marker || !marker[1])
+		return cleanTitle;
+
+	UnicodeString hotkey;
+	hotkey.concat(marker[1]);
+	UnicodeString cleanLabel;
+	for (Int i = 0; i < label.getLength(); ++i)
+		if (label.getCharAt(i) != L'&')
+			cleanLabel.concat(label.getCharAt(i));
+
+	// Reborn: Search only the object name, never the faction prefix; preserve the original occurrence when names match.
+	const Int objectStart = cleanTitle.getLength() - cleanObjectName.getLength();
+	Int hotkeyIndex = -1;
+	if (cleanLabel.compareNoCase(cleanObjectName) == 0)
+		hotkeyIndex = objectStart + static_cast<Int>(marker - label.str());
+	else
+		for (Int i = objectStart; i < cleanTitle.getLength(); ++i)
+		{
+			UnicodeString character;
+			character.concat(cleanTitle.getCharAt(i));
+			if (character.compareNoCase(hotkey) == 0)
+			{
+				hotkeyIndex = i;
+				break;
+			}
+		}
+
+	if (hotkeyIndex >= 0)
+	{
+		UnicodeString markedTitle;
+		markedTitle.set(cleanTitle.str(), hotkeyIndex);
+		markedTitle.concat(L'&');
+		markedTitle.concat(cleanTitle.str() + hotkeyIndex);
+		return markedTitle;
+	}
+
+	// Reborn: Display the actual command key even when a translated or renamed object lacks that letter.
+	cleanTitle.concat(L" (&");
+	cleanTitle.concat(hotkey);
+	cleanTitle.concat(L")");
+	return cleanTitle;
+}
+
 void ControlBar::repopulateBuildTooltipLayout()
 {
 	if(!prevWindow || !m_buildToolTipLayout)
@@ -2160,7 +2223,7 @@ if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE &&
 	}
 
 	if (commandButton && thingTemplate)
-		name = ControlBar::getSidePrefixedThingName(thingTemplate);
+		name = getHotkeyMarkedThingTooltipName(commandButton, thingTemplate);
 
 	GameWindow *win = TheWindowManager->winGetWindowFromId(m_buildToolTipLayout->getFirstWindow(), TheNameKeyGenerator->nameToKey("ControlBarPopupDescription.wnd:StaticTextName"));
 	if(win)
