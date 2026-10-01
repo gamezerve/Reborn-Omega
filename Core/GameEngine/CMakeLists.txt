@@ -62,6 +62,7 @@ set(GAMEENGINE_SRC
 #    Include/Common/IgnorePreferences.h
     Include/Common/INI.h
 #    Include/Common/INIException.h
+    Include/Common/INIFieldDeparser.h
 #    Include/Common/KindOf.h
 #    Include/Common/LadderPreferences.h
     Include/Common/Language.h
@@ -105,6 +106,7 @@ set(GAMEENGINE_SRC
 #    Include/Common/Recorder.h
 #    Include/Common/Registry.h
     Include/Common/ReplaySimulation.h
+    Source/Common/INI/INIFieldDeparser.cpp
 #    Include/Common/ResourceGatheringManager.h
 #    Include/Common/Science.h
 #    Include/Common/ScopedMutex.h
@@ -130,6 +132,7 @@ set(GAMEENGINE_SRC
 #    Include/Common/ThingFactory.h
 #    Include/Common/ThingSort.h
     Include/Common/ThingTemplate.h
+    Include/Common/ThingTemplateDeparser.h
 #    Include/Common/TunnelTracker.h
     Include/Common/UnicodeString.h
 #    Include/Common/UnitTimings.h
@@ -485,6 +488,7 @@ set(GAMEENGINE_SRC
 #    Include/GameLogic/Module/WeaponBonusUpgrade.h
 #    Include/GameLogic/Module/WeaponSetUpgrade.h
 #    Include/GameLogic/Module/WorkerAIUpdate.h
+    Include/GameLogic/Reborn/ImageUpgradeReborn.h
 #    Include/GameLogic/Object.h
 #    Include/GameLogic/ObjectCreationList.h
 #    Include/GameLogic/ObjectIter.h
@@ -517,6 +521,7 @@ set(GAMEENGINE_SRC
 #    Include/GameLogic/WeaponSetFlags.h
 #    Include/GameLogic/WeaponSetType.h
 #    Include/GameLogic/WeaponStatus.h
+    Include/GameLogic/WeaponTemplateDeparser.h
     Include/GameNetwork/Connection.h
     Include/GameNetwork/ConnectionManager.h
     Include/GameNetwork/DisconnectManager.h
@@ -706,6 +711,7 @@ set(GAMEENGINE_SRC
 #    Source/Common/Thing/Thing.cpp
 #    Source/Common/Thing/ThingFactory.cpp
     Source/Common/Thing/ThingTemplate.cpp
+    Source/Common/Thing/ThingTemplateDeparser.cpp
     Source/Common/UserPreferences.cpp
     Source/Common/version.cpp
     Source/Common/WorkerProcess.cpp
@@ -1108,6 +1114,8 @@ set(GAMEENGINE_SRC
 #    Source/GameLogic/Object/Upgrade/WeaponSetUpgrade.cpp
 #    Source/GameLogic/Object/Weapon.cpp
 #    Source/GameLogic/Object/WeaponSet.cpp
+    Source/GameLogic/Object/WeaponTemplateDeparser.cpp
+    Source/GameLogic/Reborn/ImageUpgradeReborn.cpp
 #    Source/GameLogic/ScriptEngine/ScriptActions.cpp
 #    Source/GameLogic/ScriptEngine/ScriptConditions.cpp
 #    Source/GameLogic/ScriptEngine/ScriptEngine.cpp
