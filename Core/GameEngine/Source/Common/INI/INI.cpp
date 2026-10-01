@@ -2061,7 +2061,7 @@ Type scanType(std::string_view token)
 	}
 
 #if USE_STD_FROM_CHARS_PARSING == -1
-	if (value != scanType<Int>(token);
+	Int parsedValue = scanType<Int>(token);
 
 	if (value != parsedValue)
 	{
