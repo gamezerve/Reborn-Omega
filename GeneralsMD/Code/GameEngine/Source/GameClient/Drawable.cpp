@@ -5849,6 +5849,7 @@ void TintEnvelope::crc( Xfer *xfer )
 	* Version Info;
 	* 1: Initial version
 	* 2: TheSuperHackers @tweak Serialize sustain counter as double instead of integer
+	* 3: Reborn: Serialize sustain counter as double while preserving older saves
 	*/
 // ------------------------------------------------------------------------------------------------
 void TintEnvelope::xfer( Xfer *xfer )
@@ -5858,7 +5859,8 @@ void TintEnvelope::xfer( Xfer *xfer )
 #if RETAIL_COMPATIBLE_XFER_SAVE
 	XferVersion currentVersion = 1;
 #else
-	XferVersion currentVersion = 2;
+	//XferVersion currentVersion = 2;
+	XferVersion currentVersion = 3;
 #endif
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
@@ -5879,16 +5881,38 @@ void TintEnvelope::xfer( Xfer *xfer )
 	if (version <= 1)
 	{
 		// TheSuperHackers @info bobtista 23/09/2026 The double counter can represent SUSTAIN_INDEFINITELY exactly.
-		UnsignedInt sustainCounter = (UnsignedInt)m_sustainCounter;
-		xfer->xferUnsignedInt( &sustainCounter );
-		if( xfer->getXferMode() == XFER_LOAD )
+		UnsignedInt sustainCounter = static_cast<UnsignedInt>(m_sustainCounter);
+		xfer->xferUnsignedInt(&sustainCounter);
+
+		if (xfer->getXferMode() == XFER_LOAD)
 		{
-			m_sustainCounter = sustainCounter;
+			m_sustainCounter = static_cast<double>(sustainCounter);
+		}
+	}
+	else if (version == 2)
+	{
+		// Reborn: Previous versions serialized the sustain counter as float.
+		Real sustainCounter = static_cast<Real>(m_sustainCounter);
+		xfer->xferReal(&sustainCounter);
+
+		if (xfer->getXferMode() == XFER_LOAD)
+		{
+			// Restore the exact indefinite-sustain value, which could not
+			// be represented precisely by the previous float format.
+			if (sustainCounter == static_cast<Real>(SUSTAIN_INDEFINITELY))
+			{
+				m_sustainCounter = static_cast<double>(SUSTAIN_INDEFINITELY);
+			}
+			else
+			{
+				m_sustainCounter = static_cast<double>(sustainCounter);
+			}
 		}
 	}
 	else
 	{
-		xfer->xferDouble( &m_sustainCounter );
+		// Reborn: Version 3 preserves the full precision of the counter.
+		xfer->xferDouble(&m_sustainCounter);
 	}
 
 	// affect
