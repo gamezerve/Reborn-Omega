@@ -204,7 +204,7 @@ GUI:AccessibilitySettings
 END
 
 GUI:ShowCommunicatorButton
-"Show Communicator Button (Experimental)"
+"Show Communicator Button"
 END
 
 GUI:UpdateSettings

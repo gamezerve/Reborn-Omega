@@ -4524,7 +4524,7 @@ WINDOW
         WINDOW
           WINDOWTYPE = USER;
           SCREENRECT = UPPERLEFT: 160 112,
-                       BOTTOMRIGHT: 622 301,
+                       BOTTOMRIGHT: 625 301,
                        CREATIONRESOLUTION: 800 600;
           NAME = "OptionsMenu.wnd:";
           STATUS = ENABLED;
@@ -4618,8 +4618,8 @@ WINDOW
           CHILD
           WINDOW
             WINDOWTYPE = CHECKBOX;
-            SCREENRECT = UPPERLEFT: 384 168,
-                         BOTTOMRIGHT: 615 192,
+            SCREENRECT = UPPERLEFT: 397 168,
+                         BOTTOMRIGHT: 617 192,
                          CREATIONRESOLUTION: 800 600;
             NAME = "OptionsMenu.wnd:CheckShowProps";
             STATUS = ENABLED+IMAGE+BORDER;
@@ -4667,8 +4667,8 @@ WINDOW
           CHILD
           WINDOW
             WINDOWTYPE = CHECKBOX;
-            SCREENRECT = UPPERLEFT: 384 144,
-                         BOTTOMRIGHT: 614 168,
+            SCREENRECT = UPPERLEFT: 397 144,
+                         BOTTOMRIGHT: 617 168,
                          CREATIONRESOLUTION: 800 600;
             NAME = "OptionsMenu.wnd:CheckBehindBuilding";
             STATUS = ENABLED+IMAGE+BORDER;
@@ -4814,8 +4814,8 @@ WINDOW
           CHILD
           WINDOW
             WINDOWTYPE = CHECKBOX;
-            SCREENRECT = UPPERLEFT: 384 216,
-                         BOTTOMRIGHT: 615 240,
+            SCREENRECT = UPPERLEFT: 397 216,
+                         BOTTOMRIGHT: 617 240,
                          CREATIONRESOLUTION: 800 600;
             NAME = "OptionsMenu.wnd:CheckNoDynamicLOD";
             STATUS = ENABLED+IMAGE+BORDER;
@@ -4863,8 +4863,8 @@ WINDOW
           CHILD
           WINDOW
             WINDOWTYPE = CHECKBOX;
-            SCREENRECT = UPPERLEFT: 384 240,
-                         BOTTOMRIGHT: 615 264,
+            SCREENRECT = UPPERLEFT: 397 240,
+                         BOTTOMRIGHT: 617 264,
                          CREATIONRESOLUTION: 800 600;
             NAME = "OptionsMenu.wnd:CheckHeatEffects";
             STATUS = ENABLED+IMAGE+BORDER;
@@ -4912,8 +4912,8 @@ WINDOW
           CHILD
           WINDOW
             WINDOWTYPE = CHECKBOX;
-            SCREENRECT = UPPERLEFT: 384 264,
-                         BOTTOMRIGHT: 615 288,
+            SCREENRECT = UPPERLEFT: 397 264,
+                         BOTTOMRIGHT: 617 288,
                          CREATIONRESOLUTION: 800 600;
             NAME = "OptionsMenu.wnd:CheckUnlockFPS";
             STATUS = ENABLED+HIDDEN+IMAGE+BORDER;
@@ -5010,8 +5010,8 @@ WINDOW
           CHILD
           WINDOW
             WINDOWTYPE = CHECKBOX;
-            SCREENRECT = UPPERLEFT: 384 192,
-                         BOTTOMRIGHT: 616 216,
+            SCREENRECT = UPPERLEFT: 397 192,
+                         BOTTOMRIGHT: 617 216,
                          CREATIONRESOLUTION: 800 600;
             NAME = "OptionsMenu.wnd:CheckExtraAnimations";
             STATUS = ENABLED+IMAGE+BORDER;
@@ -5109,7 +5109,7 @@ WINDOW
           WINDOW
             WINDOWTYPE = USER;
             SCREENRECT = UPPERLEFT: 160 139,
-                         BOTTOMRIGHT: 622 140,
+                         BOTTOMRIGHT: 625 140,
                          CREATIONRESOLUTION: 800 600;
             NAME = "OptionsMenu.wnd:ToggleOnOffLine";
             STATUS = ENABLED;
@@ -6087,7 +6087,7 @@ WINDOW
         WINDOW
           WINDOWTYPE = USER;
           SCREENRECT = UPPERLEFT: 160 112,
-                       BOTTOMRIGHT: 622 301,
+                       BOTTOMRIGHT: 625 301,
                        CREATIONRESOLUTION: 800 600;
           NAME = "OptionsMenu.wnd:";
           STATUS = ENABLED;
@@ -6181,8 +6181,8 @@ WINDOW
           CHILD
           WINDOW
             WINDOWTYPE = CHECKBOX;
-            SCREENRECT = UPPERLEFT: 384 168,
-                         BOTTOMRIGHT: 600 192,
+            SCREENRECT = UPPERLEFT: 397 168,
+                         BOTTOMRIGHT: 617 192,
                          CREATIONRESOLUTION: 800 600;
             NAME = "OptionsMenu.wnd:CheckChallenge60FPS";
             STATUS = ENABLED+IMAGE+BORDER;
@@ -6230,8 +6230,8 @@ WINDOW
           CHILD
           WINDOW
             WINDOWTYPE = CHECKBOX;
-            SCREENRECT = UPPERLEFT: 384 144,
-                         BOTTOMRIGHT: 600 168,
+            SCREENRECT = UPPERLEFT: 397 144,
+                         BOTTOMRIGHT: 617 168,
                          CREATIONRESOLUTION: 800 600;
             NAME = "OptionsMenu.wnd:CheckCampaignCinematic60FPS";
             STATUS = ENABLED+IMAGE+BORDER;
@@ -6377,8 +6377,8 @@ WINDOW
           CHILD
           WINDOW
             WINDOWTYPE = CHECKBOX;
-            SCREENRECT = UPPERLEFT: 384 216,
-                         BOTTOMRIGHT: 615 240,
+            SCREENRECT = UPPERLEFT: 397 216,
+                         BOTTOMRIGHT: 617 240,
                          CREATIONRESOLUTION: 800 600;
             NAME = "OptionsMenu.wnd:AdvancedSettings_CheckNoDynamicLOD";
             STATUS = HIDDEN+ENABLED+IMAGE+BORDER;
@@ -6426,8 +6426,8 @@ WINDOW
           CHILD
           WINDOW
             WINDOWTYPE = CHECKBOX;
-            SCREENRECT = UPPERLEFT: 384 240,
-                         BOTTOMRIGHT: 615 264,
+            SCREENRECT = UPPERLEFT: 397 240,
+                         BOTTOMRIGHT: 617 264,
                          CREATIONRESOLUTION: 800 600;
             NAME = "OptionsMenu.wnd:AdvancedSettings_CheckHeatEffects";
             STATUS = HIDDEN+ENABLED+IMAGE+BORDER;
@@ -6475,8 +6475,8 @@ WINDOW
           CHILD
           WINDOW
             WINDOWTYPE = CHECKBOX;
-            SCREENRECT = UPPERLEFT: 384 264,
-                         BOTTOMRIGHT: 615 288,
+            SCREENRECT = UPPERLEFT: 397 264,
+                         BOTTOMRIGHT: 617 288,
                          CREATIONRESOLUTION: 800 600;
             NAME = "OptionsMenu.wnd:AdvancedSettings_CheckUnlockFPS";
             STATUS = ENABLED+HIDDEN+IMAGE+BORDER;
@@ -6573,8 +6573,8 @@ WINDOW
           CHILD
           WINDOW
             WINDOWTYPE = CHECKBOX;
-            SCREENRECT = UPPERLEFT: 384 192,
-                         BOTTOMRIGHT: 616 216,
+            SCREENRECT = UPPERLEFT: 397 192,
+                         BOTTOMRIGHT: 617 216,
                          CREATIONRESOLUTION: 800 600;
             NAME = "OptionsMenu.wnd:AdvancedSettings_CheckExtraAnimations";
             STATUS = HIDDEN+ENABLED+IMAGE+BORDER;
@@ -6964,7 +6964,7 @@ WINDOW
           WINDOW
             WINDOWTYPE = USER;
             SCREENRECT = UPPERLEFT: 160 139,
-                         BOTTOMRIGHT: 622 140,
+                         BOTTOMRIGHT: 625 140,
                          CREATIONRESOLUTION: 800 600;
             NAME = "OptionsMenu.wnd:AdvancedSettings_ToggleOnOffLine";
             STATUS = ENABLED;
