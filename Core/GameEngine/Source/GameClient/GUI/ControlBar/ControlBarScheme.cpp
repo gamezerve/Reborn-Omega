@@ -52,6 +52,7 @@
 // USER INCLUDES //////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/CustomControlBar.h" // Reborn: Select fixed built-in control bar layouts.
 
 #include "Common/Player.h"
 #include "Common/PlayerTemplate.h"
@@ -1022,6 +1023,10 @@ void ControlBarSchemeManager::init()
 	// Read from INI all the ControlBarSchemes
 	ini.loadFileDirectory( "Data\\INI\\Default\\ControlBarScheme", INI_LOAD_OVERWRITE, nullptr );
 	ini.loadFileDirectory( "Data\\INI\\ControlBarScheme", INI_LOAD_OVERWRITE, nullptr );
+	// Reborn: The selected built-in scheme overrides only UI values, never gameplay data.
+	const AsciiString customScheme = GetCustomControlBarSchemeFile();
+	if (!customScheme.isEmpty())
+		ini.load(customScheme, INI_LOAD_OVERWRITE, nullptr);
 
 //	//Load the user modified control bar schemes
 //	WIN32_FIND_DATA findData;

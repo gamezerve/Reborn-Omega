@@ -30,6 +30,7 @@
 // USER INCLUDES //////////////////////////////////////////////////////////////////////////////////
 
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/CustomControlBar.h" // Reborn: Select fixed built-in control bar layouts.
 #define DEFINE_GUI_COMMAND_NAMES
 #define DEFINE_COMMAND_OPTION_NAMES
 #define DEFINE_WEAPONSLOTTYPE_NAMES
@@ -5596,5 +5597,36 @@ void ControlBar::setFullViewportHeight()
 
 void ControlBar::setScaledViewportHeight()
 {
-	TheTacticalView->setHeight(TheDisplay->getHeight() * TheGlobalData->m_viewportHeightScale);
+	// Reborn: ControlBarPro is an overlay designed for a full-height tactical viewport.
+	TheTacticalView->setHeight(TheDisplay->getHeight() * (UseCustomControlBar() ? 1.0f : TheGlobalData->m_viewportHeightScale));
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Apply the selected fixed bar to live windows while preserving command/input bindings. */
+//-------------------------------------------------------------------------------------------------
+void ControlBar::refreshCustomAppearance()
+{
+	if (!TheWindowManager || !m_contextParent[CP_MASTER]) return;
+	// Reborn: reset() restores cached OLD rest positions; clear animations BEFORE applying the new layout.
+	if (m_animateWindowManager) m_animateWindowManager->reset();
+	if (m_animateWindowManagerForGenShortcuts) m_animateWindowManagerForGenShortcuts->reset();
+	if (m_generalsScreenAnimate) m_generalsScreenAnimate->reset();
+	// Reborn: Restore fixed positions first, then let the selected scheme own dynamic HUD images.
+	ApplyCustomControlBarAppearance();
+	// Reborn: Scheme::init restores the default stage; cache the NEW origin before it can restore the old one.
+	m_contextParent[CP_MASTER]->winGetPosition(&m_defaultControlBarPosition.x, &m_defaultControlBarPosition.y);
+	delete m_controlBarSchemeManager;
+	m_controlBarSchemeManager = NEW ControlBarSchemeManager;
+	m_controlBarSchemeManager->init();
+	Player* player = getCurrentlyViewedPlayer();
+	if (player) m_controlBarSchemeManager->setControlBarSchemeByPlayer(player);
+	GameWindow* marker = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("ControlBar.wnd:BackgroundMarker"));
+	if (marker)
+	{
+		marker->winGetScreenPosition(&m_controlBarForegroundMarkerPos.x, &m_controlBarForegroundMarkerPos.y);
+		m_controlBarBackgroundMarkerPos = m_controlBarForegroundMarkerPos;
+	}
+	if (m_buildToolTipLayout) m_buildToolTipLayout->hide(TRUE);
+	if (!m_contextParent[CP_MASTER]->winIsHidden()) setScaledViewportHeight();
+	markUIDirty();
 }

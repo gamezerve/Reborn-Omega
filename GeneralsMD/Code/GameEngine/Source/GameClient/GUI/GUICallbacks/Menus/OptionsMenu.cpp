@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/CustomControlBar.h" // Reborn: Select fixed built-in control bar layouts.
 
 #include "gamespy/ghttp/ghttp.h"
 
@@ -201,6 +202,10 @@ static GameWindow* comboBoxCustomControlBar = nullptr;
 static std::vector<AsciiString> customControlBarPackages;
 static Bool advancedSettingsOriginalUseCustomControlBar = FALSE;
 static Int advancedSettingsOriginalCustomControlBar = 0;
+// Reborn: Apply built-in bar changes after the Advanced Settings input callback returns.
+static Bool s_customControlBarRefreshPending = FALSE;
+static Bool s_pendingCustomControlBarEnabled = FALSE;
+static Int s_pendingCustomControlBarIndex = 2;
 static NameKeyType checkShowCommunicatorButtonID = NAMEKEY_INVALID;
 static GameWindow* checkShowCommunicatorButton = nullptr;
 // Reborn: Store the accessibility preference without changing command button rendering.
@@ -538,7 +543,7 @@ static void populateLayoutThemeComboBox(const AsciiString& savedTheme)
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Reborn: Enable the package selector only when the placeholder option is checked and ZIPs exist. */
+/** Reborn: Enable the fixed resolution selector when the custom bar toggle is checked. */
 //-------------------------------------------------------------------------------------------------
 static void updateCustomControlBarControls()
 {
@@ -556,39 +561,26 @@ static void updateCustomControlBarControls()
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Reborn: List local ZIP packages from the game data directory without opening or installing them. */
+/** Reborn: List only the five prepared built-in control bar resolutions. */
 //-------------------------------------------------------------------------------------------------
 static void populateCustomControlBarComboBox(const AsciiString& savedPackage, Bool savedEnabled)
 {
 	customControlBarPackages.clear();
 	if (!comboBoxCustomControlBar)
 		return;
-	FilenameList files;
-	// Reborn: Only list packages from the dedicated custom control bar directory.
-	if (TheLocalFileSystem)
-		TheLocalFileSystem->getFileListInDirectory("", "RebornOmegaData\\CustomControlBar\\", "*.zip", files, FALSE);
 	GadgetComboBoxReset(comboBoxCustomControlBar);
-	// Reborn: Package names remain white in both layout themes.
+	// Reborn: Fixed shipped choices replace directory scanning and arbitrary ZIP packages.
 	const Color color = GameMakeColor(255, 255, 255, 255);
-	Int selected = 0;
+	Int selected = 2;
 	Bool foundSaved = FALSE;
-	for (FilenameList::const_iterator it = files.begin(); it != files.end(); ++it)
+	for (Int i = 0; i < 5; ++i)
 	{
-		const AsciiString& path = *it;
-		const char *base = path.reverseFind('\\');
-		// Reborn: Hide the ZIP extension in the label while retaining the full package path for saving.
-		AsciiString displayName(base ? base + 1 : path.str());
-		if (displayName.getLength() >= 4)
-			displayName.truncateBy(4);
+		AsciiString resolution(GetCustomControlBarResolution(i));
 		UnicodeString label;
-		label.translate(displayName);
+		label.translate(resolution);
 		GadgetComboBoxAddEntry(comboBoxCustomControlBar, label, color);
-		if (savedPackage.compareNoCase(path) == 0)
-		{
-			selected = (Int)customControlBarPackages.size();
-			foundSaved = TRUE;
-		}
-		customControlBarPackages.push_back(path);
+		if (savedPackage.compareNoCase(resolution) == 0) { selected = i; foundSaved = TRUE; }
+		customControlBarPackages.push_back(resolution);
 	}
 	// Reborn: Missing folders, empty folders and removed selections safely fall back to disabled.
 	if (customControlBarPackages.empty())
@@ -687,15 +679,21 @@ static void saveAdvancedSettings()
 		TheWritableGlobalData->m_layoutTheme = (RebornLayoutTheme)selectedTheme;
 	}
 
-	// Reborn: Save the package choice only; runtime UI resources remain unchanged.
+	// Reborn: Persist the built-in choice and defer live appearance changes until Options update.
 	Int customPackage = -1;
 	if (comboBoxCustomControlBar)
 		GadgetComboBoxGetSelectedPos(comboBoxCustomControlBar, &customPackage);
 	const Bool validCustomPackage = customPackage >= 0 && customPackage < (Int)customControlBarPackages.size();
 	rebornPreferences["UseCustomControlBar"] = validCustomPackage && checkUseCustomControlBar &&
 		GadgetCheckBoxIsChecked(checkUseCustomControlBar) ? "yes" : "no";
-	rebornPreferences["CustomControlBarPackage"] = validCustomPackage ?
+	rebornPreferences["CustomControlBarResolution"] = validCustomPackage ?
 		customControlBarPackages[customPackage] : AsciiString::TheEmptyString;
+	// Reborn: Compare with applied state, not the Cancel snapshot, to avoid repeated rebuild loops.
+	s_pendingCustomControlBarEnabled = validCustomPackage && checkUseCustomControlBar &&
+		GadgetCheckBoxIsChecked(checkUseCustomControlBar);
+	s_pendingCustomControlBarIndex = validCustomPackage ? customPackage : 2;
+	s_customControlBarRefreshPending = s_pendingCustomControlBarEnabled != UseCustomControlBar() ||
+		(s_pendingCustomControlBarEnabled && s_pendingCustomControlBarIndex != GetCustomControlBarIndex());
 	WriteRebornOmegaPreferences(rebornPreferences);
 
 	if (canChangeGameFps && TheGameLogic->getGameMode() == GAME_SHELL)
@@ -1979,7 +1977,7 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 	// Reborn: Missing and invalid values intentionally select Default for upgraded and new users.
 	populateLayoutThemeComboBox(rebornPreferences["LayoutTheme"]);
 	// Reborn: Missing or invalid preferences default to disabled.
-	populateCustomControlBarComboBox(rebornPreferences["CustomControlBarPackage"],
+	populateCustomControlBarComboBox(rebornPreferences["CustomControlBarResolution"],
 		rebornPreferences["UseCustomControlBar"] == "yes");
 
 	// populate anti aliasing modes
@@ -2688,6 +2686,18 @@ void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 //-------------------------------------------------------------------------------------------------
 void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 {
+	// Reborn: Apply fixed bar resources outside input callbacks, without rebuilding Options.
+	if (s_customControlBarRefreshPending)
+	{
+		s_customControlBarRefreshPending = FALSE;
+		if (SetCustomControlBarSelection(s_pendingCustomControlBarEnabled, s_pendingCustomControlBarIndex))
+		{
+			if (TheControlBar) TheControlBar->refreshCustomAppearance();
+			ResetDiplomacy();
+			RefreshQuitMenuLayoutTheme();
+		}
+	}
+
 	if (s_layoutThemeRefreshPending)
 	{
 		s_layoutThemeRefreshPending = FALSE;

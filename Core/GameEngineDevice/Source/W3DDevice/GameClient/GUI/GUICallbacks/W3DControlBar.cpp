@@ -27,6 +27,7 @@
 // Desc: Control bar callbacks
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
+#include "Common/CustomControlBar.h" // Reborn: Fixed custom tooltip art overrides the layout theme.
 #include "Common/GameUtility.h"
 #include "Common/GlobalData.h"
 #include "Common/Radar.h"
@@ -958,7 +959,13 @@ void W3DCommandBarHelpPopupDraw( GameWindow *window, WinInstanceData *instData )
 	static const Image* beginBar = nullptr;
 	static const Image* centerBar = nullptr;
 
-	if (UseGeneralsLayout()) // Reborn: Follow the selected visual theme.
+	if (UseCustomControlBar()) // Reborn: Custom tooltip art takes priority over the shell theme.
+	{
+		endBar = TheMappedImageCollection->findImageByName(GetCustomControlBarImageName("Helpbox-top"));
+		beginBar = TheMappedImageCollection->findImageByName(GetCustomControlBarImageName("Helpbox-bottom"));
+		centerBar = TheMappedImageCollection->findImageByName(GetCustomControlBarImageName("Helpbox-middle"));
+	}
+	else if (UseGeneralsLayout()) // Reborn: Follow the selected visual theme.
 	{
 		endBar = TheMappedImageCollection->findImageByName("Helpbox-topGen");
 		beginBar = TheMappedImageCollection->findImageByName("Helpbox-bottomGen");

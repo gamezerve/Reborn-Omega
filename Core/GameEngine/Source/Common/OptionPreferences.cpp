@@ -30,6 +30,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/CustomControlBar.h" // Reborn: Select fixed built-in control bar layouts.
 
 #include "Common/AudioSettings.h"
 #include "Common/GameAudio.h"
@@ -55,6 +56,17 @@ OptionPreferences::OptionPreferences()
 
 	UserPreferences rebornPreferences;
 	LoadRebornOmegaPreferences(rebornPreferences);
+	// Reborn: Initialize once; saving Options later must not reapply old startup preferences.
+	static Bool customBarInitialized = FALSE;
+	if (!customBarInitialized)
+	{
+		customBarInitialized = TRUE;
+		Int index = -1;
+		for (Int i = 0; i < 5; ++i)
+			if (rebornPreferences["CustomControlBarResolution"].compareNoCase(GetCustomControlBarResolution(i)) == 0)
+				index = i;
+		SetCustomControlBarSelection(rebornPreferences["UseCustomControlBar"] == "yes", index);
+	}
 
 	if (rebornPreferences["UseCustomMaxCameraHeight"] == "yes" &&
 		!rebornPreferences["MaxCameraHeight"].isEmpty())

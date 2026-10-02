@@ -220,11 +220,11 @@ GUI:NoCustomControlBarsFound
 END
 
 TOOLTIP:UseCustomControlBar
-"Enable selection of a custom control bar ZIP package. This setting currently does not install or apply the package."
+"Use the built-in Control Bar Pro layout for the in-game interface. Other menus keep your selected layout theme."
 END
 
 TOOLTIP:CustomControlBarPackage
-"ZIP packages from RebornOmegaData\\CustomControlBar in the game directory. No packages are installed or applied yet."
+"Choose a prepared Control Bar Pro resolution. For the best fit, match your game resolution."
 END
 
 GUI:UpdateSettings

@@ -636,6 +636,7 @@ set(GAMEENGINE_SRC
     Source/Common/MiniLog.cpp
 #    Source/Common/MultiplayerSettings.cpp
 #    Source/Common/NameKeyGenerator.cpp
+    Source/Common/CustomControlBar.cpp
     Source/Common/OptionPreferences.cpp
 #    Source/Common/PartitionSolver.cpp
     Source/Common/PerfTimer.cpp

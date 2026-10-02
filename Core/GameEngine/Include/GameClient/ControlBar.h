@@ -686,6 +686,8 @@ public:
 	virtual void update() override;				///< from subsystem interface
 
 	/// mark the UI as dirty so the context of everything is re-evaluated
+	// Reborn: Switch prepared visual resources without replacing the live control bar owner.
+	void refreshCustomAppearance();
 	void markUIDirty();
 
 	/// a drawable has just become selected
