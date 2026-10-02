@@ -194,18 +194,13 @@ static NameKeyType checkShellMap60FpsID = NAMEKEY_INVALID;
 static GameWindow* checkShellMap60Fps = nullptr;
 static NameKeyType comboBoxLayoutThemeID = NAMEKEY_INVALID; // Reborn: Store the future menu layout theme preference in Advanced Settings.
 static GameWindow* comboBoxLayoutTheme = nullptr;
-// Reborn: Reserve custom control bar settings; selecting a package does not install it.
+// Reborn: Keep the custom control bar toggle independent of the menu layout theme.
 static NameKeyType checkUseCustomControlBarID = NAMEKEY_INVALID;
-static NameKeyType comboBoxCustomControlBarID = NAMEKEY_INVALID;
 static GameWindow* checkUseCustomControlBar = nullptr;
-static GameWindow* comboBoxCustomControlBar = nullptr;
-static std::vector<AsciiString> customControlBarPackages;
 static Bool advancedSettingsOriginalUseCustomControlBar = FALSE;
-static Int advancedSettingsOriginalCustomControlBar = 0;
 // Reborn: Apply built-in bar changes after the Advanced Settings input callback returns.
 static Bool s_customControlBarRefreshPending = FALSE;
 static Bool s_pendingCustomControlBarEnabled = FALSE;
-static Int s_pendingCustomControlBarIndex = 2;
 static NameKeyType checkShowCommunicatorButtonID = NAMEKEY_INVALID;
 static GameWindow* checkShowCommunicatorButton = nullptr;
 // Reborn: Store the accessibility preference without changing command button rendering.
@@ -542,55 +537,6 @@ static void populateLayoutThemeComboBox(const AsciiString& savedTheme)
 	GadgetComboBoxCenterSelectedEntry(comboBoxLayoutTheme);
 }
 
-//-------------------------------------------------------------------------------------------------
-/** Reborn: Enable the fixed resolution selector when the custom bar toggle is checked. */
-//-------------------------------------------------------------------------------------------------
-static void updateCustomControlBarControls()
-{
-	const Bool available = !customControlBarPackages.empty();
-	if (checkUseCustomControlBar)
-	{
-		checkUseCustomControlBar->winEnable(available);
-		// Reborn: SetChecked sends GBM_SELECTED; only clear a checked box to avoid recursive empty-list events.
-		if (!available && GadgetCheckBoxIsChecked(checkUseCustomControlBar))
-			GadgetCheckBoxSetChecked(checkUseCustomControlBar, FALSE);
-	}
-	if (comboBoxCustomControlBar)
-		comboBoxCustomControlBar->winEnable(available && checkUseCustomControlBar &&
-			GadgetCheckBoxIsChecked(checkUseCustomControlBar));
-}
-
-//-------------------------------------------------------------------------------------------------
-/** Reborn: List only the five prepared built-in control bar resolutions. */
-//-------------------------------------------------------------------------------------------------
-static void populateCustomControlBarComboBox(const AsciiString& savedPackage, Bool savedEnabled)
-{
-	customControlBarPackages.clear();
-	if (!comboBoxCustomControlBar)
-		return;
-	GadgetComboBoxReset(comboBoxCustomControlBar);
-	// Reborn: Fixed shipped choices replace directory scanning and arbitrary ZIP packages.
-	const Color color = GameMakeColor(255, 255, 255, 255);
-	Int selected = 2;
-	Bool foundSaved = FALSE;
-	for (Int i = 0; i < 5; ++i)
-	{
-		AsciiString resolution(GetCustomControlBarResolution(i));
-		UnicodeString label;
-		label.translate(resolution);
-		GadgetComboBoxAddEntry(comboBoxCustomControlBar, label, color);
-		if (savedPackage.compareNoCase(resolution) == 0) { selected = i; foundSaved = TRUE; }
-		customControlBarPackages.push_back(resolution);
-	}
-	// Reborn: Missing folders, empty folders and removed selections safely fall back to disabled.
-	if (customControlBarPackages.empty())
-		GadgetComboBoxAddEntry(comboBoxCustomControlBar, TheGameText->fetch("GUI:NoCustomControlBarsFound"), color);
-	GadgetComboBoxSetSelectedPos(comboBoxCustomControlBar, selected, TRUE);
-	GadgetComboBoxCenterSelectedEntry(comboBoxCustomControlBar);
-	if (checkUseCustomControlBar)
-		GadgetCheckBoxSetChecked(checkUseCustomControlBar, savedEnabled && foundSaved);
-	updateCustomControlBarControls();
-}
 static void saveAdvancedSettings()
 {
 	UserPreferences rebornPreferences;
@@ -679,21 +625,12 @@ static void saveAdvancedSettings()
 		TheWritableGlobalData->m_layoutTheme = (RebornLayoutTheme)selectedTheme;
 	}
 
-	// Reborn: Persist the built-in choice and defer live appearance changes until Options update.
-	Int customPackage = -1;
-	if (comboBoxCustomControlBar)
-		GadgetComboBoxGetSelectedPos(comboBoxCustomControlBar, &customPackage);
-	const Bool validCustomPackage = customPackage >= 0 && customPackage < (Int)customControlBarPackages.size();
-	rebornPreferences["UseCustomControlBar"] = validCustomPackage && checkUseCustomControlBar &&
-		GadgetCheckBoxIsChecked(checkUseCustomControlBar) ? "yes" : "no";
-	rebornPreferences["CustomControlBarResolution"] = validCustomPackage ?
-		customControlBarPackages[customPackage] : AsciiString::TheEmptyString;
-	// Reborn: Compare with applied state, not the Cancel snapshot, to avoid repeated rebuild loops.
-	s_pendingCustomControlBarEnabled = validCustomPackage && checkUseCustomControlBar &&
-		GadgetCheckBoxIsChecked(checkUseCustomControlBar);
-	s_pendingCustomControlBarIndex = validCustomPackage ? customPackage : 2;
-	s_customControlBarRefreshPending = s_pendingCustomControlBarEnabled != UseCustomControlBar() ||
-		(s_pendingCustomControlBarEnabled && s_pendingCustomControlBarIndex != GetCustomControlBarIndex());
+	// Reborn: Persist only the toggle; choose shipped art automatically from display resolution.
+	s_pendingCustomControlBarEnabled = checkUseCustomControlBar && GadgetCheckBoxIsChecked(checkUseCustomControlBar);
+	rebornPreferences["UseCustomControlBar"] = s_pendingCustomControlBarEnabled ? "yes" : "no";
+	rebornPreferences.erase("CustomControlBarResolution");
+	// Reborn: Compare with applied state to avoid repeated rebuild loops.
+	s_customControlBarRefreshPending = s_pendingCustomControlBarEnabled != UseCustomControlBar();
 	WriteRebornOmegaPreferences(rebornPreferences);
 
 	if (canChangeGameFps && TheGameLogic->getGameMode() == GAME_SHELL)
@@ -1394,12 +1331,6 @@ static void showAdvancedSettings()
 	// Reborn: Draw expanded lists above the lower panels and controls in either layout.
 	if (comboBoxLayoutTheme && comboBoxLayoutTheme->winGetParent())
 		comboBoxLayoutTheme->winGetParent()->winBringToTop();
-	if (comboBoxCustomControlBar)
-	{
-		if (comboBoxCustomControlBar->winGetParent())
-			comboBoxCustomControlBar->winGetParent()->winBringToTop();
-		comboBoxCustomControlBar->winBringToTop();
-	}
 	if (comboBoxLayoutTheme)
 		comboBoxLayoutTheme->winBringToTop();
 
@@ -1409,12 +1340,9 @@ static void showAdvancedSettings()
 		advancedSettingsButton->winHide(TRUE);
 
 	advancedSettingsOriginalZoomFactor = checkZoomFactor && GadgetCheckBoxIsChecked(checkZoomFactor);
-	// Reborn: Preserve both custom control bar controls so Back can discard edits.
+	// Reborn: Preserve the custom control bar toggle so Back can discard edits.
 	advancedSettingsOriginalUseCustomControlBar = checkUseCustomControlBar &&
 		GadgetCheckBoxIsChecked(checkUseCustomControlBar);
-	advancedSettingsOriginalCustomControlBar = 0;
-	if (comboBoxCustomControlBar)
-		GadgetComboBoxGetSelectedPos(comboBoxCustomControlBar, &advancedSettingsOriginalCustomControlBar);
 	advancedSettingsOriginalAutomaticUpdates =
 		checkAutomaticUpdateChecks && GadgetCheckBoxIsChecked(checkAutomaticUpdateChecks);
 	advancedSettingsOriginalShowCommunicatorButton =
@@ -1485,12 +1413,9 @@ static void setAdvancedSettingsDefaults()
 			GadgetCheckBoxSetChecked(checkShellMap60Fps, FALSE);
 	}
 
-	// Reborn: Custom control bars are opt-in and Defaults leaves the selector disabled.
+	// Reborn: Custom control bars are opt-in; Defaults clears the toggle.
 	if (checkUseCustomControlBar)
 		GadgetCheckBoxSetChecked(checkUseCustomControlBar, FALSE);
-	if (comboBoxCustomControlBar)
-		GadgetComboBoxSetSelectedPos(comboBoxCustomControlBar, 0, TRUE);
-	updateCustomControlBarControls();
 	if (comboBoxLayoutTheme)
 	{
 		GadgetComboBoxSetSelectedPos(comboBoxLayoutTheme, REBORN_LAYOUT_THEME_DEFAULT, TRUE);
@@ -1519,12 +1444,9 @@ static void cancelAdvancedSettings()
 		GadgetCheckBoxSetChecked(checkChallenge60Fps, advancedSettingsOriginalChallenge60Fps);
 	if (checkShellMap60Fps)
 		GadgetCheckBoxSetChecked(checkShellMap60Fps, advancedSettingsOriginalShellMap60Fps);
-	// Reborn: Restore the original package selection and toggle without applying a package.
+	// Reborn: Restore the original toggle without applying appearance changes.
 	if (checkUseCustomControlBar)
 		GadgetCheckBoxSetChecked(checkUseCustomControlBar, advancedSettingsOriginalUseCustomControlBar);
-	if (comboBoxCustomControlBar)
-		GadgetComboBoxSetSelectedPos(comboBoxCustomControlBar, advancedSettingsOriginalCustomControlBar, TRUE);
-	updateCustomControlBarControls();
 	if (comboBoxLayoutTheme)
 	{
 		GadgetComboBoxSetSelectedPos(comboBoxLayoutTheme, advancedSettingsOriginalLayoutTheme, TRUE);
@@ -1609,7 +1531,6 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	comboBoxLayoutThemeID = GetOptionsMenuChildKey("ComboBoxLayoutTheme");
 	// Reborn: Resolve the custom control bar controls in either theme.
 	checkUseCustomControlBarID = GetOptionsMenuChildKey("CheckUseCustomControlBar");
-	comboBoxCustomControlBarID = GetOptionsMenuChildKey("ComboBoxCustomControlBar");
 	checkShowCommunicatorButtonID = GetOptionsMenuChildKey("CheckShowCommunicatorButton");
 	// Reborn: Resolve the shortcut toggle for either Options menu theme.
 	checkShowShortcutsOnButtonsID = GetOptionsMenuChildKey("CheckShowShortcutsOnButtons");
@@ -1666,9 +1587,8 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	checkChallenge60Fps = TheWindowManager->winGetWindowFromId(nullptr, checkChallenge60FpsID);
 	checkShellMap60Fps = TheWindowManager->winGetWindowFromId(nullptr, checkShellMap60FpsID);
 	comboBoxLayoutTheme = TheWindowManager->winGetWindowFromId(nullptr, comboBoxLayoutThemeID);
-	// Reborn: Bind the package selector and its enabling checkbox.
+	// Reborn: Bind the custom control bar checkbox.
 	checkUseCustomControlBar = TheWindowManager->winGetWindowFromId(nullptr, checkUseCustomControlBarID);
-	comboBoxCustomControlBar = TheWindowManager->winGetWindowFromId(nullptr, comboBoxCustomControlBarID);
 	checkShowCommunicatorButton =
 		TheWindowManager->winGetWindowFromId(nullptr, checkShowCommunicatorButtonID);
 	// Reborn: Bind the reserved accessibility toggle.
@@ -1977,8 +1897,9 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 	// Reborn: Missing and invalid values intentionally select Default for upgraded and new users.
 	populateLayoutThemeComboBox(rebornPreferences["LayoutTheme"]);
 	// Reborn: Missing or invalid preferences default to disabled.
-	populateCustomControlBarComboBox(rebornPreferences["CustomControlBarResolution"],
-		rebornPreferences["UseCustomControlBar"] == "yes");
+	// Reborn: Older preferences without this toggle safely keep the normal control bar.
+	if (checkUseCustomControlBar)
+		GadgetCheckBoxSetChecked(checkUseCustomControlBar, rebornPreferences["UseCustomControlBar"] == "yes");
 
 	// populate anti aliasing modes
 	AsciiString selectedAliasingMode = (*pref)["AntiAliasing"];
@@ -2690,7 +2611,7 @@ void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 	if (s_customControlBarRefreshPending)
 	{
 		s_customControlBarRefreshPending = FALSE;
-		if (SetCustomControlBarSelection(s_pendingCustomControlBarEnabled, s_pendingCustomControlBarIndex))
+		if (SetCustomControlBarSelection(s_pendingCustomControlBarEnabled))
 		{
 			if (TheControlBar) TheControlBar->refreshCustomAppearance();
 			ResetDiplomacy();
@@ -2982,12 +2903,6 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 			GameWindow *control = (GameWindow *)mData1;
 			Int controlID = control->winGetWindowId();
 
-			// Reborn: Only enable/disable the selector; the toggle does not apply the chosen ZIP.
-			if (controlID == checkUseCustomControlBarID)
-			{
-				updateCustomControlBarControls();
-				break;
-			}
 			if( controlID == buttonBack )
 			{
 				// go back one screen

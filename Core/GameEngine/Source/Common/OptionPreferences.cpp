@@ -61,11 +61,8 @@ OptionPreferences::OptionPreferences()
 	if (!customBarInitialized)
 	{
 		customBarInitialized = TRUE;
-		Int index = -1;
-		for (Int i = 0; i < 5; ++i)
-			if (rebornPreferences["CustomControlBarResolution"].compareNoCase(GetCustomControlBarResolution(i)) == 0)
-				index = i;
-		SetCustomControlBarSelection(rebornPreferences["UseCustomControlBar"] == "yes", index);
+		// Reborn: Missing toggle defaults to off; legacy manual resolution preferences are ignored.
+		SetCustomControlBarSelection(rebornPreferences["UseCustomControlBar"] == "yes");
 	}
 
 	if (rebornPreferences["UseCustomMaxCameraHeight"] == "yes" &&

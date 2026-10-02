@@ -212,7 +212,7 @@ GUI:ShowShortcutsOnButtons
 END
 
 GUI:UseCustomControlBar
-"Use Custom Control Bar"
+"Use Control Bar Pro"
 END
 
 GUI:NoCustomControlBarsFound
@@ -220,7 +220,7 @@ GUI:NoCustomControlBarsFound
 END
 
 TOOLTIP:UseCustomControlBar
-"Use the built-in Control Bar Pro layout for the in-game interface. Other menus keep your selected layout theme."
+"Use the built-in Control Bar Pro layout for the in-game interface. Art quality is selected automatically for your screen resolution. Other menus keep your selected layout theme."
 END
 
 TOOLTIP:CustomControlBarPackage

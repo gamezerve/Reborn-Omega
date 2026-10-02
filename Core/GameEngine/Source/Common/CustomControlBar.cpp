@@ -15,19 +15,15 @@
 
 // Reborn: No directory scan, package mounting or WND rewriting occurs in the game.
 static Bool s_customControlBarEnabled = FALSE;
-static Int s_customControlBarIndex = 2;
 static const char* s_resolutions[] = { "1280x720", "1600x900", "1920x1080", "2560x1440", "3840x2160" };
 
 //-------------------------------------------------------------------------------------------------
-/** Reborn: Only built-in, validated resolution choices can be activated. */
+/** Reborn: Apply only the enable toggle; art resolution follows the current display. */
 //-------------------------------------------------------------------------------------------------
-Bool SetCustomControlBarSelection(Bool enabled, Int index)
+Bool SetCustomControlBarSelection(Bool enabled)
 {
-    if (index < 0 || index >= 5) { enabled = FALSE; index = 2; }
-    const Bool changed = enabled != s_customControlBarEnabled ||
-        (enabled && index != s_customControlBarIndex);
+    const Bool changed = enabled != s_customControlBarEnabled;
     s_customControlBarEnabled = enabled;
-    s_customControlBarIndex = index;
     return changed;
 }
 
@@ -45,9 +41,13 @@ const char* GetCustomControlBarResolution(Int index)
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Reborn: Return the current built-in resolution selection. */
+/** Reborn: Choose 1080p art through Full HD and 2160p art above either Full HD dimension. */
 //-------------------------------------------------------------------------------------------------
-Int GetCustomControlBarIndex() { return s_customControlBarIndex; }
+Int GetCustomControlBarIndex()
+{
+    // Reborn: Startup may precede display creation; never cache that temporary fallback.
+    return TheDisplay && (TheDisplay->getWidth() > 1920 || TheDisplay->getHeight() > 1080) ? 4 : 2;
+}
 
 //-------------------------------------------------------------------------------------------------
 /** Reborn: Resolve supported screens to ready-made Custom WND files, preserving canonical window IDs. */
@@ -74,7 +74,7 @@ AsciiString GetCustomControlBarWindowName(const AsciiString& filename)
         {
             name.insert(name.size() - 4, "Custom");
             AsciiString result;
-            result.format("Window\\CustomControlBar\\%s\\%s", s_resolutions[s_customControlBarIndex], name.c_str());
+            result.format("Window\\CustomControlBar\\%s\\%s", s_resolutions[GetCustomControlBarIndex()], name.c_str());
             std::string path(result.str());
             std::replace(path.begin(), path.end(), '/', '\\');
             result.set(path.c_str());
@@ -90,7 +90,7 @@ AsciiString GetCustomControlBarSchemeFile()
 {
     AsciiString result;
     if (UseCustomControlBar())
-        result.format("Data\\INI\\CustomControlBar\\%s\\ControlBarScheme.ini", s_resolutions[s_customControlBarIndex]);
+        result.format("Data\\INI\\CustomControlBar\\%s\\ControlBarScheme.ini", s_resolutions[GetCustomControlBarIndex()]);
     return result;
 }
 
@@ -100,7 +100,7 @@ AsciiString GetCustomControlBarSchemeFile()
 AsciiString GetCustomControlBarImageName(const char* name)
 {
     AsciiString result;
-    result.format("RebornCBP_%s_%s", s_customControlBarIndex < 3 ? "1080" : "2160", name);
+    result.format("RebornCBP_%s_%s", GetCustomControlBarIndex() < 3 ? "1080" : "2160", name);
     return result;
 }
 
@@ -122,7 +122,7 @@ void ApplyCustomControlBarAppearance()
     if (!TheWindowManager || !TheDisplay || !TheFileSystem) return;
     AsciiString path;
     if (UseCustomControlBar())
-        path.format("Data\\INI\\CustomControlBar\\%s\\Appearance.txt", s_resolutions[s_customControlBarIndex]);
+        path.format("Data\\INI\\CustomControlBar\\%s\\Appearance.txt", s_resolutions[GetCustomControlBarIndex()]);
     else
         path.set("Data\\INI\\CustomControlBar\\NormalAppearance.txt");
     File* file = TheFileSystem->openFile(path.str(), File::READ);

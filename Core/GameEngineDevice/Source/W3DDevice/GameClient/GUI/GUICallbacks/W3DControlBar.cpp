@@ -443,36 +443,40 @@ void W3DPowerDrawA( GameWindow *window, WinInstanceData *instData )
 	TheWindowManager->winDrawImage(slider, posXstart, pos.y + size.y - slider->getImageHeight(), posXend, pos.y + size.y);
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Draw a 4x4 grid in faction colors or Control Bar Pro colors, independent of startup layout. */
+//-------------------------------------------------------------------------------------------------
 void W3DCommandBarGridDraw( GameWindow *window, WinInstanceData *instData )
 {
-	if( BitIsSet(window->winGetStatus(), WIN_STATUS_IMAGE ))
-	{
-		W3DGameWinDefaultDraw( window, instData );
-		return;
-	}
-
 	ICoord2D pos, size;
 	window->winGetScreenPosition( &pos.x, &pos.y );
 	window->winGetSize( &size.x, &size.y );
 
-	Color color = TheControlBar->getBorderColor();
-	window->winSetEnabledBorderColor(0, color);
-	W3DGameWinDefaultDraw( window, instData );
+	// Reborn: This panel is code-drawn in both layouts; never retain the textured 3x3 grid path.
+	window->winClearStatus(WIN_STATUS_IMAGE);
+	const Bool custom = UseCustomControlBar();
+	const Color color = custom ? GameMakeColor(255, 255, 255, 151) : TheControlBar->getBorderColor();
+	if (custom)
+	{
+		// Reborn: Replace the baked grid texture with its translucent background and white border.
+		TheDisplay->drawFillRect(pos.x, pos.y, size.x, size.y, GameMakeColor(0, 0, 0, 105));
+		TheDisplay->drawOpenRect(pos.x, pos.y, size.x, size.y, 1, color);
+	}
+	else
+	{
+		// Reborn: Preserve the normal WND background and existing USA/GLA/China scheme colors.
+		window->winSetEnabledBorderColor(0, color);
+		W3DGameWinDefaultDraw(window, instData);
+	}
 
-	//TheDisplay->drawLine(pos.x, pos.y + size.y * .33, pos.x + size.x, pos.y+ size.y*.33, 1,color);
-	//TheDisplay->drawLine(pos.x, pos.y + size.y * .66, pos.x + size.x, pos.y+ size.y*.66, 1,color);
-	//TheDisplay->drawLine(pos.x + size.x * .33, pos.y, pos.x + size.x *.33, pos.y +size.y, 1,color);
-	//TheDisplay->drawLine(pos.x + size.x  * .66, pos.y, pos.x + size.x *.66, pos.y + size.y, 1,color); // Reborn: Adjusted below to fit 7 Upgrade Icons
-
-	TheDisplay->drawLine(pos.x, pos.y + size.y / 4, pos.x + size.x, pos.y + size.y / 4, 1, color);
-	TheDisplay->drawLine(pos.x, pos.y + size.y / 2, pos.x + size.x, pos.y + size.y / 2, 1, color);
-	TheDisplay->drawLine(pos.x, pos.y + (size.y * 3) / 4, pos.x + size.x, pos.y + (size.y * 3) / 4, 1, color);
-
-	TheDisplay->drawLine(pos.x + size.x / 4, pos.y, pos.x + size.x / 4, pos.y + size.y, 1, color);
-	TheDisplay->drawLine(pos.x + size.x / 2, pos.y, pos.x + size.x / 2, pos.y + size.y, 1, color);
-	TheDisplay->drawLine(pos.x + (size.x * 3) / 4, pos.y, pos.x + (size.x * 3) / 4, pos.y + size.y, 1, color);
-
-
+	// Reborn: Both layouts use four equal rows and columns; cameo placement is unchanged.
+	for (Int division = 1; division < 4; ++division)
+	{
+		const Int x = pos.x + (size.x * division) / 4;
+		const Int y = pos.y + (size.y * division) / 4;
+		TheDisplay->drawLine(pos.x, y, pos.x + size.x, y, 1, color);
+		TheDisplay->drawLine(x, pos.y, x, pos.y + size.y, 1, color);
+	}
 }
 
 void W3DCommandBarGenExpDraw( GameWindow *window, WinInstanceData *instData )

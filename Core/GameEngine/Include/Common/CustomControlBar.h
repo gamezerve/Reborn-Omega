@@ -5,7 +5,7 @@
 Bool UseCustomControlBar();
 const char* GetCustomControlBarResolution(Int index);
 Int GetCustomControlBarIndex();
-Bool SetCustomControlBarSelection(Bool enabled, Int index);
+Bool SetCustomControlBarSelection(Bool enabled);
 AsciiString GetCustomControlBarWindowName(const AsciiString& filename);
 AsciiString GetCustomControlBarSchemeFile();
 AsciiString GetCustomControlBarImageName(const char* name);

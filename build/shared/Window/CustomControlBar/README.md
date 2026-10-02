@@ -5,10 +5,12 @@ mount, unpack or merge packages at runtime.
 
 | Layout theme | Custom bar disabled | Custom bar enabled |
 | --- | --- | --- |
-| Zero Hour | Existing normal WNDs | Custom WNDs for the selected resolution; other menus stay Zero Hour |
-| Generals | Existing Gen WNDs | Custom WNDs for the selected resolution; other menus stay Generals |
+| Zero Hour | Existing normal WNDs | Custom WNDs for the automatically selected art set; other menus stay Zero Hour |
+| Generals | Existing Gen WNDs | Custom WNDs for the automatically selected art set; other menus stay Generals |
 
-The five built-in resolutions are 1280x720, 1600x900, 1920x1080, 2560x1440 and 3840x2160.
+Reborn: The options menu exposes only the enable toggle. Displays up to 1920x1080
+use the 1080p art/profile; larger width or height uses the 2160p art/profile.
+The older five directories remain as offline preparation outputs, not selectable options.
 
 Covered screens: ControlBar, ControlBarPopupDescription, Diplomacy,
 GeneralsExpPoints, the three GenPowersShortcutBar screens, QuitMenu,
@@ -34,8 +36,8 @@ Keep Appearance.txt synchronized with WND geometry/font/draw-data changes. The
 offline preparation tool emits both files together. This avoids parsing or
 merging WND text during a live switch.
 
-Preferences: UseCustomControlBar = yes/no and CustomControlBarResolution = one of
-the five sizes. Missing or invalid old values leave the custom bar disabled.
+Reborn: Preferences store only UseCustomControlBar = yes/no. Missing values default
+to disabled; legacy CustomControlBarResolution values are ignored and removed on save.
 
 ## Reborn: Offline preparation
 
