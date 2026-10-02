@@ -1490,17 +1490,21 @@ void MultiPlayerLoadScreen::init( GameInfo *game )
 			continue;
 
 		Color houseColor = TheMultiplayerSettings->getColor(slot->getApparentColor())->getColor();
-#if RTS_GENERALS
-		GadgetProgressBarSetEnabledBarColor(m_progressBars[netSlot],houseColor );
-#else
-		// format the progress bar to house colors
-		AsciiString imageName;
-		imageName.format("LoadingBar_ProgressCenter%d", slot->getApparentColor());
-		const Image *houseImage = TheMappedImageCollection->findImageByName(imageName);
-		if (! houseImage)
-			houseImage = TheMappedImageCollection->findImageByName("LoadingBar_Progress");
-		m_progressBars[netSlot]->winSetEnabledImage( 6, houseImage );
-#endif
+		// Reborn: Select solid-color or textured loading bars by the active layout, not the executable type.
+		if (UseGeneralsLayout())
+		{
+			GadgetProgressBarSetEnabledBarColor(m_progressBars[netSlot], houseColor);
+		}
+		else
+		{
+			// format the progress bar to house colors
+			AsciiString imageName;
+			imageName.format("LoadingBar_ProgressCenter%d", slot->getApparentColor());
+			const Image *houseImage = TheMappedImageCollection->findImageByName(imageName);
+			if (! houseImage)
+				houseImage = TheMappedImageCollection->findImageByName("LoadingBar_Progress");
+			m_progressBars[netSlot]->winSetEnabledImage( 6, houseImage );
+		}
 
 		UnicodeString name = slot->getName();
 		GadgetStaticTextSetText(m_playerNames[netSlot], name );
@@ -1780,17 +1784,21 @@ GameSlot *lSlot = game->getSlot(game->getLocalSlotNum());
 			continue;
 
 		Color houseColor = TheMultiplayerSettings->getColor(slot->getApparentColor())->getColor();
-#if RTS_GENERALS
-		GadgetProgressBarSetEnabledBarColor(m_progressBars[netSlot],houseColor );
-#else
-		// format the progress bar to house colors
-		AsciiString imageName;
-		imageName.format("LoadingBar_ProgressCenter%d", slot->getApparentColor());
-		const Image *houseImage = TheMappedImageCollection->findImageByName(imageName);
-		if (! houseImage)
-			houseImage = TheMappedImageCollection->findImageByName("LoadingBar_Progress");
-		m_progressBars[netSlot]->winSetEnabledImage( 6, houseImage );
-#endif
+		// Reborn: Select solid-color or textured loading bars by the active layout, not the executable type.
+		if (UseGeneralsLayout())
+		{
+			GadgetProgressBarSetEnabledBarColor(m_progressBars[netSlot], houseColor);
+		}
+		else
+		{
+			// format the progress bar to house colors
+			AsciiString imageName;
+			imageName.format("LoadingBar_ProgressCenter%d", slot->getApparentColor());
+			const Image *houseImage = TheMappedImageCollection->findImageByName(imageName);
+			if (! houseImage)
+				houseImage = TheMappedImageCollection->findImageByName("LoadingBar_Progress");
+			m_progressBars[netSlot]->winSetEnabledImage( 6, houseImage );
+		}
 
 		UnicodeString name = slot->getName();
 		GadgetStaticTextSetText(m_playerNames[netSlot], name );
