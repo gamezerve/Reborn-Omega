@@ -292,7 +292,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 131 136,
-                   BOTTOMRIGHT: 299 156,
+                   BOTTOMRIGHT: 249 156,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextPlayer0";
       STATUS = ENABLED;
@@ -340,7 +340,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 303 136,
+      SCREENRECT = UPPERLEFT: 253 136,
                    BOTTOMRIGHT: 415 156,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextSide0";
@@ -677,7 +677,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 131 160,
-                   BOTTOMRIGHT: 299 180,
+                   BOTTOMRIGHT: 249 180,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextPlayer1";
       STATUS = ENABLED;
@@ -725,7 +725,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 303 160,
+      SCREENRECT = UPPERLEFT: 253 160,
                    BOTTOMRIGHT: 415 180,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextSide1";
@@ -1062,7 +1062,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 131 184,
-                   BOTTOMRIGHT: 299 204,
+                   BOTTOMRIGHT: 249 204,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextPlayer2";
       STATUS = ENABLED;
@@ -1110,7 +1110,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 303 184,
+      SCREENRECT = UPPERLEFT: 253 184,
                    BOTTOMRIGHT: 415 204,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextSide2";
@@ -1447,7 +1447,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 131 208,
-                   BOTTOMRIGHT: 299 228,
+                   BOTTOMRIGHT: 249 228,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextPlayer3";
       STATUS = ENABLED;
@@ -1495,7 +1495,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 303 208,
+      SCREENRECT = UPPERLEFT: 253 208,
                    BOTTOMRIGHT: 415 228,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextSide3";
@@ -1832,7 +1832,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 131 232,
-                   BOTTOMRIGHT: 299 252,
+                   BOTTOMRIGHT: 249 252,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextPlayer4";
       STATUS = ENABLED;
@@ -1880,7 +1880,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 303 232,
+      SCREENRECT = UPPERLEFT: 253 232,
                    BOTTOMRIGHT: 415 252,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextSide4";
@@ -2217,7 +2217,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 131 256,
-                   BOTTOMRIGHT: 299 276,
+                   BOTTOMRIGHT: 249 276,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextPlayer5";
       STATUS = ENABLED;
@@ -2265,7 +2265,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 303 256,
+      SCREENRECT = UPPERLEFT: 253 256,
                    BOTTOMRIGHT: 415 276,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextSide5";
@@ -2602,7 +2602,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 131 280,
-                   BOTTOMRIGHT: 299 300,
+                   BOTTOMRIGHT: 249 300,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextPlayer6";
       STATUS = ENABLED;
@@ -2650,7 +2650,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 303 280,
+      SCREENRECT = UPPERLEFT: 253 280,
                    BOTTOMRIGHT: 415 300,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextSide6";
@@ -2987,7 +2987,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 131 304,
-                   BOTTOMRIGHT: 299 324,
+                   BOTTOMRIGHT: 249 324,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextPlayer7";
       STATUS = ENABLED;
@@ -3035,7 +3035,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 303 304,
+      SCREENRECT = UPPERLEFT: 253 304,
                    BOTTOMRIGHT: 415 324,
                    CREATIONRESOLUTION: 800 600;
       NAME = "GameSpyLoadScreen.wnd:StaticTextSide7";
@@ -3230,7 +3230,7 @@ WINDOW
   WINDOW
     WINDOWTYPE = STATICTEXT;
     SCREENRECT = UPPERLEFT: 131 104,
-                 BOTTOMRIGHT: 299 132,
+                 BOTTOMRIGHT: 249 132,
                  CREATIONRESOLUTION: 800 600;
     NAME = "GameSpyLoadScreen.wnd:";
     STATUS = ENABLED;
@@ -3278,8 +3278,8 @@ WINDOW
   CHILD
   WINDOW
     WINDOWTYPE = STATICTEXT;
-    SCREENRECT = UPPERLEFT: 302 104,
-                 BOTTOMRIGHT: 414 132,
+    SCREENRECT = UPPERLEFT: 253 104,
+                 BOTTOMRIGHT: 415 132,
                  CREATIONRESOLUTION: 800 600;
     NAME = "GameSpyLoadScreen.wnd:";
     STATUS = ENABLED;
@@ -3327,8 +3327,8 @@ WINDOW
   CHILD
   WINDOW
     WINDOWTYPE = STATICTEXT;
-    SCREENRECT = UPPERLEFT: 418 104,
-                 BOTTOMRIGHT: 490 132,
+    SCREENRECT = UPPERLEFT: 419 104,
+                 BOTTOMRIGHT: 491 132,
                  CREATIONRESOLUTION: 800 600;
     NAME = "GameSpyLoadScreen.wnd:StaticTextWinLoss8";
     STATUS = ENABLED;
@@ -3376,8 +3376,8 @@ WINDOW
   CHILD
   WINDOW
     WINDOWTYPE = STATICTEXT;
-    SCREENRECT = UPPERLEFT: 494 104,
-                 BOTTOMRIGHT: 586 132,
+    SCREENRECT = UPPERLEFT: 495 104,
+                 BOTTOMRIGHT: 587 132,
                  CREATIONRESOLUTION: 800 600;
     NAME = "GameSpyLoadScreen.wnd:StaticTextTotalDisconnects8";
     STATUS = ENABLED;
@@ -3425,8 +3425,8 @@ WINDOW
   CHILD
   WINDOW
     WINDOWTYPE = STATICTEXT;
-    SCREENRECT = UPPERLEFT: 590 104,
-                 BOTTOMRIGHT: 690 132,
+    SCREENRECT = UPPERLEFT: 591 104,
+                 BOTTOMRIGHT: 691 132,
                  CREATIONRESOLUTION: 800 600;
     NAME = "GameSpyLoadScreen.wnd:";
     STATUS = ENABLED;
@@ -3947,7 +3947,7 @@ WINDOW
   CHILD
   WINDOW
     WINDOWTYPE = STATICTEXT;
-    SCREENRECT = UPPERLEFT: 82 104,
+    SCREENRECT = UPPERLEFT: 86 104,
                  BOTTOMRIGHT: 126 132,
                  CREATIONRESOLUTION: 800 600;
     NAME = "GameSpyLoadScreen.wnd:";

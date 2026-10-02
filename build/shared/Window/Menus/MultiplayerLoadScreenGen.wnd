@@ -918,7 +918,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 115 113,
-                   BOTTOMRIGHT: 295 133,
+                   BOTTOMRIGHT: 275 133,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextPlayer0";
       STATUS = ENABLED;
@@ -967,7 +967,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 115 137,
-                   BOTTOMRIGHT: 295 157,
+                   BOTTOMRIGHT: 275 157,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextPlayer1";
       STATUS = ENABLED;
@@ -1016,7 +1016,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 115 161,
-                   BOTTOMRIGHT: 295 181,
+                   BOTTOMRIGHT: 275 181,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextPlayer2";
       STATUS = ENABLED;
@@ -1065,7 +1065,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 115 185,
-                   BOTTOMRIGHT: 295 205,
+                   BOTTOMRIGHT: 275 205,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextPlayer3";
       STATUS = ENABLED;
@@ -1114,7 +1114,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 115 209,
-                   BOTTOMRIGHT: 295 229,
+                   BOTTOMRIGHT: 275 229,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextPlayer4";
       STATUS = ENABLED;
@@ -1163,7 +1163,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 115 233,
-                   BOTTOMRIGHT: 295 253,
+                   BOTTOMRIGHT: 275 253,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextPlayer5";
       STATUS = ENABLED;
@@ -1212,7 +1212,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 115 257,
-                   BOTTOMRIGHT: 295 277,
+                   BOTTOMRIGHT: 275 277,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextPlayer6";
       STATUS = ENABLED;
@@ -1261,7 +1261,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 115 281,
-                   BOTTOMRIGHT: 295 301,
+                   BOTTOMRIGHT: 275 301,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextPlayer7";
       STATUS = ENABLED;
@@ -1309,7 +1309,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 299 113,
+      SCREENRECT = UPPERLEFT: 279 113,
                    BOTTOMRIGHT: 455 133,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextSide0";
@@ -1358,7 +1358,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 299 137,
+      SCREENRECT = UPPERLEFT: 279 137,
                    BOTTOMRIGHT: 455 157,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextSide1";
@@ -1407,7 +1407,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 299 161,
+      SCREENRECT = UPPERLEFT: 279 161,
                    BOTTOMRIGHT: 455 181,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextSide2";
@@ -1456,7 +1456,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 299 185,
+      SCREENRECT = UPPERLEFT: 279 185,
                    BOTTOMRIGHT: 455 205,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextSide3";
@@ -1505,7 +1505,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 299 209,
+      SCREENRECT = UPPERLEFT: 279 209,
                    BOTTOMRIGHT: 455 229,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextSide4";
@@ -1554,7 +1554,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 299 233,
+      SCREENRECT = UPPERLEFT: 279 233,
                    BOTTOMRIGHT: 455 253,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextSide5";
@@ -1603,7 +1603,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 299 257,
+      SCREENRECT = UPPERLEFT: 279 257,
                    BOTTOMRIGHT: 455 277,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextSide6";
@@ -1652,7 +1652,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 299 281,
+      SCREENRECT = UPPERLEFT: 279 281,
                    BOTTOMRIGHT: 455 301,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextSide7";
@@ -1702,7 +1702,7 @@ WINDOW
     WINDOW
       WINDOWTYPE = STATICTEXT;
       SCREENRECT = UPPERLEFT: 115 85,
-                   BOTTOMRIGHT: 295 113,
+                   BOTTOMRIGHT: 275 113,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextPlayerTitle";
       STATUS = ENABLED;
@@ -1750,7 +1750,7 @@ WINDOW
     CHILD
     WINDOW
       WINDOWTYPE = STATICTEXT;
-      SCREENRECT = UPPERLEFT: 299 85,
+      SCREENRECT = UPPERLEFT: 279 85,
                    BOTTOMRIGHT: 451 112,
                    CREATIONRESOLUTION: 800 600;
       NAME = "MultiplayerLoadScreen.wnd:StaticTextSideTitle";
