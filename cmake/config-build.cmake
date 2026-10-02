@@ -10,6 +10,7 @@ option(RTS_BUILD_OPTION_ASAN "Build code with Address Sanitizer." OFF)
 option(RTS_BUILD_OPTION_VC6_FULL_DEBUG "Build VC6 with full debug info." OFF)
 #option(RTS_BUILD_OPTION_FFMPEG "Enable FFmpeg support" OFF)
 option(RTS_BUILD_OPTION_REBORN "Enable Reborn-specific build changes" OFF)
+cmake_dependent_option(RTS_BUILD_OPTION_TESTS "Build the unit tests." OFF "NOT IS_VS6_BUILD" OFF)
 
 if(NOT RTS_BUILD_ZEROHOUR AND NOT RTS_BUILD_GENERALS)
     set(RTS_BUILD_ZEROHOUR TRUE)
@@ -26,6 +27,7 @@ add_feature_info(AddressSanitizer RTS_BUILD_OPTION_ASAN "Building with address s
 add_feature_info(Vc6FullDebug RTS_BUILD_OPTION_VC6_FULL_DEBUG "Building VC6 with full debug info")
 add_feature_info(FFmpegSupport RTS_BUILD_OPTION_FFMPEG "Building with FFmpeg support")
 add_feature_info(RebornBuild RTS_BUILD_OPTION_REBORN "Building with Reborn-specific changes")
+add_feature_info(Tests RTS_BUILD_OPTION_TESTS "Building the unit tests")
 
 set(RTS_BUILD_OUTPUT_SUFFIX "" CACHE STRING "Suffix appended to output names of installable targets")
 
