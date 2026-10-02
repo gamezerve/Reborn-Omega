@@ -990,7 +990,16 @@ WinInputReturnCode GameWindowManager::winProcessMouseEvent( GameWindowMessage ms
 		else
 		{
 
-			if( m_modalHead && m_modalHead->window )
+			// Reborn: Open combo lists can extend beyond their parent panel; hit-test them before underlying settings.
+			if( m_loneWindow && BitIsSet( m_loneWindow->winGetStyle(), GWS_COMBO_BOX ) &&
+					!m_loneWindow->winIsHidden() && BitIsSet( m_loneWindow->m_status, WIN_STATUS_ENABLED ) &&
+					(!m_modalHead || !m_modalHead->window || m_modalHead->window == m_loneWindow ||
+					 m_modalHead->window->winIsChild( m_loneWindow )) &&
+					m_loneWindow->winPointInWindow( mousePos->x, mousePos->y ) )
+			{
+				window = m_loneWindow->winPointInChild( mousePos->x, mousePos->y );
+			}
+			else if( m_modalHead && m_modalHead->window )
 			{
 				window = m_modalHead->window->winPointInChild( mousePos->x, mousePos->y );
 			}

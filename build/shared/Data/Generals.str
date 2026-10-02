@@ -211,6 +211,22 @@ GUI:ShowShortcutsOnButtons
 "Show Shortcuts on Buttons"
 END
 
+GUI:UseCustomControlBar
+"Use Custom Control Bar"
+END
+
+GUI:NoCustomControlBarsFound
+"No custom control bars found"
+END
+
+TOOLTIP:UseCustomControlBar
+"Enable selection of a custom control bar ZIP package. This setting currently does not install or apply the package."
+END
+
+TOOLTIP:CustomControlBarPackage
+"ZIP packages from RebornOmegaData\\CustomControlBar in the game directory. No packages are installed or applied yet."
+END
+
 GUI:UpdateSettings
 "UPDATES"
 END
