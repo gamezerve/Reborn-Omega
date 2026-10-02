@@ -277,6 +277,41 @@ CustomWndNode* findNode(CustomWndNode& root, const std::string& name)
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Fit the portrait and all seven upgrade cameos inside the code-drawn 4x4 custom grid. */
+//-------------------------------------------------------------------------------------------------
+void layoutUpgradeCameos(CustomWndNode& root)
+{
+    CustomWndNode* grid = findNode(root, "WinUnitSelected");
+    if (!grid) return;
+    const std::vector<int> r = rect(*grid);
+    const int inset = r[4] >= 3840 ? 2 : 1;
+    int x[5], y[5];
+    for (int i = 0; i <= 4; ++i)
+    {
+        x[i] = r[0] + (r[2] - r[0]) * i / 4;
+        y[i] = r[1] + (r[3] - r[1]) * i / 4;
+    }
+    // Reborn: Keep the template's original controls, callbacks and upgrade indices.
+    const auto place = [&](const std::string& name, int left, int top, int right, int bottom)
+    {
+        CustomWndNode* node = findNode(*grid, name);
+        if (!node) throw std::runtime_error("Missing upgrade grid control " + name);
+        node->fields["SCREENRECT"] = "SCREENRECT = UPPERLEFT: " + std::to_string(left) + " " + std::to_string(top) +
+            ", BOTTOMRIGHT: " + std::to_string(right) + " " + std::to_string(bottom) +
+            ", CREATIONRESOLUTION: " + std::to_string(r[4]) + " " + std::to_string(r[5]);
+    };
+    place("CameoWindow", x[0] + inset, y[0] + inset, x[3] - inset, y[3] - inset);
+    for (int i = 1; i <= 7; ++i)
+    {
+        // Reborn: Four upgrades run down the right column, then three run left across the bottom.
+        const int column = i <= 4 ? 3 : 7 - i;
+        const int row = i <= 4 ? i - 1 : 3;
+        place("UnitUpgrade" + std::to_string(i), x[column] + inset, y[row] + inset,
+            x[column + 1] - inset, y[row + 1] - inset);
+    }
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Reborn: Apply a retail skin to a fixed Reborn template; never import retail parents or input blockers. */
 //-------------------------------------------------------------------------------------------------
 void skinNode(CustomWndNode& node, CustomWndNode& retail, const CustomWndNode* oldParent = nullptr, const CustomWndNode* newParent = nullptr)
@@ -362,6 +397,8 @@ std::string mergeWindow(const std::string& customText, const std::string& origin
         if (op >= originalTokens.size()) throw std::runtime_error("Incompatible WND roots");
         CustomWndNode original = readNode(originalTokens, op);
         skinNode(original, custom);
+        // Reborn: Retail's five 3x3 slots must not override the mod's seven 4x4 slots.
+        layoutUpgradeCameos(original);
         result += writeNode(original);
     }
     if (op != originalTokens.size()) throw std::runtime_error("Missing mod WND roots");

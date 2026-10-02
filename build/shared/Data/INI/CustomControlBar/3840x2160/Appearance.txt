@@ -2447,7 +2447,7 @@ D ControlBar.wnd:WinUnitSelected 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:WinUnitSelected 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:WinUnitSelected 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:WinUnitSelected 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:CameoWindow 3286 1776 3588 2018 3840 2160
+R ControlBar.wnd:CameoWindow 3286 1776 3625 2048 3840 2160
 F ControlBar.wnd:CameoWindow "Times New Roman" 14 0
 H ControlBar.wnd:CameoWindow [NONE]
 T ControlBar.wnd:CameoWindow 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -2478,7 +2478,7 @@ D ControlBar.wnd:CameoWindow 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:CameoWindow 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:CameoWindow 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:CameoWindow 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:UnitUpgrade1 3590 1776 3740 1896 3840 2160
+R ControlBar.wnd:UnitUpgrade1 3629 1776 3740 1864 3840 2160
 F ControlBar.wnd:UnitUpgrade1 "Times New Roman" 14 0
 H ControlBar.wnd:UnitUpgrade1 [NONE]
 T ControlBar.wnd:UnitUpgrade1 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -2509,7 +2509,7 @@ D ControlBar.wnd:UnitUpgrade1 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade1 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade1 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade1 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:UnitUpgrade2 3590 1898 3740 2018 3840 2160
+R ControlBar.wnd:UnitUpgrade2 3629 1868 3740 1956 3840 2160
 F ControlBar.wnd:UnitUpgrade2 "Times New Roman" 14 0
 H ControlBar.wnd:UnitUpgrade2 [NONE]
 T ControlBar.wnd:UnitUpgrade2 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -2540,7 +2540,7 @@ D ControlBar.wnd:UnitUpgrade2 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade2 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade2 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade2 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:UnitUpgrade3 3590 2020 3740 2140 3840 2160
+R ControlBar.wnd:UnitUpgrade3 3629 1960 3740 2048 3840 2160
 F ControlBar.wnd:UnitUpgrade3 "Times New Roman" 14 0
 H ControlBar.wnd:UnitUpgrade3 [NONE]
 T ControlBar.wnd:UnitUpgrade3 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -2571,7 +2571,7 @@ D ControlBar.wnd:UnitUpgrade3 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade3 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade3 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade3 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:UnitUpgrade4 3438 2020 3588 2140 3840 2160
+R ControlBar.wnd:UnitUpgrade4 3629 2052 3740 2140 3840 2160
 F ControlBar.wnd:UnitUpgrade4 "Times New Roman" 14 0
 H ControlBar.wnd:UnitUpgrade4 [NONE]
 T ControlBar.wnd:UnitUpgrade4 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -2602,7 +2602,7 @@ D ControlBar.wnd:UnitUpgrade4 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade4 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade4 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade4 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:UnitUpgrade5 3286 2020 3436 2140 3840 2160
+R ControlBar.wnd:UnitUpgrade5 3515 2052 3625 2140 3840 2160
 F ControlBar.wnd:UnitUpgrade5 "Times New Roman" 14 0
 H ControlBar.wnd:UnitUpgrade5 [NONE]
 T ControlBar.wnd:UnitUpgrade5 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -2633,7 +2633,7 @@ D ControlBar.wnd:UnitUpgrade5 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade5 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade5 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade5 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:UnitUpgrade6 3399 2050 3510 2139 3840 2160
+R ControlBar.wnd:UnitUpgrade6 3400 2052 3511 2140 3840 2160
 F ControlBar.wnd:UnitUpgrade6 "Times New Roman" 14 0
 H ControlBar.wnd:UnitUpgrade6 [NONE]
 T ControlBar.wnd:UnitUpgrade6 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -2664,7 +2664,7 @@ D ControlBar.wnd:UnitUpgrade6 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade6 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade6 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade6 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:UnitUpgrade7 3287 2050 3395 2139 3840 2160
+R ControlBar.wnd:UnitUpgrade7 3286 2052 3396 2140 3840 2160
 F ControlBar.wnd:UnitUpgrade7 "Times New Roman" 14 0
 H ControlBar.wnd:UnitUpgrade7 [NONE]
 T ControlBar.wnd:UnitUpgrade7 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
