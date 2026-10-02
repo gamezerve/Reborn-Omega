@@ -52,6 +52,7 @@
 #include "GameClient/GameWindowGlobal.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/GadgetPushButton.h"
+#include "GameClient/ControlBar.h" // Reborn: Render opt-in command shortcut badges after button overlays.
 #include "GameClient/Display.h"
 #include "W3DDevice/GameClient/W3DGameWindow.h"
 #include "W3DDevice/GameClient/W3DDisplay.h"
@@ -308,6 +309,9 @@ void W3DGadgetPushButtonImageDraw( GameWindow *window,
 	{
 		W3DGadgetPushButtonImageDrawOne( window, instData );
 	}
+	// Reborn: ControlBar filters this hook to primary commands and construction cancel.
+	if (TheControlBar)
+		TheControlBar->drawCommandButtonShortcut(window);
 }
 
 void W3DGadgetPushButtonImageDrawOne( GameWindow *window,

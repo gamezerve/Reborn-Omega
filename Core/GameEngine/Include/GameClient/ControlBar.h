@@ -822,6 +822,9 @@ public:
 	void triggerRadarAttackGlow();
 
 	void drawSpecialPowerShortcutMultiplierText();
+	// Reborn: Show badges on primary commands and the dedicated construction cancel button.
+	void drawCommandButtonShortcut(GameWindow *window);
+	void setShowShortcutsOnButtons(Bool enabled) { m_showShortcutsOnButtons = enabled; }
 	void setGlobalCommunicatorButtonEnabled(Bool enabled);
 	Bool canShowGlobalCommunicatorButton() const;
 
@@ -975,6 +978,12 @@ protected:
 	GameWindow *m_specialPowerShortcutParent;
 
 	GameWindow *m_commandWindows[ MAX_COMMANDS_PER_SET ];			///< command window controls for easy access
+	// Reborn: Cache badge text separately from button labels and special-power shortcuts.
+	// Reborn: Keep fourteen regular badges plus the dedicated cancel-construction badge.
+	enum { MAX_COMMAND_SHORTCUT_BADGES = 15 };
+	DisplayString *m_commandShortcutStrings[ MAX_COMMAND_SHORTCUT_BADGES ];
+	IRegion2D m_commandShortcutInkBounds[ MAX_COMMAND_SHORTCUT_BADGES ];
+	Bool m_showShortcutsOnButtons;
 	const CommandButton *m_commonCommands[ MAX_COMMANDS_PER_SET ];	///< shared commands we will use for multi-selection
 
 		// removed from multiplayer branch

@@ -83,6 +83,8 @@ public:
 	virtual void notifyTextChanged();		///< called when text has changed
 	virtual void reset();								///< reset all contents of string
 
+	// Reborn: Device implementations may return the visible ink bounds of a single glyph.
+	virtual Bool getSingleGlyphInkBounds(IRegion2D *bounds) { return FALSE; }
 	virtual void setFont( GameFont *font );		///< set a font for display
 	virtual GameFont *getFont();				///< return font in string
 	virtual void setWordWrap( Int wordWrap ) = 0;	///< Set the width that we want to start wrapping text

@@ -548,10 +548,14 @@ static void saveAdvancedSettings()
 			TheControlBar->setGlobalCommunicatorButtonEnabled(enabled);
 	}
 
-	// Reborn: Persist this reserved accessibility setting independently of button rendering.
+	// Reborn: Apply accepted shortcut visibility immediately, including during a running game.
 	if (checkShowShortcutsOnButtons)
-		rebornPreferences["ShowShortcutsOnButtons"] =
-			GadgetCheckBoxIsChecked(checkShowShortcutsOnButtons) ? "yes" : "no";
+	{
+		const Bool enabled = GadgetCheckBoxIsChecked(checkShowShortcutsOnButtons);
+		rebornPreferences["ShowShortcutsOnButtons"] = enabled ? "yes" : "no";
+		if (TheControlBar)
+			TheControlBar->setShowShortcutsOnButtons(enabled);
+	}
 
 	const Bool canChangeGameFps = !TheGameLogic->isInInteractiveGame();
 

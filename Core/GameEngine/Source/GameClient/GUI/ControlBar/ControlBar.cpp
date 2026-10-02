@@ -1941,6 +1941,10 @@ ControlBar::ControlBar()
 	m_globalCommunicatorButton = nullptr;
 	m_globalCommunicatorButtonParent = nullptr;
 	m_globalCommunicatorButtonEnabled = TRUE;
+	// Reborn: Missing preferences default to no shortcut badges.
+	m_showShortcutsOnButtons = FALSE;
+	for (Int badge = 0; badge < MAX_COMMAND_SHORTCUT_BADGES; ++badge)
+		m_commandShortcutStrings[badge] = nullptr;
 	m_globalCommunicatorConnectionStatus = -1;
 	m_globalCommunicatorAnimationFrame = -1;
 	m_globalCommunicatorAnimationTime = 0;
@@ -1989,6 +1993,13 @@ ControlBar::ControlBar()
 ControlBar::~ControlBar()
 {
 
+	// Reborn: Release cached badge strings before the display string manager shuts down.
+	for (Int badge = 0; badge < MAX_COMMAND_SHORTCUT_BADGES; ++badge)
+	{
+		if (m_commandShortcutStrings[badge])
+			TheDisplayStringManager->freeDisplayString(m_commandShortcutStrings[badge]);
+		m_commandShortcutStrings[badge] = nullptr;
+	}
 	if (s_moneyPopupLayout)
 	{
 		s_moneyPopupLayout->destroyWindows();
@@ -2075,6 +2086,11 @@ void ControlBarPopupDescriptionUpdateFunc( WindowLayout *layout, void *param );
 void ControlBar::init()
 {
 	INI ini;
+	// Reborn: Load shortcut visibility independently of the optional communicator window.
+	UserPreferences shortcutPreferences;
+	LoadRebornOmegaPreferences(shortcutPreferences);
+	m_showShortcutsOnButtons = shortcutPreferences["ShowShortcutsOnButtons"] == "yes";
+
 	m_sideSelectAnimateDown = FALSE;
 	// load the command buttons
 	ini.loadFileDirectory( "Data\\INI\\Default\\CommandButton", INI_LOAD_OVERWRITE, nullptr );
@@ -4422,6 +4438,119 @@ void ControlBar::hideCommunicator( Bool b )
 	//sanity
 	if( m_communicatorButton != nullptr )
 		m_communicatorButton->winHide( b );
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Draw a bottom-left shortcut badge after the command button's normal image and overlays. */
+//-------------------------------------------------------------------------------------------------
+void ControlBar::drawCommandButtonShortcut(GameWindow *window)
+{
+	if (!m_showShortcutsOnButtons || !window || window->winIsHidden() ||
+		!TheDisplay || !TheDisplayStringManager || !TheFontLibrary || !TheHotKeyManager)
+		return;
+
+	Int slot = 0;
+	// Reborn: The construction cancel button is separate from the fourteen command slots.
+	while (slot < MAX_COMMAND_SHORTCUT_BADGES - 1 && m_commandWindows[slot] != window)
+		++slot;
+	if (slot == MAX_COMMAND_SHORTCUT_BADGES - 1)
+	{
+		if (window->winGetWindowId() != TheNameKeyGenerator->nameToKey("ControlBar.wnd:ButtonCancelConstruction") ||
+			window->winGetParent() != m_contextParent[CP_UNDER_CONSTRUCTION])
+			return;
+	}
+
+	const CommandButton *command = static_cast<const CommandButton *>(GadgetButtonGetData(window));
+	if (!command || command->getTextLabel().isEmpty())
+		return;
+	AsciiString hotKey = TheHotKeyManager->searchHotKey(command->getTextLabel());
+	if (hotKey.isEmpty())
+		return;
+	// Reborn: Uppercase is cosmetic only; keyboard binding lookup remains unchanged.
+	hotKey.toUpper();
+
+	ICoord2D start, size;
+	window->winGetScreenPosition(&start.x, &start.y);
+	window->winGetSize(&size.x, &size.y);
+	start.x += window->winGetInstanceData()->m_imageOffset.x;
+	start.y += window->winGetInstanceData()->m_imageOffset.y;
+	if (size.x < 16 || size.y < 16)
+		return;
+
+	Int fontSize = size.y * 3 / 10;
+	if (fontSize < 8)
+		fontSize = 8;
+	GameFont *font = TheFontLibrary->getFont(AsciiString("Arial"), fontSize, TRUE);
+	if (!font)
+		return;
+	DisplayString *&label = m_commandShortcutStrings[slot];
+	Bool measureInk = !label;
+	if (!label)
+		label = TheDisplayStringManager->newDisplayString();
+	if (!label)
+		return;
+	UnicodeString text;
+	text.translate(hotKey);
+	if (label->getFont() != font)
+	{
+		label->setFont(font);
+		measureInk = TRUE;
+	}
+	if (label->getText() != text)
+	{
+		label->setText(text);
+		measureInk = TRUE;
+	}
+
+	Int textWidth, textHeight;
+	label->getSize(&textWidth, &textHeight);
+	IRegion2D &ink = m_commandShortcutInkBounds[slot];
+	// Reborn: Measure only when the letter or font changes, never rasterize every frame.
+	if (measureInk && !label->getSingleGlyphInkBounds(&ink))
+	{
+		ink.lo.x = ink.lo.y = 0;
+		ink.hi.x = textWidth;
+		ink.hi.y = textHeight;
+	}
+	const Int padding = size.y >= 48 ? 2 : 1;
+	// Reborn: Trim empty font space from the top/right while preserving the bottom-left anchor.
+	const Int inkWidth = ink.hi.x - ink.lo.x;
+	const Int inkHeight = ink.hi.y - ink.lo.y;
+	Int boxWidth = inkWidth + padding * 2 + 2;
+	const Int boxHeight = inkHeight + padding * 2 + 2;
+	if (boxWidth < boxHeight)
+		boxWidth = boxHeight;
+	if (boxWidth > size.x - 4 || boxHeight > size.y - 4)
+		return;
+	const Int x = start.x + 2;
+	const Int y = start.y + size.y - boxHeight - 2;
+	const Bool enabled = BitIsSet(window->winGetStatus(), WIN_STATUS_ENABLED);
+	// Reborn: Follow the same hover/selected states as the button, without washing out the letter.
+	const UnsignedInt state = window->winGetInstanceData()->getState();
+	const Bool highlighted = enabled && BitIsSet(state, WIN_STATE_HILITED);
+	const Bool pressed = enabled && BitIsSet(state, WIN_STATE_SELECTED);
+	// Reborn: Match the active layout's configured tooltip border, retaining disabled gray.
+	Color border = GameMakeColor(140, 140, 140, 255);
+	if (enabled && TheMouse)
+	{
+		const RGBAColorInt &tooltipBorder = UseGeneralsLayout() ?
+			TheMouse->m_tooltipColorBorderGen : TheMouse->m_tooltipColorBorder;
+		// Reborn: Lighten the configured theme color slightly on hover or selection.
+		const UnsignedInt brighten = highlighted ? 4 : (pressed ? 6 : 0);
+		border = GameMakeColor(
+			tooltipBorder.red + (brighten ? (255 - tooltipBorder.red) / brighten : 0),
+			tooltipBorder.green + (brighten ? (255 - tooltipBorder.green) / brighten : 0),
+			tooltipBorder.blue + (brighten ? (255 - tooltipBorder.blue) / brighten : 0), tooltipBorder.alpha);
+	}
+	// Reborn: Keep disabled badges muted; hover brightens text and pressing subtly lifts the background.
+	const Color letter = !enabled ? GameMakeColor(175, 175, 175, 255) :
+		(highlighted || pressed ? GameMakeColor(255, 255, 255, 255) : GameMakeColor(255, 255, 230, 255));
+	const Color background = pressed ? GameMakeColor(36, 36, 36, 245) : GameMakeColor(0, 0, 0, 230);
+	TheDisplay->drawFillRect(x, y, boxWidth, boxHeight, background);
+	TheDisplay->drawOpenRect(x, y, boxWidth, boxHeight, 1, border);
+	// Reborn: Center the visible uppercase letter rather than the font's full line rectangle.
+	label->draw(x + (boxWidth - inkWidth) / 2 - ink.lo.x, y + (boxHeight - inkHeight) / 2 - ink.lo.y,
+		letter, GameMakeColor(0, 0, 0, 0), 0, 0);
 }
 
 // ---------------------------------------------------------------------------------------

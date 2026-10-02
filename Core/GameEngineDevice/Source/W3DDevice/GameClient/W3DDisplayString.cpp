@@ -47,6 +47,7 @@
 
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include <stdlib.h>
+#include <vector> // Reborn: Temporary glyph raster for measuring visible letter bounds.
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "GameClient/Display.h"
@@ -239,6 +240,39 @@ void W3DDisplayString::draw( Int x, Int y, Color color, Color dropColor, Int xDr
 	if( TheGameClient )
 		usingResources( TheGameClient->getFrame() );
 
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Measure a single glyph's opaque pixels, excluding font bearings and empty line spacing. */
+//-------------------------------------------------------------------------------------------------
+Bool W3DDisplayString::getSingleGlyphInkBounds(IRegion2D *bounds)
+{
+	FontCharsClass *font = m_textRenderer.Peek_Font();
+	if (!bounds || !font || m_textString.getLength() != 1)
+		return FALSE;
+	const WCHAR ch = m_textString.str()[0];
+	const Int width = font->Get_Char_Width(ch);
+	const Int height = font->Get_Char_Height();
+	if (width <= 0 || height <= 0)
+		return FALSE;
+	std::vector<uint16> pixels(width * height, 0);
+	font->Blit_Char(ch, pixels.data(), width * sizeof(uint16), 0, 0);
+	bounds->lo.x = width;
+	bounds->lo.y = height;
+	bounds->hi.x = bounds->hi.y = 0;
+	for (Int y = 0; y < height; ++y)
+	{
+		for (Int x = 0; x < width; ++x)
+		{
+			if ((pixels[y * width + x] & 0xF000) == 0)
+				continue;
+			if (x < bounds->lo.x) bounds->lo.x = x;
+			if (y < bounds->lo.y) bounds->lo.y = y;
+			if (x + 1 > bounds->hi.x) bounds->hi.x = x + 1;
+			if (y + 1 > bounds->hi.y) bounds->hi.y = y + 1;
+		}
+	}
+	return bounds->hi.x > bounds->lo.x && bounds->hi.y > bounds->lo.y;
 }
 
 // W3DDisplayString::getSize ==================================================

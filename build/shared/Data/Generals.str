@@ -248,7 +248,7 @@ TOOLTIP:ShowCommunicatorButton
 END
 
 TOOLTIP:ShowShortcutsOnButtons
-"Show keyboard shortcut labels on in-game command buttons. Reserved for a future update; currently has no effect."
+"Show keyboard shortcut letters in the bottom-left corner of command bar buttons, including Cancel Construction. Buttons without a shortcut do not show a label."
 END
 
 TOOLTIP:CampaignGameplay60FPS
