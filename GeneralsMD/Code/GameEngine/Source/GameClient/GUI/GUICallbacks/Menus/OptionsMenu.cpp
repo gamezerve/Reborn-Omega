@@ -193,9 +193,14 @@ static NameKeyType comboBoxLayoutThemeID = NAMEKEY_INVALID; // Reborn: Store the
 static GameWindow* comboBoxLayoutTheme = nullptr;
 static NameKeyType checkShowCommunicatorButtonID = NAMEKEY_INVALID;
 static GameWindow* checkShowCommunicatorButton = nullptr;
+// Reborn: Store the accessibility preference without changing command button rendering.
+static NameKeyType checkShowShortcutsOnButtonsID = NAMEKEY_INVALID;
+static GameWindow* checkShowShortcutsOnButtons = nullptr;
 static Bool advancedSettingsOriginalZoomFactor = FALSE;
 static Bool advancedSettingsOriginalAutomaticUpdates = FALSE;
 static Bool advancedSettingsOriginalShowCommunicatorButton = TRUE;
+// Reborn: Keep the original shortcut preference so Back can discard unsaved changes.
+static Bool advancedSettingsOriginalShowShortcutsOnButtons = FALSE;
 static Bool advancedSettingsOriginalGameplay60Fps = FALSE;
 static Bool advancedSettingsOriginalCinematic60Fps = FALSE;
 static Bool advancedSettingsOriginalSkirmish60Fps = FALSE;
@@ -542,6 +547,11 @@ static void saveAdvancedSettings()
 		if (TheControlBar)
 			TheControlBar->setGlobalCommunicatorButtonEnabled(enabled);
 	}
+
+	// Reborn: Persist this reserved accessibility setting independently of button rendering.
+	if (checkShowShortcutsOnButtons)
+		rebornPreferences["ShowShortcutsOnButtons"] =
+			GadgetCheckBoxIsChecked(checkShowShortcutsOnButtons) ? "yes" : "no";
 
 	const Bool canChangeGameFps = !TheGameLogic->isInInteractiveGame();
 
@@ -1308,6 +1318,9 @@ static void showAdvancedSettings()
 		checkAutomaticUpdateChecks && GadgetCheckBoxIsChecked(checkAutomaticUpdateChecks);
 	advancedSettingsOriginalShowCommunicatorButton =
 		checkShowCommunicatorButton && GadgetCheckBoxIsChecked(checkShowCommunicatorButton);
+	// Reborn: Snapshot the shortcut setting when opening Advanced Settings.
+	advancedSettingsOriginalShowShortcutsOnButtons =
+		checkShowShortcutsOnButtons && GadgetCheckBoxIsChecked(checkShowShortcutsOnButtons);
 	advancedSettingsOriginalGameplay60Fps =
 		checkCampaignGameplay60Fps && GadgetCheckBoxIsChecked(checkCampaignGameplay60Fps);
 	advancedSettingsOriginalCinematic60Fps =
@@ -1353,6 +1366,9 @@ static void setAdvancedSettingsDefaults()
 		GadgetCheckBoxSetChecked(checkZoomFactor, FALSE);
 	if (checkShowCommunicatorButton)
 		GadgetCheckBoxSetChecked(checkShowCommunicatorButton, TRUE);
+	// Reborn: Shortcut labels are disabled by default.
+	if (checkShowShortcutsOnButtons)
+		GadgetCheckBoxSetChecked(checkShowShortcutsOnButtons, FALSE);
 
 	if (!TheGameLogic->isInInteractiveGame())
 	{
@@ -1383,6 +1399,9 @@ static void cancelAdvancedSettings()
 		GadgetCheckBoxSetChecked(checkAutomaticUpdateChecks, advancedSettingsOriginalAutomaticUpdates);
 	if (checkShowCommunicatorButton)
 		GadgetCheckBoxSetChecked(checkShowCommunicatorButton, advancedSettingsOriginalShowCommunicatorButton);
+	// Reborn: Restore the saved selection when leaving without accepting.
+	if (checkShowShortcutsOnButtons)
+		GadgetCheckBoxSetChecked(checkShowShortcutsOnButtons, advancedSettingsOriginalShowShortcutsOnButtons);
 	if (checkCampaignGameplay60Fps)
 		GadgetCheckBoxSetChecked(checkCampaignGameplay60Fps, advancedSettingsOriginalGameplay60Fps);
 	if (checkCampaignCinematic60Fps)
@@ -1476,6 +1495,8 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	checkShellMap60FpsID = GetOptionsMenuChildKey("CheckShellMap60FPS");
 	comboBoxLayoutThemeID = GetOptionsMenuChildKey("ComboBoxLayoutTheme");
 	checkShowCommunicatorButtonID = GetOptionsMenuChildKey("CheckShowCommunicatorButton");
+	// Reborn: Resolve the shortcut toggle for either Options menu theme.
+	checkShowShortcutsOnButtonsID = GetOptionsMenuChildKey("CheckShowShortcutsOnButtons");
 
 	checkDrawAnchorID = GetOptionsMenuChildKey("CheckBoxDrawAnchor");
 	checkMoveAnchorID = GetOptionsMenuChildKey("CheckBoxMoveAnchor");
@@ -1531,6 +1552,9 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	comboBoxLayoutTheme = TheWindowManager->winGetWindowFromId(nullptr, comboBoxLayoutThemeID);
 	checkShowCommunicatorButton =
 		TheWindowManager->winGetWindowFromId(nullptr, checkShowCommunicatorButtonID);
+	// Reborn: Bind the reserved accessibility toggle.
+	checkShowShortcutsOnButtons =
+		TheWindowManager->winGetWindowFromId(nullptr, checkShowShortcutsOnButtonsID);
 
 	//checkDoubleClickAttackMoveID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckDoubleClickAttackMove" );
 	checkDoubleClickAttackMove   = TheWindowManager->winGetWindowFromId( nullptr, checkDoubleClickAttackMoveID );
@@ -1810,6 +1834,10 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 	const Bool showCommunicatorButton = rebornPreferences["ShowCommunicatorButton"] != "no";
 	if (checkShowCommunicatorButton)
 		GadgetCheckBoxSetChecked(checkShowCommunicatorButton, showCommunicatorButton);
+	// Reborn: Missing or invalid entries from older versions fall back to disabled.
+	const Bool showShortcutsOnButtons = rebornPreferences["ShowShortcutsOnButtons"] == "yes";
+	if (checkShowShortcutsOnButtons)
+		GadgetCheckBoxSetChecked(checkShowShortcutsOnButtons, showShortcutsOnButtons);
 
 	Bool campaignGameplay60Fps = rebornPreferences["CampaignGameplay60FPS"] == "yes";
 	Bool campaignCinematic60Fps = rebornPreferences["CampaignCinematic60FPS"] == "yes";
