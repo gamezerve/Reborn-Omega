@@ -6292,7 +6292,7 @@ D GeneralsExpPoints.wnd:StaticTextRank8Required 2 5 NoImage 255 255 255 0 255 25
 D GeneralsExpPoints.wnd:StaticTextRank8Required 2 6 NoImage 255 255 255 0 255 255 255 0
 D GeneralsExpPoints.wnd:StaticTextRank8Required 2 7 NoImage 255 255 255 0 255 255 255 0
 D GeneralsExpPoints.wnd:StaticTextRank8Required 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:GenPowersShortcutBarParent 3642 12 3840 1556 3840 2160
+R GenPowersShortcutBarChina.wnd:GenPowersShortcutBarParent 3206 0 3840 1616 3840 2160
 F GenPowersShortcutBarChina.wnd:GenPowersShortcutBarParent "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:GenPowersShortcutBarParent [NONE]
 T GenPowersShortcutBarChina.wnd:GenPowersShortcutBarParent 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -6323,7 +6323,7 @@ D GenPowersShortcutBarChina.wnd:GenPowersShortcutBarParent 2 5 NoImage 255 255 2
 D GenPowersShortcutBarChina.wnd:GenPowersShortcutBarParent 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:GenPowersShortcutBarParent 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:GenPowersShortcutBarParent 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonParent1 3602 1356 3840 1576 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent1 3602 1396 3840 1616 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent1 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent1 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent1 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -6354,7 +6354,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent1 2 5 NoImage 255 255 255 0 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonParent1 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent1 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent1 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand1 3672 1406 3822 1526 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand1 3672 1446 3822 1566 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand1 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand1 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand1 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -6385,7 +6385,7 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand1 2 5 NoImage 255 255 255 255 255 2
 D GenPowersShortcutBarChina.wnd:ButtonCommand1 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand1 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand1 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent2 3602 1218 3840 1402 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent2 3602 1258 3840 1442 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent2 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent2 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent2 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -6416,7 +6416,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent2 2 5 NoImage 255 255 255 0 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonParent2 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent2 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent2 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand2 3672 1268 3822 1388 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand2 3672 1308 3822 1428 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand2 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand2 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand2 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -6447,7 +6447,7 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand2 2 5 NoImage 255 255 255 255 255 2
 D GenPowersShortcutBarChina.wnd:ButtonCommand2 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand2 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand2 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent3 3602 1080 3840 1264 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent3 3602 1120 3840 1304 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent3 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent3 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent3 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -6478,7 +6478,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent3 2 5 NoImage 255 255 255 0 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonParent3 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent3 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent3 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand3 3672 1130 3822 1250 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand3 3672 1170 3822 1290 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand3 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand3 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand3 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -6509,7 +6509,7 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand3 2 5 NoImage 255 255 255 255 255 2
 D GenPowersShortcutBarChina.wnd:ButtonCommand3 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand3 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand3 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent4 3602 942 3840 1126 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent4 3602 982 3840 1166 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent4 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent4 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent4 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -6540,7 +6540,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent4 2 5 NoImage 255 255 255 0 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonParent4 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent4 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent4 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand4 3672 992 3822 1112 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand4 3672 1032 3822 1152 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand4 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand4 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand4 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -6571,7 +6571,7 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand4 2 5 NoImage 255 255 255 255 255 2
 D GenPowersShortcutBarChina.wnd:ButtonCommand4 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand4 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand4 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent5 3602 804 3840 988 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent5 3602 844 3840 1028 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent5 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent5 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent5 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -6602,7 +6602,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent5 2 5 NoImage 255 255 255 0 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonParent5 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent5 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent5 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand5 3672 854 3822 974 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand5 3672 894 3822 1014 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand5 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand5 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand5 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -6633,7 +6633,7 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand5 2 5 NoImage 255 255 255 255 255 2
 D GenPowersShortcutBarChina.wnd:ButtonCommand5 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand5 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand5 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent6 3602 666 3840 850 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent6 3602 706 3840 890 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent6 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent6 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent6 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -6664,7 +6664,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent6 2 5 NoImage 255 255 255 0 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonParent6 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent6 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent6 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand6 3672 716 3822 836 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand6 3672 756 3822 876 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand6 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand6 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand6 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -6695,7 +6695,7 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand6 2 5 NoImage 255 255 255 255 255 2
 D GenPowersShortcutBarChina.wnd:ButtonCommand6 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand6 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand6 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent7 3602 528 3840 712 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent7 3602 568 3840 752 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent7 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent7 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent7 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -6726,7 +6726,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent7 2 5 NoImage 255 255 255 0 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonParent7 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent7 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent7 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand7 3672 578 3822 698 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand7 3672 618 3822 738 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand7 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand7 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand7 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -6757,7 +6757,7 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand7 2 5 NoImage 255 255 255 255 255 2
 D GenPowersShortcutBarChina.wnd:ButtonCommand7 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand7 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand7 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent8 3602 390 3840 574 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent8 3602 430 3840 614 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent8 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent8 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent8 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -6788,7 +6788,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent8 2 5 NoImage 255 255 255 0 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonParent8 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent8 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent8 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand8 3672 440 3822 560 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand8 3672 480 3822 600 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand8 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand8 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand8 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -6819,7 +6819,7 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand8 2 5 NoImage 255 255 255 255 255 2
 D GenPowersShortcutBarChina.wnd:ButtonCommand8 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand8 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand8 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent9 3602 252 3840 436 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent9 3602 292 3840 476 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent9 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent9 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent9 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -6850,7 +6850,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent9 2 5 NoImage 255 255 255 0 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonParent9 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent9 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent9 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand9 3672 302 3822 422 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand9 3672 342 3822 462 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand9 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand9 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand9 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -6881,7 +6881,7 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand9 2 5 NoImage 255 255 255 255 255 2
 D GenPowersShortcutBarChina.wnd:ButtonCommand9 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand9 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand9 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent10 3602 114 3840 298 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent10 3602 154 3840 338 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent10 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent10 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent10 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -6912,7 +6912,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent10 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent10 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent10 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent10 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand10 3672 164 3822 284 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand10 3672 204 3822 324 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand10 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand10 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand10 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -6943,7 +6943,7 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand10 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand10 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand10 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand10 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent11 3602 -24 3840 160 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent11 3602 16 3840 200 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent11 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent11 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent11 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -6974,7 +6974,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent11 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent11 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent11 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent11 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand11 3672 26 3822 146 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand11 3672 66 3822 186 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand11 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand11 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand11 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7005,11 +7005,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand11 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand11 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand11 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand11 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent12 3708 1404 3774 1556 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent12 3404 1396 3642 1616 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent12 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent12 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent12 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent12 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent12 0 0 RebornCBP_2160_ChinaProTraySmall 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent12 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent12 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent12 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7036,7 +7036,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent12 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent12 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent12 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent12 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand12 3709 1430 3763 1530 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand12 3474 1446 3624 1566 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand12 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand12 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand12 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7067,11 +7067,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand12 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand12 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand12 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand12 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent13 3708 1275 3774 1426 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent13 3404 1258 3642 1442 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent13 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent13 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent13 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent13 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent13 0 0 RebornCBP_2160_ChinaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent13 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent13 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent13 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7098,7 +7098,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent13 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent13 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent13 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent13 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand13 3709 1301 3763 1400 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand13 3474 1308 3624 1428 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand13 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand13 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand13 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7129,11 +7129,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand13 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand13 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand13 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand13 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent14 3708 1145 3774 1297 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent14 3404 1120 3642 1304 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent14 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent14 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent14 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent14 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent14 0 0 RebornCBP_2160_ChinaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent14 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent14 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent14 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7160,7 +7160,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent14 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent14 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent14 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent14 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand14 3709 1171 3763 1271 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand14 3474 1170 3624 1290 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand14 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand14 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand14 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7191,11 +7191,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand14 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand14 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand14 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand14 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent15 3708 1015 3774 1167 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent15 3404 982 3642 1166 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent15 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent15 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent15 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent15 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent15 0 0 RebornCBP_2160_ChinaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent15 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent15 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent15 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7222,7 +7222,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent15 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent15 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent15 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent15 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand15 3709 1041 3763 1141 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand15 3474 1032 3624 1152 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand15 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand15 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand15 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7253,11 +7253,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand15 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand15 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand15 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand15 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent16 3708 886 3774 1038 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent16 3404 844 3642 1028 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent16 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent16 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent16 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent16 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent16 0 0 RebornCBP_2160_ChinaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent16 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent16 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent16 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7284,7 +7284,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent16 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent16 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent16 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent16 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand16 3709 912 3763 1012 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand16 3474 894 3624 1014 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand16 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand16 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand16 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7315,11 +7315,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand16 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand16 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand16 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand16 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent17 3708 756 3774 908 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent17 3404 706 3642 890 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent17 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent17 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent17 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent17 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent17 0 0 RebornCBP_2160_ChinaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent17 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent17 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent17 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7346,7 +7346,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent17 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent17 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent17 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent17 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand17 3709 782 3763 882 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand17 3474 756 3624 876 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand17 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand17 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand17 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7377,11 +7377,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand17 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand17 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand17 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand17 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent18 3708 627 3774 778 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent18 3404 568 3642 752 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent18 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent18 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent18 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent18 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent18 0 0 RebornCBP_2160_ChinaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent18 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent18 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent18 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7408,7 +7408,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent18 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent18 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent18 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent18 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand18 3709 653 3763 752 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand18 3474 618 3624 738 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand18 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand18 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand18 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7439,11 +7439,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand18 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand18 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand18 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand18 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent19 3708 497 3774 649 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent19 3404 430 3642 614 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent19 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent19 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent19 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent19 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent19 0 0 RebornCBP_2160_ChinaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent19 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent19 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent19 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7470,7 +7470,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent19 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent19 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent19 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent19 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand19 3709 523 3763 623 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand19 3474 480 3624 600 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand19 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand19 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand19 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7501,11 +7501,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand19 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand19 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand19 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand19 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent20 3708 367 3774 519 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent20 3404 292 3642 476 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent20 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent20 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent20 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent20 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent20 0 0 RebornCBP_2160_ChinaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent20 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent20 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent20 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7532,7 +7532,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent20 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent20 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent20 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent20 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand20 3709 393 3763 493 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand20 3474 342 3624 462 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand20 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand20 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand20 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7563,11 +7563,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand20 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand20 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand20 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand20 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent21 3708 238 3774 390 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent21 3404 154 3642 338 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent21 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent21 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent21 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent21 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent21 0 0 RebornCBP_2160_ChinaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent21 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent21 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent21 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7594,7 +7594,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent21 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent21 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent21 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent21 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand21 3709 264 3763 364 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand21 3474 204 3624 324 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand21 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand21 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand21 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7625,11 +7625,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand21 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand21 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand21 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand21 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent22 3708 108 3774 260 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent22 3404 16 3642 200 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent22 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent22 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent22 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent22 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent22 0 0 RebornCBP_2160_ChinaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent22 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent22 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent22 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7656,7 +7656,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent22 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent22 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent22 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent22 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand22 3709 134 3763 234 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand22 3474 66 3624 186 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand22 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand22 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand22 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7687,11 +7687,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand22 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand22 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand22 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand22 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent23 3642 1404 3708 1556 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent23 3206 1396 3444 1616 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent23 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent23 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent23 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent23 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent23 0 0 RebornCBP_2160_ChinaProTraySmall 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent23 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent23 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent23 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7718,7 +7718,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent23 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent23 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent23 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent23 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand23 3643 1430 3697 1530 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand23 3276 1446 3426 1566 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand23 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand23 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand23 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7749,11 +7749,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand23 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand23 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand23 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand23 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent24 3642 1275 3708 1426 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent24 3206 1258 3444 1442 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent24 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent24 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent24 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent24 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent24 0 0 RebornCBP_2160_ChinaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent24 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent24 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent24 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7780,7 +7780,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent24 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent24 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent24 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent24 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand24 3643 1301 3697 1400 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand24 3276 1308 3426 1428 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand24 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand24 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand24 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7811,11 +7811,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand24 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand24 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand24 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand24 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent25 3642 1145 3708 1297 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent25 3206 1120 3444 1304 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent25 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent25 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent25 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent25 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent25 0 0 RebornCBP_2160_ChinaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent25 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent25 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent25 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7842,7 +7842,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent25 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent25 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent25 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent25 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand25 3643 1171 3697 1271 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand25 3276 1170 3426 1290 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand25 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand25 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand25 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7873,11 +7873,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand25 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand25 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand25 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand25 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent26 3642 1015 3708 1167 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent26 3206 982 3444 1166 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent26 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent26 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent26 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent26 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent26 0 0 RebornCBP_2160_ChinaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent26 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent26 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent26 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7904,7 +7904,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent26 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent26 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent26 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent26 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand26 3643 1041 3697 1141 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand26 3276 1032 3426 1152 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand26 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand26 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand26 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7935,11 +7935,11 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand26 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand26 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand26 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand26 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarChina.wnd:ButtonParent27 3642 886 3708 1038 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonParent27 3206 844 3444 1028 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonParent27 "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:ButtonParent27 [NONE]
 T GenPowersShortcutBarChina.wnd:ButtonParent27 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarChina.wnd:ButtonParent27 0 0 SNTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarChina.wnd:ButtonParent27 0 0 RebornCBP_2160_ChinaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarChina.wnd:ButtonParent27 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent27 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent27 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -7966,7 +7966,7 @@ D GenPowersShortcutBarChina.wnd:ButtonParent27 2 5 NoImage 255 255 255 0 255 255
 D GenPowersShortcutBarChina.wnd:ButtonParent27 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent27 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarChina.wnd:ButtonParent27 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarChina.wnd:ButtonCommand27 3643 912 3697 1012 3840 2160
+R GenPowersShortcutBarChina.wnd:ButtonCommand27 3276 894 3426 1014 3840 2160
 F GenPowersShortcutBarChina.wnd:ButtonCommand27 "Arial" 12 1
 H GenPowersShortcutBarChina.wnd:ButtonCommand27 Arial12BoldTemplate
 T GenPowersShortcutBarChina.wnd:ButtonCommand27 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -7997,7 +7997,7 @@ D GenPowersShortcutBarChina.wnd:ButtonCommand27 2 5 NoImage 255 255 255 255 255 
 D GenPowersShortcutBarChina.wnd:ButtonCommand27 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand27 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarChina.wnd:ButtonCommand27 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:GenPowersShortcutBarParent 3642 12 3840 1556 3840 2160
+R GenPowersShortcutBarGLA.wnd:GenPowersShortcutBarParent 3206 0 3840 1616 3840 2160
 F GenPowersShortcutBarGLA.wnd:GenPowersShortcutBarParent "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:GenPowersShortcutBarParent [NONE]
 T GenPowersShortcutBarGLA.wnd:GenPowersShortcutBarParent 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -8028,7 +8028,7 @@ D GenPowersShortcutBarGLA.wnd:GenPowersShortcutBarParent 2 5 NoImage 255 255 255
 D GenPowersShortcutBarGLA.wnd:GenPowersShortcutBarParent 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:GenPowersShortcutBarParent 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:GenPowersShortcutBarParent 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonParent1 3602 1356 3840 1576 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent1 3602 1396 3840 1616 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent1 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent1 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent1 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -8059,7 +8059,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent1 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonParent1 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent1 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent1 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand1 3672 1406 3822 1526 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand1 3672 1446 3822 1566 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand1 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand1 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand1 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -8090,7 +8090,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand1 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand1 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand1 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand1 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent2 3602 1218 3840 1402 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent2 3602 1258 3840 1442 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent2 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent2 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent2 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -8121,7 +8121,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent2 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonParent2 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent2 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent2 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand2 3672 1268 3822 1388 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand2 3672 1308 3822 1428 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand2 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand2 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand2 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -8152,7 +8152,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand2 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand2 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand2 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand2 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent3 3602 1080 3840 1264 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent3 3602 1120 3840 1304 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent3 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent3 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent3 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -8183,7 +8183,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent3 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonParent3 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent3 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent3 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand3 3672 1130 3822 1250 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand3 3672 1170 3822 1290 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand3 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand3 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand3 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -8214,7 +8214,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand3 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand3 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand3 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand3 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent4 3602 942 3840 1126 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent4 3602 982 3840 1166 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent4 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent4 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent4 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -8245,7 +8245,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent4 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonParent4 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent4 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent4 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand4 3672 992 3822 1112 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand4 3672 1032 3822 1152 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand4 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand4 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand4 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -8276,7 +8276,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand4 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand4 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand4 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand4 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent5 3602 804 3840 988 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent5 3602 844 3840 1028 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent5 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent5 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent5 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -8307,7 +8307,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent5 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonParent5 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent5 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent5 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand5 3672 854 3822 974 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand5 3672 894 3822 1014 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand5 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand5 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand5 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -8338,7 +8338,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand5 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand5 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand5 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand5 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent6 3602 666 3840 850 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent6 3602 706 3840 890 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent6 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent6 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent6 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -8369,7 +8369,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent6 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonParent6 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent6 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent6 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand6 3672 716 3822 836 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand6 3672 756 3822 876 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand6 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand6 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand6 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -8400,7 +8400,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand6 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand6 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand6 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand6 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent7 3602 528 3840 712 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent7 3602 568 3840 752 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent7 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent7 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent7 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -8431,7 +8431,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent7 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonParent7 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent7 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent7 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand7 3672 578 3822 698 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand7 3672 618 3822 738 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand7 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand7 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand7 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -8462,7 +8462,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand7 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand7 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand7 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand7 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent8 3602 390 3840 574 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent8 3602 430 3840 614 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent8 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent8 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent8 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -8493,7 +8493,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent8 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonParent8 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent8 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent8 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand8 3672 440 3822 560 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand8 3672 480 3822 600 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand8 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand8 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand8 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -8524,7 +8524,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand8 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand8 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand8 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand8 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent9 3602 252 3840 436 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent9 3602 292 3840 476 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent9 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent9 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent9 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -8555,7 +8555,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent9 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonParent9 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent9 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent9 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand9 3672 302 3822 422 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand9 3672 342 3822 462 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand9 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand9 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand9 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -8586,7 +8586,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand9 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand9 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand9 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand9 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent10 3602 114 3840 298 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent10 3602 154 3840 338 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent10 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent10 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent10 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -8617,7 +8617,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent10 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent10 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent10 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent10 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand10 3672 164 3822 284 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand10 3672 204 3822 324 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand10 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand10 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand10 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -8648,7 +8648,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand10 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand10 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand10 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand10 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent11 3602 -24 3840 160 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent11 3602 16 3840 200 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent11 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent11 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent11 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -8679,7 +8679,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent11 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent11 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent11 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent11 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand11 3672 26 3822 146 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand11 3672 66 3822 186 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand11 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand11 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand11 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -8710,11 +8710,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand11 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand11 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand11 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand11 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent12 3708 1405 3774 1556 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent12 3404 1396 3642 1616 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent12 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent12 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent12 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent12 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent12 0 0 RebornCBP_2160_GlaProTraySmall 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent12 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent12 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent12 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -8741,7 +8741,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent12 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent12 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent12 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent12 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand12 3709 1431 3763 1530 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand12 3474 1446 3624 1566 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand12 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand12 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand12 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -8772,11 +8772,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand12 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand12 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand12 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand12 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent13 3708 1275 3774 1427 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent13 3404 1258 3642 1442 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent13 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent13 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent13 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent13 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent13 0 0 RebornCBP_2160_GlaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent13 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent13 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent13 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -8803,7 +8803,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent13 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent13 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent13 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent13 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand13 3709 1301 3763 1401 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand13 3474 1308 3624 1428 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand13 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand13 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand13 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -8834,11 +8834,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand13 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand13 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand13 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand13 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent14 3708 1146 3774 1297 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent14 3404 1120 3642 1304 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent14 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent14 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent14 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent14 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent14 0 0 RebornCBP_2160_GlaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent14 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent14 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent14 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -8865,7 +8865,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent14 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent14 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent14 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent14 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand14 3709 1172 3763 1271 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand14 3474 1170 3624 1290 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand14 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand14 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand14 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -8896,11 +8896,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand14 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand14 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand14 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand14 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent15 3708 1017 3774 1168 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent15 3404 982 3642 1166 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent15 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent15 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent15 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent15 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent15 0 0 RebornCBP_2160_GlaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent15 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent15 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent15 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -8927,7 +8927,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent15 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent15 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent15 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent15 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand15 3709 1043 3763 1142 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand15 3474 1032 3624 1152 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand15 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand15 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand15 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -8958,11 +8958,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand15 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand15 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand15 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand15 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent16 3708 887 3774 1039 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent16 3404 844 3642 1028 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent16 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent16 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent16 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent16 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent16 0 0 RebornCBP_2160_GlaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent16 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent16 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent16 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -8989,7 +8989,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent16 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent16 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent16 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent16 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand16 3709 913 3763 1013 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand16 3474 894 3624 1014 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand16 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand16 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand16 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9020,11 +9020,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand16 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand16 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand16 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand16 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent17 3708 758 3774 910 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent17 3404 706 3642 890 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent17 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent17 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent17 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent17 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent17 0 0 RebornCBP_2160_GlaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent17 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent17 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent17 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -9051,7 +9051,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent17 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent17 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent17 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent17 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand17 3709 784 3763 884 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand17 3474 756 3624 876 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand17 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand17 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand17 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9082,11 +9082,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand17 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand17 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand17 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand17 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent18 3708 629 3774 780 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent18 3404 568 3642 752 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent18 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent18 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent18 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent18 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent18 0 0 RebornCBP_2160_GlaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent18 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent18 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent18 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -9113,7 +9113,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent18 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent18 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent18 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent18 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand18 3709 655 3763 754 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand18 3474 618 3624 738 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand18 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand18 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand18 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9144,11 +9144,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand18 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand18 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand18 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand18 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent19 3708 500 3774 651 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent19 3404 430 3642 614 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent19 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent19 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent19 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent19 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent19 0 0 RebornCBP_2160_GlaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent19 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent19 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent19 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -9175,7 +9175,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent19 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent19 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent19 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent19 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand19 3709 526 3763 625 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand19 3474 480 3624 600 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand19 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand19 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand19 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9206,11 +9206,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand19 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand19 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand19 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand19 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent20 3708 370 3774 522 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent20 3404 292 3642 476 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent20 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent20 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent20 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent20 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent20 0 0 RebornCBP_2160_GlaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent20 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent20 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent20 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -9237,7 +9237,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent20 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent20 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent20 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent20 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand20 3709 396 3763 496 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand20 3474 342 3624 462 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand20 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand20 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand20 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9268,11 +9268,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand20 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand20 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand20 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand20 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent21 3708 241 3774 392 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent21 3404 154 3642 338 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent21 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent21 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent21 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent21 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent21 0 0 RebornCBP_2160_GlaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent21 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent21 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent21 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -9299,7 +9299,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent21 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent21 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent21 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent21 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand21 3709 267 3763 366 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand21 3474 204 3624 324 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand21 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand21 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand21 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9330,11 +9330,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand21 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand21 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand21 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand21 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent22 3708 112 3774 263 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent22 3404 16 3642 200 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent22 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent22 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent22 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent22 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent22 0 0 RebornCBP_2160_GlaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent22 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent22 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent22 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -9361,7 +9361,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent22 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent22 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent22 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent22 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand22 3709 138 3763 237 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand22 3474 66 3624 186 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand22 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand22 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand22 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9392,11 +9392,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand22 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand22 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand22 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand22 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent23 3642 1405 3708 1556 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent23 3206 1396 3444 1616 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent23 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent23 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent23 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent23 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent23 0 0 RebornCBP_2160_GlaProTraySmall 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent23 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent23 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent23 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -9423,7 +9423,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent23 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent23 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent23 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent23 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand23 3643 1431 3697 1530 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand23 3276 1446 3426 1566 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand23 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand23 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand23 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9454,11 +9454,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand23 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand23 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand23 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand23 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent24 3642 1275 3708 1427 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent24 3206 1258 3444 1442 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent24 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent24 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent24 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent24 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent24 0 0 RebornCBP_2160_GlaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent24 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent24 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent24 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -9485,7 +9485,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent24 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent24 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent24 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent24 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand24 3643 1301 3697 1401 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand24 3276 1308 3426 1428 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand24 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand24 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand24 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9516,11 +9516,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand24 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand24 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand24 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand24 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent25 3642 1146 3708 1297 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent25 3206 1120 3444 1304 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent25 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent25 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent25 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent25 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent25 0 0 RebornCBP_2160_GlaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent25 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent25 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent25 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -9547,7 +9547,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent25 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent25 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent25 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent25 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand25 3643 1172 3697 1271 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand25 3276 1170 3426 1290 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand25 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand25 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand25 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9578,11 +9578,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand25 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand25 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand25 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand25 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent26 3642 1017 3708 1168 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent26 3206 982 3444 1166 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent26 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent26 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent26 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent26 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent26 0 0 RebornCBP_2160_GlaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent26 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent26 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent26 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -9609,7 +9609,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent26 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent26 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent26 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent26 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand26 3643 1043 3697 1142 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand26 3276 1032 3426 1152 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand26 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand26 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand26 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9640,11 +9640,11 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand26 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand26 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand26 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand26 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarGLA.wnd:ButtonParent27 3642 887 3708 1039 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonParent27 3206 844 3444 1028 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonParent27 "Times New Roman" 14 0
 H GenPowersShortcutBarGLA.wnd:ButtonParent27 [NONE]
 T GenPowersShortcutBarGLA.wnd:ButtonParent27 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarGLA.wnd:ButtonParent27 0 0 SUTraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarGLA.wnd:ButtonParent27 0 0 RebornCBP_2160_GlaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarGLA.wnd:ButtonParent27 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent27 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent27 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -9671,7 +9671,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonParent27 2 5 NoImage 255 255 255 0 255 255 2
 D GenPowersShortcutBarGLA.wnd:ButtonParent27 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent27 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarGLA.wnd:ButtonParent27 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarGLA.wnd:ButtonCommand27 3643 913 3697 1013 3840 2160
+R GenPowersShortcutBarGLA.wnd:ButtonCommand27 3276 894 3426 1014 3840 2160
 F GenPowersShortcutBarGLA.wnd:ButtonCommand27 "Arial" 12 1
 H GenPowersShortcutBarGLA.wnd:ButtonCommand27 Arial12BoldTemplate
 T GenPowersShortcutBarGLA.wnd:ButtonCommand27 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9702,7 +9702,7 @@ D GenPowersShortcutBarGLA.wnd:ButtonCommand27 2 5 NoImage 255 255 255 255 255 25
 D GenPowersShortcutBarGLA.wnd:ButtonCommand27 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand27 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarGLA.wnd:ButtonCommand27 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:GenPowersShortcutBarParent 3642 12 3840 1556 3840 2160
+R GenPowersShortcutBarUS.wnd:GenPowersShortcutBarParent 3206 0 3840 1616 3840 2160
 F GenPowersShortcutBarUS.wnd:GenPowersShortcutBarParent "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:GenPowersShortcutBarParent [NONE]
 T GenPowersShortcutBarUS.wnd:GenPowersShortcutBarParent 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -9733,7 +9733,7 @@ D GenPowersShortcutBarUS.wnd:GenPowersShortcutBarParent 2 5 NoImage 255 255 255 
 D GenPowersShortcutBarUS.wnd:GenPowersShortcutBarParent 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:GenPowersShortcutBarParent 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:GenPowersShortcutBarParent 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonParent1 3602 1356 3840 1576 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent1 3602 1396 3840 1616 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent1 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent1 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent1 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -9764,7 +9764,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent1 2 5 NoImage 255 255 255 0 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonParent1 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent1 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent1 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand1 3672 1406 3822 1526 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand1 3672 1446 3822 1566 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand1 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand1 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand1 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9795,7 +9795,7 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand1 2 5 NoImage 255 255 255 255 255 255 
 D GenPowersShortcutBarUS.wnd:ButtonCommand1 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand1 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand1 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent2 3602 1218 3840 1402 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent2 3602 1258 3840 1442 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent2 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent2 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent2 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -9826,7 +9826,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent2 2 5 NoImage 255 255 255 0 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonParent2 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent2 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent2 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand2 3672 1268 3822 1388 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand2 3672 1308 3822 1428 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand2 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand2 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand2 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9857,7 +9857,7 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand2 2 5 NoImage 255 255 255 255 255 255 
 D GenPowersShortcutBarUS.wnd:ButtonCommand2 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand2 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand2 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent3 3602 1080 3840 1264 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent3 3602 1120 3840 1304 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent3 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent3 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent3 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -9888,7 +9888,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent3 2 5 NoImage 255 255 255 0 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonParent3 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent3 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent3 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand3 3672 1130 3822 1250 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand3 3672 1170 3822 1290 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand3 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand3 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand3 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9919,7 +9919,7 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand3 2 5 NoImage 255 255 255 255 255 255 
 D GenPowersShortcutBarUS.wnd:ButtonCommand3 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand3 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand3 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent4 3602 942 3840 1126 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent4 3602 982 3840 1166 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent4 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent4 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent4 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -9950,7 +9950,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent4 2 5 NoImage 255 255 255 0 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonParent4 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent4 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent4 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand4 3672 992 3822 1112 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand4 3672 1032 3822 1152 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand4 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand4 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand4 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -9981,7 +9981,7 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand4 2 5 NoImage 255 255 255 255 255 255 
 D GenPowersShortcutBarUS.wnd:ButtonCommand4 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand4 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand4 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent5 3602 804 3840 988 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent5 3602 844 3840 1028 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent5 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent5 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent5 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -10012,7 +10012,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent5 2 5 NoImage 255 255 255 0 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonParent5 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent5 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent5 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand5 3672 854 3822 974 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand5 3672 894 3822 1014 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand5 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand5 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand5 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10043,7 +10043,7 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand5 2 5 NoImage 255 255 255 255 255 255 
 D GenPowersShortcutBarUS.wnd:ButtonCommand5 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand5 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand5 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent6 3602 666 3840 850 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent6 3602 706 3840 890 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent6 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent6 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent6 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -10074,7 +10074,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent6 2 5 NoImage 255 255 255 0 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonParent6 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent6 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent6 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand6 3672 716 3822 836 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand6 3672 756 3822 876 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand6 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand6 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand6 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10105,7 +10105,7 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand6 2 5 NoImage 255 255 255 255 255 255 
 D GenPowersShortcutBarUS.wnd:ButtonCommand6 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand6 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand6 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent7 3602 528 3840 712 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent7 3602 568 3840 752 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent7 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent7 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent7 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -10136,7 +10136,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent7 2 5 NoImage 255 255 255 0 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonParent7 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent7 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent7 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand7 3672 578 3822 698 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand7 3672 618 3822 738 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand7 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand7 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand7 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10167,7 +10167,7 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand7 2 5 NoImage 255 255 255 255 255 255 
 D GenPowersShortcutBarUS.wnd:ButtonCommand7 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand7 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand7 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent8 3602 390 3840 574 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent8 3602 430 3840 614 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent8 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent8 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent8 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -10198,7 +10198,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent8 2 5 NoImage 255 255 255 0 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonParent8 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent8 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent8 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand8 3672 440 3822 560 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand8 3672 480 3822 600 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand8 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand8 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand8 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10229,7 +10229,7 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand8 2 5 NoImage 255 255 255 255 255 255 
 D GenPowersShortcutBarUS.wnd:ButtonCommand8 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand8 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand8 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent9 3602 252 3840 436 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent9 3602 292 3840 476 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent9 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent9 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent9 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -10260,7 +10260,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent9 2 5 NoImage 255 255 255 0 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonParent9 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent9 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent9 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand9 3672 302 3822 422 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand9 3672 342 3822 462 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand9 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand9 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand9 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10291,7 +10291,7 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand9 2 5 NoImage 255 255 255 255 255 255 
 D GenPowersShortcutBarUS.wnd:ButtonCommand9 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand9 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand9 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent10 3602 114 3840 298 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent10 3602 154 3840 338 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent10 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent10 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent10 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -10322,7 +10322,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent10 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent10 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent10 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent10 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand10 3672 164 3822 284 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand10 3672 204 3822 324 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand10 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand10 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand10 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10353,7 +10353,7 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand10 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand10 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand10 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand10 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent11 3602 -24 3840 160 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent11 3602 16 3840 200 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent11 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent11 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent11 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -10384,7 +10384,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent11 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent11 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent11 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent11 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand11 3672 26 3822 146 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand11 3672 66 3822 186 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand11 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand11 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand11 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10415,11 +10415,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand11 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand11 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand11 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand11 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent12 3708 1407 3774 1556 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent12 3404 1396 3642 1616 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent12 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent12 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent12 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent12 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent12 0 0 RebornCBP_2160_AmericaProTraySmall 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent12 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent12 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent12 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -10446,7 +10446,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent12 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent12 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent12 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent12 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand12 3709 1432 3763 1531 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand12 3474 1446 3624 1566 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand12 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand12 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand12 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10477,11 +10477,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand12 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand12 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand12 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand12 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent13 3708 1281 3774 1429 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent13 3404 1258 3642 1442 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent13 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent13 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent13 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent13 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent13 0 0 RebornCBP_2160_AmericaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent13 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent13 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent13 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -10508,7 +10508,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent13 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent13 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent13 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent13 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand13 3709 1306 3763 1404 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand13 3474 1308 3624 1428 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand13 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand13 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand13 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10539,11 +10539,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand13 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand13 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand13 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand13 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent14 3708 1154 3774 1302 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent14 3404 1120 3642 1304 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent14 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent14 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent14 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent14 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent14 0 0 RebornCBP_2160_AmericaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent14 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent14 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent14 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -10570,7 +10570,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent14 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent14 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent14 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent14 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand14 3709 1179 3763 1277 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand14 3474 1170 3624 1290 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand14 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand14 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand14 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10601,11 +10601,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand14 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand14 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand14 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand14 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent15 3708 1027 3774 1175 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent15 3404 982 3642 1166 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent15 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent15 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent15 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent15 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent15 0 0 RebornCBP_2160_AmericaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent15 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent15 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent15 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -10632,7 +10632,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent15 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent15 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent15 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent15 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand15 3709 1052 3763 1150 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand15 3474 1032 3624 1152 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand15 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand15 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand15 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10663,11 +10663,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand15 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand15 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand15 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand15 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent16 3708 900 3774 1049 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent16 3404 844 3642 1028 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent16 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent16 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent16 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent16 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent16 0 0 RebornCBP_2160_AmericaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent16 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent16 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent16 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -10694,7 +10694,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent16 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent16 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent16 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent16 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand16 3709 925 3763 1024 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand16 3474 894 3624 1014 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand16 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand16 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand16 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10725,11 +10725,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand16 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand16 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand16 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand16 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent17 3708 773 3774 922 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent17 3404 706 3642 890 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent17 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent17 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent17 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent17 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent17 0 0 RebornCBP_2160_AmericaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent17 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent17 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent17 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -10756,7 +10756,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent17 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent17 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent17 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent17 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand17 3709 798 3763 897 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand17 3474 756 3624 876 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand17 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand17 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand17 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10787,11 +10787,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand17 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand17 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand17 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand17 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent18 3708 646 3774 795 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent18 3404 568 3642 752 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent18 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent18 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent18 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent18 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent18 0 0 RebornCBP_2160_AmericaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent18 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent18 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent18 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -10818,7 +10818,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent18 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent18 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent18 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent18 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand18 3709 671 3763 770 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand18 3474 618 3624 738 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand18 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand18 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand18 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10849,11 +10849,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand18 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand18 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand18 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand18 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent19 3708 519 3774 668 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent19 3404 430 3642 614 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent19 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent19 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent19 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent19 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent19 0 0 RebornCBP_2160_AmericaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent19 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent19 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent19 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -10880,7 +10880,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent19 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent19 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent19 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent19 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand19 3709 544 3763 643 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand19 3474 480 3624 600 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand19 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand19 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand19 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10911,11 +10911,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand19 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand19 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand19 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand19 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent20 3708 393 3774 541 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent20 3404 292 3642 476 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent20 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent20 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent20 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent20 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent20 0 0 RebornCBP_2160_AmericaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent20 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent20 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent20 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -10942,7 +10942,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent20 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent20 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent20 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent20 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand20 3709 418 3763 516 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand20 3474 342 3624 462 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand20 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand20 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand20 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -10973,11 +10973,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand20 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand20 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand20 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand20 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent21 3708 266 3774 414 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent21 3404 154 3642 338 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent21 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent21 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent21 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent21 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent21 0 0 RebornCBP_2160_AmericaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent21 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent21 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent21 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -11004,7 +11004,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent21 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent21 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent21 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent21 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand21 3709 291 3763 389 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand21 3474 204 3624 324 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand21 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand21 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand21 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -11035,11 +11035,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand21 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand21 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand21 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand21 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent22 3708 139 3774 287 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent22 3404 16 3642 200 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent22 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent22 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent22 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent22 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent22 0 0 RebornCBP_2160_AmericaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent22 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent22 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent22 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -11066,7 +11066,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent22 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent22 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent22 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent22 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand22 3709 164 3763 262 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand22 3474 66 3624 186 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand22 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand22 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand22 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -11097,11 +11097,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand22 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand22 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand22 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand22 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent23 3642 1407 3708 1556 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent23 3206 1396 3444 1616 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent23 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent23 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent23 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent23 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent23 0 0 RebornCBP_2160_AmericaProTraySmall 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent23 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent23 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent23 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -11128,7 +11128,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent23 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent23 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent23 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent23 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand23 3643 1432 3697 1531 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand23 3276 1446 3426 1566 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand23 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand23 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand23 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -11159,11 +11159,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand23 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand23 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand23 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand23 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent24 3642 1281 3708 1429 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent24 3206 1258 3444 1442 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent24 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent24 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent24 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent24 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent24 0 0 RebornCBP_2160_AmericaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent24 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent24 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent24 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -11190,7 +11190,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent24 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent24 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent24 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent24 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand24 3643 1306 3697 1404 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand24 3276 1308 3426 1428 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand24 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand24 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand24 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -11221,11 +11221,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand24 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand24 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand24 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand24 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent25 3642 1154 3708 1302 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent25 3206 1120 3444 1304 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent25 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent25 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent25 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent25 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent25 0 0 RebornCBP_2160_AmericaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent25 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent25 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent25 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -11252,7 +11252,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent25 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent25 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent25 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent25 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand25 3643 1179 3697 1277 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand25 3276 1170 3426 1290 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand25 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand25 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand25 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -11283,11 +11283,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand25 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand25 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand25 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand25 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent26 3642 1027 3708 1175 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent26 3206 982 3444 1166 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent26 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent26 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent26 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent26 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent26 0 0 RebornCBP_2160_AmericaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent26 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent26 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent26 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -11314,7 +11314,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent26 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent26 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent26 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent26 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand26 3643 1052 3697 1150 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand26 3276 1032 3426 1152 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand26 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand26 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand26 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -11345,11 +11345,11 @@ D GenPowersShortcutBarUS.wnd:ButtonCommand26 2 5 NoImage 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand26 2 6 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand26 2 7 NoImage 255 255 255 255 255 255 255 255
 D GenPowersShortcutBarUS.wnd:ButtonCommand26 2 8 NoImage 255 255 255 255 255 255 255 255
-R GenPowersShortcutBarUS.wnd:ButtonParent27 3642 900 3708 1049 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonParent27 3206 844 3444 1028 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonParent27 "Times New Roman" 14 0
 H GenPowersShortcutBarUS.wnd:ButtonParent27 [NONE]
 T GenPowersShortcutBarUS.wnd:ButtonParent27 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D GenPowersShortcutBarUS.wnd:ButtonParent27 0 0 SATraySmall 0 0 0 255 0 0 0 255
+D GenPowersShortcutBarUS.wnd:ButtonParent27 0 0 RebornCBP_2160_AmericaProTraySmallTop 0 0 0 255 0 0 0 255
 D GenPowersShortcutBarUS.wnd:ButtonParent27 0 1 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent27 0 2 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent27 0 3 NoImage 255 255 255 0 255 255 255 0
@@ -11376,7 +11376,7 @@ D GenPowersShortcutBarUS.wnd:ButtonParent27 2 5 NoImage 255 255 255 0 255 255 25
 D GenPowersShortcutBarUS.wnd:ButtonParent27 2 6 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent27 2 7 NoImage 255 255 255 0 255 255 255 0
 D GenPowersShortcutBarUS.wnd:ButtonParent27 2 8 NoImage 255 255 255 0 255 255 255 0
-R GenPowersShortcutBarUS.wnd:ButtonCommand27 3643 925 3697 1024 3840 2160
+R GenPowersShortcutBarUS.wnd:ButtonCommand27 3276 894 3426 1014 3840 2160
 F GenPowersShortcutBarUS.wnd:ButtonCommand27 "Arial" 12 1
 H GenPowersShortcutBarUS.wnd:ButtonCommand27 Arial12BoldTemplate
 T GenPowersShortcutBarUS.wnd:ButtonCommand27 255 212 0 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255

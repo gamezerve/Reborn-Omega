@@ -437,6 +437,59 @@ std::string writeNode(const CustomWndNode& node)
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Extend the faction's custom shortcut tray to the mod's 11+11+5 layout without replacing command bindings. */
+//-------------------------------------------------------------------------------------------------
+void layoutCustomShortcutButtons(CustomWndNode& root)
+{
+    CustomWndNode* bar = findNode(root, "GenPowersShortcutBarParent");
+    if (!bar) return;
+    CustomWndNode* bottom = findNode(*bar, "ButtonParent1");
+    CustomWndNode* upper = findNode(*bar, "ButtonParent2");
+    CustomWndNode* firstButton = findNode(*bar, "ButtonCommand1");
+    CustomWndNode* secondButton = findNode(*bar, "ButtonCommand2");
+    if (!bottom || !upper || !firstButton || !secondButton)
+        throw std::runtime_error("Missing shortcut tray templates");
+    // Reborn: Capture templates before changing any nodes; bottom frames retain their faction-specific footer.
+    const CustomWndNode frames[] = { *bottom, *upper };
+    const CustomWndNode buttons[] = { *firstButton, *secondButton };
+    const auto firstRect = rect(frames[0]), secondRect = rect(frames[1]);
+    const int columnWidth = firstRect[2] - firstRect[0];
+    // Reborn: All three faction tray textures have a transparent 20/1920 left margin; visible frames must touch.
+    const int columnPitch = columnWidth - 20 * firstRect[4] / 1920;
+    // Reborn: Anchor the visible footer four pixels above MinMax at Y802 (1080 design), avoiding cumulative shifts.
+    const int verticalShift = 808 * firstRect[5] / 1080 - firstRect[3];
+    const int rowPitch = firstRect[1] - secondRect[1];
+    if (columnPitch <= 0 || rowPitch <= 0) throw std::runtime_error("Invalid shortcut tray spacing");
+    const auto place = [&](CustomWndNode& target, const CustomWndNode& source, int dx, int dy)
+    {
+        // Reborn: Copy only visual fields, preserving IDs, gameplay callbacks, status and gadget data.
+        for (const auto& field : source.fields)
+            if (field.first == "FONT" || field.first == "HEADERTEMPLATE" ||
+                field.first == "TEXTCOLOR" || field.first.find("DRAWDATA") != std::string::npos)
+                target.fields[field.first] = field.second;
+        const auto r = rect(source);
+        target.fields["SCREENRECT"] = "SCREENRECT = UPPERLEFT: " + std::to_string(r[0] + dx) + " " +
+            std::to_string(r[1] + dy) + ", BOTTOMRIGHT: " + std::to_string(r[2] + dx) + " " +
+            std::to_string(r[3] + dy) + ", CREATIONRESOLUTION: " + std::to_string(r[4]) + " " + std::to_string(r[5]);
+    };
+    for (int i = 1; i <= 27; ++i)
+    {
+        const int column = (i - 1) / 11, row = (i - 1) % 11;
+        CustomWndNode* frame = findNode(*bar, "ButtonParent" + std::to_string(i));
+        CustomWndNode* button = findNode(*bar, "ButtonCommand" + std::to_string(i));
+        if (!frame || !button) throw std::runtime_error("Missing mod shortcut slot");
+        const int model = row == 0 ? 0 : 1;
+        const int dy = verticalShift + (row == 0 ? 0 : -(row - 1) * rowPitch);
+        place(*frame, frames[model], -column * columnPitch, dy);
+        place(*button, buttons[model], -column * columnPitch, dy);
+    }
+    // Reborn: Hover/input traversal must cover every column, including tray artwork protruding left of the retail root.
+    bar->fields["SCREENRECT"] = "SCREENRECT = UPPERLEFT: " + std::to_string(firstRect[0] - 2 * columnPitch) +
+        " 0, BOTTOMRIGHT: " + std::to_string(firstRect[2]) + " " + std::to_string(firstRect[3] + verticalShift) +
+        ", CREATIONRESOLUTION: " + std::to_string(firstRect[4]) + " " + std::to_string(firstRect[5]);
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Reborn: Convert a package screen while keeping all current mod-specific children and layout callbacks. */
 //-------------------------------------------------------------------------------------------------
 std::string mergeWindow(const std::string& customText, const std::string& originalText)
@@ -458,6 +511,8 @@ std::string mergeWindow(const std::string& customText, const std::string& origin
         layoutCustomInputBlockers(original, custom);
         // Reborn: Retail's five 3x3 slots must not override the mod's seven 4x4 slots.
         layoutUpgradeCameos(original);
+        // Reborn: Give all 27 faction shortcuts the same custom frame and icon dimensions.
+        layoutCustomShortcutButtons(original);
         result += writeNode(original);
     }
     if (op != originalTokens.size()) throw std::runtime_error("Missing mod WND roots");
