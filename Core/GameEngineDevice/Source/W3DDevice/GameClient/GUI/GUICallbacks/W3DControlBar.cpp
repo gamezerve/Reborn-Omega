@@ -64,6 +64,15 @@ void W3DCameoMovieDraw( GameWindow *window, WinInstanceData *instData )
 //-------------------------------------------------------------------------------------------------
 void W3DLeftHUDDraw( GameWindow *window, WinInstanceData *instData )
 {
+	// Reborn: The observer package's radar frame is drawn here so live switches require no extra window objects.
+	if (UseCustomControlBar() && TheControlBar && TheControlBar->isObserverControlBarOn())
+	{
+		ICoord2D pos, size;
+		window->winGetScreenPosition(&pos.x, &pos.y);
+		window->winGetSize(&size.x, &size.y);
+		TheDisplay->drawFillRect(pos.x - 1, pos.y - 1, size.x + 2, size.y + 2, GameMakeColor(0, 0, 0, 255));
+		TheDisplay->drawOpenRect(pos.x - 1, pos.y - 1, size.x + 2, size.y + 2, 1, GameMakeColor(255, 255, 255, 255));
+	}
 	// draw the default stuff
 	// draw video buffer
 	VideoBuffer *video = TheInGameUI->videoBuffer();
@@ -669,6 +678,19 @@ void W3DCommandBarBackgroundDraw( GameWindow *window, WinInstanceData *instData 
 	offset.y = pos.y - basePos.y;
 
 	man->drawBackground(offset);
+	// Reborn: Draw the package's stats-panel backing before the flag and observer text, without adding runtime windows.
+	if (UseCustomControlBar() && TheControlBar->isObserverControlBarOn())
+	{
+		GameWindow* info = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("ControlBar.wnd:ObserverPlayerInfoWindow"));
+		GameWindow* flag = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("ControlBar.wnd:WinFlag"));
+		if (info && flag && !info->winIsHidden())
+		{
+			ICoord2D panelPos, panelSize;
+			flag->winGetScreenPosition(&panelPos.x, &panelPos.y);
+			flag->winGetSize(&panelSize.x, &panelSize.y);
+			TheDisplay->drawFillRect(panelPos.x - 2, panelPos.y - 2, panelSize.x + 4, panelSize.y + 4, GameMakeColor(0, 0, 0, 255));
+		}
+	}
 }
 
 

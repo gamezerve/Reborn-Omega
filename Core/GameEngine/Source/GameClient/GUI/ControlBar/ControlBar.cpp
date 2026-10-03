@@ -4265,6 +4265,7 @@ void ControlBar::showRallyPoint(const Coord3D* loc)
 // ------------------------------------------------------------------------------------------------
 void ControlBar::setControlBarSchemeByPlayer(Player *p)
 {
+	// Reborn: Reapply fixed visuals on player/observer transitions, including return from a previous match.
 	if(m_controlBarSchemeManager)
 		m_controlBarSchemeManager->setControlBarSchemeByPlayer(p);
 
@@ -4306,6 +4307,8 @@ void ControlBar::setControlBarSchemeByPlayer(Player *p)
 		}
 	}
 	switchControlBarStage(CONTROL_BAR_STAGE_DEFAULT);
+	// Reborn: The observer template and its clickable parents differ from the player bar.
+	refreshCustomAppearance();
 }
 
 void ControlBar::setControlBarSchemeByPlayerTemplate( const PlayerTemplate *pt)
@@ -4351,6 +4354,8 @@ void ControlBar::setControlBarSchemeByPlayerTemplate( const PlayerTemplate *pt)
 		}
 	}
 	switchControlBarStage(CONTROL_BAR_STAGE_DEFAULT);
+	// Reborn: Surrender and replay setup must apply the observer skin as well as its scheme.
+	refreshCustomAppearance();
 
 	hidePurchaseScience();
 }
@@ -5622,8 +5627,41 @@ void ControlBar::refreshCustomAppearance()
 	delete m_controlBarSchemeManager;
 	m_controlBarSchemeManager = NEW ControlBarSchemeManager;
 	m_controlBarSchemeManager->init();
-	Player* player = getCurrentlyViewedPlayer();
-	if (player) m_controlBarSchemeManager->setControlBarSchemeByPlayer(player);
+	// Reborn: Observers keep the observer shell while watching another faction; never select that faction's player bar.
+	Player* player = ThePlayerList ? ThePlayerList->getLocalPlayer() : nullptr;
+	if (m_isObserverCommandBar)
+		m_controlBarSchemeManager->setControlBarSchemeByPlayerTemplate(
+			ThePlayerTemplateStore->findPlayerTemplate(NAMEKEY("FactionObserver")));
+	else if (player)
+		m_controlBarSchemeManager->setControlBarSchemeByPlayer(player);
+	// Reborn: The observer parent spans separated panels; its empty gaps must not intercept world input.
+	GameWindow* center = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("ControlBar.wnd:CenterBackground"));
+	if (center)
+	{
+		const Bool observerSkin = UseCustomControlBar() && m_isObserverCommandBar;
+		center->winSetInputFunc(observerSkin ? GameWinDefaultInput : GameWinBlockInput);
+		if (observerSkin) center->winSetStatus(WIN_STATUS_SEE_THRU);
+	}
+	// Reborn: Hide both the money label and its invisible tooltip/click target in observer mode.
+	for (const char* name : {"ControlBar.wnd:MoneyDisplay", "ControlBar.wnd:MoneyDisplayInput"})
+	{
+		GameWindow* money = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(name));
+		if (money) money->winHide(m_isObserverCommandBar);
+	}
+	{
+		// Reborn: Hide absent custom-observer widgets, and restore them when switching back to the original bar.
+		for (const char* name : {"ControlBar.wnd:ButtonGeneral", "ControlBar.wnd:ExpBarForeground", "ControlBar.wnd:ButtonLarge", "ControlBar.wnd:WinUAttack"})
+		{
+			GameWindow* control = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(name));
+			if (control) control->winHide(UseCustomControlBar() && m_isObserverCommandBar);
+		}
+	}
+	if (m_isObserverCommandBar)
+	{
+		// Reborn: Reinstall dynamic player names/cameos after static draw records, without resetting the watched player.
+		populateObserverList();
+		populateObserverInfoWindow();
+	}
 	GameWindow* marker = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("ControlBar.wnd:BackgroundMarker"));
 	if (marker)
 	{

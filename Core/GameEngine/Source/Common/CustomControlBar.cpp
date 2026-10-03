@@ -4,11 +4,13 @@
 #include "Common/File.h"
 #include "Common/NameKeyGenerator.h"
 #include "GameClient/Display.h"
+#include "GameClient/ControlBar.h" // Reborn: Observer skins follow observer mode, not the watched faction.
 #include "GameClient/GameWindow.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/HeaderTemplate.h"
 #include "GameClient/GameText.h" // Reborn: Restore localized science close text for the normal bar.
 #include "GameClient/GadgetPushButton.h" // Reborn: Custom science close buttons use only their arrow art.
+#include "GameClient/GadgetStaticText.h" // Reborn: Observer row captions retain localized text without forced line breaks.
 #include "GameClient/Image.h"
 #include <sstream>
 #include <iomanip>
@@ -63,6 +65,9 @@ AsciiString GetCustomControlBarWindowName(const AsciiString& filename)
         name.erase(0, 7);
     std::string lower(name);
     std::transform(lower.begin(), lower.end(), lower.begin(), [](unsigned char c) { return (char)tolower(c); });
+    // Reborn: Replay and defeated-player observers share a prepared skin without replacing runtime controls.
+    if (lower == "controlbar.wnd" && TheControlBar && TheControlBar->isObserverControlBarOn())
+        return AsciiString("Window\\CustomControlBar\\Observer\\ControlBarObserverCustom.wnd");
     // Reborn: Screens outside this list still follow their normal or Generals theme.
     static const char* supported[] = {
         "controlbar.wnd", "controlbarpopupdescription.wnd", "diplomacy.wnd", "diplomacygen.wnd",
@@ -91,7 +96,9 @@ AsciiString GetCustomControlBarWindowName(const AsciiString& filename)
 AsciiString GetCustomControlBarSchemeFile()
 {
     AsciiString result;
-    if (UseCustomControlBar())
+    if (UseCustomControlBar() && TheControlBar && TheControlBar->isObserverControlBarOn())
+        result.set("Data\\INI\\CustomControlBar\\ObserverScheme.ini");
+    else if (UseCustomControlBar())
         result.format("Data\\INI\\CustomControlBar\\%s\\ControlBarScheme.ini", s_resolutions[GetCustomControlBarIndex()]);
     return result;
 }
@@ -123,7 +130,9 @@ void ApplyCustomControlBarAppearance()
 {
     if (!TheWindowManager || !TheDisplay || !TheFileSystem) return;
     AsciiString path;
-    if (UseCustomControlBar())
+    if (UseCustomControlBar() && TheControlBar && TheControlBar->isObserverControlBarOn())
+        path.set("Data\\INI\\CustomControlBar\\ObserverAppearance.txt");
+    else if (UseCustomControlBar())
         path.format("Data\\INI\\CustomControlBar\\%s\\Appearance.txt", s_resolutions[GetCustomControlBarIndex()]);
     else
         path.set("Data\\INI\\CustomControlBar\\NormalAppearance.txt");
@@ -197,6 +206,17 @@ void ApplyCustomControlBarAppearance()
             if (key.empty()) GadgetButtonSetText(window, L"");
             else if (TheGameText) GadgetButtonSetText(window, TheGameText->fetch(key.c_str()));
         }
+        else if (kind == 'S')
+        {
+            // Reborn: Restore drawing flags only; input bindings, hidden/enabled state and queue contents stay intact.
+            Int image, seeThrough;
+            input >> image >> seeThrough;
+            if (!input) continue;
+            if (image) window->winSetStatus(WIN_STATUS_IMAGE);
+            else window->winClearStatus(WIN_STATUS_IMAGE);
+            if (seeThrough) window->winSetStatus(WIN_STATUS_SEE_THRU);
+            else window->winClearStatus(WIN_STATUS_SEE_THRU);
+        }
         else if (kind == 'D')
         {
             Int state, slot;
@@ -212,6 +232,25 @@ void ApplyCustomControlBarAppearance()
             if (state == 0) { window->winSetEnabledImage(slot, image); window->winSetEnabledColor(slot, color); window->winSetEnabledBorderColor(slot, border); }
             if (state == 1) { window->winSetDisabledImage(slot, image); window->winSetDisabledColor(slot, color); window->winSetDisabledBorderColor(slot, border); }
             if (state == 2) { window->winSetHiliteImage(slot, image); window->winSetHiliteColor(slot, color); window->winSetHiliteBorderColor(slot, border); }
+        }
+    }
+    // Reborn: Flatten localized two-line captions only for compact observer rows; restore originals on normal bars.
+    if (TheGameText)
+    {
+        const char* windows[] = { "ControlBar.wnd:StaticTextObsUnitsKilled", "ControlBar.wnd:StaticTextObsUnitsLost" };
+        const char* keys[] = { "GUI:UnitsKilled", "GUI:UnitsLost" };
+        for (Int i = 0; i < 2; ++i)
+        {
+            GameWindow* label = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(windows[i]));
+            if (!label) continue;
+            const UnicodeString localized = TheGameText->fetch(keys[i]);
+            std::wstring caption(localized.str());
+            if (UseCustomControlBar() && TheControlBar && TheControlBar->isObserverControlBarOn())
+            {
+                std::replace(caption.begin(), caption.end(), L'\n', L' ');
+                std::replace(caption.begin(), caption.end(), L'\r', L' ');
+            }
+            GadgetStaticTextSetText(label, caption.c_str());
         }
     }
 }

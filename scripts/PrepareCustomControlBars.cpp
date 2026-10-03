@@ -494,6 +494,10 @@ void manifestNode(std::ostream& out,const CustomWndNode& n)
   }
   out<<"B "<<name<<" "<<std::quoted(textKey)<<"\n";
  }
+ // Reborn: Keep texture/color drawing reversible across live player and observer bar switches.
+ auto status=n.fields.find("STATUS");
+ if (name.find("ControlBar.wnd:")==0 && status!=n.fields.end())
+  out<<"S "<<name<<" "<<(status->second.find("IMAGE")!=std::string::npos)<<" "<<(status->second.find("SEE_THRU")!=std::string::npos)<<"\n";
  auto r=rect(n);
  out<<"R "<<name; for(int v:r) out<<" "<<v; out<<"\n";
  f=n.fields.find("FONT");
