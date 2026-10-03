@@ -562,6 +562,25 @@ void ControlBarScheme::init()
 		}
 		win->winSetPosition(x,y );
 		win->winSetSize((m_moneyLR.x - m_moneyUL.x)*resMultiplier.x+ (Real)COMMAND_BAR_SIZE_OFFSET,(m_moneyLR.y - m_moneyUL.y)*resMultiplier.y+ (Real)COMMAND_BAR_SIZE_OFFSET);
+		// Reborn: Custom bars move the money label via the scheme; move its invisible popup hit area too.
+		// Reborn: Keep the normal bar's intentionally larger WND-defined hit area unchanged.
+		if (UseCustomControlBar())
+		{
+			GameWindow* inputWindow = TheWindowManager->winGetWindowFromId(
+				nullptr, TheNameKeyGenerator->nameToKey("ControlBar.wnd:MoneyDisplayInput"));
+			if (inputWindow)
+			{
+				Int screenX, screenY, width, height;
+				Int parentX = 0, parentY = 0;
+				win->winGetScreenPosition(&screenX, &screenY);
+				win->winGetSize(&width, &height);
+				if (inputWindow->winGetParent())
+					inputWindow->winGetParent()->winGetScreenPosition(&parentX, &parentY);
+				inputWindow->winSetPosition(screenX - parentX, screenY - parentY);
+				inputWindow->winSetSize(width, height);
+			}
+		}
+
 	}
 
 	win= TheWindowManager->winGetWindowFromId( nullptr, TheNameKeyGenerator->nameToKey( "ControlBar.wnd:PowerWindow" ) );
