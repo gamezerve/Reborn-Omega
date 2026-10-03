@@ -74,7 +74,8 @@ bool isWindow(const std::string& name)
         "window/controlbar.wnd", "window/controlbarpopupdescription.wnd", "window/diplomacy.wnd",
         "window/generalsexppoints.wnd", "window/genpowersshortcutbarchina.wnd",
         "window/genpowersshortcutbargla.wnd", "window/genpowersshortcutbarus.wnd",
-        "window/menus/quitmenu.wnd", "window/menus/quitnosave.wnd", "window/menus/quitmessagebox.wnd",
+        // Reborn: Prepare the logo-less restart/surrender confirmation as well as the exit popup.
+        "window/menus/messagebox.wnd", "window/menus/quitmenu.wnd", "window/menus/quitnosave.wnd", "window/menus/quitmessagebox.wnd",
         "window/menus/observerquit.wnd"
     };
     for (const char* allowed : names) if (name == allowed) return true;

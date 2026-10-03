@@ -78,9 +78,10 @@ Bool GetPopupMessageUsesRebornLayout()
 	return s_popupMessageUsesRebornLayout;
 }
 
-GameWindow *MessageBoxYesNo(UnicodeString titleString,UnicodeString bodyString,GameWinMsgBoxFunc yesCallback,GameWinMsgBoxFunc noCallback)  ///< convenience function for displaying a Message box with Yes and No buttons
+// Reborn: Keep generic popups themed normally; opt-in confirmations use the built-in control-bar skin.
+GameWindow *MessageBoxYesNo(UnicodeString titleString,UnicodeString bodyString,GameWinMsgBoxFunc yesCallback,GameWinMsgBoxFunc noCallback, Bool controlBarConfirmation)  ///< convenience function for displaying a Message box with Yes and No buttons
 {
-	return TheWindowManager->gogoMessageBox(-1,-1,-1,-1,MSG_BOX_NO | MSG_BOX_YES , titleString, bodyString, yesCallback, noCallback, nullptr, nullptr);
+	return TheWindowManager->gogoMessageBox(-1,-1,-1,-1,MSG_BOX_NO | MSG_BOX_YES , titleString, bodyString, yesCallback, noCallback, nullptr, nullptr, FALSE, controlBarConfirmation);
 }
 GameWindow *QuitMessageBoxYesNo(UnicodeString titleString,UnicodeString bodyString,GameWinMsgBoxFunc yesCallback,GameWinMsgBoxFunc noCallback)  ///< convenience function for displaying a Message box with Yes and No buttons
 {

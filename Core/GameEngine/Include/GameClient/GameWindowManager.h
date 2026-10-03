@@ -135,7 +135,8 @@ public:
                         GameWinMsgBoxFunc yesCallback,
                         GameWinMsgBoxFunc noCallback,
                         GameWinMsgBoxFunc okCallback,
-                        GameWinMsgBoxFunc cancelCallback, Bool useLogo );
+                        // Reborn: Custom styling is restricted to explicit restart/surrender confirmation requests.
+                        GameWinMsgBoxFunc cancelCallback, Bool useLogo, Bool controlBarConfirmation = FALSE );
 
 
 	//---------------------------------------------------------------------------

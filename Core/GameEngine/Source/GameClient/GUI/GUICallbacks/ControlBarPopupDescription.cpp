@@ -376,7 +376,8 @@ static const StealthDetectorUpdateModuleData* getTooltipStealthDetectorData(
 		const SpawnBehaviorModuleData* spawnData =
 			static_cast<const SpawnBehaviorModuleData*>(moduleData);
 
-		if (!spawnData)
+		// Reborn: Free-will spawns (such as supply workers) are independent units, not their parent's detector.
+		if (!spawnData || spawnData->m_slavesHaveFreeWill)
 			continue;
 
 		for (std::vector<AsciiString>::const_iterator it = spawnData->m_spawnTemplateNameData.begin();

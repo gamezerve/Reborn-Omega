@@ -55,6 +55,7 @@
 #include "GameClient/GlobalLanguage.h"
 #include "GameClient/GameWindowTransitions.h"
 #include "GameClient/MessageBox.h"
+#include "Common/CustomControlBar.h" // Reborn: Quit confirmations can use the fixed built-in ControlBarPro skin.
 #include "Common/NameKeyGenerator.h"
 
 // PUBLIC DATA ////////////////////////////////////////////////////////////////////////////////////
@@ -1627,7 +1628,7 @@ GameWindow *GameWindowManager::gogoMessageBox(Int x, Int y, Int width, Int heigh
                         GameWinMsgBoxFunc yesCallback,
                         GameWinMsgBoxFunc noCallback,
                         GameWinMsgBoxFunc okCallback,
-                        GameWinMsgBoxFunc cancelCallback, Bool useLogo )
+                        GameWinMsgBoxFunc cancelCallback, Bool useLogo, Bool controlBarConfirmation )
 
 {
 
@@ -1647,7 +1648,13 @@ GameWindow *GameWindowManager::gogoMessageBox(Int x, Int y, Int width, Int heigh
 	}
 	else
 	{
-		trueParent = winCreateFromScript(useGen ? "Menus/MessageBoxGen.wnd" : "Menus/MessageBox.wnd");
+		// Reborn: Do not globally override MessageBox; only restart/surrender requests use this fixed skin.
+        AsciiString script(useGen ? "Menus/MessageBoxGen.wnd" : "Menus/MessageBox.wnd");
+        if (controlBarConfirmation && UseCustomControlBar())
+            script.format("Window\\CustomControlBar\\%s\\menus\\%s",
+                GetCustomControlBarResolution(GetCustomControlBarIndex()),
+                useGen ? "messageboxgenCustom.wnd" : "messageboxCustom.wnd");
+        trueParent = winCreateFromScript(script);
 		menuName.set(useGen ? "MessageBoxGen.wnd:" : "MessageBox.wnd:");
 	}
 

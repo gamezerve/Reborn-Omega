@@ -678,7 +678,7 @@ WindowMsgHandledType QuitMenuSystem( GameWindow *window, UnsignedInt msg,
 					// we really want to surrender
 					quitConfirmationWindow = MessageBoxYesNo(TheGameText->fetch("GUI:SurrenderConfirmationTitle"),
 																			TheGameText->fetch("GUI:SurrenderConfirmation"),
-																			/*quitCallback*/surrenderQuitMenu,noExitQuitMenu);
+																			/*quitCallback*/surrenderQuitMenu,noExitQuitMenu, TRUE); // Reborn: Use the custom confirmation skin only for this quit action.
 				}
 				else
 				{
@@ -686,7 +686,7 @@ WindowMsgHandledType QuitMenuSystem( GameWindow *window, UnsignedInt msg,
 					//we really want to restart
 					quitConfirmationWindow = MessageBoxYesNo(TheGameText->fetch("GUI:RestartConfirmationTitle"),
 																			TheGameText->fetch("GUI:RestartConfirmation"),
-																			/*quitCallback*/restartMissionMenu,noExitQuitMenu);
+																			/*quitCallback*/restartMissionMenu,noExitQuitMenu, TRUE); // Reborn: Match restart confirmation to the active control-bar skin.
 				}
 			}
 

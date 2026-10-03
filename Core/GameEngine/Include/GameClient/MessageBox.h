@@ -31,7 +31,8 @@
 
 #include "GameClient/GameWindowManager.h"
 
-GameWindow *MessageBoxYesNo(UnicodeString titleString,UnicodeString bodyString,GameWinMsgBoxFunc yesCallback,GameWinMsgBoxFunc noCallback);  ///< convenience function for displaying a Message box with Yes and No buttons
+// Reborn: Only quit-menu restart/surrender callers opt into the custom confirmation skin.
+GameWindow *MessageBoxYesNo(UnicodeString titleString,UnicodeString bodyString,GameWinMsgBoxFunc yesCallback,GameWinMsgBoxFunc noCallback, Bool controlBarConfirmation = FALSE);  ///< convenience function for displaying a Message box with Yes and No buttons
 GameWindow *QuitMessageBoxYesNo(UnicodeString titleString,UnicodeString bodyString,GameWinMsgBoxFunc yesCallback,GameWinMsgBoxFunc noCallback);  ///< convenience function for displaying a Message box with Yes and No buttons
 
 // Generals Online
