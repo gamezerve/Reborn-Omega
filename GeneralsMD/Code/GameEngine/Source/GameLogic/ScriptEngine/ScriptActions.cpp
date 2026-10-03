@@ -6171,7 +6171,12 @@ void ScriptActions::doMoveUnitTowardsNearest( const AsciiString& unitName, const
 		PartitionFilterPolygonTrigger acceptWithin(trig);
 		PartitionFilterSameMapStatus filterMapStatus(obj);
 
-		PartitionFilter *filters[] = { &thingsToAccept, &acceptWithin, &filterMapStatus, nullptr };
+		PartitionFilter *filters[] = {
+			&thingsToAccept,
+			&acceptWithin,
+			&filterMapStatus,
+			nullptr
+		};
 
 		bestObj = ThePartitionManager->getClosestObject( obj->getPosition(), REALLY_FAR, FROM_CENTER_2D, filters );
 		if( !bestObj )
@@ -6198,7 +6203,12 @@ void ScriptActions::doMoveUnitTowardsNearest( const AsciiString& unitName, const
 				if( thisType )
 				{
 					PartitionFilterThing f2( thisType, true );
-					PartitionFilter *filters[] = { &f2, &acceptWithin, &filterMapStatus, nullptr };
+					PartitionFilter *filters[] = {
+						&f2,
+						&acceptWithin,
+						&filterMapStatus,
+						nullptr
+					};
 
 					Object *obj = ThePartitionManager->getClosestObject( &pos, REALLY_FAR, FROM_CENTER_2D, filters, &dist );
 					if( obj )
@@ -6265,7 +6275,12 @@ void ScriptActions::doMoveTeamTowardsNearest( const AsciiString& teamName, const
 	{
 		//Find the closest specified template.
 		PartitionFilterThing thingsToAccept( templ, true );
-		PartitionFilter *filters[] = { &thingsToAccept, &acceptWithin, &filterMapStatus, nullptr };
+		PartitionFilter *filters[] = {
+			&thingsToAccept,
+			&acceptWithin,
+			&filterMapStatus,
+			nullptr
+		};
 		bestObj = ThePartitionManager->getClosestObject( &teamPos, REALLY_FAR, FROM_CENTER_2D, filters );
 		if (!bestObj)
 		{
@@ -6287,7 +6302,12 @@ void ScriptActions::doMoveTeamTowardsNearest( const AsciiString& teamName, const
 				if( thisType )
 				{
 					PartitionFilterThing thingToAccept( thisType, true );
-					PartitionFilter *filters[] = { &thingToAccept, &acceptWithin, &filterMapStatus, nullptr };
+					PartitionFilter *filters[] = {
+						&thingToAccept,
+						&acceptWithin,
+						&filterMapStatus,
+						nullptr
+					};
 
 					Object *obj = ThePartitionManager->getClosestObject( &teamPos, REALLY_FAR, FROM_CENTER_2D, filters, &dist );
 					if( obj )
@@ -6416,7 +6436,12 @@ void ScriptActions::doSkirmishCommandButtonOnMostValuable( const AsciiString& te
 	PartitionFilterValidCommandButtonTarget f2(srcObj, commandButton, true, CMD_FROM_SCRIPT);
 	PartitionFilterSameMapStatus filterMapStatus(srcObj);
 
-	PartitionFilter *filters[] = { &f1, &f2, &filterMapStatus, nullptr };
+	PartitionFilter *filters[] = {
+		&f1,
+		&f2,
+		&filterMapStatus,
+		nullptr
+	};
 	// @todo: Should we add the group's radius to the range? Seems like a possibility.
 	SimpleObjectIterator *iter = ThePartitionManager->iterateObjectsInRange(&pos, range, FROM_CENTER_2D, filters, ITER_SORTED_EXPENSIVE_TO_CHEAP);
 	MemoryPoolObjectHolder hold(iter);
@@ -6522,7 +6547,12 @@ void ScriptActions::doTeamUseCommandButtonOnNearestEnemy( const AsciiString& tea
 	Coord3D pos;
 	theGroup->getCenter(&pos);
 
-	PartitionFilter *filters[] = { &f1, &f2, &filterMapStatus, nullptr };
+	PartitionFilter *filters[] = {
+		&f1,
+		&f2,
+		&filterMapStatus,
+		nullptr
+	};
 	Object *obj = ThePartitionManager->getClosestObject(&pos, REALLY_FAR, FROM_CENTER_2D, filters);
 	if (!obj) {
 		return;
@@ -6574,7 +6604,14 @@ void ScriptActions::doTeamUseCommandButtonOnNearestGarrisonedBuilding( const Asc
 	Coord3D pos;
 	theGroup->getCenter(&pos);
 
-	PartitionFilter *filters[] = { &f1, &f2, &f3, &f4, &filterMapStatus, nullptr };
+	PartitionFilter *filters[] = {
+		&f1,
+		&f2,
+		&f3,
+		&f4,
+		&filterMapStatus,
+		nullptr
+	};
 	Object *obj = ThePartitionManager->getClosestObject(&pos, REALLY_FAR, FROM_CENTER_2D, filters);
 	if (!obj) {
 		return;
@@ -6625,7 +6662,13 @@ void ScriptActions::doTeamUseCommandButtonOnNearestKindof( const AsciiString& te
 	Coord3D pos;
 	theGroup->getCenter(&pos);
 
-	PartitionFilter *filters[] = { &f1, &f2, &f3, &filterMapStatus, nullptr };
+	PartitionFilter *filters[] = {
+		&f1,
+		&f2,
+		&f3,
+		&filterMapStatus,
+		nullptr
+	};
 	Object *obj = ThePartitionManager->getClosestObject(&pos, REALLY_FAR, FROM_CENTER_2D, filters);
 	if (!obj) {
 		return;
@@ -6676,7 +6719,13 @@ void ScriptActions::doTeamUseCommandButtonOnNearestBuilding( const AsciiString& 
 	Coord3D pos;
 	theGroup->getCenter(&pos);
 
-	PartitionFilter *filters[] = { &f1, &f2, &f3, &filterMapStatus, nullptr };
+	PartitionFilter *filters[] = {
+		&f1,
+		&f2,
+		&f3,
+		&filterMapStatus,
+		nullptr
+	};
 	Object *obj = ThePartitionManager->getClosestObject(&pos, REALLY_FAR, FROM_CENTER_2D, filters);
 	if (!obj) {
 		return;
@@ -6728,7 +6777,14 @@ void ScriptActions::doTeamUseCommandButtonOnNearestBuildingClass( const AsciiStr
 	Coord3D pos;
 	theGroup->getCenter(&pos);
 
-	PartitionFilter *filters[] = { &f1, &f2, &f3, &f4, &filterMapStatus, nullptr };
+	PartitionFilter *filters[] = {
+		&f1,
+		&f2,
+		&f3,
+		&f4,
+		&filterMapStatus,
+		nullptr
+	};
 	Object *obj = ThePartitionManager->getClosestObject(&pos, REALLY_FAR, FROM_CENTER_2D, filters);
 	if (!obj) {
 		return;
@@ -6781,7 +6837,13 @@ void ScriptActions::doTeamUseCommandButtonOnNearestObjectType( const AsciiString
 		PartitionFilterThing f2(thingTemplate, true);
 		PartitionFilterValidCommandButtonTarget f3(srcObj, commandButton, true, CMD_FROM_SCRIPT);
 		PartitionFilterSameMapStatus filterMapStatus(srcObj);
-		PartitionFilter *filters[] = { &f1, &f2, &f3, &filterMapStatus, nullptr };
+		PartitionFilter *filters[] = {
+			&f1,
+			&f2,
+			&f3,
+			&filterMapStatus,
+			nullptr
+		};
 
 		Coord3D pos;
 		theGroup->getCenter(&pos);
@@ -6813,7 +6875,13 @@ void ScriptActions::doTeamUseCommandButtonOnNearestObjectType( const AsciiString
 				if( thisType )
 				{
 					PartitionFilterThing f2( thisType, true );
-					PartitionFilter *filters[] = { &f1, &f2, &f3, &f4, nullptr };
+					PartitionFilter *filters[] = {
+						&f1,
+						&f2,
+						&f3,
+						&f4,
+						nullptr
+					};
 
 					Object *obj = ThePartitionManager->getClosestObject(&pos, REALLY_FAR, FROM_CENTER_2D, filters, &dist );
 					if( obj )
@@ -6989,7 +7057,12 @@ void ScriptActions::doTeamCaptureNearestUnownedFactionUnit( const AsciiString& t
 	Coord3D pos;
 	theGroup->getCenter(&pos);
 
-	PartitionFilter *filters[] = { &f1, &f2, &filterMapStatus, nullptr };
+	PartitionFilter *filters[] = {
+		&f1,
+		&f2,
+		&filterMapStatus,
+		nullptr
+	};
 	Object *obj = ThePartitionManager->getClosestObject(&pos, REALLY_FAR, FROM_CENTER_2D, filters);
 	if (!obj) {
 		return;
