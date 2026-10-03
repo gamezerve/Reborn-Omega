@@ -91,100 +91,100 @@ D ControlBar.wnd:BackgroundMarker 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:BackgroundMarker 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:BackgroundMarker 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:BackgroundMarker 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd: 24 814 1920 1080 1920 1080
-F ControlBar.wnd: "Times New Roman" 14 0
-H ControlBar.wnd: [NONE]
-T ControlBar.wnd: 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 0 NoImage 0 0 0 255 0 0 0 255
-D ControlBar.wnd: 0 1 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 2 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 3 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 4 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 5 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 6 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 7 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 8 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 0 NoImage 0 0 64 255 0 0 0 255
-D ControlBar.wnd: 1 1 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 2 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 3 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 4 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 5 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 6 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 7 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 8 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 0 NoImage 0 0 255 255 0 0 0 255
-D ControlBar.wnd: 2 1 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 2 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 3 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 4 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 5 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 6 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 7 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd: 0 742 447 1082 1920 1080
-F ControlBar.wnd: "Times New Roman" 14 0
-H ControlBar.wnd: [NONE]
-T ControlBar.wnd: 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 0 NoImage 0 0 0 255 0 0 0 255
-D ControlBar.wnd: 0 1 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 2 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 3 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 4 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 5 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 6 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 7 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 8 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 0 NoImage 0 0 64 255 0 0 0 255
-D ControlBar.wnd: 1 1 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 2 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 3 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 4 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 5 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 6 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 7 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 8 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 0 NoImage 0 0 255 255 0 0 0 255
-D ControlBar.wnd: 2 1 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 2 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 3 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 4 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 5 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 6 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 7 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd: 1475 755 1920 1080 1920 1080
-F ControlBar.wnd: "Times New Roman" 14 0
-H ControlBar.wnd: [NONE]
-T ControlBar.wnd: 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 0 NoImage 0 0 0 255 0 0 0 255
-D ControlBar.wnd: 0 1 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 2 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 3 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 4 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 5 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 6 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 7 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 0 8 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 0 NoImage 0 0 64 255 0 0 0 255
-D ControlBar.wnd: 1 1 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 2 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 3 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 4 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 5 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 6 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 7 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 1 8 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 0 NoImage 0 0 255 255 0 0 0 255
-D ControlBar.wnd: 2 1 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 2 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 3 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 4 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 5 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 6 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 7 NoImage 255 255 255 0 255 255 255 0
-D ControlBar.wnd: 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:CenterBackground 0 852 1920 1080 1920 1080
+R ControlBar.wnd:InputBlockMain 592 894 1326 1080 1920 1080
+F ControlBar.wnd:InputBlockMain "Times New Roman" 14 0
+H ControlBar.wnd:InputBlockMain [NONE]
+T ControlBar.wnd:InputBlockMain 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 0 0 NoImage 0 0 0 255 0 0 0 255
+D ControlBar.wnd:InputBlockMain 0 1 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 0 2 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 0 3 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 0 4 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 0 5 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 0 6 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 0 7 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 0 8 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 1 0 NoImage 0 0 64 255 0 0 0 255
+D ControlBar.wnd:InputBlockMain 1 1 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 1 2 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 1 3 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 1 4 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 1 5 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 1 6 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 1 7 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 1 8 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 2 0 NoImage 0 0 255 255 0 0 0 255
+D ControlBar.wnd:InputBlockMain 2 1 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 2 2 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 2 3 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 2 4 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 2 5 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 2 6 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 2 7 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockMain 2 8 NoImage 255 255 255 0 255 255 255 0
+R ControlBar.wnd:InputBlockLeft 0 740 340 1080 1920 1080
+F ControlBar.wnd:InputBlockLeft "Times New Roman" 14 0
+H ControlBar.wnd:InputBlockLeft [NONE]
+T ControlBar.wnd:InputBlockLeft 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 0 0 NoImage 0 0 0 255 0 0 0 255
+D ControlBar.wnd:InputBlockLeft 0 1 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 0 2 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 0 3 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 0 4 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 0 5 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 0 6 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 0 7 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 0 8 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 1 0 NoImage 0 0 64 255 0 0 0 255
+D ControlBar.wnd:InputBlockLeft 1 1 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 1 2 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 1 3 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 1 4 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 1 5 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 1 6 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 1 7 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 1 8 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 2 0 NoImage 0 0 255 255 0 0 0 255
+D ControlBar.wnd:InputBlockLeft 2 1 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 2 2 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 2 3 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 2 4 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 2 5 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 2 6 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 2 7 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockLeft 2 8 NoImage 255 255 255 0 255 255 255 0
+R ControlBar.wnd:InputBlockRight 1625 870 1920 1080 1920 1080
+F ControlBar.wnd:InputBlockRight "Times New Roman" 14 0
+H ControlBar.wnd:InputBlockRight [NONE]
+T ControlBar.wnd:InputBlockRight 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 0 0 NoImage 0 0 0 255 0 0 0 255
+D ControlBar.wnd:InputBlockRight 0 1 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 0 2 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 0 3 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 0 4 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 0 5 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 0 6 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 0 7 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 0 8 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 1 0 NoImage 0 0 64 255 0 0 0 255
+D ControlBar.wnd:InputBlockRight 1 1 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 1 2 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 1 3 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 1 4 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 1 5 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 1 6 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 1 7 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 1 8 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 2 0 NoImage 0 0 255 255 0 0 0 255
+D ControlBar.wnd:InputBlockRight 2 1 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 2 2 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 2 3 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 2 4 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 2 5 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 2 6 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 2 7 NoImage 255 255 255 0 255 255 255 0
+D ControlBar.wnd:InputBlockRight 2 8 NoImage 255 255 255 0 255 255 255 0
+R ControlBar.wnd:CenterBackground 592 894 1326 1080 1920 1080
 F ControlBar.wnd:CenterBackground "Times New Roman" 14 0
 H ControlBar.wnd:CenterBackground [NONE]
 T ControlBar.wnd:CenterBackground 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255

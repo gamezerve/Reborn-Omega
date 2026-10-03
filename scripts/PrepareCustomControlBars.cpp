@@ -312,6 +312,31 @@ void layoutUpgradeCameos(CustomWndNode& root)
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Restrict custom input walls to actual panels instead of the normal bar's full-width strip. */
+//-------------------------------------------------------------------------------------------------
+void layoutCustomInputBlockers(CustomWndNode& root, CustomWndNode& retail)
+{
+    if (nodeName(root) != "ControlBarParent") return;
+    const char* controls[][2] = {
+        {"InputBlockMain", "ControlBarProBlockInputProduction"},
+        {"InputBlockLeft", "ControlBarProBlockInputRadar"},
+        {"InputBlockRight", "ControlBarProBlockInputUpgrades"}
+    };
+    for (const auto& control : controls)
+    {
+        CustomWndNode* target = findNode(root, control[0]);
+        CustomWndNode* source = findNode(retail, control[1]);
+        // Reborn: Also allow already-prepared custom templates as offline test fixtures.
+        if (!source) source = findNode(retail, control[0]);
+        if (!target || !source) throw std::runtime_error("Missing custom input panel " + std::string(control[0]));
+        target->fields["SCREENRECT"] = source->fields["SCREENRECT"];
+    }
+    // Reborn: This no-draw parent also blocks input; contain it within the central command panel.
+    CustomWndNode* center = findNode(root, "CenterBackground");
+    if (center) center->fields["SCREENRECT"] = findNode(root, "InputBlockMain")->fields["SCREENRECT"];
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Reborn: Apply a retail skin to a fixed Reborn template; never import retail parents or input blockers. */
 //-------------------------------------------------------------------------------------------------
 void skinNode(CustomWndNode& node, CustomWndNode& retail, const CustomWndNode* oldParent = nullptr, const CustomWndNode* newParent = nullptr)
@@ -400,6 +425,8 @@ std::string mergeWindow(const std::string& customText, const std::string& origin
         if (op >= originalTokens.size()) throw std::runtime_error("Incompatible WND roots");
         CustomWndNode original = readNode(originalTokens, op);
         skinNode(original, custom);
+        // Reborn: Leave the gaps between Control Bar Pro panels available to world input.
+        layoutCustomInputBlockers(original, custom);
         // Reborn: Retail's five 3x3 slots must not override the mod's seven 4x4 slots.
         layoutUpgradeCameos(original);
         result += writeNode(original);
