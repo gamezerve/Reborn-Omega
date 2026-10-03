@@ -359,6 +359,14 @@ void skinNode(CustomWndNode& node, CustomWndNode& retail, const CustomWndNode* o
         if (status != node.fields.end() && skinStatus != skin->fields.end() &&
             skinStatus->second.find("IMAGE") != std::string::npos && status->second.find("IMAGE") == std::string::npos)
             status->second += "+IMAGE";
+        // Reborn: Diplomacy's custom close button uses state colors, not textures; preserve its other status flags.
+        if (nodeName(node) == "ButtonHide" && node.fields["NAME"].find("Diplomacy") != std::string::npos &&
+            status != node.fields.end() && skinStatus != skin->fields.end() &&
+            skinStatus->second.find("IMAGE") == std::string::npos)
+        {
+            const size_t imageFlag = status->second.find("+IMAGE");
+            if (imageFlag != std::string::npos) status->second.erase(imageFlag, 6);
+        }
     }
     else if (oldParent && newParent)
     {

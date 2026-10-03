@@ -94,6 +94,22 @@ void W3DLeftHUDDraw( GameWindow *window, WinInstanceData *instData )
 void W3DRightHUDDraw( GameWindow *window, WinInstanceData *instData )
 {
 
+	// Reborn: Production queues retain the original white 3x3 texture; selected-unit grids remain code-drawn 4x4.
+	if (UseCustomControlBar() && window->winGetWindowId() ==
+		TheNameKeyGenerator->nameToKey("ControlBar.wnd:ProductionQueueWindow"))
+	{
+		const Image *grid = TheMappedImageCollection->findImageByName(
+			GetCustomControlBarImageName("ControlBarProUpgradesGrid"));
+		if (grid)
+		{
+			ICoord2D pos, size;
+			window->winGetScreenPosition(&pos.x, &pos.y);
+			window->winGetSize(&size.x, &size.y);
+			TheWindowManager->winDrawImage(grid, pos.x, pos.y, pos.x + size.x, pos.y + size.y);
+			return;
+		}
+	}
+
 	// draw the default stuff
 	if( BitIsSet(window->winGetStatus(), WIN_STATUS_IMAGE ))
 		W3DGameWinDefaultDraw( window, instData );

@@ -31,6 +31,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/NameKeyGenerator.h"
+#include "Common/CustomControlBar.h" // Reborn: Queue background drawing follows the active control bar.
 #include "Common/ThingTemplate.h"
 #include "Common/ThingFactory.h"
 #include "Common/Player.h"
@@ -591,6 +592,16 @@ void ControlBar::populateBuildQueue( Object *producer )
 
 	// reset the build queue data
 	resetBuildQueueData();
+
+	// Reborn: SEE_THRU skips the parent's draw callback; draw the custom grid before its queue-icon children.
+	if (m_contextParent[CP_BUILD_QUEUE])
+	{
+		if (UseCustomControlBar())
+			m_contextParent[CP_BUILD_QUEUE]->winClearStatus(WIN_STATUS_SEE_THRU);
+		else
+			m_contextParent[CP_BUILD_QUEUE]->winSetStatus(WIN_STATUS_SEE_THRU);
+	}
+
 
 	// get name key ids for the build queue buttons
 	if( idsInitialized == FALSE )
