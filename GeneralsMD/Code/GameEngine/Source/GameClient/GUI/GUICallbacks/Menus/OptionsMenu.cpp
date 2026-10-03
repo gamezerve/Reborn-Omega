@@ -2607,7 +2607,7 @@ void ProcessRebornOmegaUpdateCheck(Bool automaticCheck)
 //-------------------------------------------------------------------------------------------------
 void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 {
-	// Reborn: Apply fixed bar resources outside input callbacks, without rebuilding Options.
+	// Reborn: Apply bar resources outside input callbacks, then reuse the theme refresh to keep Options in front.
 	if (s_customControlBarRefreshPending)
 	{
 		s_customControlBarRefreshPending = FALSE;
@@ -2615,7 +2615,14 @@ void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 		{
 			if (TheControlBar) TheControlBar->refreshCustomAppearance();
 			ResetDiplomacy();
-			RefreshQuitMenuLayoutTheme();
+			// Reborn: Only active-game quit menus depend on the bar; leave main-menu and online Options intact.
+			if (TheGameLogic->isInGame() && !TheGameLogic->isInShellGame())
+			{
+				// Reborn: Keep any pending theme change, or retain the current concrete theme for a bar-only refresh.
+				if (!s_layoutThemeRefreshPending)
+					s_pendingGeneralsLayout = s_optionsMenuUsesRebornLayout;
+				s_layoutThemeRefreshPending = TRUE;
+			}
 		}
 	}
 
