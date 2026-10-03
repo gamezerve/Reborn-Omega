@@ -5607,6 +5607,10 @@ void ControlBar::setScaledViewportHeight()
 void ControlBar::refreshCustomAppearance()
 {
 	if (!TheWindowManager || !m_contextParent[CP_MASTER]) return;
+	// Reborn: Scheme initialization opens the bar; retain menu visibility, bar stage and hidden viewport size.
+	const Bool wasHidden = m_contextParent[CP_MASTER]->winIsHidden();
+	const ControlBarStages previousStage = m_currentControlBarStage;
+	const Int previousViewportHeight = TheTacticalView->getHeight();
 	// Reborn: reset() restores cached OLD rest positions; clear animations BEFORE applying the new layout.
 	if (m_animateWindowManager) m_animateWindowManager->reset();
 	if (m_animateWindowManagerForGenShortcuts) m_animateWindowManagerForGenShortcuts->reset();
@@ -5627,6 +5631,9 @@ void ControlBar::refreshCustomAppearance()
 		m_controlBarBackgroundMarkerPos = m_controlBarForegroundMarkerPos;
 	}
 	if (m_buildToolTipLayout) m_buildToolTipLayout->hide(TRUE);
-	if (!m_contextParent[CP_MASTER]->winIsHidden()) setScaledViewportHeight();
+	// Reborn: Changing skins must not reveal a menu-hidden bar or expand a minimized in-game bar.
+	switchControlBarStage(previousStage);
+	m_contextParent[CP_MASTER]->winHide(wasHidden);
+	if (wasHidden) TheTacticalView->setHeight(previousViewportHeight);
 	markUIDirty();
 }
