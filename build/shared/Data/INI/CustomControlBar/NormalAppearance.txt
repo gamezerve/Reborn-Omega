@@ -5299,37 +5299,37 @@ D GeneralsExpPoints.wnd: 2 5 NoImage 255 255 255 0 255 255 255 0
 D GeneralsExpPoints.wnd: 2 6 NoImage 255 255 255 0 255 255 255 0
 D GeneralsExpPoints.wnd: 2 7 NoImage 255 255 255 0 255 255 255 0
 D GeneralsExpPoints.wnd: 2 8 NoImage 255 255 255 0 255 255 255 0
-R GeneralsExpPoints.wnd: 232 57 582 81 800 600
-F GeneralsExpPoints.wnd: "Arial" 10 0
-H GeneralsExpPoints.wnd: LabelRegular
-T GeneralsExpPoints.wnd: 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
-D GeneralsExpPoints.wnd: 0 0 NoImage 255 4 0 0 255 193 25 0
-D GeneralsExpPoints.wnd: 0 1 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 2 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 3 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 4 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 5 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 6 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 7 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 8 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 0 NoImage 64 64 64 255 192 192 192 255
-D GeneralsExpPoints.wnd: 1 1 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 2 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 3 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 4 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 5 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 6 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 7 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 8 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 0 NoImage 0 128 0 255 128 255 128 255
-D GeneralsExpPoints.wnd: 2 1 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 2 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 3 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 4 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 5 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 6 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 7 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 8 NoImage 255 255 255 0 255 255 255 0
+R GeneralsExpPoints.wnd:StaticTextRank1Required 232 57 582 81 800 600
+F GeneralsExpPoints.wnd:StaticTextRank1Required "Arial" 10 0
+H GeneralsExpPoints.wnd:StaticTextRank1Required LabelRegular
+T GeneralsExpPoints.wnd:StaticTextRank1Required 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
+D GeneralsExpPoints.wnd:StaticTextRank1Required 0 0 NoImage 255 4 0 0 255 193 25 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 0 1 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 0 2 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 0 3 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 0 4 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 0 5 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 0 6 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 0 7 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 0 8 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 1 0 NoImage 64 64 64 255 192 192 192 255
+D GeneralsExpPoints.wnd:StaticTextRank1Required 1 1 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 1 2 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 1 3 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 1 4 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 1 5 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 1 6 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 1 7 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 1 8 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 2 0 NoImage 0 128 0 255 128 255 128 255
+D GeneralsExpPoints.wnd:StaticTextRank1Required 2 1 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 2 2 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 2 3 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 2 4 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 2 5 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 2 6 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 2 7 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank1Required 2 8 NoImage 255 255 255 0 255 255 255 0
 R GeneralsExpPoints.wnd:StaticTextLevel 515 9 584 35 800 600
 F GeneralsExpPoints.wnd:StaticTextLevel "Arial" 14 0
 H GeneralsExpPoints.wnd:StaticTextLevel MinorTitle
@@ -5392,6 +5392,7 @@ D GeneralsExpPoints.wnd:ButtonExit 2 5 Buttons-HiLite-Middle 255 255 255 0 255 2
 D GeneralsExpPoints.wnd:ButtonExit 2 6 Buttons-HiLite-Right 255 255 255 0 255 255 255 0
 D GeneralsExpPoints.wnd:ButtonExit 2 7 NoImage 255 255 255 0 255 255 255 0
 D GeneralsExpPoints.wnd:ButtonExit 2 8 NoImage 255 255 255 0 255 255 255 0
+B GeneralsExpPoints.wnd:ButtonExit "GUI:CloseExpScreen"
 R GeneralsExpPoints.wnd:StaticTextTitle 324 6 484 31 800 600
 F GeneralsExpPoints.wnd:StaticTextTitle "Arial" 14 0
 H GeneralsExpPoints.wnd:StaticTextTitle MinorTitle
@@ -6229,68 +6230,68 @@ D GeneralsExpPoints.wnd:StaticTextRankPointsAvailable 2 5 NoImage 255 255 255 0 
 D GeneralsExpPoints.wnd:StaticTextRankPointsAvailable 2 6 NoImage 255 255 255 0 255 255 255 0
 D GeneralsExpPoints.wnd:StaticTextRankPointsAvailable 2 7 NoImage 255 255 255 0 255 255 255 0
 D GeneralsExpPoints.wnd:StaticTextRankPointsAvailable 2 8 NoImage 255 255 255 0 255 255 255 0
-R GeneralsExpPoints.wnd: 232 143 582 167 800 600
-F GeneralsExpPoints.wnd: "Arial" 10 0
-H GeneralsExpPoints.wnd: LabelRegular
-T GeneralsExpPoints.wnd: 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
-D GeneralsExpPoints.wnd: 0 0 NoImage 255 4 0 0 255 193 25 0
-D GeneralsExpPoints.wnd: 0 1 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 2 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 3 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 4 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 5 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 6 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 7 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 8 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 0 NoImage 64 64 64 255 192 192 192 255
-D GeneralsExpPoints.wnd: 1 1 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 2 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 3 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 4 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 5 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 6 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 7 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 8 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 0 NoImage 0 128 0 255 128 255 128 255
-D GeneralsExpPoints.wnd: 2 1 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 2 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 3 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 4 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 5 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 6 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 7 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 8 NoImage 255 255 255 0 255 255 255 0
-R GeneralsExpPoints.wnd: 231 331 581 355 800 600
-F GeneralsExpPoints.wnd: "Arial" 10 0
-H GeneralsExpPoints.wnd: LabelRegular
-T GeneralsExpPoints.wnd: 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
-D GeneralsExpPoints.wnd: 0 0 NoImage 255 4 0 0 255 201 25 0
-D GeneralsExpPoints.wnd: 0 1 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 2 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 3 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 4 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 5 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 6 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 7 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 0 8 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 0 NoImage 64 64 64 255 192 192 192 255
-D GeneralsExpPoints.wnd: 1 1 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 2 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 3 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 4 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 5 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 6 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 7 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 1 8 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 0 NoImage 0 128 0 255 128 255 128 255
-D GeneralsExpPoints.wnd: 2 1 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 2 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 3 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 4 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 5 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 6 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 7 NoImage 255 255 255 0 255 255 255 0
-D GeneralsExpPoints.wnd: 2 8 NoImage 255 255 255 0 255 255 255 0
+R GeneralsExpPoints.wnd:StaticTextRank3Required 232 143 582 167 800 600
+F GeneralsExpPoints.wnd:StaticTextRank3Required "Arial" 10 0
+H GeneralsExpPoints.wnd:StaticTextRank3Required LabelRegular
+T GeneralsExpPoints.wnd:StaticTextRank3Required 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
+D GeneralsExpPoints.wnd:StaticTextRank3Required 0 0 NoImage 255 4 0 0 255 193 25 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 0 1 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 0 2 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 0 3 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 0 4 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 0 5 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 0 6 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 0 7 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 0 8 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 1 0 NoImage 64 64 64 255 192 192 192 255
+D GeneralsExpPoints.wnd:StaticTextRank3Required 1 1 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 1 2 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 1 3 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 1 4 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 1 5 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 1 6 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 1 7 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 1 8 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 2 0 NoImage 0 128 0 255 128 255 128 255
+D GeneralsExpPoints.wnd:StaticTextRank3Required 2 1 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 2 2 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 2 3 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 2 4 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 2 5 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 2 6 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 2 7 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank3Required 2 8 NoImage 255 255 255 0 255 255 255 0
+R GeneralsExpPoints.wnd:StaticTextRank8Required 231 331 581 355 800 600
+F GeneralsExpPoints.wnd:StaticTextRank8Required "Arial" 10 0
+H GeneralsExpPoints.wnd:StaticTextRank8Required LabelRegular
+T GeneralsExpPoints.wnd:StaticTextRank8Required 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
+D GeneralsExpPoints.wnd:StaticTextRank8Required 0 0 NoImage 255 4 0 0 255 201 25 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 0 1 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 0 2 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 0 3 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 0 4 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 0 5 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 0 6 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 0 7 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 0 8 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 1 0 NoImage 64 64 64 255 192 192 192 255
+D GeneralsExpPoints.wnd:StaticTextRank8Required 1 1 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 1 2 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 1 3 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 1 4 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 1 5 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 1 6 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 1 7 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 1 8 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 2 0 NoImage 0 128 0 255 128 255 128 255
+D GeneralsExpPoints.wnd:StaticTextRank8Required 2 1 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 2 2 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 2 3 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 2 4 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 2 5 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 2 6 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 2 7 NoImage 255 255 255 0 255 255 255 0
+D GeneralsExpPoints.wnd:StaticTextRank8Required 2 8 NoImage 255 255 255 0 255 255 255 0
 R GenPowersShortcutBarChina.wnd:GenPowersShortcutBarParent 656 3 800 420 800 600
 F GenPowersShortcutBarChina.wnd:GenPowersShortcutBarParent "Times New Roman" 14 0
 H GenPowersShortcutBarChina.wnd:GenPowersShortcutBarParent [NONE]

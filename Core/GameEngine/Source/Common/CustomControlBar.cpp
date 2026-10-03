@@ -7,6 +7,8 @@
 #include "GameClient/GameWindow.h"
 #include "GameClient/GameWindowManager.h"
 #include "GameClient/HeaderTemplate.h"
+#include "GameClient/GameText.h" // Reborn: Restore localized science close text for the normal bar.
+#include "GameClient/GadgetPushButton.h" // Reborn: Custom science close buttons use only their arrow art.
 #include "GameClient/Image.h"
 #include <sstream>
 #include <iomanip>
@@ -185,6 +187,15 @@ void ApplyCustomControlBarAppearance()
             window->winSetEnabledTextColors(color[0], color[1]);
             window->winSetDisabledTextColors(color[2], color[3]);
             window->winSetHiliteTextColors(color[4], color[5]);
+        }
+        else if (kind == 'B' && name == "GeneralsExpPoints.wnd:ButtonExit")
+        {
+            // Reborn: Toggle the science close caption without hiding or disabling its clickable arrow.
+            std::string key;
+            input >> std::quoted(key);
+            if (!input) continue;
+            if (key.empty()) GadgetButtonSetText(window, L"");
+            else if (TheGameText) GadgetButtonSetText(window, TheGameText->fetch(key.c_str()));
         }
         else if (kind == 'D')
         {

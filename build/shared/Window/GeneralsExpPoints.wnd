@@ -102,7 +102,7 @@ WINDOW
     SCREENRECT = UPPERLEFT: 232 57,
                  BOTTOMRIGHT: 582 81,
                  CREATIONRESOLUTION: 800 600;
-    NAME = "GeneralsExpPoints.wnd:";
+    NAME = "GeneralsExpPoints.wnd:StaticTextRank1Required";
     STATUS = ENABLED;
     STYLE = STATICTEXT+MOUSETRACK;
     SYSTEMCALLBACK = "[None]";
@@ -1520,7 +1520,7 @@ WINDOW
     SCREENRECT = UPPERLEFT: 232 143,
                  BOTTOMRIGHT: 582 167,
                  CREATIONRESOLUTION: 800 600;
-    NAME = "GeneralsExpPoints.wnd:";
+    NAME = "GeneralsExpPoints.wnd:StaticTextRank3Required";
     STATUS = ENABLED;
     STYLE = STATICTEXT+MOUSETRACK;
     SYSTEMCALLBACK = "[None]";
@@ -1569,7 +1569,7 @@ WINDOW
     SCREENRECT = UPPERLEFT: 231 331,
                  BOTTOMRIGHT: 581 355,
                  CREATIONRESOLUTION: 800 600;
-    NAME = "GeneralsExpPoints.wnd:";
+    NAME = "GeneralsExpPoints.wnd:StaticTextRank8Required";
     STATUS = ENABLED;
     STYLE = STATICTEXT+MOUSETRACK;
     SYSTEMCALLBACK = "[None]";

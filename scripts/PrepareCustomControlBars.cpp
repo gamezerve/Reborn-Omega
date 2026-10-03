@@ -342,6 +342,9 @@ void skinNode(CustomWndNode& node, CustomWndNode& retail, const CustomWndNode* o
         moveNode(moved, rect(*oldParent), rect(*newParent));
         node.fields["SCREENRECT"] = moved.fields["SCREENRECT"];
     }
+    // Reborn: Control Bar Pro's science close button is an arrow with no Done caption.
+    if (node.fields["NAME"] == "NAME = \"GeneralsExpPoints.wnd:ButtonExit\"")
+        node.fields.erase("TEXT");
     // Reborn: These retail templates are GenTool-only; use their actual Arial 10 font directly.
     auto header = node.fields.find("HEADERTEMPLATE");
     if (header != node.fields.end() && header->second.find("ControlBarProScrollListBox") != std::string::npos)
@@ -446,6 +449,16 @@ void manifestNode(std::ostream& out,const CustomWndNode& n)
  auto f=n.fields.find("NAME"); if(f==n.fields.end()) return;
  std::smatch match;
  std::regex_search(f->second,match,std::regex("\"([^\"]+)\"")); std::string name=match[1];
+ // Reborn: Caption records preserve an arrow-only custom close button and restore normal localized text.
+ if (name == "GeneralsExpPoints.wnd:ButtonExit") {
+  std::string textKey;
+  auto textField = n.fields.find("TEXT");
+  if (textField != n.fields.end()) {
+   const size_t first = textField->second.find('"'), last = textField->second.find_last_of('"');
+   if (first != std::string::npos && last > first) textKey = textField->second.substr(first + 1, last - first - 1);
+  }
+  out<<"B "<<name<<" "<<std::quoted(textKey)<<"\n";
+ }
  auto r=rect(n);
  out<<"R "<<name; for(int v:r) out<<" "<<v; out<<"\n";
  f=n.fields.find("FONT");
