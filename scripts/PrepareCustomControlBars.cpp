@@ -376,6 +376,26 @@ void skinNode(CustomWndNode& node, CustomWndNode& retail, const CustomWndNode* o
         moveNode(moved, rect(*oldParent), rect(*newParent));
         node.fields["SCREENRECT"] = moved.fields["SCREENRECT"];
     }
+    // Reborn: Legacy anonymous popup title strips are not part of ControlBarPro's plain confirmation panel.
+    if (oldParent && nodeName(node).empty() &&
+        (node.fields["NAME"].find("MessageBox.wnd:") != std::string::npos ||
+         node.fields["NAME"].find("MessageBoxGen.wnd:") != std::string::npos))
+    {
+        auto& status = node.fields["STATUS"];
+        if (status.find("HIDDEN") == std::string::npos) status += "+HIDDEN";
+        if (status.find("SEE_THRU") == std::string::npos) status += "+SEE_THRU";
+    }
+    // Reborn: Keep the package's baked-in Zero Hour logo, hiding the mod logo retained by canonical quit templates.
+    const std::string control = nodeName(node);
+    const std::string& identity = node.fields["NAME"];
+    if ((control == "WinLoad" && identity.find("QuitMenu") != std::string::npos) ||
+        (control == "WinLogo" && identity.find("QuitNoSave") != std::string::npos) ||
+        (control == "Logo" && identity.find("QuitMessageBox") != std::string::npos))
+    {
+        auto& status = node.fields["STATUS"];
+        if (status.find("HIDDEN") == std::string::npos) status += "+HIDDEN";
+        if (status.find("SEE_THRU") == std::string::npos) status += "+SEE_THRU";
+    }
     // Reborn: Control Bar Pro's science close button is an arrow with no Done caption.
     if (node.fields["NAME"] == "NAME = \"GeneralsExpPoints.wnd:ButtonExit\"")
         node.fields.erase("TEXT");
