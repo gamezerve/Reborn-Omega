@@ -508,7 +508,7 @@ void applyCustomGeneralsMenuTheme(CustomWndNode& root, const CustomWndNode& them
                 // Reborn: Keep ControlBarPro's gray Back button and white text; recolor only hover/pressed fills.
                 std::string& hilite = node.fields["HILITEDRAWDATA"];
                 hilite = std::regex_replace(hilite, std::regex("18 80 129"), "129 97 0");
-                hilite = std::regex_replace(hilite, std::regex("29 130 207"), "255 191 0");
+                hilite = std::regex_replace(hilite, std::regex("29 130 207"), "190 143 0");
             }
             else for (const char* field : {"ENABLEDDRAWDATA", "DISABLEDDRAWDATA", "HILITEDRAWDATA", "TEXTCOLOR"})
             {
