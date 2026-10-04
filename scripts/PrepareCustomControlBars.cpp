@@ -518,6 +518,10 @@ void applyCustomGeneralsMenuTheme(CustomWndNode& root, const CustomWndNode& them
         }
         else if (themed && (nodeName(node) == "QuitMenuParent" || nodeName(node) == "MessageBoxParent"))
         {
+            // Reborn: Gen quit backgrounds use recolored sibling atlases; normal custom textures remain untouched.
+            if (nodeName(node) == "QuitMenuParent")
+                node.fields["ENABLEDDRAWDATA"] = std::regex_replace(node.fields["ENABLEDDRAWDATA"],
+                    std::regex("(RebornCBP_(1080|2160)_ControlBarProQuit(NoSave|Menu)Window)\\b"), "$1Gen");
             // Reborn: The image-backed menu keeps its original artwork; the renderer overlays only this frame color.
             for (const char* field : {"ENABLEDDRAWDATA", "DISABLEDDRAWDATA", "HILITEDRAWDATA"})
             {
