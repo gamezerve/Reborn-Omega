@@ -499,6 +499,7 @@ set(GAMEENGINE_SRC
      Include/GameLogic/Pathfinder/PathfindCell.h
      Include/GameLogic/Pathfinder/PathfindCellInfo.h
      Include/GameLogic/Pathfinder/PathfindCellList.h
+     Include/GameLogic/Pathfinder/PathfindConstants.h
      Include/GameLogic/Pathfinder/PathfindLayer.h
      Include/GameLogic/Pathfinder/PathfindZoneManager.h
      Include/GameLogic/Pathfinder/PathNode.h
@@ -879,6 +880,7 @@ set(GAMEENGINE_SRC
 #    Source/GameLogic/AI/AITNGuard.cpp
     Source/GameLogic/AI/Pathfinder/Path.cpp
     Source/GameLogic/AI/Pathfinder/PathfindCellInfo.cpp
+    Source/GameLogic/AI/Pathfinder/PathfindConstants.cpp
     Source/GameLogic/AI/Pathfinder/PathNode.cpp
 #    Source/GameLogic/AI/Squad.cpp
 #    Source/GameLogic/AI/TurretAI.cpp
