@@ -490,6 +490,29 @@ void layoutCustomShortcutButtons(CustomWndNode& root)
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Draw the mod wordmark as an independent HD texture, retaining canonical quit controls and callbacks. */
+//-------------------------------------------------------------------------------------------------
+void layoutCustomQuitModLogo(CustomWndNode& root)
+{
+    CustomWndNode* parent = findNode(root, "QuitMenuParent");
+    if (!parent) return;
+    CustomWndNode* logo = findNode(root, "WinLoad");
+    if (!logo) logo = findNode(root, "WinLogo");
+    if (!logo) return;
+    const std::vector<int> r = rect(*parent);
+    const int scale = r[4] >= 3840 ? 2 : 1;
+    const bool generals = parent->fields["ENABLEDDRAWDATA"].find("WindowGen") != std::string::npos;
+    const int top = generals ? 153 : 152;
+    logo->fields["SCREENRECT"] = "SCREENRECT = UPPERLEFT: " + std::to_string(r[0] + 40 * scale) + " " +
+        std::to_string(r[1] + top * scale) + ", BOTTOMRIGHT: " + std::to_string(r[0] + 440 * scale) + " " +
+        std::to_string(r[1] + 180 * scale) + ", CREATIONRESOLUTION: " + std::to_string(r[4]) + " " + std::to_string(r[5]);
+    // Reborn: SEE_THRU suppresses drawing; keep this non-interactive decorative logo visible.
+    logo->fields["STATUS"] = "STATUS = ENABLED+IMAGE";
+    logo->fields["ENABLEDDRAWDATA"] = std::regex_replace(logo->fields["ENABLEDDRAWDATA"],
+        std::regex("IMAGE: [A-Za-z0-9_.-]+"), "IMAGE: RebornOmegaLogoHD_ControlBarPro", std::regex_constants::format_first_only);
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Reborn: Theme custom quit/popup buttons and frames or only the diplomacy Back button, retaining package geometry and artwork. */
 //-------------------------------------------------------------------------------------------------
 void applyCustomGeneralsMenuTheme(CustomWndNode& root, const CustomWndNode& themedTemplate)
@@ -565,6 +588,8 @@ std::string mergeWindow(const std::string& customText, const std::string& origin
         layoutUpgradeCameos(original);
         // Reborn: Give all 27 faction shortcuts the same custom frame and icon dimensions.
         layoutCustomShortcutButtons(original);
+        // Reborn: Quit menus share one high-resolution uncompressed mod-logo layer.
+        layoutCustomQuitModLogo(original);
         result += writeNode(original);
     }
     if (op != originalTokens.size()) throw std::runtime_error("Missing mod WND roots");

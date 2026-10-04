@@ -3,8 +3,10 @@ from pathlib import Path
 import argparse
 import struct
 from io import BytesIO
-from PIL import Image
+from PIL import Image, ImageFilter
 from collections import deque
+# Reborn: Keep the mod wordmark outside every compressed background atlas during regeneration.
+from PrepareCustomControlBarModLogo import clear_baked_mod, prepare_logo
 
 #-------------------------------------------------------------------------------------------------
 # Reborn: Convert only blue RGB565 endpoints to Generals gold, retaining their original brightness.
@@ -98,7 +100,25 @@ def replace_logo(target, logo_path, align_visible=False):
     logo = logo.crop(bounds)
     width = 400 * scale
     height = 140 * scale
+    # Reborn: Detect the separated bottom mod wordmark, leaving every game-logo row untouched.
+    source_mod_top = None
+    for row in range(logo.height - 1, -1, -1):
+        active = sum(1 for pixel in logo.crop((0, row, logo.width, row + 1)).getdata() if pixel[3] >= 32) > 8
+        if active:
+            source_mod_top = row
+        elif source_mod_top is not None:
+            break
+    assert source_mod_top is not None
+    mod_top = round(source_mod_top * height / logo.height)
     logo = logo.resize((width, height), Image.Resampling.LANCZOS)
+    # Reborn: Lightly antialias only mod-letter contours in premultiplied alpha; do not blur metallic faces or add halos.
+    mod = logo.crop((0, mod_top, width, height))
+    premultiplied = mod.convert('RGBa')
+    planes = tuple(plane.filter(ImageFilter.GaussianBlur(0.4 * scale)) for plane in premultiplied.split())
+    smooth = Image.merge('RGBa', planes).convert('RGBA')
+    edges = mod.getchannel('A').point(lambda alpha: 255 if alpha < 250 else 0).filter(ImageFilter.MaxFilter(3))
+    polished = Image.composite(smooth, mod, edges)
+    logo.paste(polished, (0, mod_top))
     assert height <= 148 * scale
     regions = [(36 * scale, 36 * scale, 444 * scale, 184 * scale),
                (36 * scale, 520 * scale, 444 * scale, 672 * scale)]
@@ -163,6 +183,10 @@ def main():
             default_logo = 'ZeroHourHDLogoSteam.png'
         replace_logo(target, args.logo or args.repo / 'scripts/assets' / default_logo,
                      align_visible=args.theme == 'zerohour')
+        # Reborn: Only the game logo stays baked; the shared TGA supplies the independent mod wordmark.
+        clear_baked_mod(target, target, 1 if size == '1080' else 2)
+    prepare_logo(args.repo / 'build/shared/Art/Textures/RebornOmegaLogo_HD.png',
+                 args.output / 'RebornOmegaLogoHD_ControlBarPro.tga')
 
 if __name__ == '__main__':
     main()
