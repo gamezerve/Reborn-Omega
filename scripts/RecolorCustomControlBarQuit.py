@@ -1,4 +1,4 @@
-# Reborn: Recolor existing ControlBarPro quit DDS backgrounds without generating or recompressing artwork.
+# Reborn: Prepare themed ControlBarPro quit backgrounds and replace only their existing logo regions.
 from pathlib import Path
 import argparse
 import struct
@@ -87,13 +87,15 @@ def clean_logo(logo):
 #-------------------------------------------------------------------------------------------------
 # Reborn: Align the cleaned visible logo bounds to the same grid rectangle in each quit menu.
 #-------------------------------------------------------------------------------------------------
-def replace_logo(target, logo_path):
+def replace_logo(target, logo_path, align_visible=False):
     original = target.read_bytes()
     atlas = Image.open(target).convert('RGBA')
     scale = atlas.width // 512
     logo = Image.open(logo_path).convert('RGBA')
     # Reborn: Use the manually cleaned source alpha unchanged instead of applying another shadow-removal pass.
-    logo = logo.crop(logo.getbbox())
+    # Reborn: Ignore near-invisible outer alpha specks when aligning the Zero Hour logo to the grid.
+    bounds = logo.getchannel('A').point(lambda alpha: 255 if alpha >= 8 else 0).getbbox() if align_visible else logo.getbbox()
+    logo = logo.crop(bounds)
     width = 400 * scale
     height = 140 * scale
     logo = logo.resize((width, height), Image.Resampling.LANCZOS)
@@ -135,22 +137,32 @@ def replace_logo(target, logo_path):
             else:
                 assert data[offset:offset+16] == original[offset:offset+16]
     target.write_bytes(data)
-    print(f'{target.name}: Generals HD logo installed in {changed} blocks; all other DDS blocks unchanged')
+    print(f'{target.name}: HD logo installed in {changed} blocks; all other DDS blocks unchanged')
 
 #-------------------------------------------------------------------------------------------------
-# Reborn: Build separate Generals atlases while leaving both Zero Hour source atlases untouched.
+# Reborn: Prepare the selected theme only; keep the other theme and all non-logo DDS blocks unchanged.
 #-------------------------------------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--repo', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--logo', type=Path)
+    parser.add_argument('--theme', choices=('generals', 'zerohour'), default='generals')
     args = parser.parse_args()
     for size in ('1080', '2160'):
         source = args.repo / f'build/shared/Art/Textures/RebornCBP_{size}_quitwindowpro_1024_2048.dds'
-        target = args.output / f'RebornCBP_{size}_QuitWindowProGen_1024_2048.dds'
-        recolor(source, target)
-        replace_logo(target, args.logo or args.repo / 'scripts/assets/GeneralsHDLogoSteam.png')
+        if args.theme == 'generals':
+            target = args.output / f'RebornCBP_{size}_QuitWindowProGen_1024_2048.dds'
+            recolor(source, target)
+            default_logo = 'GeneralsHDLogoSteam.png'
+        else:
+            # Reborn: Retain the Zero Hour blue grid/frame and its existing mappedimage texture filename.
+            target = args.output / source.name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            target.write_bytes(source.read_bytes())
+            default_logo = 'ZeroHourHDLogoSteam.png'
+        replace_logo(target, args.logo or args.repo / 'scripts/assets' / default_logo,
+                     align_visible=args.theme == 'zerohour')
 
 if __name__ == '__main__':
     main()
