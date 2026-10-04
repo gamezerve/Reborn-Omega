@@ -54,6 +54,50 @@ def clear_baked_mod(source,target,scale):
     print(target.name,'PASS: baked mod text removed; every other DDS block preserved')
 
 #-------------------------------------------------------------------------------------------------
+# Reborn: Preserve the full combined-source transform, excluding only its separate bottom mod wordmark.
+#-------------------------------------------------------------------------------------------------
+def prepare_game_logo(source, target, height):
+    logo = Image.open(source).convert('RGBA')
+    # Reborn: Preserve the user's cleaned source alpha and the exact previous theme-specific bounds.
+    bounds = logo.getchannel('A').point(lambda a:255 if a>=8 else 0).getbbox() if 'ZeroHour' in source.name else logo.getbbox()
+    logo = logo.crop(bounds)
+    logo = logo.resize((2044, 716), Image.Resampling.LANCZOS)
+    logo = logo.crop((0, 0, 2044, height))
+    texture = Image.new('RGBA', (2048, 1024), (0, 0, 0, 0))
+    texture.paste(logo, (2, 2))
+    texture.save(target, format='TGA', compression=None)
+    assert target.read_bytes()[2] == 2 and target.read_bytes()[16] == 32
+
+#-------------------------------------------------------------------------------------------------
+# Reborn: Restore continuous row-matched grid only inside the former baked game-logo rectangles.
+#-------------------------------------------------------------------------------------------------
+def clear_baked_game(source, target, scale):
+    original = source.read_bytes()
+    atlas = Image.open(source).convert('RGBA')
+    boxes = [tuple(v * scale for v in box) for box in ((36,36,444,152),(36,520,444,636))]
+    for left, top, right, bottom in boxes:
+        for y in range(top, bottom):
+            template_y = 200*scale + y % (4*scale)
+            base = atlas.getpixel((20*scale, y))
+            template_base = atlas.getpixel((20*scale, template_y))
+            for x in range(left, right):
+                pattern = atlas.getpixel((40*scale+x%(40*scale), template_y))
+                rgb = tuple(min(255,base[c]+max(0,pattern[c]-template_base[c])) for c in range(3))
+                atlas.putpixel((x,y), (*rgb,base[3]))
+    stream = BytesIO()
+    atlas.save(stream,format='DDS',pixel_format='DXT5')
+    encoded = stream.getvalue()
+    assert len(encoded) == len(original)
+    data = bytearray(original)
+    for row in range(atlas.height//4):
+        for col in range(atlas.width//4):
+            x,y = col*4,row*4
+            offset = 128+(row*(atlas.width//4)+col)*16
+            if any(x<r and x+4>l and y<b and y+4>t for l,t,r,b in boxes):
+                data[offset:offset+16] = encoded[offset:offset+16]
+    target.write_bytes(data)
+
+#-------------------------------------------------------------------------------------------------
 # Reborn: Stage both themes and art sets without modifying source logos or installed files.
 #-------------------------------------------------------------------------------------------------
 def main():

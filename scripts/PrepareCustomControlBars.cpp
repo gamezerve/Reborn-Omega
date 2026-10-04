@@ -510,6 +510,19 @@ void layoutCustomQuitModLogo(CustomWndNode& root)
     logo->fields["STATUS"] = "STATUS = ENABLED+IMAGE";
     logo->fields["ENABLEDDRAWDATA"] = std::regex_replace(logo->fields["ENABLEDDRAWDATA"],
         std::regex("IMAGE: [A-Za-z0-9_.-]+"), "IMAGE: RebornOmegaLogoHD_ControlBarPro", std::regex_constants::format_first_only);
+    // Reborn: Keep the game logo out of compressed atlases, without changing the independent mod wordmark.
+    CustomWndNode gameLogo = *logo;
+    gameLogo.children.clear();
+    gameLogo.fields["NAME"] = std::regex_replace(logo->fields["NAME"], std::regex("WinLoad|WinLogo"), "WinGameLogo");
+    gameLogo.fields["SCREENRECT"] = "SCREENRECT = UPPERLEFT: " + std::to_string(r[0] + 40 * scale) + " " +
+        std::to_string(r[1] + 40 * scale) + ", BOTTOMRIGHT: " + std::to_string(r[0] + 440 * scale) + " " +
+        std::to_string(r[1] + top * scale) + ", CREATIONRESOLUTION: " + std::to_string(r[4]) + " " + std::to_string(r[5]);
+    const std::string gameImage = generals ? "GeneralsHDLogo_ControlBarPro" : "ZeroHourHDLogo_ControlBarPro";
+    gameLogo.fields["ENABLEDDRAWDATA"] = std::regex_replace(gameLogo.fields["ENABLEDDRAWDATA"],
+        std::regex("RebornOmegaLogoHD_ControlBarPro"), gameImage);
+    CustomWndNode* existingGameLogo = findNode(root, "WinGameLogo");
+    if (existingGameLogo) *existingGameLogo = gameLogo;
+    else parent->children.push_back(gameLogo);
 }
 
 //-------------------------------------------------------------------------------------------------

@@ -6,7 +6,7 @@ from io import BytesIO
 from PIL import Image, ImageFilter
 from collections import deque
 # Reborn: Keep the mod wordmark outside every compressed background atlas during regeneration.
-from PrepareCustomControlBarModLogo import clear_baked_mod, prepare_logo
+from PrepareCustomControlBarModLogo import clear_baked_mod, prepare_logo, clear_baked_game, prepare_game_logo
 
 #-------------------------------------------------------------------------------------------------
 # Reborn: Convert only blue RGB565 endpoints to Generals gold, retaining their original brightness.
@@ -185,6 +185,11 @@ def main():
                      align_visible=args.theme == 'zerohour')
         # Reborn: Only the game logo stays baked; the shared TGA supplies the independent mod wordmark.
         clear_baked_mod(target, target, 1 if size == '1080' else 2)
+        # Reborn: Neither game logo nor mod wordmark is baked into a compressed menu atlas.
+        clear_baked_game(target, target, 1 if size == '1080' else 2)
+    theme = 'Generals' if args.theme == 'generals' else 'ZeroHour'
+    prepare_game_logo(args.logo or args.repo / 'scripts/assets' / f'{theme}HDLogoSteam.png',
+                      args.output / f'{theme}HDLogo_ControlBarPro.tga', 577 if args.theme == 'generals' else 572)
     prepare_logo(args.repo / 'build/shared/Art/Textures/RebornOmegaLogo_HD.png',
                  args.output / 'RebornOmegaLogoHD_ControlBarPro.tga')
 
