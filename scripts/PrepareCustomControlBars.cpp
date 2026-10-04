@@ -490,9 +490,55 @@ void layoutCustomShortcutButtons(CustomWndNode& root)
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Theme custom quit/popup buttons and frames or only the diplomacy Back button, retaining package geometry and artwork. */
+//-------------------------------------------------------------------------------------------------
+void applyCustomGeneralsMenuTheme(CustomWndNode& root, const CustomWndNode& themedTemplate)
+{
+    CustomWndNode reference = themedTemplate;
+    // Reborn: Diplomacy keeps every other package control unchanged; only its Back button follows the layout theme.
+    const bool diplomacy = root.fields.at("NAME").find("Diplomacy") != std::string::npos;
+    const auto apply = [&](auto&& self, CustomWndNode& node) -> void
+    {
+        CustomWndNode* themed = findNode(reference, nodeName(node));
+        if (themed && node.fields["WINDOWTYPE"] == "WINDOWTYPE = PUSHBUTTON" &&
+            (!diplomacy || nodeName(node) == "ButtonHide"))
+        {
+            if (diplomacy)
+            {
+                // Reborn: Keep ControlBarPro's gray Back button and white text; recolor only hover/pressed fills.
+                std::string& hilite = node.fields["HILITEDRAWDATA"];
+                hilite = std::regex_replace(hilite, std::regex("18 80 129"), "129 97 0");
+                hilite = std::regex_replace(hilite, std::regex("29 130 207"), "255 191 0");
+            }
+            else for (const char* field : {"ENABLEDDRAWDATA", "DISABLEDDRAWDATA", "HILITEDRAWDATA", "TEXTCOLOR"})
+            {
+                auto value = themed->fields.find(field);
+                if (value != themed->fields.end()) node.fields[field] = value->second;
+            }
+        }
+        else if (themed && (nodeName(node) == "QuitMenuParent" || nodeName(node) == "MessageBoxParent"))
+        {
+            // Reborn: The image-backed menu keeps its original artwork; the renderer overlays only this frame color.
+            for (const char* field : {"ENABLEDDRAWDATA", "DISABLEDDRAWDATA", "HILITEDRAWDATA"})
+            {
+                std::smatch color;
+                const auto value = themed->fields.find(field);
+                if (value != themed->fields.end() &&
+                    std::regex_search(value->second, color, std::regex("BORDERCOLOR: [0-9]+ [0-9]+ [0-9]+ [0-9]+")))
+                    node.fields[field] = std::regex_replace(node.fields[field],
+                        std::regex("BORDERCOLOR: [0-9]+ [0-9]+ [0-9]+ [0-9]+"), color.str(),
+                        std::regex_constants::format_first_only);
+            }
+        }
+        for (auto& child : node.children) self(self, child);
+    };
+    apply(apply, root);
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Reborn: Convert a package screen while keeping all current mod-specific children and layout callbacks. */
 //-------------------------------------------------------------------------------------------------
-std::string mergeWindow(const std::string& customText, const std::string& originalText)
+std::string mergeWindow(const std::string& customText, const std::string& originalText, bool generalsMenu = false)
 {
     const std::vector<std::string> customTokens = statements(customText), originalTokens = statements(originalText);
     size_t cp = 0, op = 0;
@@ -506,7 +552,9 @@ std::string mergeWindow(const std::string& customText, const std::string& origin
         CustomWndNode custom = readNode(customTokens, cp);
         if (op >= originalTokens.size()) throw std::runtime_error("Incompatible WND roots");
         CustomWndNode original = readNode(originalTokens, op);
+        const CustomWndNode themedTemplate = original; // Reborn: Preserve the Generals template before applying package visuals.
         skinNode(original, custom);
+        if (generalsMenu) applyCustomGeneralsMenuTheme(original, themedTemplate);
         // Reborn: Leave the gaps between Control Bar Pro panels available to world input.
         layoutCustomInputBlockers(original, custom);
         // Reborn: Retail's five 3x3 slots must not override the mod's seven 4x4 slots.
@@ -668,7 +716,10 @@ int main(int argc,char** argv)
     for(int gen=0;gen<2;++gen) {
      std::string base=e.first; if(gen) base.insert(base.size()-4,"gen");
      original=readText(shared+base); if(original.empty()) continue;
-     const std::string converted=mergeWindow(custom,original);
+     // Reborn: Theme quit menus and their confirmations; diplomacy changes only its Back button.
+     const bool generalsMenu = gen && (e.first == "window/menus/quitmenu.wnd" || e.first == "window/menus/quitnosave.wnd" ||
+         e.first == "window/menus/quitmessagebox.wnd" || e.first == "window/menus/messagebox.wnd" || e.first == "window/diplomacy.wnd");
+     const std::string converted=mergeWindow(custom,original,generalsMenu);
      if(namesOf(original)!=namesOf(converted)) throw std::runtime_error("Changed control identities "+base);
      std::string target=base.substr(7); target.insert(target.size()-4,"Custom");
      output(shared+"Window/CustomControlBar/"+res[ri]+"/"+target,converted);

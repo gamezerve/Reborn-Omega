@@ -48,6 +48,9 @@
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "GameClient/Gadget.h"
+#include "Common/CustomControlBar.h" // Reborn: Keep custom Generals quit frames independent from normal menus.
+#include "Common/NameKeyGenerator.h"
+#include "GameClient/CampaignManager.h"
 #include "GameClient/GameWindowGlobal.h"
 #include "W3DDevice/GameClient/W3DGameWindow.h"
 #include "W3DDevice/GameClient/W3DGameWindowManager.h"
@@ -329,6 +332,14 @@ void W3DGameWinDefaultDraw( GameWindow *window, WinInstanceData *instData )
 			end.x = start.x + size.x;
 			end.y = start.y + size.y;
 			TheWindowManager->winDrawImage( image, start.x, start.y, end.x, end.y );
+            // Reborn: Retain the image-backed custom quit artwork and cover only its blue outline in Generals mode.
+            if (UseCustomControlBar() && UseGeneralsLayout() && TheNameKeyGenerator &&
+                (instData->m_id == TheNameKeyGenerator->nameToKey("QuitMenuGen.wnd:QuitMenuParent") ||
+                 instData->m_id == TheNameKeyGenerator->nameToKey("QuitNoSave.wnd:QuitMenuParent")))
+            {
+                const Color frame = window->winGetEnabledBorderColor(0);
+                TheWindowManager->winOpenRect(frame, borderWidth, start.x, start.y, end.x, end.y);
+            }
 
 		}
 
