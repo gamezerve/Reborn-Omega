@@ -84,7 +84,7 @@
 #include <io.h>
 #include "Win32Device/GameClient/Win32Mouse.h"
 #include "Win32Device/Common/Win32LocalFileSystem.h"
-#include "Win32Device/Common/Win32BIGFileSystem.h"
+#include "Common/BIGFileSystem.h"
 
 
 static SubsystemInterfaceList TheSubsystemListRecord;
@@ -358,7 +358,7 @@ BOOL CWorldBuilderApp::InitInstance()
 	TheFileSystem = new FileSystem;
 
 	initSubsystem(TheLocalFileSystem, (LocalFileSystem*)new Win32LocalFileSystem);
-	initSubsystem(TheArchiveFileSystem, (ArchiveFileSystem*)new Win32BIGFileSystem);
+	initSubsystem(TheArchiveFileSystem, (ArchiveFileSystem*)new BIGFileSystem);
 
 	TheArchiveFileSystem->loadMods();
 
