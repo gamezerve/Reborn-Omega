@@ -1038,6 +1038,7 @@ W3DModelDrawModuleData::W3DModelDrawModuleData() :
 	const Real SETTLE_RATE = 0.065f;
 
 	m_projectileBoneFeedbackEnabledSlots = 0;
+	m_weaponMuzzleFlashDisabledSlots = 0;
 	m_initialRecoil = INITIAL_RECOIL_RATE;
 	m_maxRecoil = MAX_SHIFT;
 	m_recoilDamping = RECOIL_DAMPING;
@@ -1219,6 +1220,7 @@ void W3DModelDrawModuleData::buildFieldParse(MultiIniFieldParse& p)
 		{ "ParticlesAttachedToAnimatedBones",	INI::parseBool, nullptr, offsetof(W3DModelDrawModuleData, m_particlesAttachedToAnimatedBones) },
 		{ "MinLODRequired",		INI::parseStaticGameLODLevel,	nullptr,	offsetof(W3DModelDrawModuleData, m_minLODRequired) },
 		{ "ProjectileBoneFeedbackEnabledSlots", INI::parseBitString32, TheWeaponSlotTypeNames, offsetof(W3DModelDrawModuleData, m_projectileBoneFeedbackEnabledSlots) },
+    { "WeaponMuzzleFlashDisabledSlots", INI::parseBitString32, TheWeaponSlotTypeNames, offsetof(W3DModelDrawModuleData, m_weaponMuzzleFlashDisabledSlots) },
 		{ "DefaultConditionState", W3DModelDrawModuleData::parseConditionState, (void*)PARSE_DEFAULT, 0 },
 		{ "ConditionState", W3DModelDrawModuleData::parseConditionState, (void*)PARSE_NORMAL, 0 },
 		{ "OverrideConditionState", parseOverrideConditionState, nullptr, 0 },
@@ -2893,6 +2895,9 @@ void W3DModelDraw::handleClientRecoil()
 		if (!m_curState->m_hasRecoilBonesOrMuzzleFlashes[wslot])
 			continue;
 
+		const Bool muzzleFlashDisabled =
+			(d->m_weaponMuzzleFlashDisabledSlots & (1 << wslot)) != 0;
+
 		const ModelConditionInfo::WeaponBarrelInfoVec& barrels = m_curState->m_weaponBarrelInfoVec[wslot];
 		WeaponRecoilInfoVec& recoils = m_weaponRecoilInfoVec[wslot];
 		Int count = barrels.size();
@@ -2903,7 +2908,9 @@ void W3DModelDraw::handleClientRecoil()
 		{
 			if (barrels[i].m_muzzleFlashBone != 0)
 			{
-				Bool hidden = recoils[i].m_state != WeaponRecoilInfo::RECOIL_START;
+				Bool hidden =
+					muzzleFlashDisabled ||
+					recoils[i].m_state != WeaponRecoilInfo::RECOIL_START;
 				//DEBUG_LOG(("adjust muzzleflash %08lx for Draw %08lx state %s to %d at frame %d",subObjToHide,this,m_curState->m_description.str(),hidden?1:0,TheGameLogic->getFrame()));
 				barrels[i].setMuzzleFlashHidden(m_renderObject, hidden);
 			}
@@ -4180,6 +4187,9 @@ Bool W3DModelDraw::handleWeaponFireFX(WeaponSlotType wslot, Int specificBarrelTo
 
 	const ModelConditionInfo::WeaponBarrelInfo& info = wbvec[specificBarrelToUse];
 
+	const Bool muzzleFlashDisabled =
+		(getW3DModelDrawModuleData()->m_weaponMuzzleFlashDisabledSlots & (1 << wslot)) != 0;
+
 	if (fxl)
 	{
 		if (info.m_fxBone && m_renderObject)
@@ -4219,7 +4229,7 @@ Bool W3DModelDraw::handleWeaponFireFX(WeaponSlotType wslot, Int specificBarrelTo
 		}
 	}
 
-	if (info.m_recoilBone || info.m_muzzleFlashBone)
+	if (info.m_recoilBone || (info.m_muzzleFlashBone && !muzzleFlashDisabled))
 	{
 		//DEBUG_LOG(("START muzzleflash %08lx for Draw %08lx state %s at frame %d",info.m_muzzleFlashBone,this,m_curState->m_description.str(),TheGameLogic->getFrame()));
 
@@ -4234,7 +4244,7 @@ Bool W3DModelDraw::handleWeaponFireFX(WeaponSlotType wslot, Int specificBarrelTo
 		WeaponRecoilInfo& recoil = m_weaponRecoilInfoVec[wslot][specificBarrelToUse];
 		recoil.m_state = WeaponRecoilInfo::RECOIL_START;
 		recoil.m_recoilRate = getW3DModelDrawModuleData()->m_initialRecoil;
-		if (info.m_muzzleFlashBone != 0)
+		if (info.m_muzzleFlashBone != 0 && !muzzleFlashDisabled)
 			info.setMuzzleFlashHidden(m_renderObject, false);
 	}
 

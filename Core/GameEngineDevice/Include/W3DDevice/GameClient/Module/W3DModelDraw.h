@@ -294,6 +294,7 @@ public:
 	mutable Vector3										m_attachToDrawableBoneOffset;
 #endif
 	Int																m_defaultState;
+	Int                               m_weaponMuzzleFlashDisabledSlots;
 	Int																m_projectileBoneFeedbackEnabledSlots;	///< Hide and show the launch bone geometries according to clip status adjustments.
 	Real															m_initialRecoil;
 	Real															m_maxRecoil;
