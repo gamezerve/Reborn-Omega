@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "GameClient/Color.h"
 #include "GameLogic/Module/JetAIUpdate.h"
 
 class Drawable;
@@ -63,6 +64,9 @@ private:
 	{
 		Drawable* ropeDrawable;
 		DrawableID ropeID;
+		Real ropeSpeed;
+		Real ropeLen;
+		Real ropeLenMax;
 		UnsignedInt nextDropTime;
 		ObjectID rappellerID;
 	};
@@ -83,6 +87,7 @@ private:
 	DropState m_dropState;
 	Coord3D m_dropPosition;
 	ObjectID m_dropTargetID;
+	mutable ObjectID m_requestedExitID;
 	Real m_oldPreferredHeight;
 	Bool m_preferredHeightAdjusted;
 	RopeInfo m_ropes[2];
