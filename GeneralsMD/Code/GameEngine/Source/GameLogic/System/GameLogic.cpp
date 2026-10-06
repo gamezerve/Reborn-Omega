@@ -1978,6 +1978,15 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			// Get the team information
 			DEBUG_ASSERTCRASH(pMapObj->getProperties()->getType(TheKey_originalOwner) == Dict::DICT_ASCIISTRING, ("unit %s has no original owner specified (obsolete map file)",pMapObj->getName().str()));
 			AsciiString originalOwner = pMapObj->getProperties()->getAsciiString(TheKey_originalOwner);
+
+			if (originalOwner.compareNoCase("teamNeutrals") == 0)
+			{
+				DEBUG_LOG((
+					"Reborn: INVALID teamNeutrals owner on map object '%s'\n, use Validation–>Fix Teams in WorldBuilder for the map",
+					pMapObj->getName().str()
+					));
+			}
+
 			Team *team = ThePlayerList->validateTeam(originalOwner);
 
 			// create new object in the world

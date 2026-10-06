@@ -238,6 +238,8 @@ protected:
 	afx_msg void OnShowNames();
 	afx_msg void OnUpdateShowNames(CCmdUI* pCmdUI);
 	afx_msg void OnValidationFixTeams();
+	// Reborn: Repair all invalid object teams with one selection.
+	afx_msg void OnValidationFixTeamsBulk();
 	afx_msg void OnShowTerrain();
 	afx_msg void OnUpdateShowTerrain(CCmdUI* pCmdUI);
 	afx_msg int OnCreate(LPCREATESTRUCT lpcs);

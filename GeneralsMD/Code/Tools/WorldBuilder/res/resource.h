@@ -768,14 +768,22 @@
 #define IDS_PLAYERLESS_TEAM_REMOVED     61484
 #define IDS_NEED_TO_FIX_TEAMS           61485
 
+// Reborn: Bulk team validation dialogs, controls and command.
+#define ID_VALIDATION_FIXTEAMS_BULK     33347
+#define IDD_FIX_TEAMS_BULK_REVIEW       242
+#define IDD_FIX_TEAMS_BULK_SELECT       243
+#define IDC_FIX_TEAMS_BULK_LIST         1354
+#define IDC_FIX_TEAMS_BULK_TEAM         1355
+#define IDC_FIX_TEAMS_BULK_SUMMARY      1356
+
 // Next default values for new objects
 //
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        242
-#define _APS_NEXT_COMMAND_VALUE         33347
-#define _APS_NEXT_CONTROL_VALUE         1354
+#define _APS_NEXT_RESOURCE_VALUE        244
+#define _APS_NEXT_COMMAND_VALUE         33348
+#define _APS_NEXT_CONTROL_VALUE         1357
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

@@ -330,6 +330,8 @@ BEGIN
         MENUITEM "Generate Report",             ID_VALIDATION_GENERATEMAPREPORT
         , GRAYED
         MENUITEM "Fix Teams",                   ID_VALIDATION_FIXTEAMS
+        // Reborn: Assign one valid team to all invalid objects.
+        MENUITEM "Fix Teams (Bulk)",            ID_VALIDATION_FIXTEAMS_BULK
     END
     POPUP "&Help"
     BEGIN
@@ -1618,6 +1620,30 @@ BEGIN
                     CBS_SORT | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Bi-Directional",IDC_WAYPOINT_BIDIRECTIONAL,"Button",
                     BS_AUTOCHECKBOX | WS_TABSTOP,11,172,132,9
+END
+
+// Reborn: Review the full alphabetic invalid-object list before making any map changes.
+IDD_FIX_TEAMS_BULK_REVIEW DIALOG DISCARDABLE 0, 0, 410, 245
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Fix Teams (Bulk) - Invalid Objects"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT "",IDC_FIX_TEAMS_BULK_SUMMARY,7,7,396,25
+    LISTBOX IDC_FIX_TEAMS_BULK_LIST,7,35,396,180,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON "Next >",IDOK,295,224,50,14
+    PUSHBUTTON "Cancel",IDCANCEL,353,224,50,14
+END
+
+// Reborn: Choose an actual team, not a player/default-team approximation, for all reviewed objects.
+IDD_FIX_TEAMS_BULK_SELECT DIALOG DISCARDABLE 0, 0, 290, 85
+STYLE DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Fix Teams (Bulk) - Select Team"
+FONT 8, "MS Sans Serif"
+BEGIN
+    LTEXT "Assign all reviewed objects to this team:",-1,7,7,276,12
+    COMBOBOX IDC_FIX_TEAMS_BULK_TEAM,7,24,276,160,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON "Assign",IDOK,175,64,50,14
+    PUSHBUTTON "Cancel",IDCANCEL,233,64,50,14
 END
 
 IDD_CHANGE_TEAM_OWNER DIALOG DISCARDABLE  0, 0, 209, 131

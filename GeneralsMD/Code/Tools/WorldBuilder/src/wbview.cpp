@@ -35,6 +35,8 @@
 #include "playerlistdlg.h"
 #include "teamsdialog.h"
 #include "LayersList.h"
+// Reborn: Alphabetize the bulk invalid-object review.
+#include <algorithm>
 
 Bool WbView::m_snapToGrid = false;
 
@@ -136,6 +138,8 @@ BEGIN_MESSAGE_MAP(WbView, CView)
 	ON_COMMAND(ID_VIEW_LABELS, OnShowNames)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_LABELS, OnUpdateShowNames)
 	ON_COMMAND(ID_VALIDATION_FIXTEAMS, OnValidationFixTeams)
+	// Reborn: Keep bulk repair separate from the existing per-object workflow.
+	ON_COMMAND(ID_VALIDATION_FIXTEAMS_BULK, OnValidationFixTeamsBulk)
 	ON_COMMAND(ID_VIEW_SHOW_TERRAIN, OnShowTerrain)
 	ON_UPDATE_COMMAND_UI(ID_VIEW_SHOW_TERRAIN, OnUpdateShowTerrain)
 	ON_WM_CREATE()
@@ -929,6 +933,129 @@ void WbView::OnShowNames()
 void WbView::OnUpdateShowNames(CCmdUI* pCmdUI)
 {
 	pCmdUI->SetCheck(m_showNames ? 1 : 0);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Review invalid objects first, then select one valid existing team for the entire batch. */
+//-------------------------------------------------------------------------------------------------
+class RebornBulkTeamDialog : public CDialog
+{
+public:
+	//-------------------------------------------------------------------------------------------------
+	/** Reborn: Reuse a two-stage modal workflow without changing the original per-object repair dialog. */
+	//-------------------------------------------------------------------------------------------------
+	RebornBulkTeamDialog(UINT resource, const std::vector<CString>& rows, CWnd* parent) :
+		CDialog(resource, parent), m_review(resource == IDD_FIX_TEAMS_BULK_REVIEW), m_rows(rows) {}
+	AsciiString m_selectedTeam;
+
+protected:
+	Bool m_review;
+	const std::vector<CString>& m_rows;
+
+	//-------------------------------------------------------------------------------------------------
+	/** Reborn: Populate the alphabetic review or the valid team choices, retaining actual team names. */
+	//-------------------------------------------------------------------------------------------------
+	virtual BOOL OnInitDialog() override
+	{
+		CDialog::OnInitDialog();
+		if (m_review)
+		{
+			CString summary;
+			summary.Format("%u objects have missing or invalid teams. Review the list, then choose one team for all objects.", (unsigned)m_rows.size());
+			GetDlgItem(IDC_FIX_TEAMS_BULK_SUMMARY)->SetWindowText(summary);
+			CListBox* list = (CListBox*)GetDlgItem(IDC_FIX_TEAMS_BULK_LIST);
+			CDC* dc = list->GetDC();
+			CFont* oldFont = dc->SelectObject(list->GetFont());
+			int extent = 0;
+			for (const CString& row : m_rows)
+			{
+				list->AddString(row);
+				extent = max(extent, (int)dc->GetTextExtent(row).cx);
+			}
+			dc->SelectObject(oldFont);
+			list->ReleaseDC(dc);
+			list->SetHorizontalExtent(extent + 16);
+		}
+		else
+		{
+			CComboBox* combo = (CComboBox*)GetDlgItem(IDC_FIX_TEAMS_BULK_TEAM);
+			for (Int i = 0; i < TheSidesList->getNumTeams(); ++i)
+			{
+				Dict* team = TheSidesList->getTeamInfo(i)->getDict();
+				AsciiString name = team->getAsciiString(TheKey_teamName);
+				if (!name.isEmpty() && TheSidesList->findSideInfo(team->getAsciiString(TheKey_teamOwner)) &&
+					combo->FindStringExact(-1, name.str()) == CB_ERR)
+					combo->AddString(name.str());
+			}
+			combo->SetCurSel(0);
+			GetDlgItem(IDOK)->EnableWindow(combo->GetCount() > 0);
+		}
+		return TRUE;
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	/** Reborn: Accept only a valid existing team; cancelling either stage never changes map data. */
+	//-------------------------------------------------------------------------------------------------
+	virtual void OnOK() override
+	{
+		if (!m_review)
+		{
+			CComboBox* combo = (CComboBox*)GetDlgItem(IDC_FIX_TEAMS_BULK_TEAM);
+			if (combo->GetCurSel() == CB_ERR) return;
+			CString name;
+			combo->GetLBText(combo->GetCurSel(), name);
+			m_selectedTeam.set((LPCTSTR)name);
+			TeamsInfo* team = TheSidesList->findTeamInfo(m_selectedTeam);
+			if (!team || !TheSidesList->findSideInfo(team->getDict()->getAsciiString(TheKey_teamOwner))) return;
+		}
+		CDialog::OnOK();
+	}
+};
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Assign every object with an invalid team to one selected team in a single undoable operation. */
+//-------------------------------------------------------------------------------------------------
+void WbView::OnValidationFixTeamsBulk()
+{
+	std::vector<Dict*> invalidObjects;
+	std::vector<CString> rows;
+	for (MapObject* object = MapObject::getFirstMapObject(); object; object = object->getNext())
+	{
+		// Reborn: Use the same object exclusions and owner validity rules as the original Fix Teams command.
+		if (object->isScorch() || object->isWaypoint() || object->isLight() ||
+			object->getFlag(FLAG_ROAD_FLAGS) || object->getFlag(FLAG_BRIDGE_FLAGS) || !object->getThingTemplate()) continue;
+		Bool exists;
+		AsciiString teamName = object->getProperties()->getAsciiString(TheKey_originalOwner, &exists);
+		TeamsInfo* team = exists ? TheSidesList->findTeamInfo(teamName) : nullptr;
+		if (team && TheSidesList->findSideInfo(team->getDict()->getAsciiString(TheKey_teamOwner))) continue;
+		invalidObjects.push_back(object->getProperties());
+		CString row;
+		AsciiString name = object->getName();
+		row.Format("%s | name: %s | invalid team: %s", object->getThingTemplate()->getName().str(),
+			name.isEmpty() ? "(unnamed)" : name.str(), teamName.isEmpty() ? "(missing)" : teamName.str());
+		rows.push_back(row);
+	}
+	if (invalidObjects.empty())
+	{
+		AfxMessageBox(IDS_NO_PROBLEMS, MB_OK);
+		return;
+	}
+	// Reborn: Alphabetize by object template, then instance name, without altering map object order.
+	std::sort(rows.begin(), rows.end(), [](const CString& a, const CString& b) { return a.CompareNoCase(b) < 0; });
+	RebornBulkTeamDialog review(IDD_FIX_TEAMS_BULK_REVIEW, rows, this);
+	if (review.DoModal() != IDOK) return;
+	RebornBulkTeamDialog choice(IDD_FIX_TEAMS_BULK_SELECT, rows, this);
+	if (choice.DoModal() != IDOK) return;
+	// Reborn: Preserve all other object properties and register the entire batch as one Undo/Redo step.
+	Dict replacement;
+	replacement.setAsciiString(TheKey_originalOwner, choice.m_selectedTeam);
+	DictItemUndoable* undo = new DictItemUndoable(invalidObjects.data(), replacement, TheKey_originalOwner,
+		(Int)invalidObjects.size(), WbDoc(), true);
+	WbDoc()->AddAndDoUndoable(undo);
+	REF_PTR_RELEASE(undo);
+	CString result;
+	result.Format("Assigned %u objects to team '%s'.", (unsigned)invalidObjects.size(), choice.m_selectedTeam.str());
+	AfxMessageBox(result, MB_OK | MB_ICONINFORMATION);
 }
 
 void WbView::OnValidationFixTeams()
