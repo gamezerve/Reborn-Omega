@@ -57,13 +57,19 @@ protected:
 	virtual UpdateSleepTime update() override;
 	virtual void privateCombatDrop(Object* target, const Coord3D& pos, CommandSourceType cmdSource) override;
 	virtual void privateEvacuate(Int exposeStealthUnits, CommandSourceType cmdSource) override;
+    // Reborn: Even an instant/all evacuation request must wait for safe ground unloading.
+    virtual void privateEvacuateInstantly(Int exposeStealthUnits, CommandSourceType cmdSource) override;
 
 private:
 	enum DropState CPP_11(: Int)
 	{
 		DROP_NONE = 0,
 		DROP_MOVING_TO_TARGET,
-		DROP_RAPPELLING
+		DROP_RAPPELLING,
+        // Reborn: Normal passenger exits use landing, unloading and takeoff, never ropes.
+        DROP_LANDING,
+        DROP_LANDED,
+        DROP_TAKING_OFF
 	};
 
 	struct RopeInfo
@@ -77,6 +83,10 @@ private:
 		ObjectID rappellerID;
 	};
 
+    // Reborn: Ground unloading and model-independent Combat Drop attachment points.
+    void beginTransportLanding();
+    void beginTransportTakeoff();
+    Int getRappelPoints(Coord3D* ropePos, Matrix3D* dropMtx) const;
 	void beginRappel(Object* target, const Coord3D& pos, Bool dropAllPassengers);
 	Bool createRopes();
 	Bool dropNextPassenger(Int ropeIndex);
@@ -93,5 +103,8 @@ private:
 	Int m_ropeCount;
 	Real m_oldPreferredHeight;
 	Bool m_preferredHeightAdjusted;
+    // Reborn: Preserve a player command until a ground-unloading helicopter has taken off.
+    Bool m_hasTransportPendingCommand;
+    AICommandParmsStorage m_transportPendingCommand;
 	RopeInfo m_ropes[2];
 };

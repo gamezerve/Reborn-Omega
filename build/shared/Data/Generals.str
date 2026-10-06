@@ -28299,7 +28299,7 @@ SCIENCE:TankInfo
 END
 
 GUI:Info_Tank
-"Red Guard (Price++ Build_Time+) \n Tank Hunter (Price++ Build_Time++) \n Doublemaster (Price+ Health++ Build_Time+) \n Gattling Tank (Build Time+) \n Listening Outpost (Price+ Build_Time+) \n ECM (Price++) \n Emperor Overlord (Price+ GarrisonX) \n Super Overlord (Price++ Health++ Build_Time+++) \n Tank Drop \n All tanks start as veterans \n MiG (Price+) \n Helix (Price++) \n No Artillery Units"
+"Red Guard (Price++ Build_Time+) \n Tank Hunter (Price++ Build_Time++) \n Doublemaster (Price+ Health+ Build_Time+) \n Gattling Tank (Build Time+) \n Listening Outpost (Price+ Build_Time+) \n ECM (Price++) \n Emperor Overlord (Price+ GarrisonX) \n Super Overlord (Price++ Health+ Build_Time+++) \n Tank Drop \n All tanks start as veterans \n MiG (Price+) \n Helix (Price++) \n No Artillery Units"
 END
 
 SCIENCE:InfaInfo

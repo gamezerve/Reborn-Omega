@@ -277,6 +277,7 @@ static PoolSizeRec PoolSizes[] =
 	{ "SabotageSupplyCenterCrateCollide", 256, 128 },
 	{ "SabotageSupplyDropzoneCrateCollide", 256, 128 },
 	{ "JetAIUpdate", 64, 32 },
+	{ "ComancheTransportAIUpdate", 64, 32 },
 	{ "ChinookAIUpdate", 32, 32 },
 	{ "WanderAIUpdate", 32, 32 },
 	{ "WaveGuideUpdate", 16, 16 },

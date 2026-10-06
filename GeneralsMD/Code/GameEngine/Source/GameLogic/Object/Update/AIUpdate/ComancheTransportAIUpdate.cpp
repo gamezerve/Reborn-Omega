@@ -26,6 +26,8 @@
 #include "GameClient/Drawable.h"
 #include "GameClient/GameClient.h"
 #include "GameLogic/Locomotor.h"
+#include "GameLogic/AI.h" // Reborn: Use the Chinook landing-destination adjustment.
+#include "GameLogic/AIPathfind.h"
 #include "GameLogic/Module/ComancheTransportAIUpdate.h"
 #include "GameLogic/Module/ContainModule.h"
 #include "GameLogic/Module/PhysicsUpdate.h"
@@ -119,6 +121,7 @@ ComancheTransportAIUpdate::ComancheTransportAIUpdate(Thing* thing, const ModuleD
 	: JetAIUpdate(thing, moduleData)
 {
 	m_dropState = DROP_NONE;
+	m_hasTransportPendingCommand = FALSE; // Reborn: No command is queued at creation.
 	m_dropPosition.zero();
 	m_dropTargetID = INVALID_ID;
 	m_requestedExitID = INVALID_ID;
@@ -191,6 +194,86 @@ void ComancheTransportAIUpdate::cleanupFinishedRappellers()
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Combat Drop uses model rope bones when available, otherwise two local fuselage points. */
+//-------------------------------------------------------------------------------------------------
+Int ComancheTransportAIUpdate::getRappelPoints(Coord3D* ropePos, Matrix3D* dropMtx) const
+{
+    Drawable* draw = getObject()->getDrawable();
+    if (!draw)
+        return 0;
+    Int ropes = draw->getPristineBonePositions("RopeStart", 1, ropePos, nullptr, 2);
+    Int drops = draw->getPristineBonePositions("RopeEnd", 1, nullptr, dropMtx, 2);
+    if (ropes > 0 && drops > 0)
+        return min(ropes, drops);
+    // Reborn: Attach ropes near the narrow fuselage, not half the helicopter's full rotor/tail radius.
+    const Real offset = getObject()->getGeometryInfo().getMinorRadius() * 0.75f;
+    for (Int i = 0; i < 2; ++i)
+    {
+        ropePos[i].x = 0.0f;
+        ropePos[i].y = i == 0 ? -offset : offset;
+        ropePos[i].z = 0.0f;
+        dropMtx[i].Make_Identity();
+        dropMtx[i].Set_Translation(Vector3(ropePos[i].x, ropePos[i].y, ropePos[i].z));
+    }
+    return 2;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Normal unloading descends to a clear terrain/bridge position using Chinook's precise-Z logic. */
+//-------------------------------------------------------------------------------------------------
+void ComancheTransportAIUpdate::beginTransportLanding()
+{
+    if (m_dropState == DROP_LANDING || m_dropState == DROP_LANDED)
+        return;
+    // Reborn: Resetting a previous maneuver must not discard the passenger waiting for a normal exit.
+    const ObjectID requestedExit = m_requestedExitID;
+    cancelRappel();
+    m_requestedExitID = requestedExit;
+    AIUpdateInterface::privateIdle(CMD_FROM_AI);
+    friend_setAllowAirLoco(TRUE);
+    chooseLocomotorSet(LOCOMOTORSET_NORMAL);
+    Locomotor* loco = getCurLocomotor();
+    if (!loco)
+        return;
+    m_dropPosition = *getObject()->getPosition();
+    FindPositionOptions options;
+    options.maxRadius = getObject()->getGeometryInfo().getBoundingCircleRadius() * 100.0f;
+    Coord3D clearPosition;
+    if (!ThePartitionManager->findPositionAround(&m_dropPosition, &options, &clearPosition))
+        return;
+    m_dropPosition = clearPosition;
+    TheAI->pathfinder()->adjustToLandingDestination(getObject(), &m_dropPosition);
+    Coord3D layerPosition = m_dropPosition;
+    layerPosition.z = getObject()->getPosition()->z;
+    PathfindLayerEnum layer = TheTerrainLogic->getHighestLayerForDestination(&layerPosition, TRUE);
+    m_dropPosition.z = TheTerrainLogic->getLayerHeight(m_dropPosition.x, m_dropPosition.y, layer);
+    getObject()->setLayer(layer);
+    getObject()->getPhysics()->scrubVelocity2D(0);
+    loco->setUsePreciseZPos(TRUE);
+    loco->setUltraAccurate(TRUE);
+    m_dropState = DROP_LANDING;
+    setLocomotorGoalPositionExplicit(m_dropPosition);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Finish ground unloading by ascending before replaying any deferred player command. */
+//-------------------------------------------------------------------------------------------------
+void ComancheTransportAIUpdate::beginTransportTakeoff()
+{
+    friend_setAllowAirLoco(TRUE);
+    chooseLocomotorSet(LOCOMOTORSET_NORMAL);
+    Locomotor* loco = getCurLocomotor();
+    if (!loco)
+        return;
+    m_dropPosition = *getObject()->getPosition();
+    m_dropPosition.z = TheTerrainLogic->getLayerHeight(m_dropPosition.x, m_dropPosition.y, getObject()->getLayer()) + loco->getPreferredHeight();
+    loco->setUsePreciseZPos(TRUE);
+    loco->setUltraAccurate(TRUE);
+    m_dropState = DROP_TAKING_OFF;
+    setLocomotorGoalPositionExplicit(m_dropPosition);
+}
+
+//-------------------------------------------------------------------------------------------------
 Bool ComancheTransportAIUpdate::createRopes()
 {
 	Object* obj = getObject();
@@ -202,9 +285,8 @@ Bool ComancheTransportAIUpdate::createRopes()
 	Coord3D ropePos[MAX_ROPES];
 	Matrix3D dropMtx[MAX_ROPES];
 
-	const Int ropeCount = draw->getPristineBonePositions("RopeStart", 1, ropePos, nullptr, MAX_ROPES);
-	const Int dropCount = draw->getPristineBonePositions("RopeEnd", 1, nullptr, dropMtx, MAX_ROPES);
-	m_ropeCount = min(MAX_ROPES, min(ropeCount, dropCount));
+    // Reborn: Standard Comanche art need not contain Chinook-specific rope bones.
+    m_ropeCount = getRappelPoints(ropePos, dropMtx);
 
 	if (m_ropeCount <= 0)
 	{
@@ -269,7 +351,9 @@ Bool ComancheTransportAIUpdate::dropNextPassenger(Int ropeIndex)
 		return FALSE;
 
 	Matrix3D dropMtx[2];
-	const Int dropCount = draw->getPristineBonePositions("RopeEnd", 1, nullptr, dropMtx, 2);
+    // Reborn: Use the same real or fallback attachments as the rendered ropes.
+    Coord3D ropePos[2];
+    const Int dropCount = getRappelPoints(ropePos, dropMtx);
 	if (ropeIndex >= dropCount)
 		return FALSE;
 
@@ -295,6 +379,10 @@ Bool ComancheTransportAIUpdate::dropNextPassenger(Int ropeIndex)
 	m_ropes[ropeIndex].rappellerID = passenger->getID();
 	m_ropes[ropeIndex].nextDropTime =
 		TheGameLogic->getFrame() + GameLogicRandomValue(data->m_perRopeDelayMin, data->m_perRopeDelayMax);
+    // Reborn: Stagger passengers across both ropes instead of releasing a simultaneous pair.
+    for (Int i = 0; i < m_ropeCount; ++i)
+        m_ropes[i].nextDropTime = max(m_ropes[i].nextDropTime, m_ropes[ropeIndex].nextDropTime);
+
 
 	if (passenger->getID() == m_requestedExitID)
 		m_requestedExitID = INVALID_ID;
@@ -405,32 +493,40 @@ void ComancheTransportAIUpdate::cancelRappel()
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Ordinary passenger exit requests wait for touchdown; only Combat Drop bypasses the exit queue. */
+//-------------------------------------------------------------------------------------------------
 AIFreeToExitType ComancheTransportAIUpdate::getAiFreeToExit(const Object* exiter) const
 {
-	if (exiter && getObject()->getContain() && getObject()->getContain()->isContained(exiter))
-	{
-		m_requestedExitID = exiter->getID();
-		return WAIT_TO_EXIT;
-	}
-
-	return FREE_TO_EXIT;
+    // Reborn: Track the request even at touchdown, before a failed door reservation can clear the exit queue.
+    if (exiter && getObject()->getContain() && getObject()->getContain()->isContained(exiter))
+        m_requestedExitID = exiter->getID();
+    return m_dropState == DROP_LANDED ? FREE_TO_EXIT : WAIT_TO_EXIT;
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Evacuate orders all passengers out through the normal landing-and-unloading path. */
+//-------------------------------------------------------------------------------------------------
 void ComancheTransportAIUpdate::privateEvacuate(Int exposeStealthUnits, CommandSourceType cmdSource)
 {
-	if (getObject()->isDisabledByType(DISABLED_SUBDUED))
-		return;
+    if (getObject()->isDisabledByType(DISABLED_SUBDUED))
+        return;
+    ContainModuleInterface* contain = getObject()->getContain();
+    if (!contain || contain->getContainCount() == 0)
+        return;
+    if (exposeStealthUnits)
+        contain->markAllPassengersDetected();
+    // Reborn: A new evacuation replaces any player order queued by an earlier transport maneuver.
+    m_hasTransportPendingCommand = FALSE;
+    beginTransportLanding();
+    contain->orderAllPassengersToExit(cmdSource, FALSE);
+}
 
-	ContainModuleInterface* contain = getObject()->getContain();
-	if (!contain || contain->getContainCount() == 0)
-		return;
-
-	if (exposeStealthUnits)
-		contain->markAllPassengersDetected();
-
-	m_requestedExitID = INVALID_ID;
-	beginRappel(nullptr, *getObject()->getPosition(), TRUE);
+//-------------------------------------------------------------------------------------------------
+/** Reborn: All evacuation variants unload on the ground rather than dumping or rappelling passengers. */
+//-------------------------------------------------------------------------------------------------
+void ComancheTransportAIUpdate::privateEvacuateInstantly(Int exposeStealthUnits, CommandSourceType cmdSource)
+{
+    privateEvacuate(exposeStealthUnits, cmdSource);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -484,31 +580,138 @@ void ComancheTransportAIUpdate::privateCombatDrop(Object* target, const Coord3D&
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Keep automatic targeting out of transport maneuvers and defer player orders until takeoff. */
+//-------------------------------------------------------------------------------------------------
 void ComancheTransportAIUpdate::aiDoCommand(const AICommandParms* parms)
 {
-	if (m_dropState != DROP_NONE && parms->m_cmdSource != CMD_FROM_AI)
-	{
-		cancelRappel();
-	}
-
-	JetAIUpdate::aiDoCommand(parms);
+    if (m_dropState != DROP_NONE && parms->m_cmdSource == CMD_FROM_AI)
+        return;
+    if (m_dropState == DROP_LANDING || m_dropState == DROP_LANDED || m_dropState == DROP_TAKING_OFF)
+    {
+        if (parms->m_cmd == AICMD_EVACUATE || parms->m_cmd == AICMD_EVACUATE_INSTANTLY)
+            privateEvacuate(parms->m_intValue, parms->m_cmdSource);
+        else
+        {
+            // Reborn: Log only an interrupted pending exit, so an unexpected replacement order can be identified.
+            if (m_requestedExitID != INVALID_ID)
+                DEBUG_LOG(("ComancheTransportAIUpdate: pending ground exit cancelled: transport=%u passenger=%u command=%d source=%d state=%d frame=%u\n",
+                    getObject()->getID(), m_requestedExitID, parms->m_cmd, parms->m_cmdSource, m_dropState, TheGameLogic->getFrame()));
+            // Reborn: An explicit replacement order cancels the pending single-passenger exit.
+            m_requestedExitID = INVALID_ID;
+            m_transportPendingCommand.store(*parms);
+            m_hasTransportPendingCommand = TRUE;
+            if (m_dropState != DROP_TAKING_OFF)
+                beginTransportTakeoff();
+        }
+        return;
+    }
+    if (m_dropState != DROP_NONE)
+        cancelRappel();
+    JetAIUpdate::aiDoCommand(parms);
 }
 
 //-------------------------------------------------------------------------------------------------
 UpdateSleepTime ComancheTransportAIUpdate::update()
 {
+    // Reborn: Keep the grounded height goal active before movement runs; idle air locomotion otherwise seeks cruising height.
+    if (m_dropState == DROP_LANDING || m_dropState == DROP_LANDED || m_dropState == DROP_TAKING_OFF)
+    {
+        if (Locomotor* loco = getCurLocomotor())
+        {
+            loco->setUsePreciseZPos(TRUE);
+            loco->setUltraAccurate(TRUE);
+        }
+        setLocomotorGoalPositionExplicit(m_dropPosition);
+    }
 	UpdateSleepTime result = JetAIUpdate::update();
+
+    // Reborn: A dying helicopter must yield to its death behavior instead of completing transport movement.
+    if (getObject()->isEffectivelyDead())
+    {
+        Locomotor* loco = getCurLocomotor();
+        if (loco)
+        {
+            loco->setUsePreciseZPos(FALSE);
+            loco->setUltraAccurate(FALSE);
+        }
+        cancelRappel();
+        m_hasTransportPendingCommand = FALSE;
+        return result;
+    }
 
 	ContainModuleInterface* contain = getObject()->getContain();
 	if (m_dropState == DROP_NONE &&
-		m_requestedExitID != INVALID_ID &&
 		contain &&
-		contain->hasObjectsWantingToEnterOrExit())
+        (m_requestedExitID != INVALID_ID || contain->hasObjectsWantingToEnterOrExit()))
 	{
-		beginRappel(nullptr, *getObject()->getPosition(), FALSE);
+        // Reborn: Ordinary boarding/exit queues trigger a ground landing, never individual rappels.
+        beginTransportLanding();
 	}
 
-	if (m_dropState == DROP_MOVING_TO_TARGET)
+    // Reborn: Use precise height goals while landing/taking off; the container owns the exit queue.
+    if (m_dropState == DROP_LANDING || m_dropState == DROP_TAKING_OFF)
+    {
+        setLocomotorGoalPositionExplicit(m_dropPosition);
+        const Coord3D* position = getObject()->getPosition();
+        Real dx = position->x - m_dropPosition.x;
+        Real dy = position->y - m_dropPosition.y;
+        Real dz = position->z - m_dropPosition.z;
+        if (dx * dx + dy * dy + dz * dz <= 9.0f)
+        {
+            if (m_dropState == DROP_LANDING)
+            {
+                m_dropState = DROP_LANDED;
+                // Reborn: Retain the exit request and touchdown height; a missing goal lets the air locomotor climb again.
+                setLocomotorGoalPositionExplicit(m_dropPosition);
+                getObject()->getPhysics()->scrubVelocity2D(0);
+            }
+            else
+            {
+                m_dropState = DROP_NONE;
+                getObject()->setLayer(LAYER_GROUND);
+                Locomotor* loco = getCurLocomotor();
+                if (loco)
+                {
+                    loco->setUsePreciseZPos(FALSE);
+                    loco->setUltraAccurate(FALSE);
+                }
+                if (m_hasTransportPendingCommand)
+                {
+                    AICommandParms command(AICMD_IDLE, CMD_FROM_AI);
+                    m_transportPendingCommand.reconstitute(command);
+                    m_hasTransportPendingCommand = FALSE;
+                    JetAIUpdate::aiDoCommand(&command);
+                }
+            }
+        }
+    }
+    else if (m_dropState == DROP_LANDED)
+    {
+        setLocomotorGoalPositionExplicit(m_dropPosition);
+        // Reborn: Complete the selected passenger's delayed exit after touchdown, never evacuate other riders.
+        if (contain && m_requestedExitID != INVALID_ID)
+        {
+            Object* passenger = TheGameLogic->findObjectByID(m_requestedExitID);
+            ExitInterface* exits = contain->getContainExitInterface();
+            if (!passenger || !contain->isContained(passenger))
+                m_requestedExitID = INVALID_ID;
+            else if (exits && !exits->isExitBusy())
+            {
+                ExitDoorType door = exits->reserveDoorForExit(passenger->getTemplate(), passenger);
+                if (door != DOOR_NONE_AVAILABLE)
+                {
+                    exits->exitObjectViaDoor(passenger, door);
+                    // Reborn: Only a confirmed removal completes the request; otherwise retry while grounded.
+                    if (!contain->isContained(passenger))
+                        m_requestedExitID = INVALID_ID;
+                }
+            }
+        }
+        // Reborn: An empty AI exit queue alone does not mean the requested passenger has left the helicopter.
+        if (!contain || (m_requestedExitID == INVALID_ID && !contain->hasObjectsWantingToEnterOrExit()))
+            beginTransportTakeoff();
+    }
+    else if (m_dropState == DROP_MOVING_TO_TARGET)
 	{
 		const Coord3D* pos = getObject()->getPosition();
 		const Real dx = pos->x - m_dropPosition.x;
@@ -578,7 +781,8 @@ UpdateSleepTime ComancheTransportAIUpdate::update()
 			finishRappel();
 	}
 
-	return result;
+    // Reborn: The extra transport state machine needs every frame even when the underlying Jet AI is idle.
+    return m_dropState != DROP_NONE ? UPDATE_SLEEP_NONE : result;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -590,7 +794,7 @@ void ComancheTransportAIUpdate::crc(Xfer* xfer)
 //-------------------------------------------------------------------------------------------------
 void ComancheTransportAIUpdate::xfer(Xfer* xfer)
 {
-	XferVersion currentVersion = 1;
+	XferVersion currentVersion = 2; // Reborn: Include deferred ground-transport orders.
 	XferVersion version = currentVersion;
 	xfer->xferVersion(&version, currentVersion);
 
@@ -608,6 +812,14 @@ void ComancheTransportAIUpdate::xfer(Xfer* xfer)
 	xfer->xferInt(&m_ropeCount);
 	xfer->xferReal(&m_oldPreferredHeight);
 	xfer->xferBool(&m_preferredHeightAdjusted);
+    // Reborn: Version-one saves contain only the original rappel states.
+    if (version >= 2)
+    {
+        xfer->xferBool(&m_hasTransportPendingCommand);
+        if (m_hasTransportPendingCommand)
+            m_transportPendingCommand.doXfer(xfer);
+    }
+
 
 	for (Int i = 0; i < 2; ++i)
 	{

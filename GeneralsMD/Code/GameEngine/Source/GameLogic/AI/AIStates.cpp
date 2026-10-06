@@ -6721,6 +6721,9 @@ StateReturnType AIExitState::onEnter()
 		{
 			contain->onObjectWantsToEnterOrExit(obj, WANTS_TO_EXIT);
 			m_entryToClear = goal->getID();
+            // Reborn: Register delayed transport exits immediately, before passenger updates or attack orders can clear the queue.
+            if (AIUpdateInterface* transportAI = goal->getAI())
+                transportAI->getAiFreeToExit(obj);
 		}
 		return STATE_CONTINUE;
 	}
