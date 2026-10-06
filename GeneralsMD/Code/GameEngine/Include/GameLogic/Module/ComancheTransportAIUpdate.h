@@ -71,11 +71,6 @@ private:
 		ObjectID rappellerID;
 	};
 
-	const ComancheTransportAIUpdateModuleData* getComancheTransportAIUpdateModuleData() const
-	{
-		return static_cast<const ComancheTransportAIUpdateModuleData*>(getModuleData());
-	}
-
 	void beginRappel(Object* target, const Coord3D& pos, Bool dropAllPassengers);
 	Bool createRopes();
 	Bool dropNextPassenger(Int ropeIndex);
