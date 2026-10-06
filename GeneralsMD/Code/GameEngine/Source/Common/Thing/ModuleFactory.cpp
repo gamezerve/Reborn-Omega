@@ -109,6 +109,7 @@
 #include "GameLogic/Module/BaseRegenerateUpdate.h"
 #include "GameLogic/Module/BoneFXUpdate.h"
 #include "GameLogic/Module/ChinookAIUpdate.h"
+#include "GameLogic/Module/ComancheTransportAIUpdate.h"
 #include "GameLogic/Module/DefaultProductionExitUpdate.h"
 #include "GameLogic/Module/DeletionUpdate.h"
 #include "GameLogic/Module/SmartBombTargetHomingUpdate.h"
@@ -415,6 +416,7 @@ void ModuleFactory::init()
 	addModule( TensileFormationUpdate );
 	addModule( HeightDieUpdate );
 	addModule( ChinookAIUpdate );
+	addModule( ComancheTransportAIUpdate );
 	addModule( JetAIUpdate );
 	addModule( AIUpdateInterface );
 	addModule( SupplyTruckAIUpdate );
