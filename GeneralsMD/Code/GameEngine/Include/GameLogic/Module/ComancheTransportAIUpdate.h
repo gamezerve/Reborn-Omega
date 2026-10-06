@@ -52,6 +52,8 @@ public:
 	ComancheTransportAIUpdate(Thing* thing, const ModuleData* moduleData);
 	virtual AIFreeToExitType getAiFreeToExit(const Object* exiter) const override;
 	virtual void aiDoCommand(const AICommandParms* parms) override;
+    // Reborn: Keep ground unloading on the taxi locomotor even when JetAI refreshes its locomotor selection.
+    virtual Bool chooseLocomotorSet(LocomotorSetType wst) override;
 
 protected:
 	virtual UpdateSleepTime update() override;

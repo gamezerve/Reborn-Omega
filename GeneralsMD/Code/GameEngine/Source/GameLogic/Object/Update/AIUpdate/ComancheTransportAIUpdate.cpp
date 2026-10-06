@@ -260,6 +260,8 @@ void ComancheTransportAIUpdate::beginTransportLanding()
 //-------------------------------------------------------------------------------------------------
 void ComancheTransportAIUpdate::beginTransportTakeoff()
 {
+    // Reborn: Leave the landed-only taxi override before restoring the flight locomotor and its cruising height.
+    m_dropState = DROP_TAKING_OFF;
     friend_setAllowAirLoco(TRUE);
     chooseLocomotorSet(LOCOMOTORSET_NORMAL);
     Locomotor* loco = getCurLocomotor();
@@ -611,10 +613,25 @@ void ComancheTransportAIUpdate::aiDoCommand(const AICommandParms* parms)
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Ground unloading uses taxi movement without marking the helicopter as parked at its producer. */
+//-------------------------------------------------------------------------------------------------
+Bool ComancheTransportAIUpdate::chooseLocomotorSet(LocomotorSetType wst)
+{
+    if (m_dropState == DROP_LANDED)
+        return AIUpdateInterface::chooseLocomotorSet(LOCOMOTORSET_TAXIING);
+    return JetAIUpdate::chooseLocomotorSet(wst);
+}
+
+//-------------------------------------------------------------------------------------------------
 UpdateSleepTime ComancheTransportAIUpdate::update()
 {
-    // Reborn: Keep the grounded height goal active before movement runs; idle air locomotion otherwise seeks cruising height.
-    if (m_dropState == DROP_LANDING || m_dropState == DROP_LANDED || m_dropState == DROP_TAKING_OFF)
+    // Reborn: Only descent/ascent uses precise flight height; landed passengers wait on terrain-following taxi movement.
+    if (m_dropState == DROP_LANDED)
+    {
+        chooseLocomotorSet(LOCOMOTORSET_TAXIING);
+        AIUpdateInterface::setLocomotorGoalNone();
+    }
+    else if (m_dropState == DROP_LANDING || m_dropState == DROP_TAKING_OFF)
     {
         if (Locomotor* loco = getCurLocomotor())
         {
@@ -640,7 +657,9 @@ UpdateSleepTime ComancheTransportAIUpdate::update()
     }
 
 	ContainModuleInterface* contain = getObject()->getContain();
+    // Reborn: Like Chinook, finish the current movement before landing again for a waiting boarding/exit queue.
 	if (m_dropState == DROP_NONE &&
+        AIUpdateInterface::isIdle() &&
 		contain &&
         (m_requestedExitID != INVALID_ID || contain->hasObjectsWantingToEnterOrExit()))
 	{
@@ -660,10 +679,17 @@ UpdateSleepTime ComancheTransportAIUpdate::update()
         {
             if (m_dropState == DROP_LANDING)
             {
+                // Reborn: Stop flight lift at touchdown instead of fighting the physics ground clamp on sloped terrain.
+                if (Locomotor* loco = getCurLocomotor())
+                {
+                    loco->setUsePreciseZPos(FALSE);
+                    loco->setUltraAccurate(FALSE);
+                }
                 m_dropState = DROP_LANDED;
-                // Reborn: Retain the exit request and touchdown height; a missing goal lets the air locomotor climb again.
-                setLocomotorGoalPositionExplicit(m_dropPosition);
+                chooseLocomotorSet(LOCOMOTORSET_TAXIING);
+                AIUpdateInterface::setLocomotorGoalNone();
                 getObject()->getPhysics()->scrubVelocity2D(0);
+                getObject()->getPhysics()->scrubVelocityZ(0);
             }
             else
             {
@@ -687,7 +713,9 @@ UpdateSleepTime ComancheTransportAIUpdate::update()
     }
     else if (m_dropState == DROP_LANDED)
     {
-        setLocomotorGoalPositionExplicit(m_dropPosition);
+        // Reborn: Remain stationary while physics settles onto the local terrain; never reapply the saved airborne Z goal.
+        AIUpdateInterface::setLocomotorGoalNone();
+        getObject()->getPhysics()->scrubVelocity2D(0);
         // Reborn: Complete the selected passenger's delayed exit after touchdown, never evacuate other riders.
         if (contain && m_requestedExitID != INVALID_ID)
         {
