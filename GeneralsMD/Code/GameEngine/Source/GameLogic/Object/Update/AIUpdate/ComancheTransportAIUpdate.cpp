@@ -475,9 +475,7 @@ void ComancheTransportAIUpdate::privateCombatDrop(Object* target, const Coord3D&
 //-------------------------------------------------------------------------------------------------
 void ComancheTransportAIUpdate::aiDoCommand(const AICommandParms* parms)
 {
-	if (m_dropState != DROP_NONE &&
-		parms->m_cmd != AICMD_COMBATDROP &&
-		parms->m_cmd != AICMD_EVACUATE)
+	if (m_dropState != DROP_NONE && parms->m_cmdSource != CMD_FROM_AI)
 	{
 		cancelRappel();
 	}
