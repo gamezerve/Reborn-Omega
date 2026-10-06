@@ -8,6 +8,12 @@
 ** (at your option) any later version.
 */
 
+///////////////////////////////////////////////////////////////////////////////////////
+// FILE: ComancheTransportAIUpdate.cpp ////////////////////////////////////////////////
+// Author: Gamezerve, October 2026
+// Description: Implements JetAIUpdate-based transport and two-rope rappel behavior for Comanche aircraft.
+///////////////////////////////////////////////////////////////////////////////////////
+
 #include "PreRTS.h"
 
 #include "Common/ActionManager.h"
@@ -131,6 +137,11 @@ ComancheTransportAIUpdate::ComancheTransportAIUpdate(Thing* thing, const ModuleD
 		m_ropes[i].nextDropTime = 0;
 		m_ropes[i].rappellerID = INVALID_ID;
 	}
+}
+
+//-------------------------------------------------------------------------------------------------
+ComancheTransportAIUpdate::~ComancheTransportAIUpdate()
+{
 }
 
 //-------------------------------------------------------------------------------------------------
