@@ -411,6 +411,52 @@ static void Apply_Render_State(RenderStateStruct& render_state)
 
 // ----------------------------------------------------------------------------
 
+#if defined(DEBUG_LOGGING) && defined(_MSC_VER)
+// Reborn: Capture scalar values before memcpy so the crash log does not dereference damaged render state.
+struct RebornSortingCopySnapshot
+{
+	unsigned nodes, polygons, vertices, requested, allocated, node, copied;
+	unsigned sourceCapacity, vbaOffset, baseOffset, minVertex, count;
+	const void* sourceBuffer;
+	const void* source;
+	const void* destination;
+};
+
+// ----------------------------------------------------------------------------
+/** Reborn: Write the exact failing copy and propagate the original exception to the crash handler. */
+// ----------------------------------------------------------------------------
+static int RebornLogSortingCopyException(EXCEPTION_POINTERS* exception, const RebornSortingCopySnapshot& s)
+{
+	const EXCEPTION_RECORD* record = exception->ExceptionRecord;
+	DEBUG_LOG(("Reborn: SortingPool COPY_CRASH code=0x%08lX instruction=%p access=%lu address=%p",
+		record->ExceptionCode, record->ExceptionAddress,
+		record->NumberParameters >= 2 ? (unsigned long)record->ExceptionInformation[0] : 0UL,
+		record->NumberParameters >= 2 ? (void*)record->ExceptionInformation[1] : nullptr));
+	DEBUG_LOG(("Reborn: SortingPool COPY_CRASH nodes=%u polygons=%u vertices=%u requested=%u allocated=%u node=%u copied=%u sourceCapacity=%u vba=%u base=%u min=%u count=%u bytes=%u sourceBuffer=%p source=%p destination=%p",
+		s.nodes, s.polygons, s.vertices, s.requested, s.allocated, s.node, s.copied,
+		s.sourceCapacity, s.vbaOffset, s.baseOffset, s.minVertex, s.count,
+		(unsigned)(sizeof(VertexFormatXYZNDUV2) * s.count), s.sourceBuffer, s.source, s.destination));
+	return EXCEPTION_CONTINUE_SEARCH;
+}
+
+// ----------------------------------------------------------------------------
+/** Reborn: Keep memcpy diagnostics outside Flush_Sorting_Pool's C++ lock scope for MSVC SEH compatibility. */
+// ----------------------------------------------------------------------------
+static void RebornCopySortingVertices(void* destination, const void* source, unsigned count, const RebornSortingCopySnapshot& snapshot)
+{
+	__try
+	{
+		memcpy(destination, source, sizeof(VertexFormatXYZNDUV2) * count);
+	}
+	__except (RebornLogSortingCopyException(GetExceptionInformation(), snapshot))
+	{
+		// Reborn: Unreachable; the diagnostic filter never consumes the exception.
+	}
+}
+#endif
+
+// ----------------------------------------------------------------------------
+
 void SortingRendererClass::Flush_Sorting_Pool()
 {
 	if (!overlapping_node_count) return;
@@ -447,7 +493,19 @@ void SortingRendererClass::Flush_Sorting_Pool()
 			// If you have a crash in here and "dest_verts" points to illegal memory area,
 			// it is because D3D is in illegal state, and the only known cure is rebooting.
 			// This illegal state is usually caused by Quake3-engine powered games such as MOHAA.
+#if defined(DEBUG_LOGGING) && defined(_MSC_VER)
+			// Reborn: Retain exact copy details; emit diagnostics only if this memcpy raises an exception.
+			RebornSortingCopySnapshot snapshot = {
+				overlapping_node_count, overlapping_polygon_count, overlapping_vertex_count, vertexAllocCount,
+				(unsigned)dyn_vb_access.Get_Vertex_Count(), node_id, vertex_array_offset,
+				(unsigned)vertex_buffer->Get_Vertex_Count(), (unsigned)state->sorting_state.vba_offset,
+				(unsigned)state->sorting_state.index_base_offset, (unsigned)state->min_vertex_index,
+				(unsigned)state->vertex_count, vertex_buffer->VertexBuffer, src_verts, dest_verts
+			};
+			RebornCopySortingVertices(dest_verts, src_verts, state->vertex_count, snapshot);
+#else
 			memcpy(dest_verts, src_verts, sizeof(VertexFormatXYZNDUV2)*state->vertex_count);
+#endif
 			dest_verts += state->vertex_count;
 
 			D3DXMATRIX d3d_mtx=(D3DXMATRIX&)state->sorting_state.world*(D3DXMATRIX&)state->sorting_state.view;

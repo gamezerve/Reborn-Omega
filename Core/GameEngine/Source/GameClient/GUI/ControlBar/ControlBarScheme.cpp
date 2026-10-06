@@ -942,7 +942,14 @@ ControlBarScheme *ControlBarSchemeManager::newControlBarScheme( AsciiString name
 	ControlBarScheme *cbScheme = 	findControlBarScheme(name);
 	if(cbScheme)
 	{
-		DEBUG_CRASH(("We're overwriting a previous control bar scheme %s",name.str()));
+		// Reborn: This is not a valid case as we now overwrite the previous scheme with the same name for ControlBarPro,
+		// so just log it instead of crashing.
+		//DEBUG_CRASH(("We're overwriting a previous control bar scheme %s",name.str()));
+		//cbScheme->reset();
+		//cbScheme->m_name.set( name );
+		//cbScheme->m_name.toLower();
+		//return cbScheme;
+		DEBUG_LOG(("We're overwriting a previous control bar scheme %s",name.str()));
 		cbScheme->reset();
 		cbScheme->m_name.set( name );
 		cbScheme->m_name.toLower();
