@@ -307,7 +307,7 @@ void ComancheTransportAIUpdate::beginRappel(Object* target, const Coord3D& pos, 
 
 	if (!createRopes())
 	{
-		m_dropState = DROP_NONE;
+		cancelRappel();
 		return;
 	}
 
