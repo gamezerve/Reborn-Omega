@@ -280,6 +280,7 @@ set(GAMEENGINE_SRC
     Include/GameLogic/Module/CaveContain.h
     Include/GameLogic/Module/CheckpointUpdate.h
     Include/GameLogic/Module/ChinookAIUpdate.h
+    Include/GameLogic/Module/ComancheTransportAIUpdate.h
     Include/GameLogic/Module/CleanupAreaPower.h
     Include/GameLogic/Module/CleanupHazardUpdate.h
     Include/GameLogic/Module/CollideModule.h
@@ -977,6 +978,7 @@ set(GAMEENGINE_SRC
     Source/GameLogic/Object/Update/AIUpdate.cpp
     Source/GameLogic/Object/Update/AIUpdate/AssaultTransportAIUpdate.cpp
     Source/GameLogic/Object/Update/AIUpdate/ChinookAIUpdate.cpp
+    Source/GameLogic/Object/Update/AIUpdate/ComancheTransportAIUpdate.cpp
     Source/GameLogic/Object/Update/AIUpdate/DeliverPayloadAIUpdate.cpp
     Source/GameLogic/Object/Update/AIUpdate/DeployStyleAIUpdate.cpp
     Source/GameLogic/Object/Update/AIUpdate/DozerAIUpdate.cpp
