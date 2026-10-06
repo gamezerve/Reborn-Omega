@@ -499,7 +499,8 @@ WINDOW
           TOOLTIPTEXT = "TOOLTIP:SendDelay";
           TOOLTIPDELAY = -1;
           TEXT = "GUI:SendDelay";
-          TEXTCOLOR = ENABLED:  255 190 1 255, ENABLEDBORDER:  0 0 0 255,
+          // Reborn: Match Advanced Settings toggle labels: orange normally, gold on hover.;
+          TEXTCOLOR = ENABLED:  221 73 24 255, ENABLEDBORDER:  0 0 0 255,
                       DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                       HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
           ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
@@ -798,7 +799,8 @@ WINDOW
           TOOLTIPTEXT = "TOOLTIP:AutomaticUpdateChecks";
           TOOLTIPDELAY = -1;
           TEXT = "GUI:AutomaticUpdateChecks";
-          TEXTCOLOR = ENABLED:  255 190 1 255, ENABLEDBORDER:  0 0 0 255,
+          // Reborn: Match Advanced Settings toggle labels: orange normally, gold on hover.;
+          TEXTCOLOR = ENABLED:  221 73 24 255, ENABLEDBORDER:  0 0 0 255,
                       DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                       HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
           ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
@@ -951,7 +953,8 @@ WINDOW
           TOOLTIPTEXT = "TOOLTIP:HideIP";
           TOOLTIPDELAY = -1;
           TEXT = "GUI:HideIP";
-          TEXTCOLOR = ENABLED:  255 190 1 255, ENABLEDBORDER:  0 0 0 255,
+          // Reborn: Match Advanced Settings toggle labels: orange normally, gold on hover.;
+          TEXTCOLOR = ENABLED:  221 73 24 255, ENABLEDBORDER:  0 0 0 255,
                       DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                       HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
           ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
@@ -2046,7 +2049,8 @@ WINDOW
           TOOLTIPTEXT = "TOOLTIP:CheckZoomFactor";
           TOOLTIPDELAY = -1;
           TEXT = "GUI:ZoomFactor";
-          TEXTCOLOR = ENABLED:  255 190 1 255, ENABLEDBORDER:  0 0 0 255,
+          // Reborn: Match Advanced Settings toggle labels: orange normally, gold on hover.;
+          TEXTCOLOR = ENABLED:  221 73 24 255, ENABLEDBORDER:  0 0 0 255,
                       DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                       HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
           ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
@@ -2149,7 +2153,8 @@ WINDOW
           TOOLTIPTEXT = "TOOLTIP:CheckMaxCameraHeight";
           TOOLTIPDELAY = -1;
           TEXT = "GUI:MaxCameraHeight";
-          TEXTCOLOR = ENABLED:  255 190 1 255, ENABLEDBORDER:  0 0 0 255,
+          // Reborn: Match Advanced Settings toggle labels: orange normally, gold on hover.;
+          TEXTCOLOR = ENABLED:  221 73 24 255, ENABLEDBORDER:  0 0 0 255,
                       DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                       HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
           ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
@@ -2924,7 +2929,8 @@ WINDOW
           TOOLTIPTEXT = "TOOLTIP:AlternateMouse";
           TOOLTIPDELAY = -1;
           TEXT = "GUI:AlternateMouse";
-          TEXTCOLOR = ENABLED:  255 190 1 255, ENABLEDBORDER:  0 0 0 255,
+          // Reborn: Match Advanced Settings toggle labels: orange normally, gold on hover.;
+          TEXTCOLOR = ENABLED:  221 73 24 255, ENABLEDBORDER:  0 0 0 255,
                       DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                       HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
           ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
@@ -3099,7 +3105,8 @@ WINDOW
           TOOLTIPTEXT = "TOOLTIP:DoubleClickAttackMove";
           TOOLTIPDELAY = -1;
           TEXT = "GUI:DoubleClickAttackMove";
-          TEXTCOLOR = ENABLED:  255 190 1 255, ENABLEDBORDER:  0 0 0 255,
+          // Reborn: Match Advanced Settings toggle labels: orange normally, gold on hover.;
+          TEXTCOLOR = ENABLED:  221 73 24 255, ENABLEDBORDER:  0 0 0 255,
                       DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                       HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
           ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
@@ -3148,7 +3155,8 @@ WINDOW
           TOOLTIPTEXT = "GUI:Retaliation";
           TOOLTIPDELAY = -1;
           TEXT = "GUI:RetaliationTitle";
-          TEXTCOLOR = ENABLED:  255 190 1 255, ENABLEDBORDER:  0 0 0 255,
+          // Reborn: Match Advanced Settings toggle labels: orange normally, gold on hover.;
+          TEXTCOLOR = ENABLED:  221 73 24 255, ENABLEDBORDER:  0 0 0 255,
                       DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                       HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
           ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
@@ -3199,7 +3207,8 @@ WINDOW
         TOOLTIPTEXT = "GUI:LanguageFilter";
         TOOLTIPDELAY = -1;
         TEXT = "GUI:LanguageFilter";
-        TEXTCOLOR = ENABLED:  226 76 76 255, ENABLEDBORDER:  0 0 0 255,
+        // Reborn: Match Advanced Settings toggle labels: orange normally, gold on hover.;
+        TEXTCOLOR = ENABLED:  221 73 24 255, ENABLEDBORDER:  0 0 0 255,
                     DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                     HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
         ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
@@ -3773,7 +3782,8 @@ WINDOW
         HEADERTEMPLATE = "[NONE]";
         TOOLTIPDELAY = -1;
         TEXT = "GUI:SaveCamera";
-          TEXTCOLOR = ENABLED:  255 190 1 255, ENABLEDBORDER:  0 0 0 255,
+          // Reborn: Match Advanced Settings toggle labels: orange normally, gold on hover.;
+          TEXTCOLOR = ENABLED:  221 73 24 255, ENABLEDBORDER:  0 0 0 255,
                       DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                       HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
           ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
@@ -3821,7 +3831,8 @@ WINDOW
         HEADERTEMPLATE = "[NONE]";
         TOOLTIPDELAY = -1;
         TEXT = "GUI:UseCamera";
-          TEXTCOLOR = ENABLED:  255 190 1 255, ENABLEDBORDER:  0 0 0 255,
+          // Reborn: Match Advanced Settings toggle labels: orange normally, gold on hover.;
+          TEXTCOLOR = ENABLED:  221 73 24 255, ENABLEDBORDER:  0 0 0 255,
                       DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                       HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
         ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
@@ -3918,7 +3929,8 @@ WINDOW
         HEADERTEMPLATE = "[NONE]";
         TOOLTIPDELAY = -1;
         TEXT = "GUI:DrawScrollAnchor";
-        TEXTCOLOR = ENABLED:  226 76 76 255, ENABLEDBORDER:  0 0 0 255,
+        // Reborn: Match Advanced Settings toggle labels: orange normally, gold on hover.;
+        TEXTCOLOR = ENABLED:  221 73 24 255, ENABLEDBORDER:  0 0 0 255,
                     DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                     HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
         ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
@@ -3966,7 +3978,8 @@ WINDOW
         HEADERTEMPLATE = "[NONE]";
         TOOLTIPDELAY = -1;
         TEXT = "GUI:MoveScrollAnchor";
-        TEXTCOLOR = ENABLED:  226 76 76 255, ENABLEDBORDER:  0 0 0 255,
+        // Reborn: Match Advanced Settings toggle labels: orange normally, gold on hover.;
+        TEXTCOLOR = ENABLED:  221 73 24 255, ENABLEDBORDER:  0 0 0 255,
                     DISABLED: 192 192 192 255, DISABLEDBORDER: 64 64 64 255,
                     HILITE:   255 190 0 255, HILITEBORDER:   0 0 0 255;
         ENABLEDDRAWDATA = IMAGE: NoImage, COLOR: 255 0 0 255, BORDERCOLOR: 255 128 128 255,
