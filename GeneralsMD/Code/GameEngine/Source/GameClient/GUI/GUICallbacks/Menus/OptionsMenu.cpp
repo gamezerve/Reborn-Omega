@@ -61,6 +61,7 @@
 #include "GameClient/GadgetStaticText.h"
 #include "GameClient/GadgetTextEntry.h"
 #include "GameClient/GadgetComboBox.h"
+#include "GameClient/GadgetListBox.h" // Reborn: Restore actual IP captions from untouched list entries.
 #include "GameClient/GadgetRadioButton.h"
 #include "GameClient/GadgetSlider.h"
 #include "GameClient/GameWindowTransitions.h"
@@ -354,6 +355,66 @@ static NameKeyType GetOptionsMenuChildKey(const char* childName)
 	return TheNameKeyGenerator->nameToKey(fullName);
 }
 
+
+// Reborn: Hide only the collapsed IP text; real list entries and numeric IP item data stay intact.
+static Bool s_optionsHideIP = TRUE;
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Refresh IP captions and the privacy checkbox without changing the selected addresses. */
+//-------------------------------------------------------------------------------------------------
+static void RefreshOptionsIPVisibility()
+{
+    GameWindow* check = TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("CheckHideIP"));
+    if (check)
+    {
+        // Reborn: SetChecked emits GBM_SELECTED; do not treat synchronization as another user click.
+        const Bool wasIgnoringSelection = ignoreSelected;
+        ignoreSelected = TRUE;
+        GadgetCheckBoxSetChecked(check, s_optionsHideIP);
+        ignoreSelected = wasIgnoringSelection;
+    }
+
+    GameWindow* combos[] = { comboBoxLANIP, comboBoxOnlineIP };
+    for (GameWindow* combo : combos)
+    {
+        if (!combo)
+            continue;
+        Int index = -1;
+        GadgetComboBoxGetSelectedPos(combo, &index);
+        if (index < 0)
+            continue;
+        UnicodeString caption;
+        if (s_optionsHideIP)
+            caption.translate("**.**.*.*");
+        else
+        {
+            Color color;
+            caption = GadgetListBoxGetTextAndColor(GadgetComboBoxGetListBox(combo), &color, index);
+        }
+        GadgetComboBoxSetText(combo, caption);
+    }
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Persist the privacy choice immediately, independently of Accept or Back. */
+//-------------------------------------------------------------------------------------------------
+static void SetOptionsHideIP(Bool hide)
+{
+    s_optionsHideIP = hide;
+    UserPreferences preferences;
+    LoadRebornOmegaPreferences(preferences);
+    preferences["HideIP"] = hide ? "yes" : "no";
+    WriteRebornOmegaPreferences(preferences);
+    RefreshOptionsIPVisibility();
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Reveal selected IP addresses only after the user explicitly confirms. */
+//-------------------------------------------------------------------------------------------------
+static void ConfirmOptionsIPReveal()
+{
+    SetOptionsHideIP(FALSE);
+}
 
 static void setDefaults()
 {
@@ -1868,6 +1929,15 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 	UserPreferences rebornPreferences;
 	LoadRebornOmegaPreferences(rebornPreferences);
 
+	// Reborn: Only an explicit valid "no" reveals IPs; missing or malformed values default to hidden.
+	s_optionsHideIP = rebornPreferences["HideIP"] != "no";
+	if (rebornPreferences["HideIP"] != "yes" && rebornPreferences["HideIP"] != "no")
+	{
+		rebornPreferences["HideIP"] = "yes";
+		WriteRebornOmegaPreferences(rebornPreferences);
+	}
+	RefreshOptionsIPVisibility();
+
 	Bool useCustomMaxCameraHeight =
 		(rebornPreferences["UseCustomMaxCameraHeight"] == "yes");
 
@@ -2925,6 +2995,13 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 				GameWindow *control = (GameWindow *)mData1;
 				Int controlID = control->winGetWindowId();
 
+				// Reborn: Selecting a different IP must not reveal it in the collapsed box.
+				if (controlID == comboBoxLANIPID || controlID == comboBoxOnlineIPID)
+				{
+					RefreshOptionsIPVisibility();
+					break;
+				}
+
 				if (controlID == comboBoxDetailID)
 				{
 					Int index;
@@ -2945,7 +3022,20 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 			GameWindow *control = (GameWindow *)mData1;
 			Int controlID = control->winGetWindowId();
 
-			if( controlID == buttonBack )
+			// Reborn: Keep IPs hidden while the themed confirmation is pending or declined.
+			if (controlID == GetOptionsMenuChildKey("CheckHideIP"))
+			{
+				if (GadgetCheckBoxIsChecked(control))
+					SetOptionsHideIP(TRUE);
+				else
+				{
+					RefreshOptionsIPVisibility();
+					SetPopupMessageUsesRebornLayout(s_optionsMenuUsesRebornLayout);
+					MessageBoxYesNo(TheGameText->fetch("GUI:ShowIPTitle"),
+						TheGameText->fetch("GUI:ConfirmShowIP"), ConfirmOptionsIPReveal, nullptr);
+				}
+			}
+			else if( controlID == buttonBack )
 			{
 				// go back one screen
 				//TheShell->pop();

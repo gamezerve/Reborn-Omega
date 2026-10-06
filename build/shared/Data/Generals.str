@@ -264,7 +264,7 @@ TOOLTIP:ShowCommunicatorButton
 END
 
 TOOLTIP:ShowShortcutsOnButtons
-"Show keyboard shortcut letters in the bottom-left corner of command bar buttons, including Cancel Construction. Buttons without a shortcut do not show a label."
+"Show keyboard shortcut letters in the bottom-left corner of command bar buttons. Buttons without a shortcut do not show a label."
 END
 
 TOOLTIP:CampaignGameplay60FPS
@@ -28352,4 +28352,21 @@ END
 
 OBJECT:Selector
 "Special Power Selector"
+END
+
+// Reborn: Options IP privacy and explicit reveal confirmation.
+GUI:HideIP
+"Hide IP"
+END
+
+TOOLTIP:HideIP
+"Hide selected Online and LAN IP addresses. Addresses remain visible in the drop-down lists."
+END
+
+GUI:ShowIPTitle
+"Show IP Addresses?"
+END
+
+GUI:ConfirmShowIP
+"Are you sure you want to make your Online and LAN IP addresses visible?"
 END
