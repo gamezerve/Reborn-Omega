@@ -874,6 +874,7 @@ protected:
 	// superweapon timer data
 	SuperweaponMap							m_superweapons[MAX_PLAYER_COUNT];
 	Coord2D											m_superweaponPosition;
+    Coord2D m_controlBarProSuperweaponPosition; // Reborn: Independent ControlBarPro timer starting coordinates.
 	Real												m_superweaponFlashDuration;
 
 	// superweapon timer font info

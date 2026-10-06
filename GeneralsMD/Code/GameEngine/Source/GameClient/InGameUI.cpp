@@ -948,6 +948,8 @@ const FieldParse InGameUI::s_fieldParseTable[] =
 
 	{ "MilitaryCaptionPosition",				INI::parseICoord2D,			nullptr,		offsetof( InGameUI, m_militaryCaptionPosition ) },
 
+    // Reborn: Allow ControlBarPro timer positioning independently of the original layout.
+    { "ControlBarProSuperweaponCountdownPosition", INI::parseCoord2D, nullptr, offsetof(InGameUI, m_controlBarProSuperweaponPosition) },
 	{ "SuperweaponCountdownPosition",					INI::parseCoord2D,			nullptr,		offsetof( InGameUI, m_superweaponPosition ) },
 	{ "SuperweaponCountdownFlashDuration",		INI::parseDurationReal,	nullptr,		offsetof( InGameUI, m_superweaponFlashDuration ) },
 	{ "SuperweaponCountdownFlashColor",				INI::parseColorInt,			nullptr,		offsetof( InGameUI, m_superweaponFlashColor ) },
@@ -1341,6 +1343,9 @@ InGameUI::InGameUI()
 
 	m_superweaponPosition.x = 0.7f;
 	m_superweaponPosition.y = 0.7f;
+    // Reborn: An omitted ControlBarPro position falls back to the original INI position.
+    m_controlBarProSuperweaponPosition.x = -1.0f;
+    m_controlBarProSuperweaponPosition.y = -1.0f;
 	m_superweaponFlashDuration = 1.0f;
 	m_superweaponNormalFont = "Arial";
 	m_superweaponNormalPointSize = 10;
@@ -4056,8 +4061,12 @@ void InGameUI::postDraw()
 	if (TheGameLogic->getFrame() > 0 )
 	{
 //	Int superweaponCount = 0;
-		Int startX = (Int)(m_superweaponPosition.x * TheDisplay->getWidth());
-		Int startY = (Int)(m_superweaponPosition.y * TheDisplay->getHeight());
+        // Reborn: Read the active layout each draw so toggling the control bar immediately changes timer positioning.
+        const Coord2D& timerPosition = (UseCustomControlBar() &&
+            m_controlBarProSuperweaponPosition.x >= 0.0f && m_controlBarProSuperweaponPosition.y >= 0.0f)
+            ? m_controlBarProSuperweaponPosition : m_superweaponPosition;
+        Int startX = (Int)(timerPosition.x * TheDisplay->getWidth());
+        Int startY = (Int)(timerPosition.y * TheDisplay->getHeight());
 
 
 
