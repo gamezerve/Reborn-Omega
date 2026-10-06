@@ -1199,6 +1199,9 @@ static void parseAsciiStringLC( INI* ini, void * /*instance*/, void *store, cons
 }
 
 //-------------------------------------------------------------------------------------------------
+static void parseOverrideConditionState(INI* ini, void* instance, void* store, const void* userData);
+
+//-------------------------------------------------------------------------------------------------
 void W3DModelDrawModuleData::buildFieldParse(MultiIniFieldParse& p)
 {
   ModuleData::buildFieldParse(p);
@@ -1218,6 +1221,7 @@ void W3DModelDrawModuleData::buildFieldParse(MultiIniFieldParse& p)
 		{ "ProjectileBoneFeedbackEnabledSlots", INI::parseBitString32, TheWeaponSlotTypeNames, offsetof(W3DModelDrawModuleData, m_projectileBoneFeedbackEnabledSlots) },
 		{ "DefaultConditionState", W3DModelDrawModuleData::parseConditionState, (void*)PARSE_DEFAULT, 0 },
 		{ "ConditionState", W3DModelDrawModuleData::parseConditionState, (void*)PARSE_NORMAL, 0 },
+		{ "OverrideConditionState", parseOverrideConditionState, nullptr, 0 },
 		{ "AliasConditionState", W3DModelDrawModuleData::parseConditionState, (void*)PARSE_ALIAS, 0 },
 		{ "TransitionState", W3DModelDrawModuleData::parseConditionState, (void*)PARSE_TRANSITION, 0 },
 		{ "TrackMarks", parseAsciiStringLC, nullptr, offsetof(W3DModelDrawModuleData, m_trackFile) },
@@ -1462,9 +1466,9 @@ static void rebuildPublicBones(ModelConditionInfo& info)
 }
 
 //-------------------------------------------------------------------------------------------------
-void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void * /*store*/, const void* userData)
+static const FieldParse* getModelConditionInfoFieldParse()
 {
-	static const FieldParse myFieldParse[] =
+	static const FieldParse fieldParse[] =
 	{
 		{ "Model",	parseAsciiStringLC, nullptr, offsetof(ModelConditionInfo, m_modelName) },
 		{ "Turret",	parseBoneNameKey, nullptr, offsetof(ModelConditionInfo, m_turrets[0].m_turretAngleNameKey) },
@@ -1493,6 +1497,88 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 		{ "ReplaceTexture", parseReplaceTexture, nullptr, 0 },
 		{ nullptr, nullptr, nullptr, 0 }
 	};
+
+	return fieldParse;
+}
+
+//-------------------------------------------------------------------------------------------------
+static void parseOverrideConditionState(INI* ini, void* instance, void* /*store*/, const void* /*userData*/)
+{
+	W3DModelDrawModuleData* self = static_cast<W3DModelDrawModuleData*>(instance);
+	const char* firstToken = ini->getNextToken();
+	ModelConditionInfo* target = nullptr;
+
+	if (stricmp(firstToken, "DEFAULT") == 0)
+	{
+		if (ini->getNextTokenOrNull() != nullptr ||
+			self->m_defaultState < 0 ||
+			self->m_defaultState >= static_cast<Int>(self->m_conditionStates.size()))
+		{
+			DEBUG_CRASH(("OverrideConditionState DEFAULT could not resolve a default state."));
+			throw INI_INVALID_DATA;
+		}
+
+		target = &self->m_conditionStates[self->m_defaultState];
+	}
+	else
+	{
+		ModelConditionFlags conditions;
+		conditions.clear();
+
+		const char* token = firstToken;
+		while (token != nullptr)
+		{
+			if (stricmp(token, "NONE") == 0)
+			{
+				if (conditions.any() || ini->getNextTokenOrNull() != nullptr)
+				{
+					DEBUG_CRASH(("OverrideConditionState NONE must be specified by itself."));
+					throw INI_INVALID_DATA;
+				}
+				break;
+			}
+
+			if (!conditions.setBitByName(token))
+			{
+				DEBUG_CRASH(("OverrideConditionState contains unknown condition '%s'.", token));
+				throw INI_INVALID_NAME_LIST;
+			}
+
+			token = ini->getNextTokenOrNull();
+		}
+
+		for (ModelConditionVector::iterator it = self->m_conditionStates.begin();
+			it != self->m_conditionStates.end() && target == nullptr;
+			++it)
+		{
+			for (Int i = 0; i < it->getConditionsYesCount(); ++i)
+			{
+				if (it->getNthConditionsYes(i) == conditions)
+				{
+					target = &(*it);
+					break;
+				}
+			}
+		}
+
+		if (target == nullptr)
+		{
+			DEBUG_CRASH(("OverrideConditionState could not find the requested inherited condition state."));
+			throw INI_INVALID_DATA;
+		}
+	}
+
+	ini->initFromINI(target, getModelConditionInfoFieldParse());
+	rebuildPublicBones(*target);
+	target->m_validStuff = 0;
+	self->m_conditionStateMap.clear();
+	self->m_validated = 0;
+}
+
+//-------------------------------------------------------------------------------------------------
+void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void * /*store*/, const void* userData)
+{
+
 
 	ModelConditionInfo info;
 	W3DModelDrawModuleData* self = (W3DModelDrawModuleData*)instance;
@@ -1780,7 +1866,7 @@ void W3DModelDrawModuleData::parseConditionState(INI* ini, void *instance, void 
 		break;
 	}
 
-	ini->initFromINI(&info, myFieldParse);
+	ini->initFromINI(&info, getModelConditionInfoFieldParse());
 	rebuildPublicBones(info);
 
 	if (info.m_modelName.isEmpty())
