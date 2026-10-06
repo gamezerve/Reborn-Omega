@@ -2649,6 +2649,9 @@ void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 			DestroyOptionsLayout();
 		if (isActiveGame)
 		{
+			// Reborn: Reapply the custom observer/replay bar in both theme directions, preserving its visibility and stage.
+			if (UseCustomControlBar() && TheControlBar && TheControlBar->isObserverControlBarOn())
+				TheControlBar->refreshCustomAppearance();
 			RefreshQuitMenuLayoutTheme(); // Reborn: Keep the already-open quit menu synchronized with the new concrete theme.
 			ResetDiplomacy(); // Reborn: Discard the cached in-game diplomacy layout so its next opening uses the selected theme.
 		}

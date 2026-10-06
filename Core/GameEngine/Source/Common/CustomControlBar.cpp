@@ -1,9 +1,40 @@
+/*
+**	Command & Conquer Generals Zero Hour(tm)
+**	Copyright 2025 Electronic Arts Inc.
+**
+**	This program is free software: you can redistribute it and/or modify
+**	it under the terms of the GNU General Public License as published by
+**	the Free Software Foundation, either version 3 of the License, or
+**	(at your option) any later version.
+**
+**	This program is distributed in the hope that it will be useful,
+**	but WITHOUT ANY WARRANTY; without even the implied warranty of
+**	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+**	GNU General Public License for more details.
+**
+**	You should have received a copy of the GNU General Public License
+**	along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+////////////////////////////////////////////////////////////////////////////////
+//																																						//
+//  (c) 2001-2003 Electronic Arts Inc.																				//
+//																																						//
+////////////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////////////////
+// FILE: CustomControlBar.cpp ////////////////////////////////////////////////////////////////////
+// Author: Gamezerve, October 2026
+// Description: Handles the Custom Control Bar UI and interactions.
+///////////////////////////////////////////////////////////////////////////////////////
+
 #include "PreRTS.h"
 #include "Common/CustomControlBar.h"
 #include "Common/FileSystem.h"
 #include "Common/File.h"
 #include "Common/NameKeyGenerator.h"
 #include "GameClient/Display.h"
+#include "GameClient/CampaignManager.h" // Reborn: Observer Back-button colors follow the selected layout theme.
 #include "GameClient/ControlBar.h" // Reborn: Observer skins follow observer mode, not the watched faction.
 #include "GameClient/GameWindow.h"
 #include "GameClient/GameWindowManager.h"
@@ -193,6 +224,15 @@ void ApplyCustomControlBarAppearance()
             Color color[6];
             for (Int i = 0; i < 6; ++i) color[i] = readAppearanceColor(input);
             if (!input) continue;
+            // Reborn: Theme only the custom observer/replay Back caption; keep its compact font and all other labels.
+            if (UseCustomControlBar() && TheControlBar && TheControlBar->isObserverControlBarOn() &&
+                UseGeneralsLayout() && name == "ControlBar.wnd:ButtonCancel")
+            {
+                color[0] = GameMakeColor(226, 76, 23, 255);
+                color[2] = GameMakeColor(159, 143, 95, 255);
+                color[3] = GameMakeColor(64, 64, 64, 255);
+                color[4] = GameMakeColor(255, 191, 0, 255);
+            }
             window->winSetEnabledTextColors(color[0], color[1]);
             window->winSetDisabledTextColors(color[2], color[3]);
             window->winSetHiliteTextColors(color[4], color[5]);
@@ -227,6 +267,10 @@ void ApplyCustomControlBarAppearance()
             if (!input || slot < 0 || slot >= 9 || state < 0 || state > 2) continue;
             // Reborn: Scheme-generated images must remain owned by ControlBarScheme::init.
             if (imageName.find("HardCoded") == 0) continue;
+            // Reborn: Reuse existing Generals button art in every state, reverting naturally from the original manifest.
+            if (UseCustomControlBar() && TheControlBar && TheControlBar->isObserverControlBarOn() &&
+                UseGeneralsLayout() && name == "ControlBar.wnd:ButtonCancel" && imageName.find("Buttons-") == 0)
+                imageName += "Gen";
             const Image* image = imageName == "NoImage" || !TheMappedImageCollection ? nullptr :
                 TheMappedImageCollection->findImageByName(imageName.c_str());
             if (state == 0) { window->winSetEnabledImage(slot, image); window->winSetEnabledColor(slot, color); window->winSetEnabledBorderColor(slot, border); }

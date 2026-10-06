@@ -591,7 +591,8 @@ void WbView3d::reset3dEngineDisplaySize(Int width, Int height)
 	m_actualWinSize.x = width;
 	m_actualWinSize.y = height;
 	if (m_ww3dInited) {
-		WW3D::Set_Device_Resolution(m_actualWinSize.x, m_actualWinSize.y, true);
+		// Reborn: Update only the back buffer; Windows already sized the editor client area.
+		WW3D::Set_Device_Resolution(m_actualWinSize.x, m_actualWinSize.y, -1, -1, false);
 	}
 }
 
@@ -2662,7 +2663,13 @@ void WbView3d::drawLabels(HDC hdc)
 void WbView3d::OnSize(UINT nType, int cx, int cy)
 {
 	WbView::OnSize(nType, cx, cy);
-
+	// Reborn: Ignore startup resize messages until device, shaders and scene finish initializing.
+	if (m_ww3dInited && !m_firstPaint && nType != SIZE_MINIMIZED && cx > 0 && cy > 0 &&
+		(cx != m_actualWinSize.x || cy != m_actualWinSize.y))
+	{
+		reset3dEngineDisplaySize(cx, cy);
+		redraw();
+	}
 }
 
 // ----------------------------------------------------------------------------

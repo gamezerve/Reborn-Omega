@@ -120,9 +120,11 @@ BOOL CWB3dFrameWnd::LoadFrame(UINT nIDResource,
 				DWORD dwDefaultStyle,
 				CWnd* pParentWnd,
 				CCreateContext* pContext) {
-	dwDefaultStyle &= ~(WS_SIZEBOX);
+	// Reborn: Retain standard resize/maximize styles so Windows can snap and move the editor between monitors.
+	dwDefaultStyle |= WS_SIZEBOX | WS_MAXIMIZEBOX;
 
-	BOOL ret = CMainFrame::LoadFrame(nIDResource, dwDefaultStyle, CMainFrame::GetMainFrame(), pContext);
+	// Reborn: The primary editor frame must not be owned by another frame (or by itself).
+	BOOL ret = CMainFrame::LoadFrame(nIDResource, dwDefaultStyle, nullptr, pContext);
 	return(ret);
 }
 

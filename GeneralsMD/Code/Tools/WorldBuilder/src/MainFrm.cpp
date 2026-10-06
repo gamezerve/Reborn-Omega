@@ -105,6 +105,17 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	top.top += 10;
 	top.top = ::AfxGetApp()->GetProfileInt(MAIN_FRAME_SECTION, "Top", top.top);
 	top.left =::AfxGetApp()->GetProfileInt(MAIN_FRAME_SECTION, "Left", top.left);
+	// Reborn: Recover saved positions on disconnected monitors and keep the title bar in the work area.
+	CRect restoredRect(top.left, top.top, top.left + frameRect.Width(), top.top + frameRect.Height());
+	MONITORINFO monitorInfo = { sizeof(MONITORINFO) };
+	if (::GetMonitorInfo(::MonitorFromRect(&restoredRect, MONITOR_DEFAULTTONEAREST), &monitorInfo))
+	{
+		const RECT& work = monitorInfo.rcWork;
+		const LONG lastLeft = max(work.left, work.right - restoredRect.Width());
+		const LONG lastTop = max(work.top, work.bottom - restoredRect.Height());
+		top.left = max(work.left, min(top.left, lastLeft));
+		top.top = max(work.top, min(top.top, lastTop));
+	}
 	SetWindowPos(nullptr, top.left, top.top, 0, 0, SWP_NOZORDER|SWP_NOSIZE);
 	GetWindowRect(&frameRect);
 	EnableDocking(CBRS_ALIGN_TOP);
@@ -347,6 +358,12 @@ BOOL CMainFrame::PreCreateWindow(CREATESTRUCT& cs)
 {
 	if( !CFrameWnd::PreCreateWindow(cs) )
 		return FALSE;
+	// Reborn: Expose the editor as a normal top-level app window for native Windows snap and monitor shortcuts.
+	cs.style &= ~(WS_CHILD | WS_POPUP);
+	cs.style |= WS_OVERLAPPEDWINDOW;
+	cs.dwExStyle &= ~(WS_EX_TOOLWINDOW | WS_EX_NOACTIVATE);
+	cs.dwExStyle |= WS_EX_APPWINDOW;
+	cs.hwndParent = nullptr;
 	return TRUE;
 }
 
