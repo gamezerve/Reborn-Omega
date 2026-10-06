@@ -32,6 +32,7 @@
 #define DEFINE_SHADOW_NAMES
 
 #include "Common/ActionManager.h"
+#include "Common/CustomControlBar.h" // Reborn: Select the timer bottom limit for the active control bar.
 #include "Common/FramePacer.h"
 #include "Common/GameAudio.h"
 #include "Common/GameType.h"
@@ -4060,7 +4061,12 @@ void InGameUI::postDraw()
 
 
 
-		Int bottomMargin = (Int)( (Real)TheTacticalView->getHeight() * 0.82f );
+        // Reborn: Keep separate timer bottom limits for ControlBarPro and the original bar; both currently preserve 82%.
+        Int bottomMargin;
+        if (UseCustomControlBar())
+            bottomMargin = (Int)((Real)TheTacticalView->getHeight() * 0.70f);
+        else
+            bottomMargin = (Int)((Real)TheTacticalView->getHeight() * 0.82f);
 
 
 
