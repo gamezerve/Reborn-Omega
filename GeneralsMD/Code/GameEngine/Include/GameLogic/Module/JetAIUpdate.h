@@ -74,6 +74,7 @@ class JetAIUpdate : public AIUpdateInterface
 	MEMORY_POOL_GLUE_WITH_USERLOOKUP_CREATE( JetAIUpdate, "JetAIUpdate" )
 	MAKE_STANDARD_MODULE_MACRO_WITH_MODULE_DATA( JetAIUpdate, JetAIUpdateModuleData )
 
+protected:
 	virtual UpdateSleepTime update() override;
 
 public:
