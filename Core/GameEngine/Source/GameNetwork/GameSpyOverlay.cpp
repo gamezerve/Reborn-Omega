@@ -706,7 +706,7 @@ void GameSpyOpenOverlay( GSOverlayType overlay )
 	}
 }
 
-void GameSpyCloseOverlay( GSOverlayType overlay )
+void GameSpyCloseOverlay( GSOverlayType overlay, Bool notifyOptionsClosed )
 {
 	switch(overlay)
 	{
@@ -735,7 +735,9 @@ void GameSpyCloseOverlay( GSOverlayType overlay )
 			DEBUG_LOG(("Closing overlay GSOVERLAY_OPTIONS"));
 			if( overlayLayouts[overlay] )
 			{
-				SignalUIInteraction(SHELL_SCRIPT_HOOK_OPTIONS_CLOSED);
+				// Reborn: Keep shell audio and menu counters intact when only the Options theme is rebuilt.
+				if (notifyOptionsClosed)
+					SignalUIInteraction(SHELL_SCRIPT_HOOK_OPTIONS_CLOSED);
 			}
 			break;
 	}

@@ -285,6 +285,32 @@ WindowLayout *OptionsLayout = nullptr;
 static OptionPreferences *pref = nullptr;
 
 static Bool s_optionsMenuUsesRebornLayout = FALSE;
+// Reborn: A visual-only rebuild must not emit a second Options-open/close pair to shell-map scripts.
+static Bool s_optionsVisualRefreshInProgress = FALSE;
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Preserve the logical Options session across visual rebuilding, including early returns. */
+//-------------------------------------------------------------------------------------------------
+class RebornOptionsVisualRefreshScope
+{
+	Bool m_previous;
+public:
+	//-------------------------------------------------------------------------------------------------
+	/** Reborn: Suppress lifecycle signals for the duration of this visual-only refresh. */
+	//-------------------------------------------------------------------------------------------------
+	RebornOptionsVisualRefreshScope() : m_previous(s_optionsVisualRefreshInProgress)
+	{
+		s_optionsVisualRefreshInProgress = TRUE;
+	}
+	//-------------------------------------------------------------------------------------------------
+	/** Reborn: Restore normal open/close signaling when every refresh exit path finishes. */
+	//-------------------------------------------------------------------------------------------------
+	~RebornOptionsVisualRefreshScope()
+	{
+		s_optionsVisualRefreshInProgress = m_previous;
+	}
+};
+
 static Bool s_layoutThemeRefreshPending = FALSE; // Reborn: Defer layout destruction until after the Advanced Settings button callback returns.
 static Bool s_pendingGeneralsLayout = FALSE; // Reborn: Preserve the concrete theme chosen for the deferred refresh.
 
@@ -1284,7 +1310,9 @@ static void saveOptions()
 
 static void DestroyOptionsLayout() {
 
-	SignalUIInteraction(SHELL_SCRIPT_HOOK_OPTIONS_CLOSED);
+	// Reborn: Destroying windows for a theme refresh does not mean the user closed Options.
+	if (!s_optionsVisualRefreshInProgress)
+		SignalUIInteraction(SHELL_SCRIPT_HOOK_OPTIONS_CLOSED);
 
 	TheShell->destroyOptionsLayout();
 	OptionsLayout = nullptr;
@@ -1499,7 +1527,9 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 		pref = NEW OptionPreferences;
 	}
 
-	SignalUIInteraction(SHELL_SCRIPT_HOOK_OPTIONS_OPENED);
+	// Reborn: Recreating the visual layout keeps the existing shell audio state and Audio Level counter.
+	if (!s_optionsVisualRefreshInProgress)
+		SignalUIInteraction(SHELL_SCRIPT_HOOK_OPTIONS_OPENED);
 
 	comboBoxLANIPID = GetOptionsMenuChildKey("ComboBoxIP");
 	comboBoxOnlineIPID = GetOptionsMenuChildKey("ComboBoxOnlineIP");
@@ -2629,6 +2659,8 @@ void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 	if (s_layoutThemeRefreshPending)
 	{
 		s_layoutThemeRefreshPending = FALSE;
+		// Reborn: The user remains in Options throughout this refresh; restore signaling automatically on return.
+		RebornOptionsVisualRefreshScope visualRefreshScope;
 
 		// Reborn: Preserve unsaved parent Options values while replacing its visual layout.
 		saveOptions();
@@ -2644,7 +2676,7 @@ void OptionsMenuUpdate( WindowLayout *layout, void *userData )
 		// Reborn: The shell keeps MainMenu on its stack during a match; never reload it while gameplay is active.
 
 		if (isGameSpyOptionsOverlay)
-			GameSpyCloseOverlay(GSOVERLAY_OPTIONS); // Reborn: Destroy the actual GO-owned Options layout before recreating its theme.
+			GameSpyCloseOverlay(GSOVERLAY_OPTIONS, FALSE); // Reborn: Rebuild the GO-owned visual layout without signaling a real Options close.
 		else
 			DestroyOptionsLayout();
 		if (isActiveGame)

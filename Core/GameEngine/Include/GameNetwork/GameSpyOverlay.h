@@ -76,7 +76,8 @@ enum GSCommunicatorConnectionStatus CPP_11(: Int)
 };
 
 void GameSpyOpenOverlay( GSOverlayType );
-void GameSpyCloseOverlay( GSOverlayType );
+// Reborn: Visual-only Options rebuilds may suppress their shell-map close notification; real closes keep the default.
+void GameSpyCloseOverlay( GSOverlayType, Bool notifyOptionsClosed = TRUE );
 void GameSpyCloseAllOverlays();
 Bool GameSpyIsOverlayOpen( GSOverlayType );
 void GameSpyToggleOverlay( GSOverlayType );
