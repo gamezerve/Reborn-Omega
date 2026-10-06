@@ -76,7 +76,7 @@ private:
 		return static_cast<const ComancheTransportAIUpdateModuleData*>(getModuleData());
 	}
 
-	void beginRappel(Object* target, const Coord3D& pos);
+	void beginRappel(Object* target, const Coord3D& pos, Bool dropAllPassengers);
 	Bool createRopes();
 	Bool dropNextPassenger(Int ropeIndex);
 	Object* getPotentialRappeller() const;
@@ -88,6 +88,8 @@ private:
 	Coord3D m_dropPosition;
 	ObjectID m_dropTargetID;
 	mutable ObjectID m_requestedExitID;
+	Bool m_dropAllPassengers;
+	Int m_ropeCount;
 	Real m_oldPreferredHeight;
 	Bool m_preferredHeightAdjusted;
 	RopeInfo m_ropes[2];
