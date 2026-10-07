@@ -1515,6 +1515,9 @@ void NGMP_OnlineServices_LobbyInterface::CreateLobby(UnicodeString strLobbyName,
 	CustomMatchPreferences preferences;
 	const Int initialMaxCameraHeight = preferences.getBool("UseCustomMaxCameraHeight", FALSE)
 		? clamp(310, preferences.getInt("MaxCameraHeight", 310), 750) : 310;
+	// Reborn: Restore only the creating host's saved multiplier, with 1x as the default and the existing five-percent steps.
+	const Int savedResourceMultiplier = clamp(75, preferences.getInt("ResourceMultiplierPercent", 100), 125);
+	const Int initialResourceMultiplier = 75 + ((savedResourceMultiplier - 75) / 5) * 5;
 
 	NGMP_OnlineServicesManager::GetInstance()->GetAndParseServiceConfig([=]()
 		{
@@ -1634,6 +1637,9 @@ void NGMP_OnlineServices_LobbyInterface::CreateLobby(UnicodeString strLobbyName,
 							// set in game, this actually means in lobby... not in game play, and is necessary to start the game
 							TheNGMPGame->setInGame();
 
+							// Reborn: Initialize the new host's Reborn-only option before the menu opens; guest joins never load hosting preferences.
+							TheNGMPGame->setResourceMultiplierPercent(initialResourceMultiplier);
+							g_resourceMultiplierPercent = initialResourceMultiplier;
 							TheNGMPGame->SyncWithLobby(m_CurrentLobby);
 							TheNGMPGame->UpdateSlotsFromCurrentLobby();
 

@@ -952,7 +952,8 @@ static void updateOnlineLobbyOptions()
 static void handleOnlineResourceMultiplierSelection()
 {
 	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
-	if (isUpdatingOnlineLobbyOptions || !pLobbyInterface || !pLobbyInterface->IsHost() || !TheNGMPGame || !comboBoxResourceMultiplier)
+	// Reborn: Only live host input may change the saved online multiplier; ignore automatic refreshes and lobby exit.
+	if (isUpdatingOnlineLobbyOptions || isShuttingDown || buttonPushed || !pLobbyInterface || !pLobbyInterface->IsHost() || !TheNGMPGame || !comboBoxResourceMultiplier)
 		return;
 
 	Int selected = -1;
@@ -964,6 +965,13 @@ static void handleOnlineResourceMultiplierSelection()
 	// Reborn: Keep GO cash multipliers on the same exact five-percent steps used by LAN.
 	value = clamp(75, value, 125);
 	value = 75 + ((value - 75) / 5) * 5;
+	// Reborn: Save this account's hosting preference independently of LAN and values received as a guest.
+	CustomMatchPreferences preferences;
+	if (preferences.getInt("ResourceMultiplierPercent", 100) != value)
+	{
+		preferences.setInt("ResourceMultiplierPercent", value);
+		preferences.write();
+	}
 	if (TheNGMPGame->getResourceMultiplierPercent() == value)
 		return;
 
