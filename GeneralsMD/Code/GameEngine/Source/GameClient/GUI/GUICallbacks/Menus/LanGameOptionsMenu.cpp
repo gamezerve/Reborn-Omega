@@ -929,6 +929,16 @@ static void handleLanMaxCameraHeightChanged(Bool resetAccepted, Bool clampText)
 
 	myGame->setUseCustomMaxCameraHeight(enabled);
 	myGame->setLanMaxCameraHeight(value);
+    // Reborn: Persist only the host's LAN choice in Network.ini, leaving personal RebornOmegaOptions camera settings untouched.
+    if (!s_isIniting)
+    {
+        LANPreferences preferences;
+        preferences["UseCustomMaxCameraHeight"] = enabled ? "yes" : "no";
+        AsciiString height;
+        height.format("%d", value);
+        preferences["MaxCameraHeight"] = height;
+        preferences.write();
+    }
 
 	if (resetAccepted)
 		myGame->resetAccepted();
@@ -1190,8 +1200,11 @@ void LanGameOptionsMenuInit( WindowLayout *layout, void *userData )
     game->setStartingCash( pref.getStartingCash() );
 		game->setResourceMultiplierPercent(g_resourceMultiplierPercent); // Reborn
 		game->setSuperweaponRestriction(pref.getSuperweaponRestriction()); // Reborn: Restore the complete list selection for new hosted LAN games.
-		game->setUseCustomMaxCameraHeight(FALSE);
-		game->setLanMaxCameraHeight(310);
+        // Reborn: Restore the last hosted LAN camera choice; missing values retain the original disabled/310 default.
+        const Bool useCustomCamera = pref["UseCustomMaxCameraHeight"].compareNoCase("yes") == 0;
+        const Int cameraHeight = clamp(310, atoi(pref["MaxCameraHeight"].str()), 750);
+        game->setUseCustomMaxCameraHeight(useCustomCamera);
+        game->setLanMaxCameraHeight(useCustomCamera ? cameraHeight : 310);
 		AsciiString lowerMap = pref.getPreferredMap();
 		lowerMap.toLower();
 		std::map<AsciiString, MapMetaData>::iterator it = TheMapCache->find(lowerMap);
@@ -1209,12 +1222,13 @@ void LanGameOptionsMenuInit( WindowLayout *layout, void *userData )
 		updateGameOptions();
 		start = 1; // leave my combo boxes usable
 
-		GadgetCheckBoxSetChecked(checkMaxCameraHeight, FALSE);
+		// Reborn: Initialize host controls from restored room settings instead of overwriting them with disabled/310.
+		GadgetCheckBoxSetChecked(checkMaxCameraHeight, game->getUseCustomMaxCameraHeight());
 
 		UnicodeString uStr;
-		uStr.format(L"310");
+		uStr.format(L"%d", game->getLanMaxCameraHeight());
 		GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
-		textEntryMaxCameraHeight->winEnable(FALSE);
+		textEntryMaxCameraHeight->winEnable(game->getUseCustomMaxCameraHeight());
 
 		// TheSuperHackers @tweak disable the combo box for the host's player name
 		comboBoxPlayer[0]->winEnable(FALSE);

@@ -1282,11 +1282,18 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 		}
 	}
 
+    // Reborn: LAN camera limits are authoritative regardless of human count, just like synchronized online limits.
+    if (TheGameInfo && (m_gameMode == GAME_LAN
 #if defined(GENERALS_ONLINE)
-	if (m_gameMode == GAME_INTERNET && TheGameInfo)
+        || m_gameMode == GAME_INTERNET
+#endif
+        ))
 	{
-		// Reborn: The online GameInfo becomes authoritative here; commit its synchronized settings after all personal defaults.
-		g_resourceMultiplierPercent = TheGameInfo->getResourceMultiplierPercent();
+#if defined(GENERALS_ONLINE)
+        // Reborn: Preserve the existing online resource-multiplier initialization without changing LAN cash behavior.
+        if (m_gameMode == GAME_INTERNET)
+		    g_resourceMultiplierPercent = TheGameInfo->getResourceMultiplierPercent();
+#endif
 		Real maxCameraHeight = TheGameInfo->getUseCustomMaxCameraHeight() ? (Real)TheGameInfo->getLanMaxCameraHeight() : 310.0f;
 		TheWritableGlobalData->m_maxCameraHeight = maxCameraHeight;
 		if (TheTacticalView)
@@ -1295,7 +1302,6 @@ void GameLogic::tryStartNewGame( Bool loadingSaveGame )
 			TheTacticalView->setHeightAboveGround(TheTacticalView->getHeightAboveGround());
 		}
 	}
-#endif
 
   // On a NEW game, we need to copy the superweapon restrictions from the game info to here
   // (because TheGameInfo is not always saved and doesn't carry over to replays). On a save

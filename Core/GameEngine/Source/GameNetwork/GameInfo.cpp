@@ -447,7 +447,8 @@ void GameInfo::startGame(Int gameID)
 
 	RestorePersonalMaxCameraHeight();
 
-	const Bool forceSharedCameraHeight = isMultiPlayer();
+    // Reborn: A LAN room uses its host's camera limit even when the only human is testing against AI.
+	const Bool forceSharedCameraHeight = isMultiPlayer() || (TheLAN && TheLAN->GetMyGame() == this);
 
 	Real maxCameraHeight = TheGlobalData->m_maxCameraHeight;
 
