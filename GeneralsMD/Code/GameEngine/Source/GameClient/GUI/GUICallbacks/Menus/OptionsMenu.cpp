@@ -3146,7 +3146,13 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 
 				if (textEntryMaxCameraHeight)
 				{
-					textEntryMaxCameraHeight->winEnable(enabled);
+					// Reborn: Release the camera text entry before disabling it so the caret and keyboard input cannot remain active.
+					if (!enabled)
+					{
+						if (TheWindowManager->winGetFocus() == textEntryMaxCameraHeight)
+							TheWindowManager->winSetFocus(nullptr);
+						lastOptionsMaxCameraHeightEditTime = 0;
+					}
 
 					UnicodeString uStr;
 					AsciiString aStr;
@@ -3157,10 +3163,11 @@ WindowMsgHandledType OptionsMenuSystem( GameWindow *window, UnsignedInt msg,
 					if (enabled && !rebornPreferences["MaxCameraHeight"].isEmpty())
 						aStr = rebornPreferences["MaxCameraHeight"];
 					else
-						aStr.format("%.0f", TheGlobalData->m_defaultMaxCameraHeight);
+						aStr.format("%d", 310); // Reborn: A disabled height field displays the same standard 310 limit as online.
 
 					uStr.translate(aStr);
 					GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
+					textEntryMaxCameraHeight->winEnable(enabled); // Reborn: Normalize the visible value before disabling input.
 				}
 			}
 			else if(controlID == checkDrawAnchorID )

@@ -949,6 +949,17 @@ static void handleLanMaxCameraHeightChanged(Bool resetAccepted, Bool clampText)
 		value = clamp(310, value, 750);
 	}
 
+	// Reborn: Normalize disabled controls and release their text focus even when the room value is already 310.
+	if (!enabled)
+	{
+		if (TheWindowManager->winGetFocus() == textEntryMaxCameraHeight)
+			TheWindowManager->winSetFocus(nullptr);
+		UnicodeString defaultHeight;
+		defaultHeight.format(L"310");
+		GadgetTextEntrySetText(textEntryMaxCameraHeight, defaultHeight);
+		lastLanMaxCameraHeightEditTime = 0;
+	}
+
 	if (myGame->getUseCustomMaxCameraHeight() == enabled &&
 		myGame->getLanMaxCameraHeight() == value)
 	{
