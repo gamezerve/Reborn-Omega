@@ -193,6 +193,8 @@ extern Int g_resourceMultiplierPercent; // Reborn
 static void handleLanMaxCameraHeightChanged(Bool resetAccepted, Bool clampText);
 static UnsignedInt lastLanMaxCameraHeightEditTime = 0;
 static Int lastSentLanMaxCameraHeight = 310;
+// Reborn: Track the last finalized notice independently of transient camera values sent while typing.
+static Int lastAnnouncedLanMaxCameraHeight = 310;
 static Bool lastSentUseLanMaxCameraHeight = FALSE;
 
 static Int getNextSelectablePlayer(Int start)
@@ -746,6 +748,8 @@ static void handleResourceMultiplierSelection()
 	Int selIndex;
 	GadgetComboBoxGetSelectedPos(comboBoxResourceMultiplier, &selIndex);
 
+	// Reborn: Announce only effective multiplier changes, not programmatic selections of the current value.
+	const Int previousMultiplier = myGame->getResourceMultiplierPercent();
 	g_resourceMultiplierPercent = (Int)GadgetComboBoxGetItemData(comboBoxResourceMultiplier, selIndex);
 	myGame->setResourceMultiplierPercent(g_resourceMultiplierPercent);
 	GadgetComboBoxCenterSelectedEntry(comboBoxResourceMultiplier);
@@ -758,6 +762,13 @@ static void handleResourceMultiplierSelection()
 		{
 			TheLAN->RequestGameOptions(GenerateGameOptionsString(), true);
 			lanUpdateSlotList();
+			// Reborn: This LAN system notice is informational only; the existing game-options packet remains authoritative.
+			if (previousMultiplier != g_resourceMultiplierPercent)
+			{
+				UnicodeString message;
+				message.format(L"The host has set the cash multiplier to %.2fx.", (Real)g_resourceMultiplierPercent / 100.0f);
+				TheLAN->RequestChat(message, LANAPI::LANCHAT_SYSTEM);
+			}
 		}
 	}
 }
@@ -861,6 +872,17 @@ static void handleLANSuperweaponRestrictionSelection()
 
 		TheLAN->RequestGameOptions(GenerateGameOptionsString(), true);
 		lanUpdateSlotList();
+		// Reborn: Match the online wording without using chat to synchronize or interpret LAN rules.
+		UnicodeString rule;
+		if (restriction == SUPERWEAPON_RESTRICTION_NO_SUPERWEAPONS)
+			rule = L"No Superweapons";
+		else if (restriction == SUPERWEAPON_RESTRICTION_UNLIMITED)
+			rule = L"Unlimited";
+		else
+			rule.format(L"%u", restriction);
+		UnicodeString message;
+		message.format(L"The host has set the superweapon rule to %ls.", rule.str());
+		TheLAN->RequestChat(message, LANAPI::LANCHAT_SYSTEM);
 	}
 }
 
@@ -891,6 +913,20 @@ static void clampLanMaxCameraHeightText()
 
 	uStr.format(L"%d", value);
 	GadgetTextEntrySetText(textEntryMaxCameraHeight, uStr);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Announce finalized LAN camera limits without interpreting chat as gameplay settings. */
+//-------------------------------------------------------------------------------------------------
+static void announceFinalLanMaxCameraHeight(Int value, Bool enabled, Bool clampText)
+{
+	if (s_isIniting || (enabled && !clampText) || lastAnnouncedLanMaxCameraHeight == value)
+		return;
+
+	lastAnnouncedLanMaxCameraHeight = value;
+	UnicodeString message;
+	message.format(L"The host has set the maximum camera height to %d.", value);
+	TheLAN->RequestChat(message, LANAPI::LANCHAT_SYSTEM);
 }
 
 static void handleLanMaxCameraHeightChanged(Bool resetAccepted, Bool clampText)
@@ -924,6 +960,8 @@ static void handleLanMaxCameraHeightChanged(Bool resetAccepted, Bool clampText)
 		}
 
 		textEntryMaxCameraHeight->winEnable(enabled);
+		// Reborn: A finalized value may already have been synchronized during typing but still needs its single notice.
+		announceFinalLanMaxCameraHeight(value, enabled, clampText);
 		return;
 	}
 
@@ -956,6 +994,8 @@ static void handleLanMaxCameraHeightChanged(Bool resetAccepted, Bool clampText)
 	{
 		TheLAN->RequestGameOptions(GenerateGameOptionsString(), true);
 		lanUpdateSlotList();
+		// Reborn: Wait for final clamping/commit (or disabling) instead of announcing temporary input such as 75 -> 310.
+		announceFinalLanMaxCameraHeight(value, enabled, clampText);
 	}
 }
 
@@ -1276,6 +1316,10 @@ void LanGameOptionsMenuInit( WindowLayout *layout, void *userData )
 	// Set Keyboard to Main Parent
 	TheWindowManager->winSetFocus( parentLanGameOptions );
 
+	// Reborn: Restored room settings establish the notice baseline and should not be announced as a new edit.
+	LANGameInfo* cameraGame = TheLAN->GetMyGame();
+	lastAnnouncedLanMaxCameraHeight = cameraGame && cameraGame->getUseCustomMaxCameraHeight()
+		? cameraGame->getLanMaxCameraHeight() : 310;
 	s_isIniting = FALSE;
 
 	if (TheLAN->AmIHost())

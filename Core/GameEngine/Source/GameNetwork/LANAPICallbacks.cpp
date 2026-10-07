@@ -60,7 +60,8 @@ const Color chatNormalColor =  GameMakeColor(50,215,230,255);
 const Color chatActionColor =  GameMakeColor(255,0,255,255);
 const Color chatLocalNormalColor =  GameMakeColor(255,128,0,255);
 const Color chatLocalActionColor =  GameMakeColor(128,255,255,255);
-const Color chatSystemColor =  GameMakeColor(255,255,255,255);
+// Reborn: Use the same neutral gray as online system announcements, preserving player chat colors.
+const Color chatSystemColor =  GameMakeColor(192,192,192,255);
 const Color acceptTrueColor =  GameMakeColor(0,255,0,255);
 const Color acceptFalseColor =  GameMakeColor(255,0,0,255);
 
