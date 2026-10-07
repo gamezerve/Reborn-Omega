@@ -151,8 +151,36 @@ static Int getReadySuperweaponHeightCompensation()
 	return compensation;
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: ControlBarPro timer shift thresholds initially match the original faction-specific steps. */
+//-------------------------------------------------------------------------------------------------
+static Int getControlBarProSuperweaponLeftShiftStartIndexForLayout(const AsciiString& shortcutBarName, Int visibleShortcutButtons)
+{
+    // Reborn: The first shortcut column never requires timer shifting.
+    if (visibleShortcutButtons <= 11)
+        return -1;
+
+	if (visibleShortcutButtons >= 22) return 0;
+	if (visibleShortcutButtons >= 21) return 2;
+	if (visibleShortcutButtons >= 20) return 4;
+	if (visibleShortcutButtons >= 19) return 7;
+	if (visibleShortcutButtons >= 18) return 9;
+	if (visibleShortcutButtons >= 17) return 12;
+	if (visibleShortcutButtons >= 16) return 14;
+	if (visibleShortcutButtons >= 15) return 17;
+	if (visibleShortcutButtons >= 14) return 19;
+	if (visibleShortcutButtons >= 13) return 22;
+	if (visibleShortcutButtons >= 12) return 24;
+
+	return -1;
+}
+
 static Int getSuperweaponLeftShiftStartIndexForLayout(const AsciiString& shortcutBarName, Int visibleShortcutButtons)
 {
+    // Reborn: Keep ControlBarPro timer thresholds independent of the original faction tables.
+    if (UseCustomControlBar())
+        return getControlBarProSuperweaponLeftShiftStartIndexForLayout(shortcutBarName, visibleShortcutButtons);
+
 	if (shortcutBarName == "GenPowersShortcutBarUS.wnd")
 	{
 		if (visibleShortcutButtons >= 22) return 2;
@@ -210,8 +238,32 @@ static Int getSuperweaponLeftShiftStartIndexForLayout(const AsciiString& shortcu
 	return -1;
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: ControlBarPro initially uses the original scaled 48-pixel shift and no shift for eleven shortcuts. */
+//-------------------------------------------------------------------------------------------------
+static Int getControlBarProShortcutDrivenHorizontalShift(Int visibleShortcutButtons)
+{
+	if (visibleShortcutButtons <= 11)
+		return 0;
+
+	if (!TheDisplay)
+		return 77;
+
+	Real scaleFrom800x600 = (Real)TheDisplay->getWidth() / 800.0f;
+	Int shift = REAL_TO_INT_FLOOR(42.0f * scaleFrom800x600 + 0.5f);
+
+	if (shift < 42)
+		shift = 42;
+
+	return shift;
+}
+
 static Int getShortcutDrivenHorizontalShift(Int visibleShortcutButtons)
 {
+    // Reborn: Select an independently editable ControlBarPro horizontal shift calculation.
+    if (UseCustomControlBar())
+        return getControlBarProShortcutDrivenHorizontalShift(visibleShortcutButtons);
+
 	if (visibleShortcutButtons <= 11)
 		return 0;
 
