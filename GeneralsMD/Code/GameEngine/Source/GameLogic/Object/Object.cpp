@@ -4140,7 +4140,17 @@ void Object::xfer( Xfer *xfer )
 {
 
 	// version
+#if RTS_GENERALS
+
+#if RETAIL_COMPATIBLE_XFER_SAVE
+	const XferVersion currentVersion = 7;
+#else
+	const XferVersion currentVersion = 8;
+#endif
+
+#else
 	const XferVersion currentVersion = 9;
+#endif
 	XferVersion version = currentVersion;
 	xfer->xferVersion( &version, currentVersion );
 
@@ -4203,20 +4213,30 @@ void Object::xfer( Xfer *xfer )
 	}
 	else
 	{
-		//We are loading an old version, so we must convert it from a 32-bit int to a bitflag
-		UnsignedInt oldStatus;
-		xfer->xferUnsignedInt( &oldStatus );
+#if RTS_GENERALS
+		// TheSuperHackers @info Originally OBJECT_STATUS_IS_CARBOMB (28) + 1 would equal OBJECT_STATUS_COUNT,
+		// but the enum has been expanded with Zero Hour specific entries.
+		constexpr const UnsignedInt count = OBJECT_STATUS_IS_CARBOMB + 1;
+		constexpr const UnsignedInt mask = (1 << count) - 1;
+		static_assert(count == 29, "This code needs to be updated when inserting new entries into ObjectStatusTypes");
 
-		//Clear our status
+		// shift by one bit: OBJECT_STATUS_NONE (0) has a dedicated bit in the bitset but not in the integer
+		UnsignedInt status = (m_status.toUnsignedInt() & mask) >> 1;
+#else
+		// Zero Hour uses this branch only for XFER_LOAD
+		UnsignedInt status;
+#endif
+		xfer->xferUnsignedInt(&status);
+
 		m_status.clear();
 
 		for( int i = 0; i < 32; i++ )
 		{
-			UnsignedInt bit = 1<<i;
-			if( oldStatus & bit )
+			UnsignedInt bit = 1u<<i;
+			if( status & bit )
 			{
-				ObjectStatusTypes status = (ObjectStatusTypes)(i+1);
-				m_status.set( MAKE_OBJECT_STATUS_MASK( status ) );
+				ObjectStatusTypes type = (ObjectStatusTypes)(i + 1);
+				m_status.set( MAKE_OBJECT_STATUS_MASK( type ) );
 			}
 		}
 	}
@@ -4276,7 +4296,8 @@ void Object::xfer( Xfer *xfer )
 	}
 
 	// disabled till frame
-	xfer->xferUser( m_disabledTillFrame, sizeof( UnsignedInt ) * DISABLED_COUNT );
+  // Reborn: Preserve the existing 14-entry save format, including DISABLED_REBORN_POWER_MODE.
+	xfer->xferUser(m_disabledTillFrame, sizeof(UnsignedInt) * DISABLED_COUNT);
 
 	// OK, now that we have xferred our status bits and disabled data, it's safe to set the team...
 	// TheSuperHackers @todo Refactor so that this code can be moved to loadPostProcess.
