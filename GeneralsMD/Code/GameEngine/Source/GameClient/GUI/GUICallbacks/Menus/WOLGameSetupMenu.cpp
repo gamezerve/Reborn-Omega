@@ -978,7 +978,8 @@ static void handleOnlineResourceMultiplierSelection()
 static void handleOnlineMaxCameraHeightChanged(Bool clampText)
 {
 	NGMP_OnlineServices_LobbyInterface* pLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
-	if (isUpdatingOnlineLobbyOptions || !pLobbyInterface || !pLobbyInterface->IsHost() || !TheNGMPGame || !checkMaxCameraHeight || !textEntryMaxCameraHeight)
+	// Reborn: Ignore synthetic initialization/refresh events and controls belonging to a closing lobby.
+	if (isUpdatingOnlineLobbyOptions || isShuttingDown || buttonPushed || !pLobbyInterface || !pLobbyInterface->IsHost() || !TheNGMPGame || !checkMaxCameraHeight || !textEntryMaxCameraHeight)
 		return;
 
 	Bool enabled = GadgetCheckBoxIsChecked(checkMaxCameraHeight);
@@ -1004,6 +1005,15 @@ static void handleOnlineMaxCameraHeightChanged(Bool clampText)
 		{
 			value = clamp(310, value, 750);
 		}
+	}
+
+	// Reborn: Persist accepted user input even when a server snapshot already contains the same room value.
+	CustomMatchPreferences preferences;
+	if (preferences.getBool("UseCustomMaxCameraHeight", FALSE) != enabled || preferences.getInt("MaxCameraHeight", 310) != value)
+	{
+		preferences.setBool("UseCustomMaxCameraHeight", enabled);
+		preferences.setInt("MaxCameraHeight", value);
+		preferences.write();
 	}
 
 	Bool valueChanged = TheNGMPGame->getUseCustomMaxCameraHeight() != enabled || TheNGMPGame->getLanMaxCameraHeight() != value;
@@ -1579,6 +1589,10 @@ void WOLDisplayGameOptions()
 			UnicodeString value;
 			value.format(L"%d", enabled ? theGame->getLanMaxCameraHeight() : 310);
 			GadgetTextEntrySetText(textEntryMaxCameraHeight, value);
+			// Reborn: A reflected server value is not a new user edit; keep the polling baseline synchronized.
+			lastSentUseOnlineMaxCameraHeight = enabled;
+			lastSentOnlineMaxCameraHeight = enabled ? theGame->getLanMaxCameraHeight() : 310;
+			lastOnlineMaxCameraHeightEditTime = 0;
 		}
 		textEntryMaxCameraHeight->winEnable(pLobbyInterface->IsHost() && enabled);
 	}
@@ -1775,6 +1789,8 @@ void InitWOLGameGadgets()
 #if defined(GENERALS_ONLINE)
   PopulateStartingCashComboBox(comboBoxStartingCash, theGameInfo);
 	PopulateOnlineResourceMultiplierComboBox(comboBoxResourceMultiplier);
+	// Reborn: Setting a checkbox emits GBM_SELECTED; suppress it until both restored camera controls are initialized.
+	isUpdatingOnlineLobbyOptions = TRUE;
 	GadgetCheckBoxSetChecked(checkMaxCameraHeight, theGameInfo->getUseCustomMaxCameraHeight());
 	{
 		UnicodeString maxCameraHeight;
@@ -1785,6 +1801,7 @@ void InitWOLGameGadgets()
 	lastSentOnlineMaxCameraHeight = theGameInfo->getUseCustomMaxCameraHeight() ? theGameInfo->getLanMaxCameraHeight() : 310;
 	lastAnnouncedOnlineMaxCameraHeight = lastSentOnlineMaxCameraHeight;
 	lastOnlineMaxCameraHeightEditTime = 0;
+	isUpdatingOnlineLobbyOptions = FALSE; // Reborn: User edits may now commit the fully initialized camera controls.
 #else
   PopulateStartingCashComboBox( comboBoxStartingCash, TheGameSpyGame );
 #endif
@@ -2589,7 +2606,9 @@ void WOLGameSetupMenuUpdate( WindowLayout * layout, void *userData)
 
 	// Reborn: Use LAN's edit/debounce behavior so partial camera values are not clamped while typing.
 	NGMP_OnlineServices_LobbyInterface* onlineLobbyInterface = NGMP_OnlineServicesManager::GetInterface<NGMP_OnlineServices_LobbyInterface>();
-	if (initDone && onlineLobbyInterface && onlineLobbyInterface->IsHost() && TheNGMPGame && checkMaxCameraHeight && textEntryMaxCameraHeight && !isUpdatingOnlineLobbyOptions)
+	// Reborn: Poll only actual text editing; initialization, roster refreshes and lobby exit must not save defaults as preferences.
+	if (initDone && !isShuttingDown && !buttonPushed && onlineLobbyInterface && onlineLobbyInterface->IsHost() && TheNGMPGame && checkMaxCameraHeight && textEntryMaxCameraHeight && !isUpdatingOnlineLobbyOptions
+		&& (TheWindowManager->winGetFocus() == textEntryMaxCameraHeight || lastOnlineMaxCameraHeightEditTime != 0))
 	{
 		Bool enabled = GadgetCheckBoxIsChecked(checkMaxCameraHeight);
 		Int value = 310;

@@ -4,6 +4,8 @@
 #include "GameNetwork/GeneralsOnline/OnlineServices_Init.h"
 #include "GameClient/MapUtil.h"
 #include "GameLogic/GameLogic.h"
+// Reborn: Load account-specific online room preferences when hosting a new lobby.
+#include "Common/CustomMatchPreferences.h"
 
 extern void OnKickedFromLobby();
 
@@ -1509,6 +1511,11 @@ void NGMP_OnlineServices_LobbyInterface::CreateLobby(UnicodeString strLobbyName,
 {
 	AnticheatPlugInterface::EndSession();
 
+	// Reborn: Capture the saved online camera choice before asynchronous lobby creation; absent settings use disabled/310.
+	CustomMatchPreferences preferences;
+	const Int initialMaxCameraHeight = preferences.getBool("UseCustomMaxCameraHeight", FALSE)
+		? clamp(310, preferences.getInt("MaxCameraHeight", 310), 750) : 310;
+
 	NGMP_OnlineServicesManager::GetInstance()->GetAndParseServiceConfig([=]()
 		{
 			m_CurrentLobby = LobbyEntry();
@@ -1546,8 +1553,8 @@ void NGMP_OnlineServices_LobbyInterface::CreateLobby(UnicodeString strLobbyName,
 			j["allow_observers"] = bAllowObservers;
 			j["exe_crc"] = TheGlobalData->m_exeCRC;
 			j["ini_crc"] = TheGlobalData->m_iniCRC;
-			// Reborn: Like LAN, a newly hosted lobby starts with the standard server-valid 310 camera limit disabled.
-			j["max_cam_height"] = 310;
+			// Reborn: Send the restored, server-valid camera limit in the creation request so every player receives it immediately.
+			j["max_cam_height"] = initialMaxCameraHeight;
 			j["anticheat_id"] = AnticheatPlugInterface::GetAnticheatIdentifier();
 
 			std::string strPostData = j.dump();
@@ -1608,6 +1615,8 @@ void NGMP_OnlineServices_LobbyInterface::CreateLobby(UnicodeString strLobbyName,
 							m_CurrentLobby.map_path = std::string(sanitizedMapPath.str());
 							m_CurrentLobby.current_players = 1;
 							m_CurrentLobby.max_players = initialMaxSize;
+							// Reborn: Preserve the restored camera limit in the initial local snapshot before the first server refresh.
+							m_CurrentLobby.max_cam_height = (uint16_t)initialMaxCameraHeight;
 							m_CurrentLobby.passworded = bPassworded;
 							m_CurrentLobby.password = strPassword;
 
