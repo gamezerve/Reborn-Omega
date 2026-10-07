@@ -1014,6 +1014,8 @@ const FieldParse InGameUI::s_fieldParseTable[] =
 	{ "SuperweaponCountdownReadyPointSize",		INI::parseInt,					nullptr,		offsetof( InGameUI, m_superweaponReadyPointSize ) },
 	{ "SuperweaponCountdownReadyBold",				INI::parseBool,					nullptr,		offsetof( InGameUI, m_superweaponReadyBold ) },
 
+    // Reborn: Configure script timers separately for ControlBarPro.
+    { "ControlBarProNamedTimerCountdownPosition", INI::parseCoord2D, nullptr, offsetof(InGameUI, m_controlBarProNamedTimerPosition) },
 	{ "NamedTimerCountdownPosition",					INI::parseCoord2D,			nullptr,		offsetof( InGameUI, m_namedTimerPosition ) },
 	{ "NamedTimerCountdownFlashDuration",			INI::parseDurationReal,	nullptr,		offsetof( InGameUI, m_namedTimerFlashDuration ) },
 	{ "NamedTimerCountdownFlashColor",				INI::parseColorInt,			nullptr,		offsetof( InGameUI, m_namedTimerFlashColor ) },
@@ -1413,6 +1415,9 @@ InGameUI::InGameUI()
 
 	m_namedTimerPosition.x = 0.05f;
 	m_namedTimerPosition.y = 0.7f;
+    // Reborn: Preserve the original position if the optional ControlBarPro setting is omitted.
+    m_controlBarProNamedTimerPosition.x = -1.0f;
+    m_controlBarProNamedTimerPosition.y = -1.0f;
 	m_namedTimerFlashDuration = 1.0f;
 	m_namedTimerNormalFont = "Arial";
 	m_namedTimerNormalPointSize = 10;
@@ -4394,9 +4399,14 @@ void InGameUI::postDraw()
 	if (TheGameLogic->getFrame() > 0 && m_showNamedTimers)
 	{
 //		Int namedTimerCount = 0;
-		Bool reverseXDir = (m_namedTimerPosition.x >= 0.5f);
-		Int startX = (Int)(m_namedTimerPosition.x * TheDisplay->getWidth());
-		Int startY = (Int)(m_namedTimerPosition.y * TheDisplay->getHeight());
+        // Reborn: Use independent script-timer coordinates and alignment for the currently selected bar.
+        const Bool useControlBarProTimers = UseCustomControlBar();
+        const Coord2D& namedTimerPosition = (useControlBarProTimers &&
+            m_controlBarProNamedTimerPosition.x >= 0.0f && m_controlBarProNamedTimerPosition.y >= 0.0f)
+            ? m_controlBarProNamedTimerPosition : m_namedTimerPosition;
+        Bool reverseXDir = (namedTimerPosition.x >= 0.5f);
+        Int startX = (Int)(namedTimerPosition.x * TheDisplay->getWidth());
+        Int startY = (Int)(namedTimerPosition.y * TheDisplay->getHeight());
 		Color bgColor = GameMakeColor( 0, 0, 0, 255 );
 		for (NamedTimerMapIt mapIt = m_namedTimers.begin(); mapIt != m_namedTimers.end(); ++mapIt)
 		{
@@ -4447,12 +4457,15 @@ void InGameUI::postDraw()
 				}
 
 				// draw the text
-				Int visibleShortcutButtons = (TheControlBar) ? TheControlBar->getVisibleSpecialPowerShortcutButtonCount() : 0;
-				Int shiftedTimerOffsetX = getShortcutDrivenHorizontalShift(visibleShortcutButtons);
-
-				Int drawX = startX;
-				if (shiftedTimerOffsetX > 0)
-					drawX -= shiftedTimerOffsetX;
+                Int drawX = startX;
+                // Reborn: ControlBarPro script timers never move with shortcut counts; preserve shifting for the original bar.
+                if (!useControlBarProTimers)
+                {
+                    Int visibleShortcutButtons = TheControlBar ? TheControlBar->getVisibleSpecialPowerShortcutButtonCount() : 0;
+                    Int shiftedTimerOffsetX = getShortcutDrivenHorizontalShift(visibleShortcutButtons);
+                    if (shiftedTimerOffsetX > 0)
+                        drawX -= shiftedTimerOffsetX;
+                }
 
 				if (reverseXDir)
 					drawX -= info->displayString->getWidth();

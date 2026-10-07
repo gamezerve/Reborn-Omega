@@ -891,6 +891,7 @@ protected:
 
 	NamedTimerMap								m_namedTimers;
 	Coord2D											m_namedTimerPosition;
+    Coord2D m_controlBarProNamedTimerPosition; // Reborn: Independent ControlBarPro script-timer coordinates.
 	Real												m_namedTimerFlashDuration;
 	Int													m_namedTimerLastFlashFrame;
 	Color												m_namedTimerFlashColor;
