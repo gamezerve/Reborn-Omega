@@ -175,6 +175,8 @@ class HackInternetAIInterface
 public:
 	virtual Bool isHacking() const = 0;
 	virtual Bool isHackingPackingOrUnpacking() const = 0;
+	// Reborn: Include pending enter commands while a deployed hacker is packing.
+	virtual Bool isEnteringContainer(const Object* container) const = 0;
 };
 
 //-------------------------------------------------------------------------------------------------
@@ -211,6 +213,8 @@ public:
 
 	virtual Bool isHacking() const override;
 	virtual Bool isHackingPackingOrUnpacking() const override;
+	// Reborn: Expose current and pending entry targets without adding persistent state.
+	virtual Bool isEnteringContainer(const Object* container) const override;
 
 protected:
 

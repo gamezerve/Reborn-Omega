@@ -551,6 +551,9 @@ public:
 		ACTION_REBORN_ENABLE_AI_SCRIPT_UPGRADES,
 		ACTION_REBORN_SET_LEGACY_FORWARD_SPEED_2D,
 
+		// Reborn: Manage idle skirmish hackers without disturbing active cash generation.
+		ACTION_REBORN_MANAGE_SKIRMISH_HACKERS,
+
 		// add new items here, please
 		NUM_ITEMS
 	};

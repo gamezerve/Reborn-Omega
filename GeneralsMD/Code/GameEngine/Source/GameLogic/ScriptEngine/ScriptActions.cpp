@@ -69,6 +69,7 @@
 #include "GameLogic/AISkirmishPlayer.h"
 #include "GameLogic/Locomotor.h"
 #include "GameLogic/Module/AIUpdate.h"
+#include "GameLogic/Module/HackInternetAIUpdate.h" // Reborn: Identify productive and unpacking hackers without interrupting them.
 #include "GameLogic/Module/CaveContain.h"
 #include "GameLogic/Module/CommandButtonHuntUpdate.h"
 #include "GameLogic/Module/CommandSetUpgrade.h"
@@ -8048,12 +8049,178 @@ void ScriptActions::doRebornEnableAIScriptUpgrades(const AsciiString& playerName
 //-------------------------------------------------------------------------------------------------
 /** Execute an action */
 //-------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Fill owned Internet Centers first, spread only idle new hackers, and leave cash-producing hackers untouched. */
+//-------------------------------------------------------------------------------------------------
+void ScriptActions::doRebornManageSkirmishHackers(const AsciiString& playerName, Bool newlyCreated)
+{
+	Player* player = TheScriptEngine->getPlayerFromAsciiString(playerName);
+	if (!player || !player->getAIPlayer() || !player->getAIPlayer()->isSkirmishAI())
+		return;
+
+	std::vector<Object*> hackers, structures, enemies;
+	for (Object* obj = TheGameLogic->getFirstObject(); obj; obj = obj->getNextObject())
+	{
+		if (obj->isEffectivelyDead() || obj->getContainedBy())
+			continue;
+		if (obj->getControllingPlayer() == player)
+		{
+			if (obj->isKindOf(KINDOF_MONEY_HACKER)) hackers.push_back(obj);
+			if (obj->isKindOf(KINDOF_STRUCTURE) && !obj->getStatusBits().test(OBJECT_STATUS_UNDER_CONSTRUCTION))
+				structures.push_back(obj);
+		}
+		else if (obj->getTeam() && player->getRelationship(obj->getTeam()) == ENEMIES &&
+			(obj->isKindOf(KINDOF_CAN_ATTACK) || obj->isKindOf(KINDOF_STRUCTURE)))
+			enemies.push_back(obj);
+	}
+
+	PolygonTrigger* area = TheScriptEngine->getQualifiedTriggerAreaByName("[Skirmish]MyInnerPerimeter");
+	Real minX = 0, maxX = 0, minY = 0, maxY = 0;
+	if (area && area->getNumPoints() >= 3)
+	{
+		minX = maxX = (Real)area->getPoint(0)->x;
+		minY = maxY = (Real)area->getPoint(0)->y;
+		for (Int i = 1; i < area->getNumPoints(); ++i)
+		{
+			const ICoord3D* p = area->getPoint(i);
+			minX = min(minX, (Real)p->x); maxX = max(maxX, (Real)p->x);
+			minY = min(minY, (Real)p->y); maxY = max(maxY, (Real)p->y);
+		}
+	}
+
+	for (Object* hacker : hackers)
+	{
+		AIUpdateInterface* ai = hacker->getAIUpdateInterface();
+		HackInternetAIInterface* hack = ai ? ai->getHackInternetAIInterface() : nullptr;
+		// Reborn: Do not interrupt productive, unpacking, packing, contained, disabled or already-commanded units.
+		if (!hack || hack->isHackingPackingOrUnpacking() || !ai->isIdle() || hacker->isDisabled() ||
+			!hacker->getTeam() || !hacker->getTeam()->isActive() || hacker->getTeam()->isCreated())
+			continue;
+
+		Object* center = nullptr;
+		Real closest = 1.0e30f;
+		for (Object* building : structures)
+		{
+			ContainModuleInterface* contain = building->getContain();
+			if (!building->isKindOf(KINDOF_FS_INTERNET_CENTER) || building->isDisabled() ||
+				!contain || !contain->isValidContainerFor(hacker, true))
+				continue;
+			Int freeSlots = contain->getContainMax() - contain->getContainCount();
+			// Reborn: Reserve slots for hackers already entering, including orders issued earlier in this pass.
+			for (Object* other : hackers)
+			{
+				AIUpdateInterface* otherAI = other->getAIUpdateInterface();
+				// Reborn: A recalled cash-producing hacker reserves its slot even before packing finishes.
+				HackInternetAIInterface* otherHack = otherAI ? otherAI->getHackInternetAIInterface() : nullptr;
+				if (other != hacker && otherHack && otherHack->isEnteringContainer(building))
+					--freeSlots;
+			}
+			if (freeSlots <= 0)
+				continue;
+			Real dx = building->getPosition()->x - hacker->getPosition()->x;
+			Real dy = building->getPosition()->y - hacker->getPosition()->y;
+			Real dist = dx * dx + dy * dy;
+			if (dist < closest) { closest = dist; center = building; }
+		}
+		if (center)
+		{
+			ai->aiEnter(center, CMD_FROM_SCRIPT);
+			continue;
+		}
+
+		// Reborn: Reinforcement units can join an existing active team without rerunning its OnCreate hook.
+		Bool nearBarracks = false;
+		for (Object* building : structures)
+		{
+			if (!building->isKindOf(KINDOF_FS_BARRACKS)) continue;
+			Real dx = building->getPosition()->x - hacker->getPosition()->x;
+			Real dy = building->getPosition()->y - hacker->getPosition()->y;
+			if (dx * dx + dy * dy < 60.0f * 60.0f) nearBarracks = true;
+		}
+		if ((newlyCreated || nearBarracks) && area && area->getNumPoints() >= 3)
+		{
+			Coord3D best = *hacker->getPosition();
+			Real bestScore = -1.0f;
+			// Reborn: Sample the whole inner base and choose the least crowded walkable point near owned structures.
+			for (Int row = 0; row < 7; ++row)
+			for (Int col = 0; col < 7; ++col)
+			{
+				Coord3D pos;
+				pos.x = minX + (maxX - minX) * (col + 0.35f + GameLogicRandomValue(0, 300) * 0.001f) / 7.0f;
+				pos.y = minY + (maxY - minY) * (row + 0.35f + GameLogicRandomValue(0, 300) * 0.001f) / 7.0f;
+				pos.z = TheTerrainLogic->getGroundHeight(pos.x, pos.y);
+				ICoord3D point = {(Int)pos.x, (Int)pos.y, (Int)pos.z};
+				if (!area->pointInTrigger(point) || !TheAI->pathfinder()->validMovementPosition(false, hacker->getLayer(), ai->getLocomotorSet(), &pos))
+					continue;
+				Bool safe = true, nearBase = false;
+				for (Object* building : structures)
+				{
+					Real dx = building->getPosition()->x - pos.x, dy = building->getPosition()->y - pos.y;
+					Real dist = dx * dx + dy * dy;
+					if (dist < 220.0f * 220.0f) nearBase = true;
+					if (building->isKindOf(KINDOF_FS_BARRACKS) && dist < 80.0f * 80.0f) safe = false;
+				}
+				for (Object* enemy : enemies)
+				{
+					Real dx = enemy->getPosition()->x - pos.x, dy = enemy->getPosition()->y - pos.y;
+					if (dx * dx + dy * dy < 180.0f * 180.0f) { safe = false; break; }
+				}
+				if (!safe || !nearBase) continue;
+				Real score = 1.0e20f;
+				for (Object* other : hackers)
+				{
+					if (other == hacker) continue;
+					AIUpdateInterface* otherAI = other->getAIUpdateInterface();
+					const Coord3D* location = otherAI && !otherAI->isIdle() && !otherAI->getGoalObject() &&
+						otherAI->getGoalPosition() ? otherAI->getGoalPosition() : other->getPosition();
+					HackInternetAIInterface* otherHack = otherAI ? otherAI->getHackInternetAIInterface() : nullptr;
+					if (otherHack && otherHack->isHackingPackingOrUnpacking()) location = other->getPosition();
+					Real dx = location->x - pos.x, dy = location->y - pos.y;
+					score = min(score, dx * dx + dy * dy);
+				}
+				if (score > bestScore) { bestScore = score; best = pos; }
+			}
+			Real dx = best.x - hacker->getPosition()->x, dy = best.y - hacker->getPosition()->y;
+			if (bestScore >= 0.0f && dx * dx + dy * dy > 15.0f * 15.0f &&
+				TheAI->pathfinder()->adjustToPossibleDestination(hacker, ai->getLocomotorSet(), &best))
+			{
+				// Reborn: Path adjustment must not send an economic unit outside its inner base or back to the barracks exit.
+				ICoord3D destination = {(Int)best.x, (Int)best.y, (Int)best.z};
+				Bool valid = area->pointInTrigger(destination);
+				for (Object* building : structures)
+				{
+					Real bx = best.x - building->getPosition()->x, by = best.y - building->getPosition()->y;
+					if (building->isKindOf(KINDOF_FS_BARRACKS) && bx * bx + by * by < 80.0f * 80.0f) valid = false;
+				}
+				for (Object* enemy : enemies)
+				{
+					Real ex = best.x - enemy->getPosition()->x, ey = best.y - enemy->getPosition()->y;
+					if (ex * ex + ey * ey < 180.0f * 180.0f) valid = false;
+				}
+				dx = best.x - hacker->getPosition()->x; dy = best.y - hacker->getPosition()->y;
+				if (valid && dx * dx + dy * dy > 15.0f * 15.0f)
+				{
+					ai->aiMoveToPosition(&best, CMD_FROM_SCRIPT);
+					continue;
+				}
+			}
+		}
+		// Reborn: Start cash generation only after arrival, or when no safe dispersal point is available.
+		ai->aiHackInternet(CMD_FROM_SCRIPT);
+	}
+}
+
 void ScriptActions::executeAction( ScriptAction *pAction )
 {
 	switch (pAction->getActionType()) {
 		default:
 			DEBUG_CRASH(("Unknown ScriptAction type %d", pAction->getActionType())); return;
 
+
+		// Reborn: Dedicated action used only by the China-family skirmish hacker scripts.
+		case ScriptAction::ACTION_REBORN_MANAGE_SKIRMISH_HACKERS:
+			doRebornManageSkirmishHackers(pAction->getParameter(0)->getString(), pAction->getParameter(1)->getInt() != 0);
+			return;
 
 		case ScriptAction::ACTION_REBORN_SET_LEGACY_FORWARD_SPEED_2D:
 		{

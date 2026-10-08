@@ -4168,6 +4168,18 @@ void ScriptEngine::init()
 
 	///////////////////////////////////////////////////////////////////////////////////////////////////
 
+	// Reborn: Expose the same dedicated hacker action to WorldBuilder and the skirmish script reader.
+	curTemplate = &m_actionTemplates[ScriptAction::ACTION_REBORN_MANAGE_SKIRMISH_HACKERS];
+	curTemplate->m_internalName = "ACTION_REBORN_MANAGE_SKIRMISH_HACKERS";
+	curTemplate->m_uiName = "Reborn/Manage Skirmish Hackers";
+	curTemplate->m_numParameters = 2;
+	curTemplate->m_parameters[0] = Parameter::SIDE;
+	curTemplate->m_parameters[1] = Parameter::BOOLEAN;
+	curTemplate->m_numUiStrings = 3;
+	curTemplate->m_uiStrings[0] = "For player ";
+	curTemplate->m_uiStrings[1] = ", fill Internet Centers and deploy new hackers: ";
+	curTemplate->m_uiStrings[2] = ".";
+
 	/* Recipe for adding a condition:
 			1. In Scripts.h, add an enum element to enum ConditionType just before NUM_ITEMS.
 			2. Go to the end of this section of templates, and create a template.

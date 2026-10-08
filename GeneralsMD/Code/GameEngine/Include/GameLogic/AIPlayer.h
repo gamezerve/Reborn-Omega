@@ -256,6 +256,8 @@ protected:
 	void computeCenterAndRadiusOfBase(Coord3D *center, Real *radius);
 	Object *findFactory(const ThingTemplate *thing, Bool busyOK); ///< Find a factory to build a unit.  If force is true, may return a busy factory.
 	void queueUnits();						///< Check the team build list, & queue up units at any idle factories.
+	// Reborn: Recall nearest hackers only when an Internet Center finishes construction.
+	void refillInternetCenterFromNearestHackers(Object* center);
 	void checkForSupplyCenter( BuildListInfo *info, Object *bldg);
  	void queueSupplyTruck();
 	void updateBridgeRepair();

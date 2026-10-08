@@ -53,6 +53,8 @@
 #include "GameLogic/AIPathfind.h"
 #include "GameLogic/TerrainLogic.h"
 #include "GameLogic/Module/AIUpdate.h"
+#include "GameLogic/Module/HackInternetAIUpdate.h" // Reborn: Recognize pending Internet Center entry orders.
+#include "GameLogic/Module/ContainModule.h" // Reborn: Limit replacement-center recalls to its actual free capacity.
 #include "GameLogic/Module/DozerAIUpdate.h"
 #include "GameLogic/Module/UpdateModule.h"
 #include "GameLogic/ScriptEngine.h"
@@ -113,6 +115,55 @@ AIPlayer::~AIPlayer()
 // ------------------------------------------------------------------------------------------------
 /** Invoked when a structure I am building is finished building. */
 // ------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
+/** Reborn: A completed replacement Internet Center recalls only its nearest available hackers once, up to its free capacity. */
+//-------------------------------------------------------------------------------------------------
+void AIPlayer::refillInternetCenterFromNearestHackers(Object* center)
+{
+	if (!isSkirmishAI() || !center || center->isEffectivelyDead() ||
+		center->getControllingPlayer() != m_player || !center->isKindOf(KINDOF_FS_INTERNET_CENTER) ||
+		center->getStatusBits().test(OBJECT_STATUS_UNDER_CONSTRUCTION))
+		return;
+	ContainModuleInterface* contain = center->getContain();
+	if (!contain) return;
+	Int freeSlots = contain->getContainMax() - contain->getContainCount();
+	std::vector<Object*> candidates;
+	for (Object* obj = TheGameLogic->getFirstObject(); obj; obj = obj->getNextObject())
+	{
+		if (obj->getControllingPlayer() != m_player || !obj->isKindOf(KINDOF_MONEY_HACKER) ||
+			obj->isEffectivelyDead() || obj->getContainedBy() || obj->isDisabled())
+			continue;
+		AIUpdateInterface* ai = obj->getAIUpdateInterface();
+		HackInternetAIInterface* hack = ai ? ai->getHackInternetAIInterface() : nullptr;
+		if (!hack) continue;
+		// Reborn: Existing incoming orders, including packing hackers, already reserve their destination slot.
+		if (hack->isEnteringContainer(center)) { --freeSlots; continue; }
+		if (!obj->getTeam() || !obj->getTeam()->isActive() || obj->getTeam()->isCreated() ||
+			!contain->isValidContainerFor(obj, true))
+			continue;
+		candidates.push_back(obj);
+	}
+	for (Int slot = 0; slot < freeSlots && !candidates.empty(); ++slot)
+	{
+		size_t nearest = 0;
+		Real nearestDistance = 1.0e30f;
+		for (size_t i = 0; i < candidates.size(); ++i)
+		{
+			Real dx = candidates[i]->getPosition()->x - center->getPosition()->x;
+			Real dy = candidates[i]->getPosition()->y - center->getPosition()->y;
+			Real distance = dx * dx + dy * dy;
+			if (distance < nearestDistance || (distance == nearestDistance && candidates[i]->getID() < candidates[nearest]->getID()))
+			{ nearest = i; nearestDistance = distance; }
+		}
+		// Reborn: This construction-completion exception may pack up productive hackers; ordinary management still leaves them untouched.
+		candidates[nearest]->getAIUpdateInterface()->aiEnter(center, CMD_FROM_SCRIPT);
+		candidates.erase(candidates.begin() + nearest);
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Preserve normal completion bookkeeping and refill Internet Centers after construction. */
+//-------------------------------------------------------------------------------------------------
 void AIPlayer::onStructureProduced( Object *factory, Object *bldg )
 {
 	m_teamDelay = 0; // Cause the update queues & selection to happen immediately.
@@ -147,6 +198,8 @@ void AIPlayer::onStructureProduced( Object *factory, Object *bldg )
 			TheScriptEngine->AppendDebugMessage(bldgName, false);
 		}
 		checkForSupplyCenter(info, bldg);
+		// Reborn: Run once at completion, not in the periodic idle manager; normal deployed hackers remain undisturbed afterwards.
+		refillInternetCenterFromNearestHackers(bldg);
 		return;
 	}
 

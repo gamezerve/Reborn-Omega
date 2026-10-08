@@ -90,6 +90,24 @@ Bool HackInternetAIUpdate::isHacking() const
 }
 
 //-------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Count an enter order while a deployed hacker packs, before the target reaches its movement state machine. */
+//-------------------------------------------------------------------------------------------------
+Bool HackInternetAIUpdate::isEnteringContainer(const Object* container) const
+{
+	if (!container) return false;
+	if (m_hasPendingCommand && m_pendingCommand.getCommandType() == AICMD_ENTER)
+	{
+		AICommandParms pending(AICMD_ENTER, CMD_FROM_SCRIPT);
+		m_pendingCommand.reconstitute(pending);
+		return pending.m_obj == container;
+	}
+	return !isIdle() && getStateMachine()->getGoalObject() == container;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Preserve the productive/packing/unpacking protection used by ordinary hacker management. */
+//-------------------------------------------------------------------------------------------------
 Bool HackInternetAIUpdate::isHackingPackingOrUnpacking() const
 {
 	if( getStateMachine()->getCurrentStateID() == HACK_INTERNET ||

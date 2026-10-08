@@ -158,6 +158,8 @@ protected:
 	void doNamedDelete(const AsciiString& unitName);
 
 	void doTeamGarrisonSpecificBuilding(const AsciiString& teamName, const AsciiString& buildingName);
+	// Reborn: Prioritize Internet Center capacity, then distribute idle hackers throughout the base.
+	void doRebornManageSkirmishHackers(const AsciiString& playerName, Bool newlyCreated);
 	void doTeamGarrisonNearestBuilding(const AsciiString& teamName);
 	void doTeamExitAllBuildings(const AsciiString& teamName);
 	void doExitSpecificBuilding(const AsciiString& buildingName);
