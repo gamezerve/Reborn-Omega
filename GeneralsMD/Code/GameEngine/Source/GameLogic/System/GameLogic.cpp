@@ -112,7 +112,7 @@
 #include "GameNetwork/GameSpy/PersistentStorageThread.h"
 #include "GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.h"
 
-#include <rts/profile.h>
+#include "Lib/Profile.h"
 
 Bool g_useLegacyForwardSpeed2D = FALSE; // Reborn: Now includes both 2D and 3D forward speed calculations.
 extern Int g_resourceMultiplierPercent; // Reborn
