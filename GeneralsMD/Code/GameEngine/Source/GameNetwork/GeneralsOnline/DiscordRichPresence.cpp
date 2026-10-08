@@ -1,4 +1,5 @@
 #include "GameNetwork/GeneralsOnline/DiscordRichPresence.h"
+#include "BuildVersion.h" // Reborn: Use the generated mod version for Discord branding.
 
 #include "Common/PlayerTemplate.h"
 #include "GameClient/MapUtil.h"
@@ -190,7 +191,10 @@ void GeneralsOnlineDiscordRPC::Tick(
   }
   m_nextPresenceUpdate = now + PRESENCE_UPDATE_INTERVAL;
 
-  const PresenceData data = BuildPresence(lobbyInterface);
+  PresenceData data = BuildPresence(lobbyInterface);
+  // Reborn: Brand every state with the current mod version while retaining lobby or match context.
+  data.state = ClampDiscordString(std::format("{} / Generals Online | {}",
+                                             REBORN_OMEGA_VERSION_TEXT_RC, data.state));
   const std::string fingerprint = data.Fingerprint();
   if (fingerprint == m_lastPresence) {
     return;
