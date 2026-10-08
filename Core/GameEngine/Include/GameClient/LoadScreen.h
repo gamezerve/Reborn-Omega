@@ -296,6 +296,8 @@ class MapTransferLoadScreen : public LoadScreen
 {
 public:
 	MapTransferLoadScreen();
+	// Reborn: Local UI preview entry point, enabled only by the Debug code switch.
+	static void runPreviewIfRequested();
 	virtual ~MapTransferLoadScreen() override;
 
 	virtual void init( GameInfo *game ) override;		///< Init the loadscreen
@@ -322,4 +324,5 @@ private:
 	GameWindow *m_fileNameText;
 	GameWindow *m_timeoutText;
 	Int m_oldTimeout;												///< old val, so we can call processTimeout() every frame and not touch the GUI
+	Bool m_preview = FALSE; // Reborn: Preview uses local slots and never services the network.
 };

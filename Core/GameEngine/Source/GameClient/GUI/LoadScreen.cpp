@@ -52,6 +52,7 @@
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
+#include <windows.h> // Reborn: Local preview keyboard controls and timing.
 #include "Common/NameKeyGenerator.h"
 #include "Common/AudioAffect.h"
 #include "Common/AudioEventRTS.h"
@@ -2027,6 +2028,114 @@ MapTransferLoadScreen::~MapTransferLoadScreen()
 {
 }
 
+#if defined(RTS_DEBUG)
+// Reborn: Debug-only switch: TRUE opens the local transfer preview; FALSE disables it.
+static const Bool REBORN_AUTO_TEST_MAP_TRANSFER = TRUE;
+static Bool s_rebornMapTransferPreviewRequested = REBORN_AUTO_TEST_MAP_TRANSFER;
+#else
+// Reborn: The local transfer preview is disabled in Release builds.
+static Bool s_rebornMapTransferPreviewRequested = FALSE;
+#endif
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Exercise the real transfer UI with local sample slots, without network or file operations. */
+//-------------------------------------------------------------------------------------------------
+void MapTransferLoadScreen::runPreviewIfRequested()
+{
+	if (!s_rebornMapTransferPreviewRequested || TheNetwork || !TheShell || !TheMultiplayerSettings)
+		return;
+	s_rebornMapTransferPreviewRequested = FALSE;
+	const Int colors = TheMultiplayerSettings->getNumColors();
+	if (colors <= 0)
+		return;
+
+	SkirmishGameInfo game;
+	for (Int i = 0; i < MAX_SLOTS; ++i)
+	{
+		UnicodeString name;
+		if (i == 0)
+			name = L"Preview Host";
+		else if (i == 1)
+			name = L"Player With Map";
+		else
+			name.format(L"Downloading Player %d", i);
+		GameSlot* slot = game.getSlot(i);
+		slot->setState(SLOT_PLAYER, name);
+		slot->setColor(i % colors);
+		slot->setMapAvailability(i < 2);
+	}
+
+	MapTransferLoadScreen screen;
+	screen.m_preview = TRUE;
+	screen.init(&game);
+	if (!screen.m_loadScreen)
+		return;
+	WindowLayout* menu = TheShell->top();
+	const Bool menuWasHidden = menu && menu->isHidden();
+	if (menu)
+		menu->hide(TRUE);
+	screen.m_loadScreen->winBringToTop();
+
+	const char* files[] = { "PreviewMap.tga", "map.ini", "PreviewMap.map" };
+	UnsignedInt previousTime = timeGetTime();
+	UnsignedInt elapsed = 0;
+	Int previousFile = -1;
+	Bool paused = FALSE;
+	Bool spaceWasDown = FALSE;
+	Bool restartWasDown = FALSE;
+	while (!TheGameEngine->getQuitting() && !TheGameLogic->isQuitToDesktopRequested())
+	{
+		// Reborn: Read preview controls only while this application owns keyboard focus.
+		const Bool focused = GetActiveWindow() != nullptr && GetForegroundWindow() == GetActiveWindow();
+		if (focused && (GetAsyncKeyState(VK_ESCAPE) & 0x8000))
+			break;
+		const Bool spaceDown = focused && (GetAsyncKeyState(VK_SPACE) & 0x8000);
+		const Bool restartDown = focused && (GetAsyncKeyState('R') & 0x8000);
+		if (spaceDown && !spaceWasDown)
+			paused = !paused;
+		const UnsignedInt now = timeGetTime();
+		if (!paused && focused)
+			elapsed = (elapsed + now - previousTime) % 60000u;
+		previousTime = now;
+		if (restartDown && !restartWasDown)
+		{
+			elapsed = 0;
+			previousFile = -1;
+		}
+		spaceWasDown = spaceDown;
+		restartWasDown = restartDown;
+
+		const Int file = elapsed / 20000u;
+		const Int fileTime = elapsed % 20000u;
+		if (file != previousFile)
+		{
+			for (Int i = 0; i < MAX_SLOTS; ++i)
+				screen.m_oldProgress[i] = -1;
+			screen.setCurrentFilename(files[file]);
+			screen.processProgress(1, 100, "MapTransfer:Done");
+			previousFile = file;
+		}
+		Int overall = 100;
+		for (Int i = 2; i < MAX_SLOTS; ++i)
+		{
+			const Int percent = max(0, min(100, (fileTime - 1000) * 100 / (6000 + i * 1000)));
+			overall = min(overall, percent);
+			screen.processProgress(i, percent, percent == 0 ? "MapTransfer:Preparing"
+				: percent < 100 ? "MapTransfer:Recieving" : "MapTransfer:Done");
+		}
+		screen.processProgress(0, overall, overall == 0 ? "MapTransfer:Preparing"
+			: overall < 100 ? "MapTransfer:Sending" : "MapTransfer:Done");
+		screen.processTimeout(120 - fileTime / 1000);
+		screen.update(overall);
+		Sleep(16);
+	}
+	// Reborn: reset() only clears pointers; destroy the temporary window before clearing them.
+	TheWindowManager->winDestroy(screen.m_loadScreen);
+	screen.reset();
+	if (menu && !TheGameEngine->getQuitting() && !TheGameLogic->isQuitToDesktopRequested())
+		menu->hide(menuWasHidden);
+}
+
 void MapTransferLoadScreen::init( GameInfo *game )
 {
 	// create the layout of the load screen
@@ -2038,8 +2147,12 @@ void MapTransferLoadScreen::init( GameInfo *game )
 	m_loadScreen->winHide(FALSE);
 	m_loadScreen->winBringToTop();
 
-	DEBUG_ASSERTCRASH(TheNetwork, ("Where the Heck is the Network?!!!!"));
-	DEBUG_LOG(("NumPlayers %d", TheNetwork->getNumPlayers()));
+	// Reborn: A local preview supplies sample slots without creating a network session.
+	if (!m_preview)
+	{
+		DEBUG_ASSERTCRASH(TheNetwork, ("Where the Heck is the Network?!!!!"));
+		DEBUG_LOG(("NumPlayers %d", TheNetwork->getNumPlayers()));
+	}
 
 	AsciiString winName;
 	Int i;
@@ -2077,7 +2190,9 @@ void MapTransferLoadScreen::init( GameInfo *game )
 		GameSlot *slot = game->getSlot(i);
 		if (!slot || !slot->isHuman())
 			continue;
-		Color houseColor = TheMultiplayerSettings->getColor(slot->getApparentColor())->getColor();
+		// Reborn: Apparent colors consult live lobby slots; preview colors belong to the local sample game.
+		const Int colorIndex = m_preview ? slot->getColor() : slot->getApparentColor();
+		Color houseColor = TheMultiplayerSettings->getColor(colorIndex)->getColor();
 		GadgetProgressBarSetEnabledBarColor(m_progressBars[netSlot], houseColor );
 
 		UnicodeString name = slot->getName();
@@ -2087,7 +2202,8 @@ void MapTransferLoadScreen::init( GameInfo *game )
 		GadgetStaticTextSetText(m_progressText[netSlot], UnicodeString::TheEmptyString );
 		m_progressText[netSlot]->winSetEnabledTextColors(houseColor, m_progressText[netSlot]->winGetEnabledTextBorderColor());
 
-		if ((i == 0 || (TheGameInfo->getConstSlot(i)->isHuman() && TheGameInfo->getConstSlot(i)->hasMap())) && m_progressBars[netSlot])
+		// Reborn: Use the supplied game so preview slots stay independent of live lobby data.
+		if ((i == 0 || slot->hasMap()) && m_progressBars[netSlot])
 			m_progressBars[netSlot]->winHide(TRUE);
 
 		m_playerLookup[i] = netSlot; // save our mapping so we can update progress correctly
@@ -2120,7 +2236,8 @@ void MapTransferLoadScreen::reset()
 
 void MapTransferLoadScreen::update( Int percent )
 {
-	if (TheNetwork)
+	// Reborn: Local preview must not pump a live network session.
+	if (!m_preview && TheNetwork)
 	{
 		TheNetwork->liteupdate();
 	}

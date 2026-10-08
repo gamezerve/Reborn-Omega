@@ -29,6 +29,7 @@
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "GameClient/LoadScreen.h" // Reborn: Optional local map-transfer preview.
 
 #include "gamespy/ghttp/ghttp.h"
 
@@ -908,6 +909,9 @@ void MainMenuUpdate( WindowLayout *layout, void *userData )
 	{
 		return;
 	}
+
+	// Reborn: Launch the requested preview after UI initialization, from the normal menu update.
+	MapTransferLoadScreen::runPreviewIfRequested();
 
 	if (s_skipNextMainMenuTransition)
 	{
