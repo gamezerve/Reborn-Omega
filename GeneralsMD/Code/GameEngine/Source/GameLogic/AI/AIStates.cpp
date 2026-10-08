@@ -2378,6 +2378,12 @@ void AIMoveAwayFromRepulsorsState::onExit( StateExitType status )
  */
 static Bool canPursue(Object *source, Weapon *weapon, Object *victim)
 {
+	// Reborn: Script-held units cannot pursue; leave contained units and ordinary movement unchanged.
+	if (source->isDisabledByType(DISABLED_HELD) && !source->getContainedBy())
+	{
+		return false;
+	}
+
 	/* This state is only used if the target is moving away from us, and has physics. */
 	if (!victim->getPhysics()) {
 		return false;
@@ -5219,6 +5225,15 @@ StateReturnType AIAttackAimAtTargetState::onEnter()
 		inFiringRange = weapon->isWithinAttackRange( source, targetPos );//See, I can be attacking the ground.  Perfectly valid.
 	else
 		return STATE_FAILURE; // can't happen.
+
+	// Reborn: Reject unreachable targets before immediate transitions can loop on a script-held defender.
+	// Reborn: Preserve in-range fire, contained-unit firepoint handling, and existing leech-range exceptions.
+	if (source->isDisabledByType(DISABLED_HELD) && !containedBy && !inFiringRange && !weapon->hasLeechRange())
+	{
+		// Reborn: This early exit has not assigned an aiming locomotor goal; keep onExit cleanup safe.
+		m_setLocomotor = false;
+		return STATE_FAILURE;
+	}
 
 	// add ourself as a targeter BEFORE calling isTemporarilyPreventingAimSuccess().
 	if (victimAI)

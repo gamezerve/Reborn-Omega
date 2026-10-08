@@ -103,6 +103,85 @@ std::vector<StateID> * State::getTransitions()
 }
 #endif
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Keep snapshots of active transition checks without emitting routine gameplay logs. */
+//-------------------------------------------------------------------------------------------------
+class RebornStateTransitionTrace;
+static const RebornStateTransitionTrace* s_rebornStateTransitionTrace = nullptr;
+
+class RebornStateTransitionTrace
+{
+public:
+  //-------------------------------------------------------------------------------------------------
+  /** Reborn: Snapshot identities before nested transitions can change or destroy their states. */
+  //-------------------------------------------------------------------------------------------------
+  RebornStateTransitionTrace(State* state, StateReturnType status, StateID successID, StateID failureID, Bool sleeping)
+    : m_previous(s_rebornStateTransitionTrace), m_machine(state->getMachine()),
+      m_stateID(state->getID()), m_successID(successID), m_failureID(failureID),
+      m_status(status), m_sleeping(sleeping), m_ownerID(0), m_goalID(0)
+  {
+    const Object* owner = m_machine->getOwner();
+    m_ownerName = owner && owner->getTemplate() ? owner->getTemplate()->getName() : AsciiString("<no owner>");
+    if (owner)
+      m_ownerID = (UnsignedInt)owner->getID();
+    const Object* goal = m_machine->getGoalObject();
+    m_goalName = goal && goal->getTemplate() ? goal->getTemplate()->getName() : AsciiString("<no goal>");
+    if (goal)
+      m_goalID = (UnsignedInt)goal->getID();
+    m_goalPosition = *m_machine->getGoalPosition();
+#ifdef STATE_MACHINE_DEBUG
+    m_machineName = m_machine->getName();
+    m_stateName = state->getName();
+#else
+    m_machineName = "<name unavailable in this build>";
+    m_stateName = "<name unavailable in this build>";
+#endif
+    s_rebornStateTransitionTrace = this;
+  }
+
+  //-------------------------------------------------------------------------------------------------
+  /** Reborn: Remove the temporary trace on normal returns and exception unwinding. */
+  //-------------------------------------------------------------------------------------------------
+  ~RebornStateTransitionTrace()
+  {
+    s_rebornStateTransitionTrace = m_previous;
+  }
+
+  //-------------------------------------------------------------------------------------------------
+  /** Reborn: Print the active chain only when an existing transition recursion limit is reached. */
+  //-------------------------------------------------------------------------------------------------
+  static void logLimit(Int depth, Bool sleeping)
+  {
+    // Reborn: Emit limit diagnostics through the engine debug log, not RebornLog.
+    DEBUG_LOG(("STATE_TRANSITION_LIMIT: frame=%u kind=%s depth=%d limit=20; active chain follows, newest first.",
+      TheGameLogic ? TheGameLogic->getFrame() : 0, sleeping ? "sleep" : "normal", depth));
+    Int entry = 0;
+    for (const RebornStateTransitionTrace* trace = s_rebornStateTransitionTrace; trace; trace = trace->m_previous)
+    {
+      DEBUG_LOG(("STATE_TRANSITION_CHAIN: entry=%d owner='%s' ownerID=%u machine='%s' machineAddress=%p state='%s' stateID=%u status=%d kind=%s successID=%u failureID=%u goal='%s' goalID=%u goalPosition=(%.3f,%.3f,%.3f)",
+        entry++, trace->m_ownerName.str(), trace->m_ownerID, trace->m_machineName.str(),
+        (const void*)trace->m_machine, trace->m_stateName.str(), (UnsignedInt)trace->m_stateID,
+        (Int)trace->m_status, trace->m_sleeping ? "sleep" : "normal",
+        (UnsignedInt)trace->m_successID, (UnsignedInt)trace->m_failureID,
+        trace->m_goalName.str(), trace->m_goalID,
+        trace->m_goalPosition.x, trace->m_goalPosition.y, trace->m_goalPosition.z));
+    }
+  }
+
+private:
+  // Reborn: Never copy stack-linked diagnostics or persist them in save data.
+  RebornStateTransitionTrace(const RebornStateTransitionTrace&);
+  RebornStateTransitionTrace& operator=(const RebornStateTransitionTrace&);
+  const RebornStateTransitionTrace* m_previous;
+  StateMachine* m_machine;
+  StateID m_stateID, m_successID, m_failureID;
+  StateReturnType m_status;
+  Bool m_sleeping;
+  UnsignedInt m_ownerID, m_goalID;
+  AsciiString m_ownerName, m_machineName, m_stateName, m_goalName;
+  Coord3D m_goalPosition;
+};
+
 //-----------------------------------------------------------------------------
 /**
  * Given a return code, handle state transitions
@@ -111,9 +190,12 @@ StateReturnType State::friend_checkForTransitions( StateReturnType status )
 {
 	static Int checkfortransitionsnum = 0;
 
+	// Reborn: Capture the active chain silently; emit it only at the existing recursion limit.
+	RebornStateTransitionTrace trace(this, status, m_successStateID, m_failureStateID, false);
 	StIncrementer inc(checkfortransitionsnum);
 	if (checkfortransitionsnum >= 20)
 	{
+		RebornStateTransitionTrace::logLimit(checkfortransitionsnum, false);
 		DEBUG_CRASH(("checkfortransitionsnum is > 20"));
 		return STATE_FAILURE;
 	}
@@ -204,9 +286,12 @@ StateReturnType State::friend_checkForSleepTransitions( StateReturnType status )
 {
 	static Int checkfortransitionsnum = 0;
 
+	// Reborn: Capture the active chain silently; emit it only at the existing recursion limit.
+	RebornStateTransitionTrace trace(this, status, m_successStateID, m_failureStateID, true);
 	StIncrementer inc(checkfortransitionsnum);
 	if (checkfortransitionsnum >= 20)
 	{
+		RebornStateTransitionTrace::logLimit(checkfortransitionsnum, true);
 		DEBUG_CRASH(("checkforsleeptransitionsnum is > 20"));
 		return STATE_FAILURE;
 	}
