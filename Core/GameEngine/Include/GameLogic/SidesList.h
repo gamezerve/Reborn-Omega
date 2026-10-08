@@ -114,7 +114,7 @@ public:
 			return(&m_teams[team]);
 		}
 		DEBUG_CRASH(("Out of range."));
-		throw ERROR_BAD_ARG;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BAD_ARG, "ErrorCode throw");
 		return nullptr;
 	}
 };
@@ -222,7 +222,7 @@ inline SidesInfo * SidesList::getSideInfo(Int side)
 		return(&m_sides[side]);
 	}
 	DEBUG_CRASH(("Out of range."));
-	throw ERROR_BAD_ARG;
+	/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BAD_ARG, "ErrorCode throw");
 	return nullptr;
 }
 
@@ -233,7 +233,7 @@ inline SidesInfo * SidesList::getSkirmishSideInfo(Int side)
 		return(&m_skirmishSides[side]);
 	}
 	DEBUG_CRASH(("Out of range."));
-	throw ERROR_BAD_ARG;
+	/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BAD_ARG, "ErrorCode throw");
 	return nullptr;
 }
 

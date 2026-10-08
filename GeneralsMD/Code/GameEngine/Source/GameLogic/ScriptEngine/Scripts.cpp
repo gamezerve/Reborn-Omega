@@ -2219,7 +2219,7 @@ Parameter *Parameter::ReadParameter(DataChunkInput &file)
 			if (!found)
       {
 				DEBUG_CRASH(("Unable to find Kindof '%s', please call JKM (x36872).", pParm->m_string.str()));
-				throw ERROR_BUG;
+				/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BUG, "ErrorCode throw");
 			}
 		}
     else

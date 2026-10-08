@@ -518,7 +518,7 @@ State *StateMachine::internalGetState( StateID id )
 	if (i == m_stateMap.end())
 	{
 		DEBUG_CRASH(( "StateMachine::internalGetState(): Invalid state" ));
-		throw ERROR_BAD_ARG;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BAD_ARG, "ErrorCode throw");
 	}
 
 	return (*i).second;

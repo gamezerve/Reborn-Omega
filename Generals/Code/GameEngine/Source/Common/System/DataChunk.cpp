@@ -935,7 +935,7 @@ Dict DataChunkInput::readDict()
 				d.setUnicodeString(k, readUnicodeString());
 				break;
 			default:
-				throw ERROR_CORRUPT_FILE_FORMAT;
+				/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_CORRUPT_FILE_FORMAT, "ErrorCode throw");
 				break;
 		}
 	}

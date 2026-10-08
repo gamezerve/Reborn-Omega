@@ -376,7 +376,7 @@ Team *TeamFactory::createTeam(const AsciiString& name)
 Team *TeamFactory::createTeamOnPrototype( TeamPrototype *prototype )
 {
 	if( prototype == nullptr )
-		throw ERROR_BAD_ARG;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BAD_ARG, "ErrorCode throw");
 
 	Team *t = nullptr;
 	if( prototype->getIsSingleton() )

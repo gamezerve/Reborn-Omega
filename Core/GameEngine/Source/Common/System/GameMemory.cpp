@@ -240,7 +240,7 @@ static void* sysAllocateDoNotZero(Int numBytes)
 {
 	void* p = ::GlobalAlloc(GMEM_FIXED, numBytes);
 	if (!p)
-		throw ERROR_OUT_OF_MEMORY;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_OUT_OF_MEMORY, "ErrorCode throw");
 #ifdef MEMORYPOOL_DEBUG
 	{
 		USE_PERF_TIMER(MemoryPoolDebugging)
@@ -1657,7 +1657,7 @@ void* MemoryPool::allocateBlockDoNotZeroImplementation(DECLARE_LITERALSTRING_ARG
 	{
 		if (m_overflowAllocationCount == 0)
 		{
-			throw ERROR_OUT_OF_MEMORY;	// this pool is not allowed to grow
+			/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_OUT_OF_MEMORY, "ErrorCode throw");	// this pool is not allowed to grow
 		}
 		else
 		{
@@ -2254,7 +2254,7 @@ void *DynamicMemoryAllocator::allocateBytesDoNotZeroImplementation(Int numBytes 
 #if defined(RTS_DEBUG)
   // check alignment
   if (unsigned(result)&3)
-    throw ERROR_OUT_OF_MEMORY;
+    /* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_OUT_OF_MEMORY, "ErrorCode throw");
 #endif
 
 	return result;
@@ -2665,7 +2665,7 @@ MemoryPool *MemoryPoolFactory::createMemoryPool(const char *poolName, Int alloca
 	if (initialAllocationCount <= 0 || overflowAllocationCount < 0)
 	{
 		DEBUG_CRASH(("illegal pool size: %d %d",initialAllocationCount,overflowAllocationCount));
-		throw ERROR_OUT_OF_MEMORY;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_OUT_OF_MEMORY, "ErrorCode throw");
 	}
 
 	pool = new (::sysAllocateDoNotZero(sizeof(MemoryPool))) MemoryPool;	// will throw on failure
@@ -3464,7 +3464,7 @@ void *malloc(size_t a)
 void *realloc(void *p, size_t s)
 {
 	DEBUG_CRASH(("realloc is evil. do not call it."));
-	throw ERROR_OUT_OF_MEMORY;
+	/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_OUT_OF_MEMORY, "ErrorCode throw");
 }
 #endif
 

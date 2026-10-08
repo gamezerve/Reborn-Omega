@@ -46,7 +46,7 @@ void *DynamicMemoryAllocator::allocateBytesDoNotZeroImplementation(Int numBytes)
 {
 	void *p = malloc(numBytes);
 	if (p == nullptr)
-		throw ERROR_OUT_OF_MEMORY;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_OUT_OF_MEMORY, "ErrorCode throw");
 	return p;
 }
 
@@ -162,7 +162,7 @@ void * __cdecl operator new(size_t size)
 {
 	void *p = malloc(size);
 	if (p == nullptr)
-		throw ERROR_OUT_OF_MEMORY;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_OUT_OF_MEMORY, "ErrorCode throw");
 	memset(p, 0, size);
 	return p;
 }
@@ -181,7 +181,7 @@ void * __cdecl operator new[](size_t size)
 {
 	void *p = malloc(size);
 	if (p == nullptr)
-		throw ERROR_OUT_OF_MEMORY;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_OUT_OF_MEMORY, "ErrorCode throw");
 	memset(p, 0, size);
 	return p;
 }
@@ -201,7 +201,7 @@ void* __cdecl operator new(size_t size, const char *, int)
 {
 	void *p = malloc(size);
 	if (p == nullptr)
-		throw ERROR_OUT_OF_MEMORY;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_OUT_OF_MEMORY, "ErrorCode throw");
 	memset(p, 0, size);
 	return p;
 }
@@ -215,7 +215,7 @@ void* __cdecl operator new[](size_t size, const char *, int)
 {
 	void *p = malloc(size);
 	if (p == nullptr)
-		throw ERROR_OUT_OF_MEMORY;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_OUT_OF_MEMORY, "ErrorCode throw");
 	memset(p, 0, size);
 	return p;
 }

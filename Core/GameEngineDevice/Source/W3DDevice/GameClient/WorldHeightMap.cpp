@@ -873,7 +873,7 @@ Bool WorldHeightMap::ParseHeightMapData(DataChunkInput &file, DataChunkInfo *inf
 	m_dataSize = file.readInt();
 	m_data = MSGNEW("WorldHeightMap_ParseHeightMapData") UnsignedByte[m_dataSize];
 	if (m_dataSize <= 0 || (m_dataSize != (m_width*m_height))) {
-		throw ERROR_CORRUPT_FILE_FORMAT	;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_CORRUPT_FILE_FORMAT, "ErrorCode throw");
 	}
 
 	Int numBytesX = (m_width+7)/8;	//how many bytes to fit all bitflags
@@ -947,7 +947,7 @@ Bool WorldHeightMap::ParseSizeOnly(DataChunkInput &file, DataChunkInfo *info, vo
 	m_dataSize = file.readInt();
 	m_data = MSGNEW("WorldHeightMap_ParseSizeOnly") UnsignedByte[m_dataSize];
 	if (m_dataSize <= 0 || (m_dataSize != (m_width*m_height))) {
-		throw ERROR_CORRUPT_FILE_FORMAT	;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_CORRUPT_FILE_FORMAT, "ErrorCode throw");
 	}
 	file.readArrayOfBytes((char *)m_data, m_dataSize);
 	// Resize me.
@@ -1033,7 +1033,7 @@ Bool WorldHeightMap::ParseBlendTileData(DataChunkInput &file, DataChunkInfo *inf
 	int i, j;
 	Int len = file.readInt();
 	if (m_dataSize != len) {
-		throw ERROR_CORRUPT_FILE_FORMAT	;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_CORRUPT_FILE_FORMAT, "ErrorCode throw");
 	}
 	m_tileNdxes = MSGNEW("WorldHeightMap_ParseBlendTileData") Short[m_dataSize];
 	m_cliffInfoNdxes = MSGNEW("WorldHeightMap_ParseBlendTileData") Short[m_dataSize];
@@ -1146,7 +1146,7 @@ Bool WorldHeightMap::ParseBlendTileData(DataChunkInput &file, DataChunkInfo *inf
 		flag = file.readInt();
 		DEBUG_ASSERTCRASH(flag==FLAG_VAL, ("Invalid format."));
 		if (flag != FLAG_VAL) {
-			throw ERROR_CORRUPT_FILE_FORMAT;
+			/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_CORRUPT_FILE_FORMAT, "ErrorCode throw");
 		}
 	}
 	if (info->version >= K_BLEND_TILE_VERSION_5) {

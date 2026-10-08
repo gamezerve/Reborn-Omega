@@ -150,6 +150,7 @@ public:
   //-------------------------------------------------------------------------------------------------
   /** Reborn: Print the active chain only when an existing transition recursion limit is reached. */
   //-------------------------------------------------------------------------------------------------
+#ifdef RTS_DEBUG
   static void logLimit(Int depth, Bool sleeping)
   {
     // Reborn: Emit limit diagnostics through the engine debug log, not RebornLog.
@@ -167,6 +168,7 @@ public:
         trace->m_goalPosition.x, trace->m_goalPosition.y, trace->m_goalPosition.z));
     }
   }
+#endif
 
 private:
   // Reborn: Never copy stack-linked diagnostics or persist them in save data.
@@ -195,7 +197,9 @@ StateReturnType State::friend_checkForTransitions( StateReturnType status )
 	StIncrementer inc(checkfortransitionsnum);
 	if (checkfortransitionsnum >= 20)
 	{
+#ifdef RTS_DEBUG
 		RebornStateTransitionTrace::logLimit(checkfortransitionsnum, false);
+#endif
 		DEBUG_CRASH(("checkfortransitionsnum is > 20"));
 		return STATE_FAILURE;
 	}
@@ -291,7 +295,9 @@ StateReturnType State::friend_checkForSleepTransitions( StateReturnType status )
 	StIncrementer inc(checkfortransitionsnum);
 	if (checkfortransitionsnum >= 20)
 	{
+#ifdef RTS_DEBUG
 		RebornStateTransitionTrace::logLimit(checkfortransitionsnum, true);
+#endif
 		DEBUG_CRASH(("checkforsleeptransitionsnum is > 20"));
 		return STATE_FAILURE;
 	}
@@ -608,7 +614,7 @@ State *StateMachine::internalGetState( StateID id )
 		i = m_stateMap.find(m_defaultStateID);
 		if (i == m_stateMap.end()) {
 			DEBUG_LOG(("Failed to located default state.  Aborting..."));
-			throw ERROR_BAD_ARG;
+			/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BAD_ARG, "ErrorCode throw");
 		} else {
 			DEBUG_LOG(("Located default state to recover."));
 		}

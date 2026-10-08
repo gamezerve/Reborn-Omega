@@ -827,7 +827,7 @@ void W3DDisplay::init()
 			SortingRendererClass::SetMinVertexBufferSize(1);
 		}
 		if (WW3D::Init( ApplicationHWnd ) != WW3D_ERROR_OK)
-			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
+			/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_INVALID_D3D, "WW3D::Init failed");	//failed to initialize.  User probably doesn't have DX 8.1
 
 		WW3D::Set_Prelit_Mode( WW3D::PRELIT_MODE_LIGHTMAP_MULTI_PASS );
 		WW3D::Set_Collision_Box_Display_Mask(0x00);	///<set to 0xff to make collision boxes visible
@@ -917,7 +917,7 @@ void W3DDisplay::init()
 		{
 			WW3D::Shutdown();
 			WWMath::Shutdown();
-			throw ERROR_INVALID_D3D;	//failed to initialize.  User probably doesn't have DX 8.1
+			/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_INVALID_D3D, "WW3D::Set_Render_Device failed after retries");	//failed to initialize.  User probably doesn't have DX 8.1
 			DEBUG_CRASH( ("Unable to set render device") );
 			return;
 		}

@@ -543,7 +543,7 @@ void Eva::processPlayingMessages(UnsignedInt currentFrame)
   if ( message == EVA_Invalid )
   {
     // debug message already displayed
-    throw ERROR_BAD_INI;
+    /* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BAD_INI, "ErrorCode throw");
   }
 
   *((EvaMessage *)store) = message;

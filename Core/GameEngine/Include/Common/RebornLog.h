@@ -47,6 +47,9 @@
 
 namespace RebornLog
 {
+	// Reborn: Error logging uses fixed buffers and Win32 I/O, including during allocator failures.
+	void WriteErrorCode(const char* sourceFile, int sourceLine, const char* functionName,
+		const char* errorName, unsigned int errorCode, const char* context) noexcept;
 	void Write(
 		const char* sourceFile,
 		int sourceLine,
@@ -57,3 +60,8 @@ namespace RebornLog
 
 #define REBORN_LOG(...) \
 	RebornLog::Write(__FILE__, __LINE__, __FUNCTION__, __VA_ARGS__)
+
+// Reborn: Log before evaluation completes, preserving the original enum type and single-statement throw.
+#define REBORN_LOG_ERROR_CODE(errorCode, context) \
+	(RebornLog::WriteErrorCode(__FILE__, __LINE__, __FUNCTION__, #errorCode, \
+		static_cast<unsigned int>(errorCode), context), (errorCode))

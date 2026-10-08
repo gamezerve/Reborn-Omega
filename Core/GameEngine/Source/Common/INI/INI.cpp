@@ -739,7 +739,7 @@ void INI::parseUnsignedByte( INI* ini, void * /*instance*/, void *store, const v
 	if (value < 0 || value > 255)
 	{
 		DEBUG_CRASH(("Bad value INI::parseUnsignedByte"));
-		throw ERROR_BUG;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BUG, "ErrorCode throw");
 	}
 	*(Byte *)store = (Byte)value;
 }
@@ -754,7 +754,7 @@ void INI::parseShort( INI* ini, void * /*instance*/, void *store, const void* /*
 	if (value < -32768 || value > 32767)
 	{
 		DEBUG_CRASH(("Bad value INI::parseShort"));
-		throw ERROR_BUG;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BUG, "ErrorCode throw");
 	}
 	*(Short *)store = (Short)value;
 }
@@ -769,7 +769,7 @@ void INI::parseUnsignedShort( INI* ini, void * /*instance*/, void *store, const 
 	if (value < 0 || value > 65535)
 	{
 		DEBUG_CRASH(("Bad value INI::parseUnsignedShort"));
-		throw ERROR_BUG;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BUG, "ErrorCode throw");
 	}
 	*(UnsignedShort *)store = (UnsignedShort)value;
 }
@@ -1171,7 +1171,7 @@ void INI::parseBitString8( INI* ini, void * /*instance*/, void *store, const voi
 	if (tmp & 0xffffff00)
 	{
 		DEBUG_CRASH(("Bad bitstring list INI::parseBitString8"));
-		throw ERROR_BUG;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BUG, "ErrorCode throw");
 	}
 	*(Byte*)store = (Byte)tmp;
 }
@@ -1582,7 +1582,7 @@ void INI::parseThingTemplate( INI* ini, void * /*instance*/, void *store, const 
 	if (!TheThingFactory)
 	{
 		DEBUG_CRASH(("TheThingFactory not inited yet"));
-		throw ERROR_BUG;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BUG, "ErrorCode throw");
 	}
 
 	typedef const ThingTemplate *ConstThingTemplatePtr;
@@ -1728,7 +1728,7 @@ void INI::parseUpgradeTemplate( INI* ini, void * /*instance*/, void *store, cons
 	if (!TheUpgradeCenter)
 	{
 		DEBUG_CRASH(("TheUpgradeCenter not inited yet"));
-		throw ERROR_BUG;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BUG, "ErrorCode throw");
 	}
 
 	const UpgradeTemplate *uu = TheUpgradeCenter->findUpgrade( token );
@@ -1749,7 +1749,7 @@ void INI::parseSpecialPowerTemplate( INI* ini, void * /*instance*/, void *store,
 	if (!TheSpecialPowerStore)
 	{
 		DEBUG_CRASH(("TheSpecialPowerStore not inited yet"));
-		throw ERROR_BUG;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BUG, "ErrorCode throw");
 	}
 
 	const SpecialPowerTemplate *sPowerT = TheSpecialPowerStore->findSpecialPowerTemplate( AsciiString( token ) );
@@ -1773,7 +1773,7 @@ void INI::parseSpecialPowerTemplate( INI* ini, void * /*instance*/, void *store,
 	if (!TheScienceStore)
 	{
 		DEBUG_CRASH(("TheScienceStore not inited yet"));
-		throw ERROR_BUG;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BUG, "ErrorCode throw");
 	}
 
 	*((ScienceType *)store) = INI::scanScience(token);
@@ -1807,7 +1807,7 @@ void INI::parseByteSizedIndexList( INI* ini, void * /*instance*/, void *store, c
 	if (value < 0 || value > 255)
 	{
 		DEBUG_CRASH(("Bad index list INI::parseByteSizedIndexList"));
-		throw ERROR_BUG;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BUG, "ErrorCode throw");
 	}
 	*(Byte *)store = (Byte)value;
 }
@@ -1842,7 +1842,7 @@ void MultiIniFieldParse::add(const FieldParse* f, UnsignedInt e)
 	else
 	{
 		DEBUG_CRASH(("too many multi-fields in INI::initFromINIMultiProc"));
-		throw ERROR_BUG;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BUG, "ErrorCode throw");
 	}
 }
 

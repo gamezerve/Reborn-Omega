@@ -1588,7 +1588,7 @@ Int PartitionData::getControllingPlayerIndex() const
 	}
 
 	DEBUG_CRASH(("this should never happen"));
-	throw ERROR_BUG;
+	/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BUG, "ErrorCode throw");
 	return 0;
 }
 

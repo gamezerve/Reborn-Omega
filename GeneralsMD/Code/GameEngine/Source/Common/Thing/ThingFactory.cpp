@@ -357,7 +357,7 @@ ThingTemplate *ThingFactory::findTemplateInternal( const AsciiString& name, Bool
 Object *ThingFactory::newObject( const ThingTemplate *tmplate, Team *team, ObjectStatusMaskType statusBits )
 {
 	if (tmplate == nullptr)
-		throw ERROR_BAD_ARG;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BAD_ARG, "ErrorCode throw");
 
 	const std::vector<AsciiString>& asv = tmplate->getBuildVariations();
 	if (!asv.empty())
@@ -402,7 +402,7 @@ Object *ThingFactory::newObject( const ThingTemplate *tmplate, Team *team, Objec
 Drawable *ThingFactory::newDrawable(const ThingTemplate *tmplate, DrawableStatusBits statusBits)
 {
 	if (tmplate == nullptr)
-		throw ERROR_BAD_ARG;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BAD_ARG, "ErrorCode throw");
 
 	Drawable *draw = TheGameClient->friend_createDrawable( tmplate, statusBits );
 

@@ -267,3 +267,59 @@ void RebornLog::Write(
 	FlushFileBuffers(file);
 	CloseHandle(file);
 }
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Persist an ErrorCode before it is thrown, without allocating from the game memory pools. */
+//-------------------------------------------------------------------------------------------------
+void RebornLog::WriteErrorCode(const char* sourceFile, int sourceLine, const char* functionName,
+	const char* errorName, unsigned int errorCode, const char* context) noexcept
+{
+	const DWORD previousError = GetLastError();
+	SYSTEMTIME time;
+	GetLocalTime(&time);
+	char output[2048] = {};
+	const int length = snprintf(output, sizeof(output),
+		"[%04u-%02u-%02u %02u:%02u:%02u.%03u] File=%s Line=%d Function=%s Version=%s\n"
+		"ERROR_CODE_THROW name=%s code=0x%08X context=%s\n\n",
+		time.wYear, time.wMonth, time.wDay, time.wHour, time.wMinute, time.wSecond, time.wMilliseconds,
+		sourceFile ? sourceFile : "Unknown", sourceLine, functionName ? functionName : "Unknown",
+		REBORN_OMEGA_DISPLAY_NAME, errorName ? errorName : "Unknown", errorCode, context ? context : "");
+	OutputDebugStringA(output);
+
+	// Reborn: Keep an independent error sink so first-log housekeeping and its locks cannot recurse on OOM.
+	char executable[MAX_PATH] = {};
+	char directory[MAX_PATH] = {};
+	char path[MAX_PATH] = {};
+	const DWORD pathLength = GetModuleFileNameA(nullptr, executable, MAX_PATH);
+	char* separator = strrchr(executable, '\\');
+	if (pathLength > 0 && pathLength < MAX_PATH && separator)
+	{
+		*separator = '\0';
+		int result = snprintf(directory, sizeof(directory), "%s\\RebornOmegaStatus", executable);
+		if (result > 0 && result < static_cast<int>(sizeof(directory)))
+		{
+			CreateDirectoryA(directory, nullptr);
+			result = snprintf(directory, sizeof(directory), "%s\\RebornOmegaStatus\\Logs", executable);
+			if (result > 0 && result < static_cast<int>(sizeof(directory)))
+			{
+				CreateDirectoryA(directory, nullptr);
+				result = snprintf(path, sizeof(path), "%s\\RebornOmegaLog_ErrorCodes_%lu.txt", directory, GetCurrentProcessId());
+				if (result > 0 && result < static_cast<int>(sizeof(path)))
+				{
+					HANDLE file = CreateFileA(path, FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE,
+						nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+					if (file != INVALID_HANDLE_VALUE)
+					{
+						DWORD written = 0;
+						const DWORD bytes = length >= 0 && length < static_cast<int>(sizeof(output))
+							? static_cast<DWORD>(length) : static_cast<DWORD>(strlen(output));
+						WriteFile(file, output, bytes, &written, nullptr);
+						FlushFileBuffers(file);
+						CloseHandle(file);
+					}
+				}
+			}
+		}
+	}
+	SetLastError(previousError);
+}

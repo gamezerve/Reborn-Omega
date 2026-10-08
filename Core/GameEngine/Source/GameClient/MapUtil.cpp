@@ -194,7 +194,7 @@ static Bool ParseSizeOnly(DataChunkInput &file, DataChunkInfo *info, void *userD
 	m_dataSize = file.readInt();
 	m_data = NEW UnsignedByte[m_dataSize];	// pool[]ify
 	if (m_dataSize <= 0 || (m_dataSize != (m_width*m_height))) {
-		throw ERROR_CORRUPT_FILE_FORMAT	;
+		/* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_CORRUPT_FILE_FORMAT, "ErrorCode throw");
 	}
 	file.readArrayOfBytes((char *)m_data, m_dataSize);
 	// Resize me.

@@ -45,6 +45,8 @@
 
 #pragma once
 
+#include "Common/RebornLog.h" // Reborn: Diagnostics for ErrorCode throw sites.
+
 /**
 	An ErrorCode is the repository for failure modes. In almost all situations,
 	these values will  be THROWN, not returned as error codes. Feel free

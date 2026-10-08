@@ -1404,7 +1404,7 @@ void ThingTemplate::parseMaxSimultaneous(INI *ini, void *instance, void *store, 
     if (value < 0 || value > 65535)
     {
       DEBUG_CRASH(("Bad value parseMaxSimultaneous"));
-      throw ERROR_BUG;
+      /* Reborn: Log before throw. */ throw REBORN_LOG_ERROR_CODE(ERROR_BUG, "ErrorCode throw");
     }
     *(UnsignedShort *)store = (UnsignedShort)value;
     myTemplate->m_maxSimultaneousDeterminedBySuperweaponRestriction = false;
