@@ -134,8 +134,8 @@ void AssistedTargetingUpdate::makeFeedbackLaser( const ThingTemplate *laserTempl
 		return;
 	}
 
-	// Give it a good basis in reality to ensure it can draw when on screen.
-	laser->setPosition(from->getPosition());
+	// Reborn: Use the same parent anchor as initLaser so the Object and Drawable positions agree.
+	laser->setPosition(getObject()->getPosition());
 
 	update->initLaser( getObject(), to, from->getPosition(), to->getPosition(), "" );
 }
