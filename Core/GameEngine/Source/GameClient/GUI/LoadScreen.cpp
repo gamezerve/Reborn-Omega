@@ -2030,7 +2030,7 @@ MapTransferLoadScreen::~MapTransferLoadScreen()
 
 #if defined(RTS_DEBUG)
 // Reborn: Debug-only switch: TRUE opens the local transfer preview; FALSE disables it.
-static const Bool REBORN_AUTO_TEST_MAP_TRANSFER = TRUE;
+static const Bool REBORN_AUTO_TEST_MAP_TRANSFER = FALSE;
 static Bool s_rebornMapTransferPreviewRequested = REBORN_AUTO_TEST_MAP_TRANSFER;
 #else
 // Reborn: The local transfer preview is disabled in Release builds.
@@ -2138,8 +2138,8 @@ void MapTransferLoadScreen::runPreviewIfRequested()
 
 void MapTransferLoadScreen::init( GameInfo *game )
 {
-	// create the layout of the load screen
-	m_loadScreen = TheWindowManager->winCreateFromScript( "Menus/MapTransferScreen.wnd" );
+	// Reborn: Select the transfer skin by layout theme without changing transfer behavior or control IDs.
+	m_loadScreen = TheWindowManager->winCreateFromScript( GetThemedWindowName("Menus/MapTransferScreen.wnd") );
 	DEBUG_ASSERTCRASH(m_loadScreen, ("Can't initialize the map transfer loadscreen"));
 	if (!m_loadScreen)
 		return;
