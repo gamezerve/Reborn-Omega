@@ -37,6 +37,13 @@
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/Object.h"
 
+// Reborn: Read attack context only when the transition-limit debug log is emitted.
+#include "GameLogic/AI.h"
+#include "GameLogic/AIPathfind.h"
+#include "GameLogic/Weapon.h"
+#include "GameLogic/Module/AIUpdate.h"
+#include "GameLogic/Module/ContainModule.h"
+
 
 //------------------------------------------------------------------------------ Performance Timers
 //#include "Common/PerfMetrics.h"
@@ -156,6 +163,42 @@ public:
     // Reborn: Emit limit diagnostics through the engine debug log, not RebornLog.
     DEBUG_LOG(("STATE_TRANSITION_LIMIT: frame=%u kind=%s depth=%d limit=20; active chain follows, newest first.",
       TheGameLogic ? TheGameLogic->getFrame() : 0, sleeping ? "sleep" : "normal", depth));
+    // Reborn: Resolve saved IDs, not potentially stale machine pointers, for the innermost failing chain.
+    const RebornStateTransitionTrace* context = s_rebornStateTransitionTrace;
+    Object* owner = context && TheGameLogic ? TheGameLogic->findObjectByID((ObjectID)context->m_ownerID) : nullptr;
+    Object* goal = context && TheGameLogic ? TheGameLogic->findObjectByID((ObjectID)context->m_goalID) : nullptr;
+    if (owner)
+    {
+      const Object* carrier = owner->getContainedBy();
+      const ContainModuleInterface* contain = carrier ? carrier->getContain() : nullptr;
+      const AIUpdateInterface* ai = owner->getAI();
+      const Weapon* weapon = owner->getCurrentWeapon();
+      Bool onGround = ai ? ai->isDoingGroundMovement() : TRUE;
+      if (owner->isKindOf(KINDOF_IMMOBILE) || owner->isKindOf(KINDOF_SPAWNS_ARE_THE_WEAPONS) ||
+          (carrier && (carrier->isKindOf(KINDOF_STRUCTURE) || !carrier->isAirborneTarget())))
+        onGround = TRUE;
+      const Bool viewTested = goal && weapon && !weapon->isContactWeapon() && onGround &&
+        !goal->isSignificantlyAboveTerrain() && TheAI && TheAI->pathfinder();
+      const Int viewBlocked = viewTested ? (Int)TheAI->pathfinder()->isAttackViewBlockedByObstacle(
+        owner, *owner->getPosition(), goal, *goal->getPosition()) : -1;
+      const Int inRange = weapon && goal ? (Int)weapon->isWithinAttackRange(owner, goal) : -1;
+      Coord3D ownerPos = *owner->getPosition();
+      Coord3D goalPos = goal ? *goal->getPosition() : context->m_goalPosition;
+      Coord3D carrierPos = carrier ? *carrier->getPosition() : ownerPos;
+      DEBUG_LOG(("STATE_TRANSITION_ATTACK_CONTEXT: owner='%s' ownerID=%u carrier='%s' carrierID=%u held=%d mobile=%d enclosing=%d weapon='%s' weaponStatus=%d attackRange=%.3f inRange=%d contact=%d leech=%d approachGround=%d rangeGround=%d viewTested=%d viewBlocked=%d targetAboveTerrain=%d ownerPosition=(%.3f,%.3f,%.3f) targetPosition=(%.3f,%.3f,%.3f) carrierPosition=(%.3f,%.3f,%.3f); -1 means unavailable or not tested.",
+        context->m_ownerName.str(), context->m_ownerID,
+        carrier && carrier->getTemplate() ? carrier->getTemplate()->getName().str() : "<none>",
+        carrier ? (UnsignedInt)carrier->getID() : 0,
+        (Int)owner->isDisabledByType(DISABLED_HELD), (Int)owner->isMobile(),
+        contain ? (Int)contain->isEnclosingContainerFor(owner) : 0,
+        weapon ? weapon->getName().str() : "<none>", weapon ? (Int)weapon->getStatus() : -1,
+        weapon ? weapon->getAttackRange(owner) : -1.0f, inRange,
+        weapon ? (Int)weapon->isContactWeapon() : -1, weapon ? (Int)weapon->hasLeechRange() : -1,
+        ai ? (Int)ai->isDoingGroundMovement() : -1, (Int)onGround, (Int)viewTested, viewBlocked,
+        goal ? (Int)goal->isSignificantlyAboveTerrain() : -1,
+        ownerPos.x, ownerPos.y, ownerPos.z, goalPos.x, goalPos.y, goalPos.z,
+        carrierPos.x, carrierPos.y, carrierPos.z));
+    }
     Int entry = 0;
     for (const RebornStateTransitionTrace* trace = s_rebornStateTransitionTrace; trace; trace = trace->m_previous)
     {
