@@ -219,6 +219,8 @@ enum GUICommandType CPP_11(: Int)
 
 	GUI_COMMAND_SELECT_ALL_UNITS_OF_TYPE,
 
+	GUI_COMMAND_INFO, // Reborn: Enabled tooltip-only command; never sends gameplay orders.
+
 	// add more commands here, don't forget to update the string command list below too ...
 
 	GUI_COMMAND_NUM_COMMANDS
@@ -274,6 +276,7 @@ static const char *const TheGuiCommandNames[] =
 	"SPECIAL_POWER_CONSTRUCT",
 	"SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT",
 	"SELECT_ALL_UNITS_OF_TYPE",
+	"INFO", // Reborn: INI name for tooltip-only faction information.
 
 	nullptr
 };

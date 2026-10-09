@@ -3804,13 +3804,40 @@ static Bool isImageUpgradeRebornActiveForBuildCommand(const Object* obj, const I
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Preserve INFO hover notifications and tooltips without allowing gadget highlight or activation. */
+//-------------------------------------------------------------------------------------------------
+static WindowMsgHandledType infoCommandTooltipOnlyInput(GameWindow* window, UnsignedInt msg,
+	WindowMsgData mData1, WindowMsgData mData2)
+{
+	WinInstanceData* instData = window->winGetInstanceData();
+	BitClear(instData->m_state, WIN_STATE_HILITED);
+	BitClear(instData->m_state, WIN_STATE_SELECTED);
+	if ((msg == GWM_MOUSE_ENTERING || msg == GWM_MOUSE_LEAVING) &&
+		BitIsSet(instData->getStyle(), GWS_MOUSE_TRACK))
+	{
+		TheWindowManager->winSendSystemMsg(instData->getOwner(),
+			msg == GWM_MOUSE_ENTERING ? GBM_MOUSE_ENTERING : GBM_MOUSE_LEAVING,
+			(WindowMsgData)window, mData1);
+	}
+	// Reborn: Held left clicks bypass the manager's normal tooltip pass; keep INFO text visible while still inside.
+	if ((msg == MOUSE_EVENT_NONE || msg == GWM_MOUSE_POS || msg == GWM_LEFT_DOWN ||
+		msg == GWM_LEFT_DRAG || msg == GWM_LEFT_UP) && window->winGetTooltipFunc() &&
+		window->winPointInWindow((Int)(mData1 & 0xffff), (Int)(mData1 >> 16)))
+	{
+		window->winGetTooltipFunc()(window, instData, mData1);
+	}
+	return MSG_HANDLED;
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Set the command data into the control */
 //-------------------------------------------------------------------------------------------------
 void ControlBar::setControlCommand( GameWindow *button, const CommandButton *commandButton, Object *contextObj )
 {
 
 	// the window must be a gadget button
-	if (button->winGetInputFunc() != GadgetPushButtonInput)
+	if (button->winGetInputFunc() != GadgetPushButtonInput &&
+		button->winGetInputFunc() != infoCommandTooltipOnlyInput)
 	{
 		DEBUG_CRASH(("setControlCommand: Window is not a button"));
 		return;
@@ -3822,6 +3849,15 @@ void ControlBar::setControlCommand( GameWindow *button, const CommandButton *com
 		DEBUG_CRASH(("setControlCommand: null commandButton passed in"));
 		return;
 	}
+
+	// Reborn: Command slots are reused; restore normal input when an INFO slot becomes an actionable command.
+	if (button->winGetInputFunc() == infoCommandTooltipOnlyInput || commandButton->getCommandType() == GUI_COMMAND_INFO)
+	{
+		BitClear(button->winGetInstanceData()->m_state, WIN_STATE_HILITED);
+		BitClear(button->winGetInstanceData()->m_state, WIN_STATE_SELECTED);
+	}
+	button->winSetInputFunc(commandButton->getCommandType() == GUI_COMMAND_INFO ?
+		infoCommandTooltipOnlyInput : GadgetPushButtonInput);
 
 	//
 	// set the button gadget control to be a normal button or a check like button if

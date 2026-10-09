@@ -1117,6 +1117,10 @@ CommandAvailability ControlBar::getCommandAvailability( const CommandButton *com
 	if (obj == nullptr)
 		return COMMAND_HIDDEN;	// probably better than crashing....
 
+	// Reborn: Informational buttons remain enabled regardless of power, funds or science availability.
+	if (command->getCommandType() == GUI_COMMAND_INFO)
+		return COMMAND_AVAILABLE;
+
 	Player *player = obj->getControllingPlayer();
 
 	if (obj->testScriptStatusBit(OBJECT_STATUS_SCRIPT_DISABLED) || obj->testScriptStatusBit(OBJECT_STATUS_SCRIPT_UNPOWERED))

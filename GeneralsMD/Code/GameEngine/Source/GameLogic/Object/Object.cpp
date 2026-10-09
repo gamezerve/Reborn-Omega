@@ -5585,6 +5585,9 @@ void Object::doCommandButton( const CommandButton *commandButton, CommandSourceT
 	{
 		switch( commandButton->getCommandType() )
 		{
+			// Reborn: INFO has no gameplay action, including when invoked by a map script.
+			case GUI_COMMAND_INFO:
+				return;
 			case GUI_COMMAND_SPECIAL_POWER:
 				if( commandButton->getSpecialPowerTemplate() )
 				{
