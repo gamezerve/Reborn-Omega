@@ -3974,6 +3974,9 @@ void GameLogic::update()
 		{
 			UpdateModulePtr u = *it;
 			DisabledMaskType dis = u->friend_getObject()->getDisabledFlags();
+			// Reborn: Manual power-off selects normal weapons on opt-in objects; other disabled reasons still block updates.
+			if (u->friend_getObject()->isKindOf(KINDOF_POWER_DEPENDENT_WEAPONSET))
+				dis.set(DISABLED_REBORN_POWER_MODE, false);
 #if RETAIL_COMPATIBLE_CRC
 			if (!dis.any() || dis.anyIntersectionWith(u->getDisabledTypesToProcess()))
 #else
@@ -4022,6 +4025,9 @@ void GameLogic::update()
 			UpdateSleepTime sleepLen = UPDATE_SLEEP_NONE;	// default, if it is disabled.
 
 			DisabledMaskType dis = u->friend_getObject()->getDisabledFlags();
+			// Reborn: Manual power-off selects normal weapons on opt-in objects; other disabled reasons still block updates.
+			if (u->friend_getObject()->isKindOf(KINDOF_POWER_DEPENDENT_WEAPONSET))
+				dis.set(DISABLED_REBORN_POWER_MODE, false);
 #if RETAIL_COMPATIBLE_CRC
 			if (!dis.any() || dis.anyIntersectionWith(u->getDisabledTypesToProcess()))
 #else

@@ -84,6 +84,7 @@ const char* const WeaponSetFlags::s_bitNameList[] =
 	"WEAPON_RIDER11",
 	"WEAPON_RIDER12",
 	"WEAPON_RIDER13",
+	"POWERED", // Reborn: INI condition for the power-dependent weapon variant.
 
 	nullptr
 };
@@ -385,13 +386,19 @@ void WeaponSet::updateWeaponSet(const Object* obj)
 		m_hasDamageWeapon = false;
 		for (Int i = WEAPONSLOT_COUNT - 1; i >= PRIMARY_WEAPON ; --i)
 		{
-			deleteInstance(m_weapons[i]);
+			// Reborn: Retain the old slot long enough to carry its cooldown into the power-dependent weapon variant.
+			Weapon* previousWeapon = obj->isKindOf(KINDOF_POWER_DEPENDENT_WEAPONSET) ? m_weapons[i] : nullptr;
+			if (!previousWeapon)
+				deleteInstance(m_weapons[i]);
 			m_weapons[i] = nullptr;
 
 			if (set->getNth((WeaponSlotType)i))
 			{
 				m_weapons[i] = TheWeaponStore->allocateNewWeapon(set->getNth((WeaponSlotType)i), (WeaponSlotType)i);
 				m_weapons[i]->loadAmmoNow(obj);	// start 'em all with full clips.
+				// Reborn: Power toggles must not reset the remaining between-shot or clip-reload time.
+				if (previousWeapon)
+					m_weapons[i]->transferNextShotStatsFrom(*previousWeapon);
 				m_filledWeaponSlotMask |= (1 << i);
 				m_totalAntiMask |= m_weapons[i]->getAntiMask();
 				m_totalDamageTypeMask.set(m_weapons[i]->getDamageType());
@@ -405,6 +412,7 @@ void WeaponSet::updateWeaponSet(const Object* obj)
 				// "normal" weapons. (srj)
 				// m_curWeapon = (WeaponSlotType)i;
 			}
+			deleteInstance(previousWeapon); // Reborn: Release the old weapon only after its timing has been transferred.
 		}
 		m_curWeaponTemplateSet = set;
 		//DEBUG_LOG(("WeaponSet::updateWeaponSet -- changed curweapon to %s",getCurWeapon()->getName().str()));

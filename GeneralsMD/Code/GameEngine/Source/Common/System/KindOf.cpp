@@ -168,6 +168,7 @@ const char* const KindOfMaskType::s_bitNameList[] =
 	"NAVAL_YARD",
 	"TAUNT",
 	"NO_ATTACK_WARNING",
+	"POWER_DEPENDENT_WEAPONSET", // Reborn: Opt-in owner/local power-dependent weapon selection.
 
 	nullptr
 };

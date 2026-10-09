@@ -45,6 +45,7 @@
 #include "Common/GlobalData.h"
 #include "Common/ModuleFactory.h"
 #include "Common/PerfTimer.h"
+#include "Common/Energy.h" // Reborn: Show owner low power for power-dependent weapons without disabling normal artillery.
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
 #include "Common/ThingFactory.h"
@@ -3701,6 +3702,9 @@ void Drawable::drawDisabled(const IRegion2D* healthBarRegion)
 		|| obj->isDisabledByType(DISABLED_EMP)
 		|| obj->isDisabledByType(DISABLED_SUBDUED)
 		|| obj->isDisabledByType(DISABLED_UNDERPOWERED)
+		// Reborn: Power-dependent weapons still display the normal low-power icon while their fallback gun remains operational.
+		|| (obj->isKindOf(KINDOF_POWER_DEPENDENT_WEAPONSET) && obj->getControllingPlayer() &&
+			!obj->getControllingPlayer()->getEnergy()->hasSufficientPower())
 		)
 	{
 		iconType = ICON_DISABLED;

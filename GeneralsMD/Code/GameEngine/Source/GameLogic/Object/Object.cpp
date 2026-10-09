@@ -2254,7 +2254,8 @@ void Object::setDisabledUntil( DisabledType type, UnsignedInt frame )
 	}
 
 	// This will only be called if we were NOT disabled before coming into this function.
-	if (edgeCase) {
+	// Reborn: Notify modules only when this actually disables the object, not when power-off selects normal artillery.
+	if (edgeCase && isDisabled()) {
 		onDisabledEdge(true);
 	}
 }
@@ -3102,6 +3103,20 @@ Bool Object::isMassSelectable() const
 	return isSelectable() &&
 		(!isKindOf(KINDOF_STRUCTURE) ||
 			isKindOf(KINDOF_MOBILE_STRUCTURE));
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Keep normal weapons operational on power-dependent objects without bypassing EMP or other disable reasons. */
+//-------------------------------------------------------------------------------------------------
+Bool Object::isDisabled() const
+{
+	if (m_disabledMask.test(DISABLED_REBORN_POWER_MODE) && isKindOf(KINDOF_POWER_DEPENDENT_WEAPONSET))
+	{
+		DisabledMaskType effective = m_disabledMask;
+		effective.set(DISABLED_REBORN_POWER_MODE, false);
+		return effective.any();
+	}
+	return m_disabledMask.any();
 }
 
 //-------------------------------------------------------------------------------------------------

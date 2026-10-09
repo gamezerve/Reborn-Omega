@@ -592,7 +592,7 @@ public:
 	ObjectShroudStatus getShroudedStatus(Int playerIndex) const;
 
 	DisabledMaskType getDisabledFlags() const { return m_disabledMask; }
-	Bool isDisabled() const { return m_disabledMask.any(); }
+	Bool isDisabled() const; // Reborn: Opt-in normal artillery remains usable under manual power-off.
 	Bool clearDisabled( DisabledType type );
 
 	void setDisabled( DisabledType type );

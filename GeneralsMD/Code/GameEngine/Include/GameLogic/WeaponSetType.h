@@ -62,5 +62,7 @@ enum WeaponSetType CPP_11(: Int)
 	WEAPONSET_RIDER12,
 	WEAPONSET_RIDER13,
 
+	WEAPONSET_POWERED, // Reborn: Powered weapon variant without changing model conditions.
+
 	WEAPONSET_COUNT
 };

@@ -181,6 +181,7 @@ enum KindOfType CPP_11(: Int)
 
 	KINDOF_NO_ATTACK_WARNING,				///< does not trigger the under attack radar/EVA warning when taking damage
 
+	KINDOF_POWER_DEPENDENT_WEAPONSET, // Reborn: Switch powered weapons without disabling normal artillery.
 	KINDOF_COUNT,										// total number of kindofs
 	KINDOF_FIRST = 0,
 };

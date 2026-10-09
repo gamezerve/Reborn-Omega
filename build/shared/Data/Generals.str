@@ -1733,8 +1733,9 @@ OBJECT:SupW_FireBase
 "EMP Fire Base"
 END
 
+// Reborn: Explain the power-dependent EMP weapon and normal artillery fallback.
 CONTROLBAR:EMPFireBase
-"Fires cannons equipped with small EMP bombs. Garrison 4 infantry"
+"Ground defense with EMP shells while powered. Uses normal shells during low power or when Power Mode is off. Garrison 4 infantry"
 END
 
 CONTROLBAR:SupW_ConstructAmericaFireBase

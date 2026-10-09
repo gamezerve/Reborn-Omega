@@ -107,6 +107,7 @@ static const ModelConditionFlagType TheWeaponSetTypeToModelConditionTypeMap[WEAP
 	/*WEAPONSET_RIDER11*/								MODELCONDITION_RIDER11,
 	/*WEAPONSET_RIDER12*/								MODELCONDITION_RIDER12,
 	/*WEAPONSET_RIDER13*/								MODELCONDITION_RIDER13,
+	/*WEAPONSET_POWERED*/               MODELCONDITION_INVALID, // Reborn: Power-dependent weapons do not change artwork.
 };
 #endif
 

@@ -36,6 +36,7 @@
 #include "Common/GameState.h"
 #include "Common/CRCDebug.h"
 #include "Common/GlobalData.h"
+#include "Common/Energy.h" // Reborn: Power-dependent weapon availability follows the owning player's energy state.
 #include "Common/Player.h"
 #include "Common/PlayerList.h"
 #include "Common/RandomValue.h"
@@ -1108,6 +1109,23 @@ void AIUpdateInterface::friend_notifyStateMachineChanged()
 DECLARE_PERF_TIMER(AIUpdateInterface_update)
 UpdateSleepTime AIUpdateInterface::update()
 {
+	// Reborn: Switch only opt-in objects; power mode turns off the powered weapon, not their normal artillery.
+	Object* powerWeaponObject = getObject();
+	const Bool powerDependentWeapons = powerWeaponObject->isKindOf(KINDOF_POWER_DEPENDENT_WEAPONSET);
+	if (powerDependentWeapons)
+	{
+		Player* owner = powerWeaponObject->getControllingPlayer();
+		const Bool powered = owner && owner->getEnergy()->hasSufficientPower() &&
+			!powerWeaponObject->isDisabledByType(DISABLED_REBORN_POWER_MODE);
+		if (powered != powerWeaponObject->getWeaponSetFlags().test(WEAPONSET_POWERED))
+		{
+			if (powered)
+				powerWeaponObject->setWeaponSetFlag(WEAPONSET_POWERED, false);
+			else
+				powerWeaponObject->clearWeaponSetFlag(WEAPONSET_POWERED, false);
+		}
+	}
+
 	//DEBUG_LOG(("AIUpdateInterface frame %d: %08lx",TheGameLogic->getFrame(),getObject()));
 
 	USE_PERF_TIMER(AIUpdateInterface_update)
@@ -1237,6 +1255,10 @@ UpdateSleepTime AIUpdateInterface::update()
 #endif
 
 	m_isInUpdate = FALSE;
+
+	// Reborn: Recheck power every simulation frame even when the turret AI would otherwise sleep.
+	if (powerDependentWeapons)
+		return UPDATE_SLEEP_NONE;
 
 	if (m_completedWaypoint != nullptr)
 	{
