@@ -1593,6 +1593,8 @@ void W3DView::update()
 
 	static Real followFactor = -1;
 	ObjectID cameraLock = getCameraLock();
+	// Reborn: Scripted object locks advance at the logic rate, like their camera interpolation snapshots.
+	const Bool logicSteppedCameraLock = !m_isUserControlled && getCameraLockDrawable() == nullptr;
 	if (cameraLock == INVALID_ID)
 	{
 		followFactor = -1;
@@ -1626,7 +1628,7 @@ void W3DView::update()
 			setCameraLockDrawable(nullptr);
 			followFactor = -1;
 		}
-		else
+		else if (!logicSteppedCameraLock || TheGameLogic->hasScheduledUpdate())
 		{
 			if (followFactor<0) {
 				followFactor = 0.05f;
@@ -1727,19 +1729,6 @@ void W3DView::update()
 				}
 				setPosition(curpos);
 
-				if (cameraLockObj->getTemplate()->getName().compare("AmericaVehicleComanche") == 0)
-				{
-					DEBUG_LOG((
-						"CAMLOCK AFTER logicFrame=%u id=%u "
-						"camAfter=(%.6f %.6f %.6f) "
-						"obj=(%.6f %.6f %.6f)\n",
-						TheGameLogic->getFrame(),
-						cameraLockObj->getID(),
-						curpos.x, curpos.y, curpos.z,
-						objpos.x, objpos.y, objpos.z
-						));
-				}
-
 				if (m_lockType == LOCK_FOLLOW)
 				{
 					// camera follow objects if they are flying
@@ -1770,6 +1759,11 @@ void W3DView::update()
 				didScriptedMovement = true;
 				m_recalcCamera = true;
 			}
+		}
+		else
+		{
+			// Reborn: Keep the scripted lock active between logic steps; only the rendered camera is interpolated.
+			didScriptedMovement = true;
 		}
 	}
 
@@ -1965,6 +1959,26 @@ void W3DView::update()
 	// render all of the visible Drawables
 	/// @todo this needs to use a real region partition or something
 	TheGameClient->iterateDrawablesInRegion( &axisAlignedRegion, drawDrawable, nullptr );
+
+	// Reborn: An airborne cinematic target can be visible outside the ground-projected region;
+	// update its interpolated model before the filter pass, but never draw-update it twice.
+	if (!m_isUserControlled && getCameraLock() != INVALID_ID)
+	{
+		const Object* trackedObject = TheGameLogic->findObjectByID(getCameraLock());
+		Drawable* trackedDrawable = trackedObject ? trackedObject->getDrawable() : nullptr;
+		if (trackedDrawable)
+		{
+			const Coord3D position = *trackedDrawable->getPosition();
+			const Bool updatedInRegion =
+				position.x >= axisAlignedRegion.lo.x && position.x <= axisAlignedRegion.hi.x &&
+				position.y >= axisAlignedRegion.lo.y && position.y <= axisAlignedRegion.hi.y &&
+				position.z >= axisAlignedRegion.lo.z && position.z <= axisAlignedRegion.hi.z;
+			if (!updatedInRegion)
+			{
+				trackedDrawable->draw();
+			}
+		}
+	}
 }
 
 //-------------------------------------------------------------------------------------------------

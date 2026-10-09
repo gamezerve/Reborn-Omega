@@ -216,6 +216,8 @@ protected:
 
 	void doAudioSetVolume(AudioAffect whichToAffect, Real newVolumeLevel);
 
+	// Reborn: Move only grounded infantry between script teams, leaving transports with their original player.
+	void doRebornTransferLandedInfantry(const AsciiString& sourceName, const AsciiString& destinationName);
 	void doTransferTeamToPlayer(const AsciiString& teamName, const AsciiString& playerName);
 
 	void doSetMoney(const AsciiString& playerName, Int money);		// Set a player's cash reserves to a specific value.

@@ -554,6 +554,9 @@ public:
 		// Reborn: Manage idle skirmish hackers without disturbing active cash generation.
 		ACTION_REBORN_MANAGE_SKIRMISH_HACKERS,
 
+		// Reborn: Transfer landed reinforcement infantry without transferring their delivery aircraft.
+		ACTION_REBORN_TRANSFER_LANDED_INFANTRY,
+
 		// add new items here, please
 		NUM_ITEMS
 	};

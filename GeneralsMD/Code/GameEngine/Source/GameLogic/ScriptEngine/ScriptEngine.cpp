@@ -4180,6 +4180,18 @@ void ScriptEngine::init()
 	curTemplate->m_uiStrings[1] = ", fill Internet Centers and deploy new hackers: ";
 	curTemplate->m_uiStrings[2] = ".";
 
+	// Reborn: Let campaign scripts retain allied aircraft while handing landed reinforcements to the player.
+	curTemplate = &m_actionTemplates[ScriptAction::ACTION_REBORN_TRANSFER_LANDED_INFANTRY];
+	curTemplate->m_internalName = "ACTION_REBORN_TRANSFER_LANDED_INFANTRY";
+	curTemplate->m_uiName = "Reborn/Transfer Landed Infantry Between Teams";
+	curTemplate->m_numParameters = 2;
+	curTemplate->m_parameters[0] = Parameter::TEAM;
+	curTemplate->m_parameters[1] = Parameter::TEAM;
+	curTemplate->m_numUiStrings = 3;
+	curTemplate->m_uiStrings[0] = "Transfer landed infantry from team ";
+	curTemplate->m_uiStrings[1] = " into team ";
+	curTemplate->m_uiStrings[2] = ".";
+
 	/* Recipe for adding a condition:
 			1. In Scripts.h, add an enum element to enum ConditionType just before NUM_ITEMS.
 			2. Go to the end of this section of templates, and create a template.

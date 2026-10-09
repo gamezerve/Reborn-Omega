@@ -8210,12 +8210,56 @@ void ScriptActions::doRebornManageSkirmishHackers(const AsciiString& playerName,
 	}
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Transfer landed infantry only, preserving allied delivery aircraft and the destination mission team. */
+//-------------------------------------------------------------------------------------------------
+void ScriptActions::doRebornTransferLandedInfantry(const AsciiString& sourceName, const AsciiString& destinationName)
+{
+	Team* source = TheScriptEngine->getTeamNamed(sourceName);
+	if (!source || sourceName == destinationName)
+		return;
+
+	// Reborn: Snapshot IDs before changing team membership, which invalidates the source iterator.
+	std::vector<ObjectID> landed;
+	DLINK_ITERATOR<Object> iter = source->iterate_TeamMemberList();
+	for (; !iter.done(); iter.advance())
+	{
+		Object* obj = iter.cur();
+		if (obj && obj->isKindOf(KINDOF_INFANTRY) && !obj->isEffectivelyDead() &&
+			!obj->getContainedBy() && !obj->isAboveTerrainOrWater())
+			landed.push_back(obj->getID());
+	}
+	if (landed.empty())
+		return;
+
+	Team* destination = TheScriptEngine->getTeamNamed(destinationName);
+	if (!destination)
+		destination = TheTeamFactory->createInactiveTeam(destinationName);
+	if (!destination || destination == source)
+		return;
+	destination->setActive();
+	for (std::vector<ObjectID>::const_iterator it = landed.begin(); it != landed.end(); ++it)
+	{
+		Object* obj = TheGameLogic->findObjectByID(*it);
+		if (obj && obj->getTeam() == source)
+		{
+			obj->setTeam(destination);
+			updateTeamAndPlayerStuff(obj, nullptr);
+		}
+	}
+}
+
 void ScriptActions::executeAction( ScriptAction *pAction )
 {
 	switch (pAction->getActionType()) {
 		default:
 			DEBUG_CRASH(("Unknown ScriptAction type %d", pAction->getActionType())); return;
 
+
+		// Reborn: Campaign reinforcement transfer excludes aircraft and infantry still inside parachutes.
+		case ScriptAction::ACTION_REBORN_TRANSFER_LANDED_INFANTRY:
+			doRebornTransferLandedInfantry(pAction->getParameter(0)->getString(), pAction->getParameter(1)->getString());
+			return;
 
 		// Reborn: Dedicated action used only by the China-family skirmish hacker scripts.
 		case ScriptAction::ACTION_REBORN_MANAGE_SKIRMISH_HACKERS:

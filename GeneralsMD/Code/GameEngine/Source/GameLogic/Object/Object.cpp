@@ -5597,9 +5597,9 @@ void Object::doCommandButton( const CommandButton *commandButton, CommandSourceT
 				if( ai )
 				{
 					ai->aiIdle( cmdSource );
-					return;
 				}
-				break;
+				// Reborn: Team-wide Stop also reaches non-AI structures; nothing to stop is not an unsupported command.
+				return;
 
 			case GUI_COMMAND_SWITCH_WEAPON:
 				{
