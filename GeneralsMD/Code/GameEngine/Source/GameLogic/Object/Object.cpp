@@ -1056,6 +1056,24 @@ void Object::setStatus( ObjectStatusMaskType objectStatus, Bool set )
 
 			if (m_partitionData)
 				m_partitionData->makeDirty(true);
+
+			// Reborn: Start newly built Command Center taunts without resetting shared Generals Powers.
+			if (!m_status.test(OBJECT_STATUS_UNDER_CONSTRUCTION) && isKindOf(KINDOF_COMMANDCENTER) && !isEffectivelyDead())
+			{
+				for (BehaviorModule** module = getBehaviorModules(); *module; ++module)
+				{
+					SpecialPowerModuleInterface* power = (*module)->getSpecialPower();
+					if (!power)
+						continue;
+					const SpecialPowerTemplate* powerTemplate = power->getSpecialPowerTemplate();
+					if (powerTemplate->getSpecialPowerType() != SPECIAL_COMMUNICATIONS_DOWNLOAD ||
+						powerTemplate->isSharedNSync() || power->getRequiredScience() != SCIENCE_INVALID)
+						continue;
+					power->startPowerRecharge();
+					if (power->startsReady())
+						power->setReadyFrame(TheGameLogic->getFrame());
+				}
+			}
 		}
 
 	}
