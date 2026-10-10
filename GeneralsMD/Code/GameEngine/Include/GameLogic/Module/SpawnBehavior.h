@@ -88,6 +88,8 @@ public:
 			{ "AggregateHealth",  				INI::parseBool,										nullptr, offsetof( SpawnBehaviorModuleData, m_aggregateHealth ) },
 			{ "ExitByBudding",    				INI::parseBool,										nullptr, offsetof( SpawnBehaviorModuleData, m_exitByBudding ) },
 			{ "SpawnTemplateName",				INI::parseAsciiStringVectorAppend,nullptr, offsetof( SpawnBehaviorModuleData, m_spawnTemplateNameData ) },
+			// Reborn: Replace inherited spawn templates explicitly while retaining the legacy append behavior.
+			{ "SpawnTemplateNameOverride", INI::parseAsciiStringVector, nullptr, offsetof( SpawnBehaviorModuleData, m_spawnTemplateNameData ) },
 			{ "SpawnedRequireSpawner",		INI::parseBool,										nullptr,	offsetof( SpawnBehaviorModuleData, m_spawnedRequireSpawner ) },
 			{ "PropagateDamageTypesToSlavesWhenExisting",   INI::parseDamageTypeFlags, nullptr, offsetof( SpawnBehaviorModuleData, m_damageTypesToPropagateToSlaves ) },
 			{ "InitialBurst",				      INI::parseInt,						        nullptr, offsetof( SpawnBehaviorModuleData, m_initialBurst ) },

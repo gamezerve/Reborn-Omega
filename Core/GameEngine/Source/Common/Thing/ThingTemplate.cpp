@@ -1176,6 +1176,8 @@ void ThingTemplate::parseReplaceModule(INI* ini, void* instance, void* store, co
 			if (it->getNthConditionsYes(0) == replacementConditions)
 			{
 				*it = replacement;
+				// Reborn: Preserve explicitly replaced inherited weapon sets when later sets are appended.
+				self->m_weaponsCopiedFromDefault = FALSE;
 				self->m_weaponTemplateSetFinder.clear();
 				self->m_moduleParsingMode = oldMode;
 				return;
