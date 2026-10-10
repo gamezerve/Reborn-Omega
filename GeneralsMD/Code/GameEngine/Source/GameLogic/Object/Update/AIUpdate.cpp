@@ -94,6 +94,45 @@ AIUpdateModuleData::AIUpdateModuleData()
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Deep-copy owned turret data so OverrideModule clones can be destroyed independently. */
+//-------------------------------------------------------------------------------------------------
+AIUpdateModuleData::AIUpdateModuleData(const AIUpdateModuleData& source)
+	: UpdateModuleData(source),
+	  m_locomotorTemplates(source.m_locomotorTemplates),
+	  m_moodAttackCheckRate(source.m_moodAttackCheckRate),
+	  m_forbidPlayerCommands(source.m_forbidPlayerCommands),
+	  m_turretsLinked(source.m_turretsLinked),
+	  m_autoAcquireEnemiesWhenIdle(source.m_autoAcquireEnemiesWhenIdle),
+	  m_allowAutoAcquireToggle(source.m_allowAutoAcquireToggle)
+#ifdef ALLOW_SURRENDER
+	, m_surrenderDuration(source.m_surrenderDuration)
+#endif
+{
+	for (int i = 0; i < MAX_TURRETS; ++i)
+		m_turretData[i] = nullptr;
+
+	try
+	{
+		for (int i = 0; i < MAX_TURRETS; ++i)
+		{
+			if (source.m_turretData[i])
+			{
+				TurretAIData* td = newInstance(TurretAIData);
+				m_turretData[i] = td;
+				*td = *source.m_turretData[i];
+			}
+		}
+	}
+	catch (...)
+	{
+		// Reborn: Release partially copied turrets if construction fails.
+		for (int i = 0; i < MAX_TURRETS; ++i)
+			deleteInstance(const_cast<TurretAIData*>(m_turretData[i]));
+		throw;
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
 AIUpdateModuleData::~AIUpdateModuleData()
 {
 	for (int i = 0; i < MAX_TURRETS; i++)

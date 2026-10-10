@@ -204,6 +204,8 @@ public:
 
 
   AIUpdateModuleData();
+	// Reborn: Cloned AI modules must own independent turret data.
+	AIUpdateModuleData(const AIUpdateModuleData& source);
 	virtual ~AIUpdateModuleData() override;
 
 	virtual Bool isAiModuleData() const override { return true; }

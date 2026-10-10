@@ -44,6 +44,8 @@
 #include "GameClient/InGameUI.h"
 #include "GameClient/Image.h"
 #include "GameLogic/Module/RiderChangeContain.h"
+#include "GameLogic/Weapon.h" // Reborn: Audit named bonuses on final weapon sets.
+#include "GameLogic/WeaponSet.h" // Reborn: Walk effective inherited weapon slots.
 
 
 const char *const TheUpgradeTypeNames[] =
@@ -66,9 +68,64 @@ struct ThingTemplateUpgradeReportEntry
 {
 	std::set<AsciiString> cameos;
 	std::set<AsciiString> refs;
+	std::set<AsciiString> nonModuleRefs; // Reborn: Separate object-level references from replaceable module data.
 };
 
 static std::map<AsciiString, ThingTemplateUpgradeReportEntry> g_thingTemplateUpgradeReport;
+
+#ifdef RTS_DEBUG
+// Reborn: Preserve per-field upgrade references even after runtime masks consume their INI names.
+typedef std::map<AsciiString, std::set<AsciiString> > ModuleUpgradeFields;
+static std::map<const ModuleData*, ModuleUpgradeFields> g_moduleUpgradeFields;
+struct ModuleUpgradeCaptureContext
+{
+	ModuleUpgradeFields fields;
+	std::set<AsciiString> visitedFields;
+	ModuleUpgradeCaptureContext* previous;
+};
+static ModuleUpgradeCaptureContext* g_moduleUpgradeCapture = nullptr;
+#endif
+static Bool g_rebuildingUpgradeReport = FALSE; // Reborn: Final weapon references must not become stale parse-time entries.
+
+#ifdef RTS_DEBUG
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Start a nested-safe capture, optionally retaining fields from inherited module data. */
+//-------------------------------------------------------------------------------------------------
+ModuleUpgradeCaptureScope::ModuleUpgradeCaptureScope(const ModuleData* source)
+{
+	ModuleUpgradeCaptureContext* context = new ModuleUpgradeCaptureContext;
+	context->previous = g_moduleUpgradeCapture;
+	if (source)
+	{
+		std::map<const ModuleData*, ModuleUpgradeFields>::const_iterator found = g_moduleUpgradeFields.find(source);
+		if (found != g_moduleUpgradeFields.end())
+			context->fields = found->second;
+	}
+	m_context = context;
+	g_moduleUpgradeCapture = context;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Restore capture state on normal completion or an INI parsing exception. */
+//-------------------------------------------------------------------------------------------------
+ModuleUpgradeCaptureScope::~ModuleUpgradeCaptureScope()
+{
+	ModuleUpgradeCaptureContext* context = static_cast<ModuleUpgradeCaptureContext*>(m_context);
+	g_moduleUpgradeCapture = context->previous;
+	delete context;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Publish diagnostic references for the completed module data instance. */
+//-------------------------------------------------------------------------------------------------
+void ModuleUpgradeCaptureScope::commit(const ModuleData* data)
+{
+	if (data)
+		g_moduleUpgradeFields[data] = static_cast<ModuleUpgradeCaptureContext*>(m_context)->fields;
+	g_upgradeReportDirty = TRUE;
+}
+#endif
+
 
 
 
@@ -77,6 +134,8 @@ void BeginThingTemplateUpgradeCapture(const char* thingName)
 	if (thingName == nullptr || thingName[0] == 0)
 		return;
 
+	// Reborn: Keep module-only objects in the final audit even when they declare no cameos.
+	g_thingTemplateUpgradeReport[AsciiString(thingName)];
 	g_currentThingTemplateUpgradeCapture = thingName;
 	g_isThingTemplateUpgradeCaptureActive = TRUE;
 }
@@ -115,6 +174,25 @@ static Bool LooksLikeUpgradeName(const char* token)
 
 static AsciiString g_currentThingTemplateUpgradeField;
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Release upgrade audit caches before the shutdown leak report and memory manager teardown. */
+//-------------------------------------------------------------------------------------------------
+void ClearThingTemplateUpgradeDiagnostics()
+{
+#ifdef RTS_DEBUG
+	DEBUG_ASSERTCRASH(g_moduleUpgradeCapture == nullptr, ("Upgrade diagnostic cleanup requires completed INI capture scopes"));
+	g_moduleUpgradeFields.clear();
+#endif
+	g_thingTemplateUpgradeReport.clear();
+	g_knownUpgradeNames.clear();
+	g_currentThingTemplateUpgradeCapture.clear();
+	g_currentThingTemplateUpgradeField.clear();
+	g_isThingTemplateUpgradeCaptureActive = FALSE;
+	g_upgradeReportDirty = FALSE;
+	g_rebuildingUpgradeReport = FALSE;
+}
+
+
 static Bool ShouldIgnoreUpgradeReferenceForCurrentField()
 {
 	if (g_currentThingTemplateUpgradeField.isEmpty())
@@ -146,7 +224,20 @@ void RecordThingTemplateUpgradeToken(const char* token)
 		return;
 
 
-	g_thingTemplateUpgradeReport[g_currentThingTemplateUpgradeCapture].refs.insert(AsciiString(token));
+	// Reborn: Cameos are read from final object data; modules retain references across inheritance.
+	if (strnicmp(g_currentThingTemplateUpgradeField.str(), "UpgradeCameo", 12) == 0)
+		return;
+#ifdef RTS_DEBUG
+	if (g_moduleUpgradeCapture)
+		g_moduleUpgradeCapture->fields[g_currentThingTemplateUpgradeField].insert(AsciiString(token));
+	else
+#endif
+	{
+		ThingTemplateUpgradeReportEntry& report = g_thingTemplateUpgradeReport[g_currentThingTemplateUpgradeCapture];
+		report.refs.insert(AsciiString(token));
+		if (!g_rebuildingUpgradeReport)
+			report.nonModuleRefs.insert(AsciiString(token));
+	}
 	g_upgradeReportDirty = TRUE;
 }
 
@@ -156,7 +247,6 @@ void RecordThingTemplateUpgradeCameo(const char* thingName, const char* upgradeN
 		return;
 
 	g_thingTemplateUpgradeReport[AsciiString(thingName)].cameos.insert(AsciiString(upgradeName));
-	g_thingTemplateUpgradeReport[AsciiString(thingName)].refs.insert(AsciiString(upgradeName));
 	g_upgradeReportDirty = TRUE;
 }
 
@@ -164,7 +254,14 @@ void RecordThingTemplateUpgradeCameo(const char* thingName, const char* upgradeN
 void SetCurrentThingTemplateUpgradeField(const char* fieldName)
 {
 	if (fieldName && fieldName[0])
+	{
 		g_currentThingTemplateUpgradeField = fieldName;
+#ifdef RTS_DEBUG
+		// Reborn: An overridden field replaces its inherited references, including when set to NONE.
+		if (g_moduleUpgradeCapture && g_moduleUpgradeCapture->visitedFields.insert(AsciiString(fieldName)).second)
+			g_moduleUpgradeCapture->fields[AsciiString(fieldName)].clear();
+#endif
+	}
 	else
 		g_currentThingTemplateUpgradeField.clear();
 }
@@ -335,10 +432,64 @@ static const char* GetThingTemplateUpgradeReferenceExceptionReason(const ThingTe
 	return nullptr;
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Rebuild cameo diagnostics from final live modules and weapon sets, excluding removed data. */
+//-------------------------------------------------------------------------------------------------
+static void RefreshThingTemplateUpgradeReport(const ThingTemplate* thing)
+{
+	if (!thing)
+		return;
+	ThingTemplateUpgradeReportEntry& report = g_thingTemplateUpgradeReport[thing->getName()];
+	report.refs = report.nonModuleRefs;
+	report.cameos.clear();
+	for (Int i = 0; i < MAX_UPGRADE_CAMEO_UPGRADES; ++i)
+	{
+		const AsciiString name = thing->getUpgradeCameoName(i);
+		if (name.isNotEmpty() && stricmp(name.str(), "NONE") != 0)
+		{
+			report.cameos.insert(name);
+			report.refs.insert(name);
+		}
+	}
+#ifdef RTS_DEBUG
+	const ModuleInfo* modules[] = { &thing->getBehaviorModuleInfo(), &thing->getDrawModuleInfo(), &thing->getClientUpdateModuleInfo() };
+	for (Int group = 0; group < 3; ++group)
+	{
+		for (Int i = 0; i < modules[group]->getCount(); ++i)
+		{
+			std::map<const ModuleData*, ModuleUpgradeFields>::const_iterator found = g_moduleUpgradeFields.find(modules[group]->getNthData(i));
+			if (found == g_moduleUpgradeFields.end())
+				continue;
+			for (ModuleUpgradeFields::const_iterator field = found->second.begin(); field != found->second.end(); ++field)
+				report.refs.insert(field->second.begin(), field->second.end());
+		}
+	}
+#endif
+	ClearCurrentThingTemplateUpgradeField();
+	BeginThingTemplateUpgradeCapture(thing->getName().str());
+	g_rebuildingUpgradeReport = TRUE;
+	const WeaponTemplateSetVector& sets = thing->getWeaponTemplateSets();
+	for (WeaponTemplateSetVector::const_iterator set = sets.begin(); set != sets.end(); ++set)
+	{
+		for (Int slot = 0; slot < WEAPONSLOT_COUNT; ++slot)
+		{
+			const WeaponTemplate* weapon = set->getNth(static_cast<WeaponSlotType>(slot));
+			if (weapon && weapon->getExtraBonus())
+				weapon->getExtraBonus()->recordUpgradeReferences();
+		}
+	}
+	g_rebuildingUpgradeReport = FALSE;
+	EndThingTemplateUpgradeCapture();
+}
+
 void FlushThingTemplateUpgradeReport()
 {
 	if (!g_upgradeReportDirty)
 		return;
+
+	// Reborn: Refresh every object before rider ownership checks inspect another object's references.
+	for (std::map<AsciiString, ThingTemplateUpgradeReportEntry>::const_iterator it = g_thingTemplateUpgradeReport.begin(); it != g_thingTemplateUpgradeReport.end(); ++it)
+		RefreshThingTemplateUpgradeReport(TheThingFactory ? TheThingFactory->findTemplate(it->first.str()) : nullptr);
 
 	CreateDirectoryA("RebornOmegaStatus", nullptr);
 
@@ -939,6 +1090,8 @@ std::vector<AsciiString> GetThingTemplateUpgradeRefsForWB(const char* thingName)
 		return result;
 	}
 
+	// Reborn: WorldBuilder consumes the same finalized references as the cameo audit.
+	RefreshThingTemplateUpgradeReport(TheThingFactory ? TheThingFactory->findTemplate(thingName) : nullptr);
 	std::map<AsciiString, ThingTemplateUpgradeReportEntry>::const_iterator it = g_thingTemplateUpgradeReport.find(AsciiString(thingName));
 	if (it == g_thingTemplateUpgradeReport.end())
 	{

@@ -149,9 +149,7 @@ void WeaponTemplateSet::parseWeapon(INI* ini, void *instance, void * /*store*/, 
 	WeaponTemplateSet* self = (WeaponTemplateSet*)instance;
 	WeaponSlotType wslot = (WeaponSlotType)INI::scanIndexList(ini->getNextToken(), TheWeaponSlotTypeNames);
 	INI::parseWeaponTemplate(ini, instance, &self->m_template[wslot], nullptr);
-	// Reborn: Expose named weapon-bonus upgrade requirements to the existing object upgrade/cameo audit.
-	if (self->m_template[wslot] && self->m_template[wslot]->getExtraBonus())
-		self->m_template[wslot]->getExtraBonus()->recordUpgradeReferences();
+	// Reborn: Named upgrade bonuses are audited on final weapon sets, after inheritance and replacement.
 }
 
 //-------------------------------------------------------------------------------------------------

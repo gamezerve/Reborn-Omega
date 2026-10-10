@@ -39,6 +39,7 @@
 
 #include "Common/Module.h"
 #include "Common/ModuleFactory.h"
+#include "Common/Upgrade.h" // Reborn: Capture upgrade references on the actual inherited module data.
 #include "Common/NameKeyGenerator.h"
 
 // behavior includes
@@ -606,6 +607,11 @@ ModuleData* ModuleFactory::cloneModuleData(
 	if (md == nullptr)
 		return nullptr;
 
+#ifdef RTS_DEBUG
+	// Reborn: Copy diagnostic references alongside cloned data before any OverrideModule edits.
+	ModuleUpgradeCaptureScope upgradeCapture(source);
+	upgradeCapture.commit(md);
+#endif
 	md->setModuleTagNameKey(source->getModuleTagNameKey());
 	m_moduleDataList.push_back(md);
 
@@ -625,7 +631,14 @@ Bool ModuleFactory::parseModuleDataFromINI(
 	if (moduleTemplate == nullptr || moduleTemplate->m_parseDataProc == nullptr)
 		return false;
 
+#ifdef RTS_DEBUG
+	// Reborn: Replace only the diagnostic fields explicitly reparsed by OverrideModule.
+	ModuleUpgradeCaptureScope upgradeCapture(data);
+#endif
 	(*moduleTemplate->m_parseDataProc)(ini, data);
+#ifdef RTS_DEBUG
+	upgradeCapture.commit(data);
+#endif
 	return true;
 }
 
@@ -658,7 +671,14 @@ ModuleData* ModuleFactory::newModuleDataFromINI(INI* ini, const AsciiString& nam
 	const ModuleTemplate* moduleTemplate = findModuleTemplate(name, type);
 	if (moduleTemplate)
 	{
+#ifdef RTS_DEBUG
+		// Reborn: Keep newly parsed upgrade references attached to this module, not its source object.
+		ModuleUpgradeCaptureScope upgradeCapture;
+#endif
 		ModuleData* md = (*moduleTemplate->m_createDataProc)(ini);
+#ifdef RTS_DEBUG
+		upgradeCapture.commit(md);
+#endif
 		md->setModuleTagNameKey( NAMEKEY( moduleTag ) );
 		m_moduleDataList.push_back(md);
 		return md;

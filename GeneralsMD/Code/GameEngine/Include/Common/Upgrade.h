@@ -266,6 +266,24 @@ protected:
 
 };
 
+#ifdef RTS_DEBUG
+class ModuleData;
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Associate captured upgrade fields with module data, preserving inheritance and overrides. */
+//-------------------------------------------------------------------------------------------------
+class ModuleUpgradeCaptureScope
+{
+public:
+	explicit ModuleUpgradeCaptureScope(const ModuleData* source = nullptr);
+	~ModuleUpgradeCaptureScope();
+	void commit(const ModuleData* data);
+private:
+	ModuleUpgradeCaptureScope(const ModuleUpgradeCaptureScope&) = delete;
+	ModuleUpgradeCaptureScope& operator=(const ModuleUpgradeCaptureScope&) = delete;
+	void* m_context;
+};
+#endif
+
 void SetCurrentThingTemplateUpgradeField(const char* fieldName);
 void ClearCurrentThingTemplateUpgradeField();
 void BeginThingTemplateUpgradeCapture(const char* thingName);
@@ -273,6 +291,8 @@ void EndThingTemplateUpgradeCapture();
 void RecordThingTemplateUpgradeToken(const char* token);
 void RecordThingTemplateUpgradeCameo(const char* thingName, const char* upgradeName);
 void FlushThingTemplateUpgradeReport();
+// Reborn: Release diagnostic caches after game shutdown, before reporting memory leaks.
+void ClearThingTemplateUpgradeDiagnostics();
 std::vector<AsciiString> GetThingTemplateUpgradeRefsForWB(const char* thingName);
 Bool IsKnownUpgradeName(const char* token);
 

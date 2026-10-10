@@ -55,6 +55,7 @@
 #include "Common/RebornFAQ.h"
 #include "Common/Registry.h"
 #include "Common/Team.h"
+#include "Common/Upgrade.h" // Reborn: Release upgrade audit caches before final leak reporting.
 #include "GameClient/ClientInstance.h"
 #include "GameClient/InGameUI.h"
 #include "GameClient/GameClient.h"
@@ -1041,6 +1042,9 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		// run the game main loop
 		exitcode = GameMain();
+
+		// Reborn: Static diagnostic containers must release pooled allocations before the leak report.
+		ClearThingTemplateUpgradeDiagnostics();
 
 		delete TheVersion;
 		TheVersion = nullptr;
