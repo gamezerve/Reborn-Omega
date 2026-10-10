@@ -2615,6 +2615,15 @@ StateReturnType AIAttackApproachTargetState::onEnter()
 	Coord3D groundPos;
 	groundPos.zero();
 
+	// Reborn: Enclosed passengers cannot approach independently; use the same range and sight test as aiming/firing.
+	Object* carrier = source->getContainedBy();
+	ContainModuleInterface* passengerContain = carrier ? carrier->getContain() : nullptr;
+	if (passengerContain && passengerContain->isEnclosingContainerFor(source))
+	{
+		const Bool unreachable = m_isAttackingObject ? outOfWeaponRangeObject(this, nullptr) : outOfWeaponRangePosition(this, nullptr);
+		return unreachable ? STATE_FAILURE : STATE_SUCCESS;
+	}
+
 	if (victim)
 	{
 		groundPos = *victim->getPosition();
@@ -5225,6 +5234,18 @@ StateReturnType AIAttackAimAtTargetState::onEnter()
 		inFiringRange = weapon->isWithinAttackRange( source, targetPos );//See, I can be attacking the ground.  Perfectly valid.
 	else
 		return STATE_FAILURE; // can't happen.
+
+	// Reborn: Validate passenger sight after selecting its firepoint; abort blocked/out-of-range targets instead of chasing in a transition loop.
+	if (weapon && contain && contain->isEnclosingContainerFor(source) && !weapon->hasLeechRange())
+	{
+		const Bool unreachable = m_isAttackingObject ? outOfWeaponRangeObject(this, nullptr) : outOfWeaponRangePosition(this, nullptr);
+		if (!inFiringRange || unreachable)
+		{
+			// Reborn: Early failure precedes locomotor setup, so onExit must not clear an unrelated goal.
+			m_setLocomotor = false;
+			return STATE_FAILURE;
+		}
+	}
 
 	// Reborn: Reject unreachable targets before immediate transitions can loop on a script-held defender.
 	// Reborn: Preserve in-range fire, contained-unit firepoint handling, and existing leech-range exceptions.
