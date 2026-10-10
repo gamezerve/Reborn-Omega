@@ -132,6 +132,7 @@ ScriptActions::ScriptActions()
 	m_suppressNewWindows = FALSE;
 	m_unnamedUnit = AsciiString::TheEmptyString;
 	m_rebornSavedMaxCameraHeight = 0.0f;
+	m_rebornBlurReturnPending = false; // Reborn: No player-return jump is pending on reset.
 
 }
 
@@ -3823,7 +3824,7 @@ void ScriptActions::doRadarEnable()
 //-------------------------------------------------------------------------------------------------
 /** doCameraMotionBlurJump - zoom in at the current location, jump to waypoint, and zoom out.*/
 //-------------------------------------------------------------------------------------------------
-void ScriptActions::doCameraMotionBlurJump(const AsciiString& waypointName, Bool saturate)
+void ScriptActions::doCameraMotionBlurJump(const AsciiString& waypointName, Bool saturate, Bool returnToPlayer)
 {
 	Waypoint *way = TheTerrainLogic->getWaypointByName(waypointName);
 	if (!way) {
@@ -3861,6 +3862,12 @@ void ScriptActions::doCameraMotionBlurJump(const AsciiString& waypointName, Bool
 		{
 			// Reborn: Preserve the current camera height through zoom-in; the filter enters scripted mode at the actual jump.
 			TheTacticalView->setViewFilterPos(&pos);
+			// Reborn: Preserve the live source pose; select the destination height only at the hidden jump.
+			const Real destinationHeight = returnToPlayer
+				? (m_rebornSavedMaxCameraHeight > 0.0f ? m_rebornSavedMaxCameraHeight : TheTacticalView->getMaxHeightAboveGround())
+				: ViewDefaultMaxHeightAboveTerrain;
+			TheTacticalView->setBlurDestinationHeight(destinationHeight);
+			m_rebornBlurReturnPending = returnToPlayer;
 		}
 	}
 	if (!passed)
@@ -4132,7 +4139,9 @@ void ScriptActions::doDisableInput()
 		g_useLegacyForwardSpeed2D = true; // Reborn: Enable Legacy Forward Speed 2D when input is disabled, to avoid camera issues with the new system.
 		if (TheTacticalView)
 		{
-			m_rebornSavedMaxCameraHeight = TheTacticalView->getMaxHeightAboveGround();
+			// Reborn: Repeated input-disable actions must not overwrite the saved player limit with the cinematic limit.
+			if (m_rebornSavedMaxCameraHeight <= 0.0f)
+				m_rebornSavedMaxCameraHeight = TheTacticalView->getMaxHeightAboveGround();
 			TheTacticalView->setMaxHeightAboveGround(ViewDefaultMaxHeightAboveTerrain);
 		}
 	}
@@ -4150,6 +4159,12 @@ void ScriptActions::doEnableInput()
 	{
 		TheTacticalView->setMaxHeightAboveGround(m_rebornSavedMaxCameraHeight);
 		m_rebornSavedMaxCameraHeight = 0.0f;
+	}
+	// Reborn: The final blur already reached gameplay height; switch geometry without a retail-height reset.
+	if (TheTacticalView && m_rebornBlurReturnPending)
+	{
+		TheTacticalView->setUserControlled(true);
+		m_rebornBlurReturnPending = false;
 	}
 }
 
@@ -8860,6 +8875,10 @@ void ScriptActions::executeAction( ScriptAction *pAction )
 			return;
 		case ScriptAction::CAMERA_MOTION_BLUR:
 			doCameraMotionBlur(pAction->getParameter(0)->getInt(), pAction->getParameter(1)->getInt());
+			return;
+		// Reborn: Explicit final-jump flag selects the saved gameplay destination height.
+		case ScriptAction::ACTION_REBORN_CAMERA_BLUR_JUMP:
+			doCameraMotionBlurJump(pAction->getParameter(0)->getString(), pAction->getParameter(1)->getInt(), pAction->getParameter(2)->getInt());
 			return;
 		case ScriptAction::CAMERA_MOTION_BLUR_JUMP:
 			doCameraMotionBlurJump(pAction->getParameter(0)->getString(), pAction->getParameter(1)->getInt());

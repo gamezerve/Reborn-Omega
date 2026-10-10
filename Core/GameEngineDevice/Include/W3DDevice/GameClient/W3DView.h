@@ -242,6 +242,8 @@ public:
 
 	virtual Bool setViewFilterMode(FilterModes filterMode) override;			///< Turns on viewport special effect (black & white mode)
 	virtual Bool setViewFilter(FilterTypes filter) override;			///< Turns on viewport special effect (black & white mode)
+	// Reborn: Apply this height only after the source blur reaches its peak.
+	virtual void setBlurDestinationHeight(Real height) override;
 	virtual void setViewFilterPos(const Coord3D *pos) override;			///<  Passes a position to the special effect filter.
 	virtual FilterModes getViewFilterMode() override {return m_viewFilterMode;}			///< Turns on viewport special effect (black & white mode)
 	virtual FilterTypes getViewFilterType() override {return m_viewFilter;}			///< Turns on viewport special effect (black & white mode)
@@ -260,6 +262,7 @@ private:
 	FilterModes m_viewFilterMode;
 	FilterTypes m_viewFilter;
 	// Reborn: Stage destination zoom at the jump and hold reset until the in/out blur is complete.
+	Real m_blurDestinationHeight; // Reborn: Absolute destination height; zero means no staged override.
 	Bool m_blurZoomPending;
 	Real m_blurZoom;
 	Int m_blurZoomMilliseconds;

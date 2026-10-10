@@ -169,6 +169,7 @@ W3DView::W3DView()
 
 	m_viewFilterMode = FM_VIEW_DEFAULT;
 	m_viewFilter = FT_VIEW_DEFAULT;
+	m_blurDestinationHeight = 0.0f; // Reborn: No destination height is staged on a new view.
 	m_blurZoomPending = false; // Reborn: No destination commands are staged on a new view.
 	m_blurResetPending = false;
 	m_isWireFrameEnabled = m_nextWireFrameEnabled = FALSE;
@@ -2049,6 +2050,14 @@ void W3DView::set3DWireFrameMode(Bool enable)
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Stage the blur destination height while keeping the current zoom-in pose unchanged. */
+//-------------------------------------------------------------------------------------------------
+void W3DView::setBlurDestinationHeight(Real height)
+{
+	m_blurDestinationHeight = height;
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Sets the view filter mode. */
 //-------------------------------------------------------------------------------------------------
 void W3DView::setViewFilterPos(const Coord3D *pos)
@@ -2056,6 +2065,7 @@ void W3DView::setViewFilterPos(const Coord3D *pos)
 	// Reborn: A new jump must not inherit deferred commands from a previously interrupted effect.
 	m_blurZoomPending = false;
 	m_blurResetPending = false;
+	m_blurDestinationHeight = 0.0f; // Reborn: A new jump must not inherit an old destination height.
 	ScreenMotionBlurFilter::setZoomToPos(pos);
 }
 //-------------------------------------------------------------------------------------------------
@@ -2087,6 +2097,7 @@ Bool W3DView::setViewFilter(FilterTypes filter)
 	{
 		m_blurZoomPending = false;
 		m_blurResetPending = false;
+		m_blurDestinationHeight = 0.0f; // Reborn: Cancel the staged destination with its effect.
 	}
 
 	FilterTypes oldFilter = m_viewFilter;	//save previous filter in case setup fails.
@@ -2210,6 +2221,7 @@ void W3DView::draw()
 				resetCamera(&m_blurResetPosition, m_blurResetMilliseconds, m_blurResetEaseIn, m_blurResetEaseOut);
 			}
 			m_blurZoomPending = false;
+			m_blurDestinationHeight = 0.0f; // Reborn: Finished effects cannot affect later camera cuts.
 		}
 	}
 
@@ -2950,6 +2962,9 @@ void W3DView::lookAt( const Coord3D *o )
 	// Reborn: A blur jump is a discontinuous cut; never interpolate its destination from the old camera location.
 	if (m_viewFilter == FT_VIEW_MOTION_BLUR_FILTER && !ScreenMotionBlurFilter::isJumpPending())
 	{
+		// Reborn: Consume once so nested lookAt calls cannot apply the height before the outer reset finishes.
+		const Real blurDestinationHeight = m_blurDestinationHeight;
+		m_blurDestinationHeight = 0.0f;
 		m_scriptedCameraInterpolationInitialized = false;
 		if (m_blurResetPending && m_blurResetMilliseconds <= 0)
 		{
@@ -2973,6 +2988,18 @@ void W3DView::lookAt( const Coord3D *o )
 			}
 			else
 				zoomCamera(m_blurZoom, m_blurZoomMilliseconds, m_blurZoomEaseIn, m_blurZoomEaseOut);
+		}
+		if (blurDestinationHeight > 0.0f)
+		{
+			// Reborn: Set the destination pose under the blur peak, never at the start of zoom-in.
+			m_heightAboveGround = blurDestinationHeight;
+#if PRESERVE_RETAIL_SCRIPTED_CAMERA
+			if (!m_isUserControlled && m_maxHeightAboveGround > 0.0f)
+				m_heightAboveGround *= m_maxHeightAboveGround / ViewDefaultMaxHeightAboveTerrain;
+#endif
+			m_zoom = getDesiredZoom(m_pos.x, m_pos.y);
+			m_blurDestinationHeight = 0.0f;
+			m_scriptedCameraInterpolationInitialized = false;
 		}
 	}
 	m_recalcCamera = true;

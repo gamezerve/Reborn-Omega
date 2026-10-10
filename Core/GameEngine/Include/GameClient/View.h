@@ -168,6 +168,8 @@ public:
 	virtual FilterModes getViewFilterMode() {return (FilterModes)0;}			///< Turns on viewport special effect (black & white mode)
 	virtual FilterTypes getViewFilterType() {return (FilterTypes)0;}			///< Turns on viewport special effect (black & white mode)
 	virtual Bool setViewFilterMode(FilterModes filterMode) { return FALSE; }			///< Turns on viewport special effect (black & white mode)
+	// Reborn: Stage an absolute destination height without changing the blur zoom-in source pose.
+	virtual void setBlurDestinationHeight(Real height) {}
 	virtual void setViewFilterPos(const Coord3D *pos) { };			///<  Passes a position to the special effect filter.
 	virtual Bool setViewFilter( FilterTypes filter) { return FALSE;}			///< Turns on viewport special effect (black & white mode)
 

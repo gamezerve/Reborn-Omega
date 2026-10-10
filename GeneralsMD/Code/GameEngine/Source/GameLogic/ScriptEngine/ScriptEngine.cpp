@@ -2568,6 +2568,19 @@ void ScriptEngine::init()
 	curTemplate->m_uiStrings[0] = "Blur zoom, zoom in at current location, zoom out at ";
 	curTemplate->m_uiStrings[1] = ", saturate colors = ";
 
+	// Reborn: Preserve the legacy two-parameter action and expose an explicit player-return variant.
+	curTemplate = &m_actionTemplates[ScriptAction::ACTION_REBORN_CAMERA_BLUR_JUMP];
+	curTemplate->m_internalName = "ACTION_REBORN_CAMERA_BLUR_JUMP";
+	curTemplate->m_uiName = "Reborn/Camera/Blur jump with player-return height";
+	curTemplate->m_numParameters = 3;
+	curTemplate->m_parameters[0] = Parameter::WAYPOINT;
+	curTemplate->m_parameters[1] = Parameter::BOOLEAN;
+	curTemplate->m_parameters[2] = Parameter::BOOLEAN;
+	curTemplate->m_numUiStrings = 3;
+	curTemplate->m_uiStrings[0] = "Blur jump to ";
+	curTemplate->m_uiStrings[1] = ", saturate colors = ";
+	curTemplate->m_uiStrings[2] = ", return to player height = ";
+
 	curTemplate = &m_actionTemplates[ScriptAction::CAMERA_MOTION_BLUR_FOLLOW];
 	curTemplate->m_internalName = "CAMERA_MOTION_BLUR_FOLLOW";
 	curTemplate->m_uiName = "Camera_/Fade Effects/Start motion blur as the camera moves.";

@@ -87,6 +87,7 @@ protected:
 	Bool m_suppressNewWindows;
 	AsciiString m_unnamedUnit;
 	Real m_rebornSavedMaxCameraHeight;
+	Bool m_rebornBlurReturnPending; // Reborn: Restore user camera geometry after an explicit final blur jump.
 
 protected: // helper functions
 	void changeObjectPanelFlagForSingleObject(Object *obj, const AsciiString& flagToChange, Bool newVal );
@@ -297,7 +298,8 @@ protected:
 	void doRevealMapEntirePermanently( Bool reveal, const AsciiString& playerName );
 	void doShroudMapEntire(const AsciiString& playerName);
 	void doCameraMotionBlur(Bool zoomIn, Bool saturate);
-	void doCameraMotionBlurJump(const AsciiString& waypointName, Bool saturate);
+	// Reborn: Player-return jumps finish at the saved gameplay height.
+	void doCameraMotionBlurJump(const AsciiString& waypointName, Bool saturate, Bool returnToPlayer = false);
 	void doRadarRefresh();
 	void doNamedStop(const AsciiString& unitName);
 	void doTeamStop(const AsciiString& teamName, Bool shouldDisband);

@@ -557,6 +557,9 @@ public:
 		// Reborn: Transfer landed reinforcement infantry without transferring their delivery aircraft.
 		ACTION_REBORN_TRANSFER_LANDED_INFANTRY,
 
+		// Reborn: Select cinematic or player-return height for a blur jump without changing legacy action parameters.
+		ACTION_REBORN_CAMERA_BLUR_JUMP,
+
 		// add new items here, please
 		NUM_ITEMS
 	};
