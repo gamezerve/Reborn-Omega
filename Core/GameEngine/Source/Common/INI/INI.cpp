@@ -1668,7 +1668,9 @@ void INI::parseParticleSystemTemplate( INI *ini, void * /*instance*/, void *stor
 	const char *token = ini->getNextToken();
 
 	const ParticleSystemTemplate *pSystemT = TheParticleSystemManager->findTemplate( AsciiString( token ) );
-	DEBUG_ASSERTCRASH( pSystemT || stricmp( token, "None" ) == 0, ("ParticleSystem %s not found!",token) );
+	// Reborn: Parse-time particle lookup failures also identify the INI location, preserving the valid None case.
+	DEBUG_ASSERTCRASH( pSystemT || stricmp( token, "None" ) == 0,
+		("ParticleSystem not found while parsing: Name='%s', Source='%s:%u'.", token, ini->getFilename().str(), ini->getLineNum()) );
 
 	typedef const ParticleSystemTemplate* ConstParticleSystemTemplatePtr;
 	ConstParticleSystemTemplatePtr* theParticleSystemTemplate = (ConstParticleSystemTemplatePtr*)store;

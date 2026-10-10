@@ -1388,7 +1388,12 @@ CommandAvailability ControlBar::getCommandAvailability( const CommandButton *com
 			// no production update, can't possibly do this command
 			if( pu == nullptr )
 			{
-				DEBUG_CRASH(("Objects that have Object-Level Upgrades must also have ProductionUpdate. Just cuz."));
+				// Reborn: Report the exact object, command set, button and upgrade instead of an anonymous ProductionUpdate assertion.
+				DEBUG_CRASH(("Objects that have Object-Level Upgrades must also have ProductionUpdate. "
+					"Object='%s', ID=%u, ScriptName='%s', CommandSet='%s', CommandButton='%s', Upgrade='%s'.",
+					obj->getTemplate()->getName().str(), (UnsignedInt)obj->getID(), obj->getName().str(),
+					obj->getCommandSetString().str(), command->getName().str(),
+					command->getUpgradeTemplate() ? command->getUpgradeTemplate()->getUpgradeName().str() : "<null>"));
 				return COMMAND_RESTRICTED;
 			}
 

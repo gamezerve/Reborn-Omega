@@ -510,6 +510,7 @@ public:
 	ParticleSystemFXNugget()
 	{
 		m_name.clear();
+		m_sourceLine = 0; // Reborn: Definition metadata is captured while parsing, not during the failure.
 		m_count = 1;
 		m_radius.setRange(0, 0, GameClientRandomVariable::CONSTANT);
 		m_height.setRange(0, 0, GameClientRandomVariable::CONSTANT);
@@ -585,6 +586,10 @@ public:
 		};
 
 		ParticleSystemFXNugget* nugget = newInstance( ParticleSystemFXNugget );
+		// Reborn: Preserve the defining FXList and INI location so deferred runtime lookup failures identify the data source.
+		nugget->m_fxListName = TheFXListStore->getNameForList((FXList*)instance);
+		nugget->m_sourceFile = ini->getFilename();
+		nugget->m_sourceLine = ini->getLineNum();
 		ini->initFromINI(nugget, myFieldParse);
 		((FXList*)instance)->addFXNugget(nugget);
 	}
@@ -600,7 +605,15 @@ protected:
 		}
 
 		const ParticleSystemTemplate *tmp = TheParticleSystemManager->findTemplate(m_name);
-		DEBUG_ASSERTCRASH(TheParticleSystemManager->isDummy() || tmp, ("ParticleSystem %s not found",m_name.str()));
+		// Reborn: Only the existing missing-template failure reports this diagnostic; position-only FX explicitly identify absent object context.
+		DEBUG_ASSERTCRASH(TheParticleSystemManager->isDummy() || tmp,
+			("ParticleSystem not found: Name='%s', FXList='%s', Source='%s:%u', Object='%s', ID=%u, "
+			 "ScriptName='%s', Position=(%.2f, %.2f, %.2f), Frame=%u.",
+			 m_name.isEmpty() ? "<empty>" : m_name.str(), m_fxListName.str(), m_sourceFile.str(), m_sourceLine,
+			 thingToAttachTo ? thingToAttachTo->getTemplate()->getName().str() : "<position-only FX>",
+			 thingToAttachTo ? (UnsignedInt)thingToAttachTo->getID() : 0,
+			 thingToAttachTo ? thingToAttachTo->getName().str() : "<none>",
+			 primary->x, primary->y, primary->z, TheGameLogic ? TheGameLogic->getFrame() : 0));
 		if (tmp)
 		{
 			for (Int i = 0; i < m_count; i++ )
@@ -668,6 +681,10 @@ protected:
 
 private:
 	AsciiString			m_name;
+	// Reborn: Parse-time provenance shared by all calls to this immutable FX nugget.
+	AsciiString m_fxListName;
+	AsciiString m_sourceFile;
+	UnsignedInt m_sourceLine;
 	Int							m_count;
 	Coord3D					m_offset;
 	GameClientRandomVariable	m_radius;
