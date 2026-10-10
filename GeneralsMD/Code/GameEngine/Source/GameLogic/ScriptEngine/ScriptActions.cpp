@@ -3859,7 +3859,7 @@ void ScriptActions::doCameraMotionBlurJump(const AsciiString& waypointName, Bool
 		}
 		if (passed)
 		{
-			TheTacticalView->setUserControlled(false);
+			// Reborn: Preserve the current camera height through zoom-in; the filter enters scripted mode at the actual jump.
 			TheTacticalView->setViewFilterPos(&pos);
 		}
 	}

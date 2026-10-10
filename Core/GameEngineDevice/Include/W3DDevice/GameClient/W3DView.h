@@ -259,6 +259,16 @@ private:
 	CameraClass *m_2DCamera;												///< camera for UI overlayed on top of 3D scene
 	FilterModes m_viewFilterMode;
 	FilterTypes m_viewFilter;
+	// Reborn: Stage destination zoom at the jump and hold reset until the in/out blur is complete.
+	Bool m_blurZoomPending;
+	Real m_blurZoom;
+	Int m_blurZoomMilliseconds;
+	Real m_blurZoomEaseIn, m_blurZoomEaseOut;
+	Bool m_blurResetPending;
+	Coord3D m_blurResetPosition;
+	Int m_blurResetMilliseconds;
+	Real m_blurResetEaseIn, m_blurResetEaseOut;
+
 	Bool m_isWireFrameEnabled;
 	Bool m_nextWireFrameEnabled;											///< used to delay wireframe changes by 1 frame (needed for transitions).
 

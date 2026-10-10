@@ -165,6 +165,7 @@ public:
 	virtual Bool setup(FilterModes mode) override; ///< Called when the filter is started, one time before the first prerender.
 	ScreenMotionBlurFilter();
 
+	static Bool isJumpPending(); // Reborn: Destination zoom commands wait until the source zoom-in has finished.
 	static void setZoomToPos(const Coord3D *pos) {m_zoomToPos = *pos; m_zoomToValid = true;}
 
 protected:
@@ -174,6 +175,7 @@ protected:
 				DEFAULT_PAN_FACTOR = 30};
 	Int m_maxCount;
 	Int m_lastFrame;
+	Real m_elapsedLogicSeconds; // Reborn: Zoom duration follows active logic FPS, independently of render count.
 	Bool m_decrement;
 	Bool m_skipRender;
 	Bool m_additive;

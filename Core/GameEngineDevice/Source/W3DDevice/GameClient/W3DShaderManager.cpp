@@ -931,6 +931,7 @@ ScreenMotionBlurFilter::ScreenMotionBlurFilter():
 m_decrement(false),
 m_maxCount(0),
 m_lastFrame(0),
+m_elapsedLogicSeconds(0.0f), // Reborn: Accumulate simulation time, not rendered frames.
 m_skipRender(false)
 {
 }
@@ -940,6 +941,14 @@ W3DFilterInterface *ScreenMotionBlurFilterList[]=
 	&screenMotionBlurFilter,
 	nullptr
 };
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Identify only the pre-jump phase of an in/out blur so other camera effects keep their original behavior. */
+//-------------------------------------------------------------------------------------------------
+Bool ScreenMotionBlurFilter::isJumpPending()
+{
+	return screenMotionBlurFilter.m_doZoomTo && !screenMotionBlurFilter.m_decrement && m_zoomToValid;
+}
 
 Int ScreenMotionBlurFilter::init()
 {
@@ -1042,49 +1051,50 @@ Bool ScreenMotionBlurFilter::postRender(FilterModes mode, Coord2D &scrollDelta,B
 	}
 
 
-	m_skipRender = false;
-	if (!pan && m_lastFrame != TheGameLogic->getFrame()) {
-		if (m_decrement) {
-			m_maxCount-=COUNT_STEP;
-			if (m_maxCount<1) {
-				m_decrement = false;
-				continueEffect = false;
-			}	else {
-				m_skipRender = true;
-			}
-		} else {
-			m_maxCount+=COUNT_STEP;
-			if (m_maxCount>=MAX_COUNT) {
-				m_decrement = true;
-				if (m_doZoomTo && m_zoomToValid) {
-					TheTacticalView->lookAt(&m_zoomToPos);
-				} else {
-					continueEffect = false;
-				}
-			}	else {
-				m_skipRender = true;
-			}
-		}
-	}
-
 	Real renderMaxCount = (Real)m_maxCount;
-
-	if (!pan && continueEffect)
+	Bool jumpAfterRender = false;
+	if (!pan)
 	{
-		const Int logicFps = TheFramePacer->getActualLogicTimeScaleFps();
-
+		// Reborn: Preserve the original 12/30-second phase at any active logic FPS and account for skipped logic frames.
+		// Reborn: Logic cannot advance faster than the render-bound update; uncapped mode reports a sentinel, not its real FPS.
+		const Int logicFps = min(TheFramePacer->getActualLogicTimeScaleFps(), TheFramePacer->getActualFramesPerSecondLimit());
+		const Int frame = TheGameLogic->getFrame();
+		const Int elapsedFrames = frame - m_lastFrame;
+		if (elapsedFrames > 0)
+			m_elapsedLogicSeconds += (Real)elapsedFrames / (Real)(logicFps > 0 ? logicFps : 30);
+		Real elapsedSeconds = m_elapsedLogicSeconds;
 		if (logicFps > 0 && TheFramePacer->getActualFramesPerSecondLimit() > logicFps)
+			elapsedSeconds += TheGameEngine->getLogicInterpolationAlpha() / (Real)logicFps;
+		if (elapsedSeconds < 0.0f)
+			elapsedSeconds = 0.0f; // Reborn: A pause immediately after setup must not extrapolate before the starting image.
+
+		const Real phaseSeconds = (Real)MAX_COUNT / ((Real)COUNT_STEP * 30.0f);
+		Real phaseProgress = elapsedSeconds / phaseSeconds;
+		if (m_decrement)
 		{
-			Real nextMaxCount = renderMaxCount + (m_decrement ? -(Real)COUNT_STEP : (Real)COUNT_STEP);
-
-			if (nextMaxCount < 0.0f)
-				nextMaxCount = 0.0f;
-			else if (nextMaxCount > (Real)MAX_COUNT)
-				nextMaxCount = (Real)MAX_COUNT;
-
-			const Real interpolationAlpha = TheGameEngine->getLogicInterpolationAlpha();
-			renderMaxCount += (nextMaxCount - renderMaxCount) * interpolationAlpha;
+			if (m_doZoomTo)
+				phaseProgress -= 1.0f;
+			renderMaxCount = (Real)MAX_COUNT * (1.0f - phaseProgress);
+			if (renderMaxCount <= 0.0f)
+			{
+				renderMaxCount = 0.0f;
+				continueEffect = false;
+			}
 		}
+		else
+		{
+			renderMaxCount = (Real)MAX_COUNT * phaseProgress;
+			if (renderMaxCount >= (Real)MAX_COUNT)
+			{
+				// Reborn: Draw the full zoom-in peak first; only then change camera position and enter zoom-out.
+				renderMaxCount = (Real)MAX_COUNT;
+				jumpAfterRender = m_doZoomTo && m_zoomToValid;
+				if (!jumpAfterRender)
+					continueEffect = false;
+			}
+		}
+		// Reborn: Reuse the same unblurred source across extra renders instead of alternating recapture every render frame.
+		m_skipRender = continueEffect;
 	}
 
 	Int	 i, j;
@@ -1138,6 +1148,15 @@ Bool ScreenMotionBlurFilter::postRender(FilterModes mode, Coord2D &scrollDelta,B
 
 		}
 	}
+	// Reborn: The source camera peak has now been presented; capture the destination scene on the next render.
+	if (jumpAfterRender)
+	{
+		m_decrement = true;
+		// Reborn: Switch to scripted camera geometry only after the original source view has completed its zoom-in.
+		TheTacticalView->setUserControlled(false);
+		TheTacticalView->lookAt(&m_zoomToPos);
+		m_skipRender = false;
+	}
 	m_lastFrame = TheGameLogic->getFrame();
 	if (pan){
 		m_skipRender = false;
@@ -1151,6 +1170,13 @@ Bool ScreenMotionBlurFilter::postRender(FilterModes mode, Coord2D &scrollDelta,B
 
 Bool ScreenMotionBlurFilter::setup(FilterModes mode)
 {
+	// Reborn: Start each zoom from the current logic/render instant, not the previous filter's last frame.
+	m_lastFrame = TheGameLogic->getFrame();
+	m_elapsedLogicSeconds = 0.0f;
+	// Reborn: Use the same effective logic FPS for the setup interpolation offset and subsequent progress.
+	const Int logicFps = min(TheFramePacer->getActualLogicTimeScaleFps(), TheFramePacer->getActualFramesPerSecondLimit());
+	if (logicFps > 0 && TheFramePacer->getActualFramesPerSecondLimit() > logicFps)
+		m_elapsedLogicSeconds = -TheGameEngine->getLogicInterpolationAlpha() / (Real)logicFps;
 
 	m_additive = false;
 

@@ -169,6 +169,8 @@ W3DView::W3DView()
 
 	m_viewFilterMode = FM_VIEW_DEFAULT;
 	m_viewFilter = FT_VIEW_DEFAULT;
+	m_blurZoomPending = false; // Reborn: No destination commands are staged on a new view.
+	m_blurResetPending = false;
 	m_isWireFrameEnabled = m_nextWireFrameEnabled = FALSE;
 	m_shakeOffset.x = 0.0f;
 	m_shakeOffset.y = 0.0f;
@@ -2051,6 +2053,9 @@ void W3DView::set3DWireFrameMode(Bool enable)
 //-------------------------------------------------------------------------------------------------
 void W3DView::setViewFilterPos(const Coord3D *pos)
 {
+	// Reborn: A new jump must not inherit deferred commands from a previously interrupted effect.
+	m_blurZoomPending = false;
+	m_blurResetPending = false;
 	ScreenMotionBlurFilter::setZoomToPos(pos);
 }
 //-------------------------------------------------------------------------------------------------
@@ -2077,6 +2082,13 @@ Bool W3DView::setViewFilterMode(FilterModes filterMode)
 //-------------------------------------------------------------------------------------------------
 Bool W3DView::setViewFilter(FilterTypes filter)
 {
+	// Reborn: Explicit filter cancellation discards queued blur-specific camera commands.
+	if (filter != FT_VIEW_MOTION_BLUR_FILTER)
+	{
+		m_blurZoomPending = false;
+		m_blurResetPending = false;
+	}
+
 	FilterTypes oldFilter = m_viewFilter;	//save previous filter in case setup fails.
 
 	m_viewFilter = filter;
@@ -2191,6 +2203,13 @@ void W3DView::draw()
 			// shut it down.
 			m_viewFilter = FT_VIEW_DEFAULT;
 			m_viewFilterMode = FM_VIEW_DEFAULT;
+			// Reborn: Apply the deferred return reset only after the final zoom-out image has been rendered.
+			if (m_blurResetPending)
+			{
+				m_blurResetPending = false;
+				resetCamera(&m_blurResetPosition, m_blurResetMilliseconds, m_blurResetEaseIn, m_blurResetEaseOut);
+			}
+			m_blurZoomPending = false;
 		}
 	}
 
@@ -2928,6 +2947,34 @@ void W3DView::lookAt( const Coord3D *o )
 	removeScriptedState(Scripted_Rotate | Scripted_CameraLock | Scripted_MoveOnWaypointPath);
 	m_CameraArrivedAtWaypointOnPathFlag = false;
 
+	// Reborn: A blur jump is a discontinuous cut; never interpolate its destination from the old camera location.
+	if (m_viewFilter == FT_VIEW_MOTION_BLUR_FILTER && !ScreenMotionBlurFilter::isJumpPending())
+	{
+		m_scriptedCameraInterpolationInitialized = false;
+		if (m_blurResetPending && m_blurResetMilliseconds <= 0)
+		{
+			// Reborn: An instant reset defines the destination pose, not a visible correction after zoom-out.
+			m_blurResetPending = false;
+			lookAt(&m_blurResetPosition);
+			View::setAngle(0.0f);
+			m_FXPitch = 1.0f;
+			m_zoom = getMaxZoom(m_pos.x, m_pos.y);
+			removeScriptedState(Scripted_Rotate | Scripted_Pitch | Scripted_Zoom | Scripted_MoveOnWaypointPath);
+			m_scriptedCameraInterpolationInitialized = false;
+		}
+		if (m_blurZoomPending)
+		{
+			m_blurZoomPending = false;
+			if (m_blurZoomMilliseconds <= 0)
+			{
+				// Reborn: Zero-duration destination zoom must be ready before the first destination texture is captured.
+				m_zoom = m_blurZoom;
+				removeScriptedState(Scripted_Zoom);
+			}
+			else
+				zoomCamera(m_blurZoom, m_blurZoomMilliseconds, m_blurZoomEaseIn, m_blurZoomEaseOut);
+		}
+	}
 	m_recalcCamera = true;
 }
 
@@ -3112,6 +3159,17 @@ void W3DView::rotateCameraTowardPosition(const Coord3D *pLoc, Int milliseconds, 
 //-------------------------------------------------------------------------------------------------
 void W3DView::zoomCamera( Real finalZoom, Int milliseconds, Real easeIn, Real easeOut )
 {
+	// Reborn: Scripts such as Training01 request destination zoom immediately after starting a blur jump; preserve the source view.
+	if (m_viewFilter == FT_VIEW_MOTION_BLUR_FILTER && ScreenMotionBlurFilter::isJumpPending())
+	{
+		m_blurZoomPending = true;
+		m_blurZoom = finalZoom;
+		m_blurZoomMilliseconds = milliseconds;
+		m_blurZoomEaseIn = easeIn;
+		m_blurZoomEaseOut = easeOut;
+		return;
+	}
+
 	if (milliseconds<1) milliseconds = 1;
 	m_zcInfo.numFrames = milliseconds/TheW3DFrameLengthInMsec;
 	if (m_zcInfo.numFrames < 1) {
@@ -3484,6 +3542,18 @@ void W3DView::cameraModFinalPitch(Real finalPitch, Real easeIn, Real easeOut)
 // ------------------------------------------------------------------------------------------------
 void W3DView::resetCamera(const Coord3D *location, Int milliseconds, Real easeIn, Real easeOut)
 {
+	// Reborn: Training01 resets 0.1 seconds after starting the return blur; hold that reset until both phases finish.
+	if (m_viewFilter == FT_VIEW_MOTION_BLUR_FILTER &&
+		(m_viewFilterMode == FM_VIEW_MB_IN_AND_OUT_ALPHA || m_viewFilterMode == FM_VIEW_MB_IN_AND_OUT_SATURATE))
+	{
+		m_blurResetPending = true;
+		m_blurResetPosition = *location;
+		m_blurResetMilliseconds = milliseconds;
+		m_blurResetEaseIn = easeIn;
+		m_blurResetEaseOut = easeOut;
+		return;
+	}
+
 	moveCameraTo(location, milliseconds, 0, false, easeIn, easeOut);
 	m_mcwpInfo.cameraAngle[2] = 0.0f; // default angle.
 	// m_mcwpInfo.cameraAngle[2] = m_defaultAngle;
@@ -3506,7 +3576,8 @@ Bool W3DView::isCameraMovementFinished()
 				m_viewFilterMode == FM_VIEW_MB_OUT_ALPHA ||
 				m_viewFilterMode == FM_VIEW_MB_IN_SATURATE ||
 				m_viewFilterMode == FM_VIEW_MB_OUT_SATURATE ) {
-			return true;
+			// Reborn: A blur zoom is still moving until postRender finishes and clears the active filter.
+			return false;
 		}
 	}
 

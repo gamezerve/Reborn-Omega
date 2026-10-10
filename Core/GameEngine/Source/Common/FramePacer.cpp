@@ -22,6 +22,7 @@
 
 #include "Common/FramePacer.h"
 
+#include "GameClient/CommandXlat.h" // Reborn: Identify cinematic blur zoom modes for the temporary FPS cap.
 #include "GameClient/View.h"
 
 #include "GameLogic/GameLogic.h"
@@ -132,7 +133,17 @@ Bool FramePacer::isActualFramesPerSecondLimitEnabled() const
 
 Int FramePacer::getActualFramesPerSecondLimit() const
 {
-	return isActualFramesPerSecondLimitEnabled() ? getFramesPerSecondLimit() : RenderFpsPreset::UncappedFpsValue;
+	const Int fps = isActualFramesPerSecondLimitEnabled() ? getFramesPerSecondLimit() : RenderFpsPreset::UncappedFpsValue;
+	// Reborn: Blur zoom is validated up to 60 FPS; temporarily cap the actual render cadence, not the saved preference or logic FPS.
+	if (fps > 60 && TheTacticalView && TheTacticalView->getViewFilterType() == FT_VIEW_MOTION_BLUR_FILTER)
+	{
+		const FilterModes mode = TheTacticalView->getViewFilterMode();
+		if (mode == FM_VIEW_MB_IN_AND_OUT_ALPHA || mode == FM_VIEW_MB_IN_AND_OUT_SATURATE ||
+			mode == FM_VIEW_MB_IN_ALPHA || mode == FM_VIEW_MB_OUT_ALPHA ||
+			mode == FM_VIEW_MB_IN_SATURATE || mode == FM_VIEW_MB_OUT_SATURATE)
+			return 60;
+	}
+	return fps;
 }
 
 Real FramePacer::getUpdateTime()  const
