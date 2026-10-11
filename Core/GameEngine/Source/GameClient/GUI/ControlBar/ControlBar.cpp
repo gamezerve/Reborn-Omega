@@ -1363,6 +1363,8 @@ void ControlBar::populatePurchaseScience( Player* player )
 	win = TheWindowManager->winGetWindowFromId( m_contextParent[ CP_PURCHASE_SCIENCE ], TheNameKeyGenerator->nameToKey( "GeneralsExpPoints.wnd:ProgressBarExperience" ) );
 	if(win)
 	{
+		// Reborn: ControlBarPro omits the science experience bar; restore it for the original control bar.
+		win->winHide(UseCustomControlBar());
 		Int progress;
 		progress = ((player->getSkillPoints() - player->getSkillPointsLevelDown()) * 100) /(player->getSkillPointsLevelUp() - player->getSkillPointsLevelDown());
 		GadgetProgressBarSetProgress(win, progress);
@@ -1422,6 +1424,8 @@ void ControlBar::updateContextPurchaseScience()
 	win = TheWindowManager->winGetWindowFromId( m_contextParent[ CP_PURCHASE_SCIENCE ], TheNameKeyGenerator->nameToKey( "GeneralsExpPoints.wnd:ProgressBarExperience" ) );
 	if(win)
 	{
+		// Reborn: ControlBarPro omits the science experience bar; restore it for the original control bar.
+		win->winHide(UseCustomControlBar());
 		Int progress;
 		progress = ((player->getSkillPoints() - player->getSkillPointsLevelDown()) * 100) /(player->getSkillPointsLevelUp() - player->getSkillPointsLevelDown());
 		GadgetProgressBarSetProgress(win, progress);

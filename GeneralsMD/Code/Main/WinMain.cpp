@@ -52,7 +52,6 @@
 #include "Common/StackDump.h"
 #include "Common/MessageStream.h"
 #include "Common/PlayerList.h"
-#include "Common/RebornFAQ.h"
 #include "Common/Registry.h"
 #include "Common/Team.h"
 #include "Common/Upgrade.h" // Reborn: Release upgrade audit caches before final leak reporting.
@@ -798,47 +797,6 @@ static LONG WINAPI UnHandledExceptionFilter( struct _EXCEPTION_POINTERS* e_info 
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
-static HHOOK displayModeMessageBoxHook = nullptr;
-
-
-// DisplayModeMessageBoxHook ==================================================
-/** Reborn: Rename the Display Mode message box Help button to FAQ. */
-//=============================================================================
-static LRESULT CALLBACK DisplayModeMessageBoxHook(Int code, WPARAM wParam, LPARAM lParam)
-{
-	if (code == HCBT_ACTIVATE)
-	{
-		HWND messageBox = reinterpret_cast<HWND>(wParam);
-		HWND helpButton = GetDlgItem(messageBox, IDHELP);
-
-		if (helpButton)
-			SetWindowTextA(helpButton, "FAQ");
-
-		if (displayModeMessageBoxHook)
-		{
-			UnhookWindowsHookEx(displayModeMessageBoxHook);
-			displayModeMessageBoxHook = nullptr;
-		}
-	}
-
-	return CallNextHookEx(
-		displayModeMessageBoxHook,
-		code,
-		wParam,
-		lParam);
-}
-
-
-// DisplayModeHelpCallback ====================================================
-/** Reborn: Open the Display Mode FAQ from the startup display mode prompt. */
-//=============================================================================
-static VOID CALLBACK DisplayModeHelpCallback(LPHELPINFO helpInfo)
-{
-	(void)helpInfo;
-
-	ShowRebornFAQ("DisplayMode");
-}
-
 // WinMain ====================================================================
 /** Application entry point */
 //=============================================================================
@@ -945,14 +903,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		
 			if (!TheGlobalData->m_headless && !TheGlobalData->m_windowed)
 			{
-				// Reborn: Provide an FAQ button for additional information about the available display modes.
-				displayModeMessageBoxHook = SetWindowsHookExA(
-					WH_CBT,
-					DisplayModeMessageBoxHook,
-					nullptr,
-					GetCurrentThreadId()
-				);
-
+				// Reborn: Temporarily omit the startup FAQ button; preserve display mode selection.
 				MSGBOXPARAMSA messageBoxParams = {};
 				messageBoxParams.cbSize = sizeof(messageBoxParams);
 				messageBoxParams.hwndOwner = nullptr;
@@ -964,22 +915,15 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				messageBoxParams.lpszCaption = "Display Mode";
 				messageBoxParams.dwStyle =
 					MB_YESNOCANCEL |
-					MB_HELP |
 					MB_ICONQUESTION |
 					MB_SETFOREGROUND |
 					MB_TOPMOST |
 					MB_TASKMODAL;
 				messageBoxParams.dwContextHelpId = 0;
-				messageBoxParams.lpfnMsgBoxCallback = DisplayModeHelpCallback;
+				messageBoxParams.lpfnMsgBoxCallback = nullptr;
 				messageBoxParams.dwLanguageId = 0;
 
 				Int result = MessageBoxIndirectA(&messageBoxParams);
-
-				if (displayModeMessageBoxHook)
-				{
-					UnhookWindowsHookEx(displayModeMessageBoxHook);
-					displayModeMessageBoxHook = nullptr;
-				}
 
 				if (result == IDCANCEL)
 					return 0;

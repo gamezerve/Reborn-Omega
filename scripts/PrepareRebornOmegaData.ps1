@@ -127,6 +127,9 @@ Copy-Item `
     "$DataBigTemp\Data\Generals.str" `
     -Force
 
+# Reborn: Package the FAQ under its engine filesystem path, Data\FAQ.ini.
+Copy-Item "$Source\Data\FAQ.ini" "$DataBigTemp\Data\FAQ.ini" -Force
+
 & $MakeBig `
     -f "$DataBigTemp" `
     -o:"$Target\RebornOmega_Data.pak"

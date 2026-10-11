@@ -42,11 +42,12 @@
 
 #include "Common/RebornFAQ.h"
 #include "Common/Debug.h"
+#include "Common/File.h"
+#include "Common/FileSystem.h"
 
 #include <Windows.h>
 #include <cctype>
-#include <cstring>
-#include <fstream>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -89,39 +90,6 @@ static std::string trimFAQString(const std::string& value)
 		last--;
 
 	return value.substr(first, last - first);
-}
-
-
-// getRebornFAQPath ===========================================================
-/** Reborn: Build the FAQ data path based on whether the game is running under a debugger. */
-//=============================================================================
-static std::string getRebornFAQPath()
-{
-	char exePath[MAX_PATH] = {};
-
-	DWORD length = GetModuleFileNameA(
-		nullptr,
-		exePath,
-		ARRAY_SIZE(exePath));
-
-	if (length == 0 || length >= ARRAY_SIZE(exePath))
-	{
-		if (IsDebuggerPresent())
-			return "Data\\FAQ.ini";
-
-		return "RebornOmegaData\\FAQ.ini";
-	}
-
-	char* lastSlash = strrchr(exePath, '\\');
-
-	if (lastSlash)
-		*(lastSlash + 1) = '\0';
-
-	// Reborn: Use the development Data directory while running through Visual Studio or another debugger.
-	if (IsDebuggerPresent())
-		return std::string(exePath) + "Data\\FAQ.ini";
-
-	return std::string(exePath) + "RebornOmegaData\\FAQ.ini";
 }
 
 
@@ -217,14 +185,16 @@ static Bool parseFAQStringValue(
 
 
 // loadRebornFAQ ==============================================================
-/** Reborn: Load and parse a named FAQ block from the external FAQ data file. */
+/** Reborn: Load a named FAQ from loose or archived data while preserving the FAQ parser. */
 //=============================================================================
 static Bool loadRebornFAQ(const char* faqName, RebornFAQ& faq)
 {
-	std::string filename = getRebornFAQPath();
-	std::ifstream file(filename.c_str());
+	// Reborn: Use the archive entry path for both loose development data and release packages.
+	std::string filename = "Data\\FAQ.ini";
+	File* source = TheFileSystem ?
+		TheFileSystem->openFile(filename.c_str(), File::READ | File::BINARY) : nullptr;
 
-	if (!file.is_open())
+	if (!source)
 	{
 		REBORN_LOG(
 			"FAQ_LOAD_FAILED: Failed to open FAQ file '%s'.",
@@ -232,6 +202,28 @@ static Bool loadRebornFAQ(const char* faqName, RebornFAQ& faq)
 
 		return FALSE;
 	}
+
+	// Reborn: Read and close the engine file before parsing, including all parser error exits.
+	Int fileSize = source->size();
+	std::string contents;
+	if (fileSize >= 0)
+		contents.resize(fileSize);
+	Int bytesRead = 0;
+	while (bytesRead < fileSize)
+	{
+		Int count = source->read(&contents[bytesRead], fileSize - bytesRead);
+		if (count <= 0)
+			break;
+		bytesRead += count;
+	}
+	source->close();
+	if (fileSize < 0 || bytesRead != fileSize)
+	{
+		REBORN_LOG("FAQ_LOAD_FAILED: Failed to read FAQ file '%s' (%d/%d bytes).",
+			filename.c_str(), bytesRead, fileSize);
+		return FALSE;
+	}
+	std::istringstream file(contents);
 
 	faq.name.clear();
 	faq.title.clear();

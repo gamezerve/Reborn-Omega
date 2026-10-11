@@ -5671,6 +5671,17 @@ void Object::doCommandButton( const CommandButton *commandButton, CommandSourceT
 					// sanity
 					if( upgradeT == nullptr )
 						break;
+					// Reborn: Repeated AI radar orders must skip unfinished, sold, upgraded or non-producing objects and unavailable queues.
+					if (commandButton->getName() == "Command_UpgradeChinaRadar")
+					{
+						ProductionUpdateInterface* radarProduction = getProductionUpdateInterface();
+						if (getStatusBits().test(OBJECT_STATUS_UNDER_CONSTRUCTION) ||
+							getStatusBits().test(OBJECT_STATUS_SOLD) ||
+							hasUpgrade(upgradeT) || !affectedByUpgrade(upgradeT) ||
+							!radarProduction || radarProduction->isUpgradeInQueue(upgradeT) ||
+							radarProduction->canQueueUpgrade(upgradeT) != CANMAKE_OK)
+							return;
+					}
 					if( upgradeT->getUpgradeType() == UPGRADE_TYPE_OBJECT )
 					{
 						if( hasUpgrade( upgradeT )  || !affectedByUpgrade( upgradeT ) )
