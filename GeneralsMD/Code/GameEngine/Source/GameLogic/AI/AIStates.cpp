@@ -2615,11 +2615,32 @@ StateReturnType AIAttackApproachTargetState::onEnter()
 	Coord3D groundPos;
 	groundPos.zero();
 
-	// Reborn: Enclosed passengers cannot approach independently; use the same range and sight test as aiming/firing.
+	// Reborn: Enclosed passengers cannot pursue; position real garrisons before checking range and sight.
 	Object* carrier = source->getContainedBy();
 	ContainModuleInterface* passengerContain = carrier ? carrier->getContain() : nullptr;
 	if (passengerContain && passengerContain->isEnclosingContainerFor(source))
 	{
+		Weapon* passengerWeapon = source->getCurrentWeapon();
+		if (!passengerWeapon)
+			return STATE_FAILURE;
+
+		Bool inFiringRange;
+		if (passengerContain->isGarrisonable())
+		{
+			inFiringRange = m_isAttackingObject ?
+				passengerContain->attemptBestFirePointPosition(source, passengerWeapon, victim) :
+				passengerContain->attemptBestFirePointPosition(source, passengerWeapon, getMachineGoalPosition());
+		}
+		else
+		{
+			// Reborn: Transports have no garrison firepoints; their inherited firepoint method returns FALSE.
+			inFiringRange = m_isAttackingObject ?
+				passengerWeapon->isWithinAttackRange(source, victim) :
+				passengerWeapon->isWithinAttackRange(source, getMachineGoalPosition());
+		}
+		if (!inFiringRange && !passengerWeapon->hasLeechRange())
+			return STATE_FAILURE;
+
 		const Bool unreachable = m_isAttackingObject ? outOfWeaponRangeObject(this, nullptr) : outOfWeaponRangePosition(this, nullptr);
 		return unreachable ? STATE_FAILURE : STATE_SUCCESS;
 	}
@@ -5216,7 +5237,8 @@ StateReturnType AIAttackAimAtTargetState::onEnter()
 	Object *containedBy = source->getContainedBy();
 	ContainModuleInterface *contain = containedBy ? containedBy->getContain() : nullptr;
 
-	if( containedBy && weapon && contain && contain->isEnclosingContainerFor( source ) )
+	// Reborn: Only actual garrisons position passengers at firepoints; transports use the weapon range checks below.
+	if( containedBy && weapon && contain && contain->isGarrisonable() && contain->isEnclosingContainerFor( source ) )
 	{
 		// non enclosing garrison containers do not use firepoints. Lorenzen, 6/11/03
 		if (victim)

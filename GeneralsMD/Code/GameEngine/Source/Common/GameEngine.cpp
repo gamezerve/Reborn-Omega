@@ -501,6 +501,11 @@ void GameEngine::init()
 
 		initSubsystem(TheArchiveFileSystem, "TheArchiveFileSystem", createArchiveFileSystem(), nullptr); // this MUST come after TheLocalFileSystem creation
 
+#ifdef REBORN_BUILD
+		// Reborn: Mount packaged mod data before GameData is parsed, matching loose-file startup behavior.
+		TheArchiveFileSystem->loadMods();
+#endif
+
 #ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 		GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
 		sprintf(Buf, "----------------------------------------------------------------------------After TheArchiveFileSystem  = %f seconds", ((double)(endTime64 - startTime64) / (double)(freq64)));
@@ -536,7 +541,10 @@ void GameEngine::init()
 		// NGMP_CHANGE: Init our settings before loadMods, which reads DataPacks_UseCommunityPatch. Needs TheGlobalData for the user data path.
 		NGMP_OnlineServicesManager::Settings.Initialize();
 
+#ifndef REBORN_BUILD
+		// Reborn: Other builds retain settings-dependent mod loading; Reborn packages are already mounted.
 		TheArchiveFileSystem->loadMods();
+#endif
 
 		// doesn't require resets so just create a single instance here.
 		TheGameLODManager = MSGNEW("GameEngineSubsystem") GameLODManager;
