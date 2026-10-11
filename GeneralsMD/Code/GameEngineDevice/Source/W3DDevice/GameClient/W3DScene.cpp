@@ -488,7 +488,8 @@ void RTS3DScene::Visibility_Check(CameraClass * camera)
 
 						Object* object = draw->getObject();
 
-						if (object)
+						// Reborn: A dam separates wet and dry terrain; its center water level must not clip or fade the downstream wall.
+						if (object && object->getTemplate()->getName() != "Dam")
 						{
 							const Coord3D* pos = object->getPosition();
 

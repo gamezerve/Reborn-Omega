@@ -3403,6 +3403,22 @@ void W3DView::cameraModFinalMoveTo(Coord3D *pLoc)
 	}
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Complete the scripted camera pose immediately so the next movement starts from the intended shot. */
+//-------------------------------------------------------------------------------------------------
+void W3DView::setupScriptedCameraImmediate(const Coord3D* pos, const Coord3D* target, Real zoom, Real pitch)
+{
+	stopDoingScriptedCamera();
+	setUserControlled(false);
+	lookAt(pos);
+	cameraLookTowardImmediate(target);
+	m_FXPitch = pitch;
+	m_zoom = zoom * getMaxZoom(m_pos.x, m_pos.y);
+	m_scriptedCameraInterpolationInitialized = false;
+	m_cameraAreaConstraintsValid = false;
+	m_recalcCamera = true;
+}
+
 // ------------------------------------------------------------------------------------------------
 /** Reborn: Fix for GLA01 Ending Dam Sequence. Immediately rotates the camera to look toward a specified point. */
 // ------------------------------------------------------------------------------------------------

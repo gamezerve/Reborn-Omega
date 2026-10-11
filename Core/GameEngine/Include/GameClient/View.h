@@ -158,6 +158,8 @@ public:
 	virtual void cameraModFreezeAngle(){ }					///< Freezes time during the next camera movement.
 	virtual void cameraModLookToward(Coord3D *pLoc){}			///< Sets a look at point during camera movement.
 	virtual void cameraModFinalLookToward(Coord3D *pLoc){}			///< Sets a look at point during camera movement.
+	// Reborn: Atomically establish a scripted cut before a subsequent movement starts.
+	virtual void setupScriptedCameraImmediate(const Coord3D* pos, const Coord3D* target, Real zoom, Real pitch) {}
 	virtual void cameraLookTowardImmediate(const Coord3D* pLoc) {}  ///< Reborn: Fix for GLA01 Ending Dam Sequence. Sets a look at point immediately.
 	virtual void cameraModFinalMoveTo(Coord3D *pLoc){ };			///< Sets a final move to.
 

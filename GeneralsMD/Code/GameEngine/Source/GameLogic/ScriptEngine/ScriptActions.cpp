@@ -1172,6 +1172,18 @@ void ScriptActions::doSetupCamera(const AsciiString& waypoint, Real zoom, Real p
 
 	AsciiString mapName = TheGameState->getMapLeafName(TheGameState->getPristineMapName());
 
+	// Reborn: Establish CHI02/CHI07 opening poses before their 0.01-second movement timers expire.
+	if ((!mapName.compareNoCase("CHI02.map") &&
+		!waypoint.compareNoCase("INTROCameraMove01Point") &&
+		!lookAtWaypoint.compareNoCase("INTROCameraMove01LookAt")) ||
+		(!mapName.compareNoCase("CHI07.map") &&
+		!waypoint.compareNoCase("INTROCameraBeginHere") &&
+		!lookAtWaypoint.compareNoCase("INTROCameraBeginLookingHere")))
+	{
+		TheTacticalView->setupScriptedCameraImmediate(&pos, &destination, zoom, pitch);
+		return;
+	}
+
 	// Reborn: Immediately place specific GLA04 opening cameras before
 	// subsequent movement or rotation actions are executed in the same frame.
 	const Bool rebornGLA04IntroCameraPositionFix =

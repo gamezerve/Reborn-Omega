@@ -199,6 +199,8 @@ public:
 	virtual void cameraModFinalPitch(Real finalPitch, Real easeIn, Real easeOut) override;	///< Final pitch for current camera movement.
 	virtual void cameraModLookToward(Coord3D *pLoc) override;								///< Sets a look at point during camera movement.
 	virtual void cameraModFinalLookToward(Coord3D *pLoc) override;						///< Sets a look at point during camera movement.
+	// Reborn: Use scripted pitch/zoom semantics, not player camera settings, for an instant cut.
+	virtual void setupScriptedCameraImmediate(const Coord3D* pos, const Coord3D* target, Real zoom, Real pitch) override;
 	virtual void cameraLookTowardImmediate(const Coord3D* pLoc) override;  ///< Reborn: Fix for GLA01 Ending Dam Sequence. Sets a look at point immediately.
 	virtual void cameraModFinalMoveTo(Coord3D *pLoc) override;			///< Sets a final move to.
 	// (gth) C&C3 animation controlled camera feature
