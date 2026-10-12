@@ -34,6 +34,8 @@ target_sources(core_particleeditor PRIVATE ${PARTICLEED_SRC})
 target_include_directories(core_particleeditor PRIVATE
     include
     res
+    # Reborn: Shared GameCommon.h requires the Generals Online definitions when building this standalone tool.
+    "${CMAKE_SOURCE_DIR}/GeneralsMD/Code/GameEngine/Include"
 )
 
 target_link_libraries(core_particleeditor PRIVATE
