@@ -1,6 +1,6 @@
 /*
 **	Command & Conquer Generals Zero Hour(tm)
-**	Copyright 2025 TheSuperHackers
+**	Copyright 2026 TheSuperHackers
 **
 **	This program is free software: you can redistribute it and/or modify
 **	it under the terms of the GNU General Public License as published by
@@ -197,10 +197,10 @@ void W3D_TakeCompressedScreenshot(ScreenshotFormat format, Int jpegQuality)
 			return;
 		}
 
-		surfaceCopy = NEW_REF(SurfaceClass, (DX8Wrapper::_Create_DX8_Surface(
+		surfaceCopy = NEW_REF(SurfaceClass, (
 			backBufferDesc.Width,
 			backBufferDesc.Height,
-			backBufferDesc.Format)));
+			backBufferDesc.Format));
 
 		DX8Wrapper::_Copy_DX8_Rects(
 			backBuffer->Peek_D3D_Surface(),
@@ -222,10 +222,10 @@ void W3D_TakeCompressedScreenshot(ScreenshotFormat format, Int jpegQuality)
 		D3DSURFACE_DESC frontBufferDesc = {};
 		frontBuffer->GetDesc(&frontBufferDesc);
 
-		surfaceCopy = NEW_REF(SurfaceClass, (DX8Wrapper::_Create_DX8_Surface(
+		surfaceCopy = NEW_REF(SurfaceClass, (
 			backBufferDesc.Width,
 			backBufferDesc.Height,
-			WW3D_FORMAT_A8R8G8B8)));
+			WW3D_FORMAT_A8R8G8B8));
 
 		struct LockedRect
 		{
