@@ -30,6 +30,7 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 #include "GameClient/GameClient.h"
+#include "Common/RebornLog.h" // Reborn: Persist post-intro transition diagnostics in release builds.
 
 // USER INCLUDES //////////////////////////////////////////////////////////////
 #include "Common/ActionManager.h"
@@ -88,6 +89,36 @@
 
 #include "../NextGenMP_defines.h"
 #include <chrono>
+#include <system_error> // Reborn: Detect unavailable UTC-clock system dependencies without changing supported Windows builds.
+
+#if defined(GENERALS_ONLINE_HIGH_FPS_RENDER)
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Preserve the existing UTC timer, falling back only when Windows lacks its required module or entry point. */
+//-------------------------------------------------------------------------------------------------
+static int64_t getLegacyFrameTimeMilliseconds()
+{
+	static bool useSystemClock = false;
+	if (!useSystemClock)
+	{
+		try
+		{
+			return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+		}
+		catch (const std::system_error& error)
+		{
+			// Reborn: Do not conceal unrelated failures; only missing Windows dependencies enable the compatibility path.
+			if (error.code() != std::error_code(ERROR_MOD_NOT_FOUND, std::system_category()) &&
+				error.code() != std::error_code(ERROR_PROC_NOT_FOUND, std::system_category()))
+				throw;
+			useSystemClock = true;
+			REBORN_LOG("CLOCK COMPATIBILITY: UTC timer unavailable (%d: %s); using system_clock for the legacy frame timer only",
+				error.code().value(), error.what());
+		}
+	}
+	// Reborn: system_clock does not need ICU/time-zone data; remember the fallback to avoid repeated failed loads.
+	return std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+}
+#endif
 
 
 #define DRAWABLE_HASH_SIZE	8192
@@ -542,11 +573,14 @@ void GameClient::update()
 
 		if (m_intro->isDone())
 		{
+			REBORN_LOG("STARTUP: Intro cleanup begins"); // Reborn: Identify failures while releasing movie resources.
 			delete m_intro;
 			m_intro = nullptr;
 
 			TheShell->showShellMap(TRUE);
+			REBORN_LOG("STARTUP: Shell map requested; entering showShell"); // Reborn: Separate the map request from menu initialization.
 			TheShell->showShell();
+			REBORN_LOG("STARTUP: showShell completed"); // Reborn: Confirm that the post-intro shell transition returned.
 
 			if (TheGlobalData->m_loadSaveGame.isNotEmpty())
 			{
@@ -758,7 +792,7 @@ void GameClient::update()
 	}
 
 #if defined(GENERALS_ONLINE_HIGH_FPS_RENDER)
-	int64_t currTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+	int64_t currTime = getLegacyFrameTimeMilliseconds(); // Reborn: Keep modern Windows unchanged and support systems without the UTC-clock dependency.
 
 	if (!freezeTime)
 	{

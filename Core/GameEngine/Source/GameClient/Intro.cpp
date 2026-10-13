@@ -20,6 +20,7 @@
 #include "GameClient/Intro.h"
 
 #include "Common/FramePacer.h"
+#include "Common/RebornLog.h" // Reborn: Trace the boundary between the intro movies and shell initialization.
 #include "Common/GameLOD.h"
 
 #include "GameClient/Display.h"
@@ -261,6 +262,7 @@ void Intro::doSizzleMovie()
 
 void Intro::doPostIntro()
 {
+	REBORN_LOG("STARTUP: Intro complete; handing control to the shell"); // Reborn: Record completion even when the next screen fails.
 	TheWritableGlobalData->m_breakTheMovie = TRUE;
 }
 

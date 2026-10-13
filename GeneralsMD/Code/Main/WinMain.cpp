@@ -47,6 +47,9 @@
 #include "Common/GameEngine.h"
 #include "Common/GameSounds.h"
 #include "Common/Debug.h"
+#include "Common/RebornLog.h" // Reborn: Diagnose silent startup failures in release builds.
+#include "Common/INIException.h" // Reborn: Report the original INI failure at the outer exception boundary.
+#include <exception> // Reborn: Preserve standard exception descriptions in the startup log.
 #include "Common/GameMemory.h"
 #include "Common/StackDump.h"
 #include "Common/MessageStream.h"
@@ -984,7 +987,9 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		DEBUG_LOG(("CRC message is %d", GameMessage::MSG_LOGIC_CRC));
 
 		// run the game main loop
+		REBORN_LOG("STARTUP: Entering GameMain; command line=%s", lpCmdLine ? lpCmdLine : ""); // Reborn: Create a session log after the memory manager is ready, before movies begin.
 		exitcode = GameMain();
+		REBORN_LOG("STARTUP: GameMain returned normally; exitcode=%d", exitcode); // Reborn: Distinguish an orderly exit from an exception.
 
 		// Reborn: Static diagnostic containers must release pooled allocations before the leak report.
 		ClearThingTemplateUpgradeDiagnostics();
@@ -1004,9 +1009,22 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		// BGC - shut down COM
 	//	OleUninitialize();
 	}
+	// Reborn: The outer handler previously swallowed failures without leaving any diagnostic evidence.
+	catch (ErrorCode error)
+	{
+		REBORN_LOG("STARTUP FAILURE: WinMain caught ErrorCode=%u", static_cast<unsigned int>(error));
+	}
+	catch (const INIException& error)
+	{
+		REBORN_LOG("STARTUP FAILURE: WinMain caught INIException: %s", error.mFailureMessage ? error.mFailureMessage : "No failure description");
+	}
+	catch (const std::exception& error)
+	{
+		REBORN_LOG("STARTUP FAILURE: WinMain caught std::exception: %s", error.what());
+	}
 	catch (...)
 	{
-
+		REBORN_LOG("STARTUP FAILURE: WinMain caught an unknown exception"); // Reborn: Keep the existing exit behavior but make it observable.
 	}
 
 #ifdef RTS_ENABLE_CRASHDUMP

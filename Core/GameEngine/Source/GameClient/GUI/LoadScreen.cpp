@@ -48,6 +48,7 @@
 // SYSTEM INCLUDES ////////////////////////////////////////////////////////////
 //-----------------------------------------------------------------------------
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "Common/RebornLog.h" // Reborn: Trace legal/title screen initialization in release builds.
 
 //-----------------------------------------------------------------------------
 // USER INCLUDES //////////////////////////////////////////////////////////////
@@ -1255,6 +1256,7 @@ ShellGameLoadScreen::~ShellGameLoadScreen()
 
 void ShellGameLoadScreen::init( GameInfo *game )
 {
+	REBORN_LOG("STARTUP: ShellGameLoadScreen initialization begins"); // Reborn: Trace the legal/title screen before shell map loading.
 	static BOOL firstLoad = TRUE;
 
 
@@ -1289,6 +1291,7 @@ void ShellGameLoadScreen::init( GameInfo *game )
 	// create the layout of the load screen
 	//m_loadScreen = TheWindowManager->winCreateFromScript( "Menus/ShellGameLoadScreen.wnd" );
 	m_loadScreen = TheWindowManager->winCreateFromScript(wndFile);
+	REBORN_LOG("STARTUP: ShellGameLoadScreen layout=%s created=%d", wndFile.str(), m_loadScreen != nullptr); // Reborn: Confirm the selected layout was loaded.
 
 	DEBUG_ASSERTCRASH(m_loadScreen, ("Can't initialize the ShellGame loadscreen"));
 	m_loadScreen->winHide(FALSE);
@@ -1306,6 +1309,7 @@ void ShellGameLoadScreen::init( GameInfo *game )
 
 	if(m_loadScreen && firstLoad && TheGameLODManager && TheGameLODManager->didMemPass())
 	{
+		REBORN_LOG("STARTUP: Applying title image=%s", useGenShellLoadScreen ? "TitleScreenGen" : "TitleScreenReborn"); // Reborn: Identify the first post-movie image operation.
 		m_loadScreen->winSetEnabledImage(
 			0,
 			TheMappedImageCollection->findImageByName(
@@ -1321,6 +1325,7 @@ void ShellGameLoadScreen::init( GameInfo *game )
 		firstLoad = FALSE;
 	}
 	m_progressBar->winHide(FALSE);
+	REBORN_LOG("STARTUP: ShellGameLoadScreen initialization completed"); // Reborn: Confirm legal/title setup completed before rendering.
 }
 
 void ShellGameLoadScreen::reset()

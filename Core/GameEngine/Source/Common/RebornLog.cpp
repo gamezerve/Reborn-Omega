@@ -253,7 +253,25 @@ void RebornLog::Write(
 		nullptr);
 
 	if (file == INVALID_HANDLE_VALUE)
-		return;
+	{
+		// Reborn: Protected installation folders must not suppress startup diagnostics; retry in the user's temporary folder.
+		char temporaryDirectory[MAX_PATH] = {};
+		const DWORD length = GetTempPathA(MAX_PATH, temporaryDirectory);
+		if (length == 0 || length >= MAX_PATH)
+			return;
+		char statusDirectory[MAX_PATH] = {};
+		if (snprintf(statusDirectory, MAX_PATH, "%sRebornOmegaStatus", temporaryDirectory) >= MAX_PATH ||
+			snprintf(g_logsDirectory, MAX_PATH, "%sRebornOmegaStatus\\Logs", temporaryDirectory) >= MAX_PATH)
+			return;
+		CreateDirectoryA(statusDirectory, nullptr);
+		CreateDirectoryA(g_logsDirectory, nullptr);
+		buildLogPath(g_logPath, ARRAY_SIZE(g_logPath), time);
+		file = CreateFileA(g_logPath, FILE_APPEND_DATA, FILE_SHARE_READ | FILE_SHARE_WRITE,
+			nullptr, OPEN_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+		if (file == INVALID_HANDLE_VALUE)
+			return;
+		deleteOldLogs(); // Reborn: Retain the existing ten-log limit in the fallback directory as well.
+	}
 
 	DWORD bytesWritten = 0;
 
