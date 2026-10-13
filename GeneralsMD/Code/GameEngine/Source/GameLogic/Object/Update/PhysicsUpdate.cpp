@@ -1003,10 +1003,8 @@ Real PhysicsBehavior::getForwardSpeed2D() const
 // Reborn: New combined approach to fix diagonal movement speed increase without breaking mission map cinematics 4/30/2026 - End
 
 //-------------------------------------------------------------------------------------------------
-/**
- * Return the current velocity magnitude in the forward direction.
- * If velocity is opposite facing vector, the returned value will be negative.
- */
+/** Reborn: Measure true 3D forward speed, or preserve retail cinematic speeds using the shared 2D legacy switch. */
+//-------------------------------------------------------------------------------------------------
 Real PhysicsBehavior::getForwardSpeed3D() const
 {
 	Vector3 dir = getObject()->getTransformMatrix()->Get_X_Vector();
@@ -1017,12 +1015,13 @@ Real PhysicsBehavior::getForwardSpeed3D() const
 
 	Real dot = vx + vy + vz;
 
-	Real speed = (Real)sqrtf( vx*vx + vy*vy + vz*vz );
+	if (g_useLegacyForwardSpeed2D)
+	{
+		Real speed = (Real)sqrtf(vx * vx + vy * vy + vz * vz);
+		return dot >= 0.0f ? speed : -speed;
+	}
 
-	if (dot >= 0.0f)
-		return speed;
-
-	return -speed;
+	return dot;
 }
 
 //-------------------------------------------------------------------------------------------------

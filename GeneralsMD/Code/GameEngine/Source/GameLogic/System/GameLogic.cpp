@@ -114,7 +114,7 @@
 
 #include <rts/profile.h>
 
-Bool g_useLegacyForwardSpeed2D = FALSE;
+Bool g_useLegacyForwardSpeed2D = FALSE; // Reborn: Now includes both 2D and 3D forward speed calculations.
 extern Int g_resourceMultiplierPercent; // Reborn
 
 struct QuitGameException {};
