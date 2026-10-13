@@ -82,6 +82,24 @@
 ///////////////////////////////////////////////////////////////////////////////
 void HideListBox(GameWindow * window);
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Keep the expanded online faction list above lobby options without changing their initialization order. */
+//-------------------------------------------------------------------------------------------------
+static void BringOnlineFactionComboBoxToTopOnOpen(GameWindow* comboBox)
+{
+	const Int id = comboBox->winGetWindowId();
+	for (Int slot = 0; slot < 8; ++slot)
+	{
+		AsciiString name;
+		name.format("GameSpyGameOptionsMenu.wnd:ComboBoxPlayerTemplate%d", slot);
+		if (id == TheNameKeyGenerator->nameToKey(name.str()))
+		{
+			comboBox->winBringToTop();
+			return;
+		}
+	}
+}
+
 static void CenterGameOptionsComboBoxOnOpen(GameWindow* comboBox)
 {
 	static const Int comboBoxIDs[] =
@@ -195,6 +213,7 @@ WindowMsgHandledType GadgetComboBoxInput( GameWindow *window, UnsignedInt msg,
 					{
 						listBox->winHide(FALSE);
 
+						BringOnlineFactionComboBoxToTopOnOpen(window); // Reborn: Promote the online faction popup when opened through its text field.
 						CenterGameOptionsComboBoxOnOpen(window);
 
 						window->winGetSize(&winSize.x, &winSize.y);
@@ -680,6 +699,7 @@ WindowMsgHandledType GadgetComboBoxSystem( GameWindow *window, UnsignedInt msg,
 					{
 						listBox->winHide(FALSE);
 
+						BringOnlineFactionComboBoxToTopOnOpen(window); // Reborn: Promote the online faction popup when opened through its arrow button.
 						CenterGameOptionsComboBoxOnOpen(window);
 
 						window->winGetSize(&winSize.x, &winSize.y);
