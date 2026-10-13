@@ -331,6 +331,14 @@
       "configuration": "Release"
     },
     {
+      "name": "win32-reborn",
+      "inherits": "default",
+      "configurePreset": "win32-reborn",
+      "displayName": "Test Windows 32bit Release Reborn",
+      "description": "Reborn: Run CI tests against the Reborn Release build using the shared test policies.",
+      "configuration": "Release"
+    },
+    {
       "name": "win32-profile",
       "inherits": "default",
       "configurePreset": "win32-profile",
