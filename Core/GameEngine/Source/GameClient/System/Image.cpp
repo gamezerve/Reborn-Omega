@@ -40,6 +40,13 @@
 #include "GameClient/Image.h"
 #include "Common/NameKeyGenerator.h"
 
+// Reborn: Track declarations only within the current overlay block, permitting valid overrides inherited from a parent image.
+struct BuffNerfOverlayParseContext
+{
+	Image *image;
+	UnsignedInt fieldLines[4];
+};
+
 // PRIVATE DATA ///////////////////////////////////////////////////////////////////////////////////
 const FieldParse Image::m_imageFieldParseTable[] =
 {
@@ -216,7 +223,8 @@ void Image::parseImageOverlay( INI *ini, void *instance, void *store, const void
 void Image::parseBuffNerfOverlayModule( INI *ini, void *instance, void *store, const void *userData )
 {
 	Image *image = static_cast<Image *>( instance );
-	ini->initFromINI( image, image->getBuffNerfOverlayFieldParse() );
+	BuffNerfOverlayParseContext context = { image, { 0, 0, 0, 0 } }; // Reborn: Reset duplicate-field tracking for each nested module.
+	ini->initFromINI( &context, image->getBuffNerfOverlayFieldParse() );
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -224,9 +232,22 @@ void Image::parseBuffNerfOverlayModule( INI *ini, void *instance, void *store, c
 //-------------------------------------------------------------------------------------------------
 void Image::parseBuffNerfOverlay( INI *ini, void *instance, void *store, const void *userData )
 {
-	Image *image = static_cast<Image *>( instance );
+	BuffNerfOverlayParseContext *context = static_cast<BuffNerfOverlayParseContext *>( instance ); // Reborn: The nested parser supplies per-block declaration tracking.
+	Image *image = context->image;
 	const Int overlayIndex = (Int)userData;
 	const AsciiString overlayName = ini->getNextToken();
+
+	// Reborn: Reject repeated slot fields before they silently overwrite an earlier icon, including repeated None values.
+	if( context->fieldLines[overlayIndex] != 0 )
+	{
+		REBORN_LOG(
+			"INI_INVALID_DATA: MappedImageOverlay '%s' defines MappedImage%d more than once. INIFile='%s', INILine=%u, FirstINILine=%u.",
+			image->getName().str(), overlayIndex + 1, ini->getFilename().str(), ini->getLineNum(), context->fieldLines[overlayIndex] );
+		DEBUG_CRASH(( "[LINE: %u - FILE: '%s'] MappedImageOverlay '%s': duplicate MappedImage%d field (first declared on line %u).",
+			ini->getLineNum(), ini->getFilename().str(), image->getName().str(), overlayIndex + 1, context->fieldLines[overlayIndex] ));
+		throw INI_INVALID_DATA;
+	}
+	context->fieldLines[overlayIndex] = ini->getLineNum(); // Reborn: Preserve the first declaration line for a useful duplicate diagnostic.
 
 	if( image->m_buffNerfOverlayNames.size() <= static_cast<size_t>( overlayIndex ) )
 		image->m_buffNerfOverlayNames.resize( overlayIndex + 1 );
