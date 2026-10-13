@@ -44,7 +44,8 @@ CreateUninstallRegKey=yes
 AppPublisher=Gamezerve
 
 [Files]
-Source: "{#RebornSourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; Reborn: Diagnostic symbols remain in the preparation folder and must never be shipped in the installer.
+Source: "{#RebornSourceDir}\*"; DestDir: "{app}"; Excludes: "*.pdb"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Registry]
 Root: HKCU; Subkey: "Software\RebornOmega"; ValueType: string; ValueName: "DisplayName"; ValueData: "{#RebornDisplayName}"

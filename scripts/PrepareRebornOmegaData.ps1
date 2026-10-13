@@ -308,6 +308,16 @@ foreach ($Exe in $Executables)
     Write-Host "$Exe copied successfully."
 }
 
+# Reborn: Keep the matching game symbols beside the executable for crash analysis, outside the installer payload.
+$GamePdb = [System.IO.Path]::ChangeExtension("$DisplayName.exe", ".pdb")
+$GamePdbSource = Join-Path $ReleaseDir $GamePdb
+if (!(Test-Path -LiteralPath $GamePdbSource -PathType Leaf))
+{
+    throw "Game PDB not found: $GamePdbSource"
+}
+Copy-Item -LiteralPath $GamePdbSource -Destination (Join-Path $Target $GamePdb) -Force -ErrorAction Stop
+Write-Host "$GamePdb copied successfully (diagnostics only; excluded from installer)."
+
 # Copy Dependencies Installer ----------------------------------------------
 
 $VCRedistSource = "$PSScriptRoot\..\tools\VC_redist.x86.exe"
@@ -366,9 +376,11 @@ Copy-Item "$GeneralsOnlineRuntimeDir\*.dll" $RebornOmegaDataDir -Force
 
 Write-Host "Moving files into RebornOmegaData..."
 
+# Reborn: Leave diagnostic PDB files beside the executables instead of moving them into RebornOmegaData.
 Get-ChildItem $Target | Where-Object {
     $_.Name -ne "RebornOmegaData" -and
-    $_.Extension -ne ".exe"
+    $_.Extension -ne ".exe" -and
+    $_.Extension -ne ".pdb"
 } | Move-Item -Destination $RebornOmegaDataDir -Force
 
 Write-Host "RebornOmegaData folder prepared successfully."

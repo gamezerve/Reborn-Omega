@@ -30,6 +30,7 @@
 #include <windows.h>
 
 #include "Common/Debug.h"
+#include "Common/RebornLog.h" // Reborn: Diagnose missing loose cursor resources in release builds.
 #include "Common/GlobalData.h"
 #include "Common/LocalFileSystem.h"
 #include "GameClient/GameClient.h"
@@ -364,6 +365,12 @@ void Win32Mouse::regainFocus()
 is created to avoid cursor corruption on buggy ATI Radeon cards. */
 void Win32Mouse::initCursorResources()
 {
+	// Reborn: Record the actual loose-file search context once per resource initialization, not on mouse movement.
+	char cursorWorkingDirectory[MAX_PATH] = {};
+	GetCurrentDirectoryA(MAX_PATH, cursorWorkingDirectory);
+	REBORN_LOG("CURSOR INIT: cwd=%s modDir=%s", cursorWorkingDirectory, TheGlobalData->m_modDir.str());
+	Int cursorLoadedCount = 0;
+	Int cursorMissingCount = 0;
 	for (Int cursor=FIRST_CURSOR; cursor<NUM_MOUSE_CURSORS; cursor++)
 	{
 		for (Int direction=0; direction<m_cursorInfo[cursor].numDirections; direction++)
@@ -392,6 +399,8 @@ void Win32Mouse::initCursorResources()
 					if (TheLocalFileSystem->doesFileExist(fname.str()))
 					{
 						cursorResources[cursor][direction]=LoadCursorFromFile(fname.str());
+						if (!cursorResources[cursor][direction]) // Reborn: File existence alone does not guarantee a valid Windows cursor.
+							REBORN_LOG("CURSOR LOAD FAILED: file=%s cursor=%d direction=%d win32Error=%lu", fname.str(), cursor, direction, GetLastError());
 						loaded = TRUE;
 					}
 				}
@@ -417,6 +426,8 @@ void Win32Mouse::initCursorResources()
 					{
 						cursorResources[cursor][direction] =
 							LoadCursorFromFile(fname.str());
+						if (!cursorResources[cursor][direction]) // Reborn: Capture the loader error before another Windows call overwrites it.
+							REBORN_LOG("CURSOR LOAD FAILED: file=%s cursor=%d direction=%d win32Error=%lu", fname.str(), cursor, direction, GetLastError());
 
 						loaded = TRUE;
 					}
@@ -424,12 +435,24 @@ void Win32Mouse::initCursorResources()
 #endif
 
 				if (!loaded)
+				{
 					cursorResources[cursor][direction]=LoadCursorFromFile(resourcePath);
+					if (!cursorResources[cursor][direction]) // Reborn: Report the original-game fallback failure as well as the private mod path.
+						REBORN_LOG("CURSOR LOAD FAILED: file=%s cursor=%d direction=%d win32Error=%lu", resourcePath, cursor, direction, GetLastError());
+				}
+				if (cursorResources[cursor][direction])
+					++cursorLoadedCount;
+				else
+				{
+					++cursorMissingCount;
+					REBORN_LOG("CURSOR MISSING: texture=%s cursor=%d direction=%d; no usable handle, cursor may be invisible", m_cursorInfo[cursor].textureName.str(), cursor, direction); // Reborn: Preserve the existing assertion and fallback behavior.
+				}
 				DEBUG_ASSERTCRASH(cursorResources[cursor][direction], ("MissingCursor %s",resourcePath));
 			}
 		}
 //		SetCursor(cursorResources[cursor][m_directionFrame]);
 	}
+	REBORN_LOG("CURSOR INIT COMPLETE: newlyLoaded=%d missing=%d", cursorLoadedCount, cursorMissingCount); // Reborn: Summarize resource health without per-frame logging.
 }
 
 //-------------------------------------------------------------------------------------------------

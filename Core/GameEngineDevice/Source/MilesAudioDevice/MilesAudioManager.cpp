@@ -52,6 +52,7 @@
 #include "Common/GameSounds.h"
 #include "Common/CRCDebug.h"
 #include "Common/GlobalData.h"
+#include "Common/RebornLog.h" // Reborn: Persist silent audio initialization failures in release builds.
 #include "Common/ScopedMutex.h"
 
 #include "GameClient/DebugDisplay.h"
@@ -1413,8 +1414,17 @@ Bool MilesAudioManager::hasMusicTrackCompleted( const AsciiString& trackName, In
 void MilesAudioManager::openDevice()
 {
 	if (!TheGlobalData->m_audioOn) {
+		REBORN_LOG("AUDIO DISABLED: GlobalData AudioOn is false; device initialization skipped"); // Reborn: Distinguish configuration from a DLL or sound-device failure.
 		return;
 	}
+	// Reborn: Relative Miles provider paths depend on the executable's working directory.
+#ifdef _WIN32
+	char audioWorkingDirectory[MAX_PATH] = {};
+	GetCurrentDirectoryA(MAX_PATH, audioWorkingDirectory);
+	const DWORD milesFolderAttributes = GetFileAttributesA("MSS"); // Reborn: Distinguish a provider folder from an unrelated file named MSS.
+	REBORN_LOG("AUDIO INIT: cwd=%s provider=%s speaker=%s MSS folder exists=%d", audioWorkingDirectory,
+		m_pref3DProvider.str(), m_prefSpeaker.str(), milesFolderAttributes != INVALID_FILE_ATTRIBUTES && (milesFolderAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
+#endif
 
 	m_deviceOpened = true;
 
@@ -1422,11 +1432,20 @@ void MilesAudioManager::openDevice()
 	if (!MilesLoader::load())
 	{
 		DEBUG_LOG(("Failed to load mss32.dll (error %d). Audio will be turned off.", MilesLoader::getLastError()));
+		REBORN_LOG("AUDIO LOAD FAILED: mss32.dll win32Error=%lu; all audio disabled", MilesLoader::getLastError()); // Reborn: The existing failure was only visible in debug output.
 		setOn(false, AudioAffect_All);
 		return;
 	}
 
 	m_milesLoaded = true;
+	// Reborn: Identify the DLL actually selected by Windows, including alternate or conflicting installations.
+#ifdef _WIN32
+	char milesLoadedPath[MAX_PATH] = {};
+	HMODULE milesModule = GetModuleHandleA("mss32.dll");
+	if (milesModule)
+		GetModuleFileNameA(milesModule, milesLoadedPath, MAX_PATH);
+	REBORN_LOG("AUDIO DLL LOADED: path=%s", milesLoadedPath[0] ? milesLoadedPath : "Unknown");
+#endif
 
 	AIL_set_redist_directory("MSS\\");
 	AIL_startup();
@@ -1437,6 +1456,13 @@ void MilesAudioManager::openDevice()
 	m_selectedSpeakerType = TheAudio->translateSpeakerTypeToUnsignedInt(m_prefSpeaker);
 
 	retval = AIL_quick_startup(audioSettings->m_useDigital, audioSettings->m_useMidi, audioSettings->m_outputRate, audioSettings->m_outputBits, audioSettings->m_outputChannels);
+	if (!retval) // Reborn: Capture Miles' diagnostic before handle/provider calls change its error state.
+	{
+		const char* milesDeviceError = AIL_last_error(); // Reborn: Older Miles DLLs may lack this export; tolerate a null diagnostic string.
+		REBORN_LOG("AUDIO DEVICE FAILED: result=%d digital=%d midi=%d rate=%d bits=%d channels=%d MilesError=%s", retval,
+			audioSettings->m_useDigital, audioSettings->m_useMidi, audioSettings->m_outputRate,
+			audioSettings->m_outputBits, audioSettings->m_outputChannels, milesDeviceError ? milesDeviceError : "Unavailable");
+	}
 
 	// Quick handles tells us where to store the various devices. For now, we're only interested in the digital handle.
 	AIL_quick_handles(&m_digitalHandle, nullptr, nullptr);
@@ -1454,10 +1480,12 @@ void MilesAudioManager::openDevice()
 	TheAudio->refreshCachedVariables();
 
 	if (!isValidProvider()) {
+		REBORN_LOG("AUDIO PROVIDER INVALID: requested=%s providerCount=%d startupResult=%d", m_pref3DProvider.str(), m_providerCount, retval); // Reborn: Separate provider failures from missing DLLs.
 		return;
 	}
 
 	initDelayFilter();
+	REBORN_LOG("AUDIO INIT COMPLETE: startupResult=%d providerCount=%d", retval, m_providerCount); // Reborn: Confirm device initialization returned successfully without per-frame logging.
 }
 
 //-------------------------------------------------------------------------------------------------
