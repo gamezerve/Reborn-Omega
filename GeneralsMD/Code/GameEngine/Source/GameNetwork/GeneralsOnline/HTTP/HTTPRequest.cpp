@@ -1,4 +1,5 @@
 #include "GameNetwork/GeneralsOnline/HTTP/HTTPRequest.h"
+#include "GameNetwork/GeneralsOnline/RebornOnlineClock.h" // Reborn: Use the compatible online timer without changing supported systems.
 #include "GameNetwork/GeneralsOnline/OnlineServices_Init.h"
 #include "GameNetwork/GeneralsOnline/HTTP/HTTPManager.h"
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
@@ -127,7 +128,7 @@ void HTTPRequest::InvokeCallbackIfComplete()
 #if defined(ARTIFICIAL_DELAY_HTTP_REQUESTS)
 void HTTPRequest::SetWaitingDelay(CURLcode result)
 {
-	m_timeRequestComplete = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+	m_timeRequestComplete = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 	m_pendingCURLCode = result;
 }
 
@@ -135,7 +136,7 @@ bool HTTPRequest::InvokeDelayAction()
 {
 	if (m_timeRequestComplete != -1)
 	{
-		int64_t currTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+		int64_t currTime = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 		if (currTime - m_timeRequestComplete > 2000)
 		{
 			Threaded_SetComplete(m_pendingCURLCode);

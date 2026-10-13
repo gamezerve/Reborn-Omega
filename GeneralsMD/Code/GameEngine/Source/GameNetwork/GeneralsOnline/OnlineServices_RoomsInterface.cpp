@@ -1,4 +1,5 @@
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
+#include "GameNetwork/GeneralsOnline/RebornOnlineClock.h" // Reborn: Use the compatible online timer without changing supported systems.
 #include "GameNetwork/GeneralsOnline/NGMP_include.h"
 #include "GameNetwork/GeneralsOnline/NetworkPacket.h"
 #include "GameNetwork/GeneralsOnline/NetworkBitstream.h"
@@ -152,7 +153,7 @@ void WebSocket::Connect(const char* url, bool bIsReconnect, std::function<void(v
 		return;
 	}
 
-	m_lastPong = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+	m_lastPong = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 
 	// TODO_CACHE: Cleanup multi too
 	if (m_pCurlWS != nullptr)
@@ -597,7 +598,7 @@ void WebSocket::Tick()
 	// attempting to reconnect?
 	if (m_bReconnecting)
 	{
-		int64_t currTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+		int64_t currTime = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 
 		int maxReconnectAttempts = (TheNGMPGame != nullptr && TheNGMPGame->isGameInProgress()) ? maxReconnectAttempts_Ingame : maxReconnectAttempts_Frontend;
 		if (m_numReconnectAttempts >= maxReconnectAttempts)
@@ -650,7 +651,7 @@ void WebSocket::Tick()
 	*/
 
 	// ping?
-	int64_t currTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+	int64_t currTime = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 	if ((currTime - m_lastPing) > m_timeBetweenUserPings)
 	{
 		m_lastPing = currTime;
@@ -743,7 +744,7 @@ void WebSocket::Tick()
                         m_lastReconnectAttempt = -1;
 
                         // connecting is as good as a pong
-                        m_lastPong = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+                        m_lastPong = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 
                         if (m_fnWebsocketConnectedCallback != nullptr)
                         {
@@ -894,7 +895,7 @@ void WebSocket::Tick()
 
 									case EWebSocketMessageID::PONG:
 									{
-										int64_t currTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+										int64_t currTime = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 										m_lastPong = currTime;
 									}
 									break;
@@ -1627,7 +1628,7 @@ void WebSocket::Tick()
 		m_bConnected = false;
 		m_bReconnecting = true;
         m_numReconnectAttempts = 0;
-        m_lastReconnectAttempt = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+        m_lastReconnectAttempt = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 		m_vecWSPartialBuffer.clear();
 
 
@@ -1659,7 +1660,7 @@ void WebSocket::Tick()
         m_bConnected = false;
         m_bReconnecting = true;
         m_numReconnectAttempts = 0;
-        m_lastReconnectAttempt = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+        m_lastReconnectAttempt = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
         m_vecWSPartialBuffer.clear();
 	};
 

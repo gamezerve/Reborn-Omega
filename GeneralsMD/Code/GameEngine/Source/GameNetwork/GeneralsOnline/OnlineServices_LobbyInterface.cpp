@@ -1,4 +1,5 @@
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
+#include "GameNetwork/GeneralsOnline/RebornOnlineClock.h" // Reborn: Use the compatible online timer without changing supported systems.
 #include "GameNetwork/GeneralsOnline/json.hpp"
 #include "GameNetwork/GeneralsOnline/HTTP/HTTPManager.h"
 #include "GameNetwork/GeneralsOnline/OnlineServices_Init.h"
@@ -855,7 +856,7 @@ void NGMP_OnlineServices_LobbyInterface::Tick()
 	// TODO_NGMP: Do we still need this safety measure?
 	if (IsInLobby())
 	{
-		int64_t currTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+		int64_t currTime = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 		if ((currTime - m_lastForceRefresh) > 5000)
 		{
 			//UpdateRoomDataCache();

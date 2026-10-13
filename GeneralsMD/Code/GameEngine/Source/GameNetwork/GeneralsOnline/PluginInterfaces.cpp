@@ -1,4 +1,5 @@
 #include "GameNetwork/GeneralsOnline/PluginInterfaces.h"
+#include "GameNetwork/GeneralsOnline/RebornOnlineClock.h" // Reborn: Use the compatible online timer without changing supported systems.
 #include "../NGMP_include.h"
 #include "../NetworkMesh.h"
 #include "../OnlineServices_Init.h"
@@ -329,7 +330,7 @@ void AnticheatPlugInterface::Authenticate()
                     return;
                 }
 
-                m_tokenCreationTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+                m_tokenCreationTime = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 
                 if (Functions.fnIsLoggedIn != nullptr && Functions.fnIsLoggedIn())
                 {
@@ -529,7 +530,7 @@ void AnticheatPlugInterface::Tick()
         // Do we need to refresh our token?
         if (Functions.fnIsLoggedIn != nullptr && Functions.fnIsLoggedIn())
         {
-            int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+            int64_t now = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
             if (m_tokenCreationTime != -1 && now - m_tokenCreationTime >= 45 * 60 * 1000) // refresh every 45m, tokens last 60m, giving us a 15m buffer to refresh and retry if something goes wrong
             {
                 NetworkLog(ELogVerbosity::LOG_RELEASE, "[AC] Token is about to expire, refreshing...");
@@ -552,7 +553,7 @@ void AnticheatPlugInterface::RefreshToken()
             return;
         }
 
-        m_tokenCreationTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+        m_tokenCreationTime = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 
         std::string authToken = pAuthInterface->GetAuthToken();
         Functions.fnRefreshToken(authToken.c_str(),

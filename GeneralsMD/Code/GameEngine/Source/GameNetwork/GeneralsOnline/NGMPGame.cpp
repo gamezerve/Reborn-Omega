@@ -1,4 +1,5 @@
 #include "GameNetwork/GeneralsOnline/NGMPGame.h"
+#include "GameNetwork/GeneralsOnline/RebornOnlineClock.h" // Reborn: Use the compatible online timer without changing supported systems.
 #include "GameLogic/VictoryConditions.h"
 #include "Common/PlayerList.h"
 #include "GameLogic/GameLogic.h"
@@ -586,8 +587,8 @@ void NGMPGame::reset(void)
 void NGMPGame::StartCountdown()
 {
 	m_bCountdownStarted = true;
-	m_countdownStartTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
-	m_countdownLastCheckTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+	m_countdownStartTime = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
+	m_countdownLastCheckTime = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 
 	std::shared_ptr<WebSocket>  pWS = NGMP_OnlineServicesManager::GetWebSocket();
 	if (pWS != nullptr)

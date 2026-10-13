@@ -1,4 +1,5 @@
 #include "GameNetwork/GeneralsOnline/NGMP_interfaces.h"
+#include "GameNetwork/GeneralsOnline/RebornOnlineClock.h" // Reborn: Use the compatible online timer without changing supported systems.
 
 #include "Common/GameEngine.h"
 #include "GameNetwork/GeneralsOnline/HTTP/HTTPManager.h"
@@ -187,7 +188,7 @@ void NGMP_OnlineServices_AuthInterface::OnRefreshTokenFailed(const char* szReaso
 	if (m_currentRefreshAttempt < m_maxRefreshAttempts)
 	{
 		// the token itself is still valid for a few more minutes, so try again shortly instead of waiting for the next scheduled refresh
-		m_nextRefreshRetryTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count() + (m_secondsUntilRefreshRetry * 1000);
+		m_nextRefreshRetryTime = RebornOnlineClock::nowMilliseconds() + (m_secondsUntilRefreshRetry * 1000); // Reborn: Keep all online time comparisons on the selected compatible clock.
 
 		NetworkLog(ELogVerbosity::LOG_RELEASE, "[AUTH]: Token refresh attempt %d of %d failed (%s), retrying in %ds", m_currentRefreshAttempt, m_maxRefreshAttempts, szReason, m_secondsUntilRefreshRetry);
 		return;
@@ -212,7 +213,7 @@ void NGMP_OnlineServices_AuthInterface::RefreshToken()
 	NetworkLog(ELogVerbosity::LOG_RELEASE, "[AUTH]: Starting token refresh (attempt %d of %d)", m_currentRefreshAttempt, m_maxRefreshAttempts);
 
 	// so we dont keep retrying while the request is pending
-	m_tokenCreationTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+	m_tokenCreationTime = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 
     std::string strRefreshURI = NGMP_OnlineServicesManager::GetAPIEndpoint("RefreshToken");
 
@@ -260,7 +261,7 @@ void NGMP_OnlineServices_AuthInterface::RefreshToken()
                             }
                             else
                             {
-                                m_tokenCreationTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+                                m_tokenCreationTime = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
                             }
 
                             // store data locally
@@ -458,7 +459,7 @@ void NGMP_OnlineServices_AuthInterface::DoFullLoginFlow()
 						m_currentRefreshAttempt = 0;
 
 						m_bWaitingLogin = true;
-						m_lastCheckCode = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+						m_lastCheckCode = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 
 						m_strCode = authResp.login_code;
 						NetworkLog(ELogVerbosity::LOG_DEBUG, "Login Code is %s", m_strCode.c_str());
@@ -532,7 +533,7 @@ void NGMP_OnlineServices_AuthInterface::Tick()
     // Do we need to refresh our token?
     if (IsLoggedIn())
     {
-        int64_t now = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+        int64_t now = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 
         if (m_nextRefreshRetryTime != -1)
         {
@@ -554,11 +555,11 @@ void NGMP_OnlineServices_AuthInterface::Tick()
 	if (m_bWaitingLogin)
 	{
 		const int64_t timeBetweenChecks = 1000;
-		int64_t currTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+		int64_t currTime = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 
 		if (currTime - m_lastCheckCode >= timeBetweenChecks)
 		{
-			m_lastCheckCode = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+			m_lastCheckCode = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 
 			// check again
 			std::string strURI = NGMP_OnlineServicesManager::GetAPIEndpoint("CheckLogin");
@@ -684,7 +685,7 @@ void NGMP_OnlineServices_AuthInterface::LoginAsSecondaryDevAccount()
 void NGMP_OnlineServices_AuthInterface::SaveCredentials(const char* szRefreshToken)
 {
 	m_strRefreshToken = std::string(szRefreshToken); // store the new refresh token, we'll need it for the next refresh
-	m_tokenCreationTime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::utc_clock::now().time_since_epoch()).count();
+	m_tokenCreationTime = RebornOnlineClock::nowMilliseconds(); // Reborn: Keep all online time comparisons on the selected compatible clock.
 
 	// store in data dir
 	nlohmann::json root = { {"refresh_token", szRefreshToken} };
