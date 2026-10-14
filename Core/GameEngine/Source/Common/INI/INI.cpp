@@ -70,6 +70,7 @@
 
 #if USE_STD_FROM_CHARS_PARSING
 #include <charconv>
+#include <cstdlib>
 #include <string_view>
 #include <type_traits>
 #endif
@@ -2028,18 +2029,18 @@ void INI::initFromINIMulti( void *what, const MultiIniFieldParse& parseTableList
 #if USE_STD_FROM_CHARS_PARSING
 
 template <typename Type>
-Type scanType(std::string_view token)
+Type scanType(const char* tokenString)
 {
+	std::string_view token(tokenString);
 	DEBUG_ASSERTCRASH(!token.empty(), ("token is not expected to be empty"));
 
 	// Unlike sscanf, std::from_chars cannot parse "+".
-	// Consume the plus symbol to accommodate custom ini files that have numbers prefixed with a plus.
-	if (token[0] == '+')
-	{
-		token.remove_prefix(1);
-	}
+	// Skip it for from_chars while preserving the original token for the fallback.
+	const size_t tokenOffset = (!token.empty() && token[0] == '+');
+	if (tokenOffset && token.size() > 1 && token[1] == '-')
+		throw INI_INVALID_DATA;
 
-	if (token.empty())
+	if (token.size() == tokenOffset)
 	{
 		REBORN_LOG(
 			"INI_INVALID_DATA: Numeric token contains only a plus sign.");
@@ -2049,7 +2050,25 @@ Type scanType(std::string_view token)
 
 	// Unlike sscanf, std::from_chars cannot parse "-" as unsigned integer.
 	std::conditional_t<std::is_integral_v<Type>, Int64, Type> result{};
-	const auto [ptr, ec] = std::from_chars(token.data(), token.data() + token.size(), result);
+	const auto [ptr, ec] = std::from_chars(token.data() + tokenOffset, token.data() + token.size(), result);
+
+	// Preserve legacy range handling with defined strto* conversions.
+	if (ec == std::errc::result_out_of_range)
+	{
+		char* end;
+		Type value;
+		if constexpr (std::is_floating_point_v<Type>)
+			value = std::strtof(tokenString, &end);
+		else if constexpr (std::is_signed_v<Type>)
+			value = static_cast<Type>(std::strtoll(tokenString, &end, 10));
+		else
+			value = static_cast<Type>(std::strtoull(tokenString, &end, 10));
+
+		if (end == tokenString)
+			throw INI_INVALID_DATA;
+
+		return value;
+	}
 
 	if (ec != std::errc{})
 	{
