@@ -45,6 +45,7 @@ public:
 	W3DShroudMaterialPassClass() : m_isTransparentObjectPass(FALSE) {}
 	virtual void	Install_Materials() const override;
 	virtual void	UnInstall_Materials() const override;
+	virtual bool Is_Reborn_Shroud_Pass() const override { return true; } // Reborn: Underwater fog is composited in the base alpha pass instead.
 	void enableTransparentObjectPass(Bool enable) {m_isTransparentObjectPass = enable;}
 protected:
 	//customized version to deal with transparent (alpha-tested) polys.

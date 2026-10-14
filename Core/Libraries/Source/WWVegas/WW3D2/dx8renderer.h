@@ -350,6 +350,10 @@ protected:
 
 extern bool g_rebornRenderUnderwaterPass;
 
+// Reborn: Share per-object fog state and camera-space shroud projection with the underwater mesh pass.
+void Reborn_Set_Underwater_Object_Fogged(RenderObjClass* renderObject, bool fogged);
+void Reborn_Set_Underwater_Fog(TextureClass* texture, const D3DMATRIX& projection, float fallbackShade, bool blendTextureAlpha);
+
 void Reborn_Clear_Underwater_Render_Objects();
 void Reborn_Add_Underwater_Render_Object(RenderObjClass* renderObject, float waterZ);
 bool Reborn_Get_Underwater_Render_Object_Water_Z(RenderObjClass* renderObject, float* waterZ);

@@ -62,6 +62,7 @@
 #include "meshgeometry.h"
 
 #include <vector>
+#include "texture.h" // Reborn: Hold and restore shroud texture references during underwater compositing.
 
 /*
 ** Global Instance of the DX8MeshRender
@@ -72,15 +73,141 @@ struct RebornUnderwaterRenderObject
 {
 	RenderObjClass* renderObject;
 	float waterZ;
+	bool fogged; // Reborn: Keep each queued underwater mesh's fog state independent of render order.
 };
 
 static std::vector<RebornUnderwaterRenderObject> g_rebornUnderwaterRenderObjects;
 
 bool g_rebornRenderUnderwaterPass = false;
 
+// Reborn: Projection is supplied only while rendering underwater meshes, and the texture reference is released after the pass.
+static TextureClass* g_rebornUnderwaterFogTexture = nullptr;
+static D3DMATRIX g_rebornUnderwaterFogProjection;
+static float g_rebornUnderwaterFallbackShade = 1.0f;
+static bool g_rebornUnderwaterFogBlendAlpha = false; // Reborn: Debug fog textures encode fog strength in alpha rather than RGB.
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Install the scene's shroud texture and projection for single-pass underwater fog. */
+//-------------------------------------------------------------------------------------------------
+void Reborn_Set_Underwater_Fog(TextureClass* texture, const D3DMATRIX& projection, float fallbackShade, bool blendTextureAlpha)
+{
+	REF_PTR_SET(g_rebornUnderwaterFogTexture, texture);
+	g_rebornUnderwaterFogProjection = projection;
+	g_rebornUnderwaterFallbackShade = fallbackShade;
+	g_rebornUnderwaterFogBlendAlpha = blendTextureAlpha;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Record the fog decision made by the scene for a registered underwater object. */
+//-------------------------------------------------------------------------------------------------
+void Reborn_Set_Underwater_Object_Fogged(RenderObjClass* renderObject, bool fogged)
+{
+	for (std::vector<RebornUnderwaterRenderObject>::iterator it = g_rebornUnderwaterRenderObjects.begin();
+		it != g_rebornUnderwaterRenderObjects.end(); ++it)
+	{
+		if (it->renderObject == renderObject)
+		{
+			it->fogged = fogged;
+			return;
+		}
+	}
+}
+
+// Reborn: A spare texture stage darkens underwater RGB in the same draw, leaving alpha/depth intact; all temporary stage state is restored.
+class RebornUnderwaterFogStage
+{
+public:
+	RebornUnderwaterFogStage(bool enabled) : m_stage(-1), m_nextStage(-1), m_projected(false), m_oldTexture(nullptr)
+	{
+		if (!enabled || !g_rebornUnderwaterFogTexture)
+			return;
+		const int maxStages = DX8Wrapper::Get_Current_Caps()->Get_Max_Textures_Per_Pass();
+		for (int stage = 1; stage < maxStages; ++stage)
+		{
+			if (DX8Wrapper::Get_Reborn_Texture_Stage_State(stage, D3DTSS_COLOROP) == D3DTOP_DISABLE)
+			{
+				m_stage = stage;
+				break;
+			}
+		}
+		if (m_stage < 0)
+			return;
+		for (int i = 0; i < 14; ++i)
+			m_oldStates[i] = DX8Wrapper::Get_Reborn_Texture_Stage_State(m_stage, states[i]);
+		m_oldFactor = DX8Wrapper::Get_DX8_Render_State(D3DRS_TEXTUREFACTOR);
+		DX8Wrapper::_Get_DX8_Transform((D3DTRANSFORMSTATETYPE)(D3DTS_TEXTURE0 + m_stage), m_oldTransform);
+		m_projected = m_stage < DX8Wrapper::Get_Current_Caps()->Get_Max_Simultaneous_Textures();
+		// Reborn: Old two-texture hardware can still darken RGB via a spare blend stage without replacing the mesh's detail texture.
+		if (m_projected)
+		{
+			m_oldTexture = DX8Wrapper::Peek_Reborn_Texture(m_stage);
+			if (m_oldTexture) m_oldTexture->Add_Ref();
+			DX8Wrapper::Set_Texture(m_stage, g_rebornUnderwaterFogTexture);
+			DX8Wrapper::Apply_Render_State_Changes();
+			DX8Wrapper::_Set_DX8_Transform((D3DTRANSFORMSTATETYPE)(D3DTS_TEXTURE0 + m_stage), g_rebornUnderwaterFogProjection);
+			DX8Wrapper::Set_DX8_Texture_Stage_State(m_stage, D3DTSS_TEXCOORDINDEX, D3DTSS_TCI_CAMERASPACEPOSITION);
+			DX8Wrapper::Set_DX8_Texture_Stage_State(m_stage, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTTFF_COUNT2);
+			DX8Wrapper::Set_DX8_Texture_Stage_State(m_stage, D3DTSS_ADDRESSU, D3DTADDRESS_CLAMP);
+			DX8Wrapper::Set_DX8_Texture_Stage_State(m_stage, D3DTSS_ADDRESSV, D3DTADDRESS_CLAMP);
+		}
+		else
+		{
+			const float shade = g_rebornUnderwaterFallbackShade;
+			DX8Wrapper::Set_DX8_Render_State(D3DRS_TEXTUREFACTOR, D3DCOLOR_COLORVALUE(shade, shade, shade, 1.0f));
+		}
+		// Reborn: Match both the retail RGB shroud and Debug's alpha-encoded fog, without changing the mesh's transparency.
+		DX8Wrapper::Set_DX8_Texture_Stage_State(m_stage, D3DTSS_COLOROP,
+			m_projected && g_rebornUnderwaterFogBlendAlpha ? D3DTOP_BLENDTEXTUREALPHA : D3DTOP_MODULATE);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(m_stage, D3DTSS_COLORARG1, m_projected ? D3DTA_TEXTURE : D3DTA_TFACTOR);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(m_stage, D3DTSS_COLORARG2, D3DTA_CURRENT);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(m_stage, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
+		DX8Wrapper::Set_DX8_Texture_Stage_State(m_stage, D3DTSS_ALPHAARG1, D3DTA_CURRENT);
+		if (m_stage + 1 < maxStages)
+		{
+			m_nextStage = m_stage + 1;
+			m_oldNextColor = DX8Wrapper::Get_Reborn_Texture_Stage_State(m_nextStage, D3DTSS_COLOROP);
+			m_oldNextAlpha = DX8Wrapper::Get_Reborn_Texture_Stage_State(m_nextStage, D3DTSS_ALPHAOP);
+			DX8Wrapper::Set_DX8_Texture_Stage_State(m_nextStage, D3DTSS_COLOROP, D3DTOP_DISABLE);
+			DX8Wrapper::Set_DX8_Texture_Stage_State(m_nextStage, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
+		}
+	}
+	~RebornUnderwaterFogStage()
+	{
+		if (m_stage < 0)
+			return;
+		if (m_projected)
+		{
+			DX8Wrapper::Set_Texture(m_stage, m_oldTexture);
+			REF_PTR_RELEASE(m_oldTexture);
+		}
+		for (int i = 0; i < 14; ++i)
+			DX8Wrapper::Set_DX8_Texture_Stage_State(m_stage, states[i], m_oldStates[i]);
+		DX8Wrapper::_Set_DX8_Transform((D3DTRANSFORMSTATETYPE)(D3DTS_TEXTURE0 + m_stage), m_oldTransform);
+		DX8Wrapper::Set_DX8_Render_State(D3DRS_TEXTUREFACTOR, m_oldFactor);
+		if (m_nextStage >= 0)
+		{
+			DX8Wrapper::Set_DX8_Texture_Stage_State(m_nextStage, D3DTSS_COLOROP, m_oldNextColor);
+			DX8Wrapper::Set_DX8_Texture_Stage_State(m_nextStage, D3DTSS_ALPHAOP, m_oldNextAlpha);
+		}
+	}
+private:
+	static const D3DTEXTURESTAGESTATETYPE states[14];
+	int m_stage, m_nextStage;
+	bool m_projected;
+	unsigned m_oldStates[14], m_oldFactor, m_oldNextColor, m_oldNextAlpha;
+	D3DMATRIX m_oldTransform;
+	TextureBaseClass* m_oldTexture;
+};
+const D3DTEXTURESTAGESTATETYPE RebornUnderwaterFogStage::states[14] = {
+	D3DTSS_COLOROP, D3DTSS_COLORARG1, D3DTSS_COLORARG2, D3DTSS_ALPHAOP, D3DTSS_ALPHAARG1,
+	D3DTSS_ALPHAARG2, D3DTSS_TEXCOORDINDEX, D3DTSS_TEXTURETRANSFORMFLAGS, D3DTSS_ADDRESSU, D3DTSS_ADDRESSV,
+	D3DTSS_MINFILTER, D3DTSS_MAGFILTER, D3DTSS_MIPFILTER, D3DTSS_MAXANISOTROPY
+};
+
 void Reborn_Clear_Underwater_Render_Objects()
 {
 	g_rebornUnderwaterRenderObjects.clear();
+	REF_PTR_RELEASE(g_rebornUnderwaterFogTexture); // Reborn: No stale shroud reference may survive a frame or map reset.
 }
 
 void Reborn_Add_Underwater_Render_Object(RenderObjClass* renderObject, float waterZ)
@@ -101,6 +228,7 @@ void Reborn_Add_Underwater_Render_Object(RenderObjClass* renderObject, float wat
 
 	entry.renderObject = renderObject;
 	entry.waterZ = waterZ;
+	entry.fogged = false; // Reborn: The scene fills in the actual fog status when queuing the render object.
 
 	g_rebornUnderwaterRenderObjects.push_back(entry);
 }
@@ -1963,6 +2091,19 @@ void DX8TextureCategoryClass::Render()
 					underwaterShader.Set_Depth_Mask(ShaderClass::DEPTH_WRITE_DISABLE);
 
 					DX8Wrapper::Set_Shader(underwaterShader);
+					// Reborn: Apply fog to underwater RGB before alpha blending, not through a separate depth-equality overlay.
+					DX8Wrapper::Apply_Render_State_Changes();
+					bool rebornFogged = false;
+					for (std::vector<RebornUnderwaterRenderObject>::const_iterator fogIt = g_rebornUnderwaterRenderObjects.begin();
+						fogIt != g_rebornUnderwaterRenderObjects.end(); ++fogIt)
+					{
+						if (fogIt->renderObject == rebornRootRenderObject)
+						{
+							rebornFogged = fogIt->fogged;
+							break;
+						}
+					}
+					RebornUnderwaterFogStage rebornFogStage(rebornFogged);
 
 					for (float depth = 0.0f; depth < fadeDepth; depth += bandDepth)
 					{

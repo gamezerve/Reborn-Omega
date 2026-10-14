@@ -60,6 +60,7 @@
 #include "WW3D2/dx8renderer.h"
 #include "WW3D2/sortingrenderer.h"
 #include "WW3D2/dx8wrapper.h"
+#include <d3dx8math.h> // Reborn: Build the same camera-space shroud projection used by the normal fog pass.
 #include "WW3D2/Renderer.h"
 #include "WW3D2/light.h"
 #include "WW3D2/matpass.h"
@@ -875,6 +876,8 @@ void RTS3DScene::renderOneObject(RenderInfoClass &rinfo, RenderObjClass *robj, I
 
 			if (m_customPassMode == SCENE_PASS_DEFAULT)
 			{
+				// Reborn: Store the same fog decision for the later underwater draw; objects outside that queue remain unaffected.
+				Reborn_Set_Underwater_Object_Fogged(robj, ss > OBJECTSHROUD_CLEAR);
 				if (ss <= OBJECTSHROUD_CLEAR)
 				{
 					robj->Render(rinfo);
@@ -952,6 +955,32 @@ void RTS3DScene::Flush(RenderInfoClass & rinfo)
 
 	if (!m_rebornUnderwaterRenderObjects.empty())
 	{
+		// Reborn: Use the normal shroud projection to modulate underwater RGB in its single alpha-blended pass.
+		D3DXMATRIX rebornFogProjection;
+		D3DXMatrixIdentity(&rebornFogProjection);
+		W3DShroud* rebornShroud = TheTerrainRenderObject->getShroud();
+		if (rebornShroud)
+		{
+			D3DXMATRIX view, inverse, offset, scale;
+			DX8Wrapper::_Get_DX8_Transform(D3DTS_VIEW, view);
+			float determinant;
+			D3DXMatrixInverse(&inverse, &determinant, &view);
+			const float cellWidth = rebornShroud->getCellWidth();
+			const float cellHeight = rebornShroud->getCellHeight();
+			const float originX = TheTerrainRenderObject->getMap() ? -(float)rebornShroud->getDrawOriginX() + cellWidth : 0.0f;
+			const float originY = TheTerrainRenderObject->getMap() ? -(float)rebornShroud->getDrawOriginY() + cellHeight : 0.0f;
+			D3DXMatrixTranslation(&offset, originX, originY, 0.0f);
+			D3DXMatrixScaling(&scale, 1.0f / (cellWidth * rebornShroud->getTextureWidth()),
+				1.0f / (cellHeight * rebornShroud->getTextureHeight()), 1.0f);
+			rebornFogProjection = (inverse * offset) * scale;
+		}
+		const float rebornFogShade = TheGlobalData->m_clearAlpha ?
+			(float)TheGlobalData->m_fogAlpha / (float)TheGlobalData->m_clearAlpha : 1.0f;
+		Bool rebornFogBlendAlpha = FALSE;
+#if defined(RTS_DEBUG)
+		rebornFogBlendAlpha = TheGlobalData->m_fogOfWarOn; // Reborn: Match the alpha-encoded Debug shroud texture format.
+#endif
+		Reborn_Set_Underwater_Fog(rebornShroud ? rebornShroud->getShroudTexture() : nullptr, rebornFogProjection, rebornFogShade, rebornFogBlendAlpha);
 		g_rebornRenderUnderwaterPass = true;
 
 		rinfo.alphaOverride = 1.0f;
@@ -976,6 +1005,7 @@ void RTS3DScene::Flush(RenderInfoClass & rinfo)
 		rinfo.alphaOverride = 1.0f;
 
 		g_rebornRenderUnderwaterPass = false;
+		Reborn_Set_Underwater_Fog(nullptr, rebornFogProjection, 1.0f, false); // Reborn: Release the pass's shroud reference after queued meshes have flushed.
 	}
 
 	if (m_customPassMode == SCENE_PASS_DEFAULT && Get_Extra_Pass_Polygon_Mode() == EXTRA_PASS_DISABLE)

@@ -821,6 +821,25 @@ void MeshClass::Render(RenderInfoClass & rinfo)
  *=============================================================================================*/
 void MeshClass::Render_Material_Pass(MaterialPassClass * pass,IndexBufferClass * ib)
 {
+	// Reborn: Fog overlays must use the same above-water clip as the base mesh; below-water fog is blended in that mesh's alpha draw.
+	RenderObjClass* rebornRoot = this;
+	while (rebornRoot->Get_Container() != nullptr)
+		rebornRoot = rebornRoot->Get_Container();
+	float rebornWaterZ = 0.0f;
+	const bool rebornClipShroud = pass->Is_Reborn_Shroud_Pass() &&
+		Reborn_Get_Underwater_Render_Object_Water_Z(rebornRoot, &rebornWaterZ);
+	if (rebornClipShroud && g_rebornRenderUnderwaterPass)
+		return;
+	const unsigned rebornOldClipMask = DX8Wrapper::Get_DX8_Render_State(D3DRS_CLIPPLANEENABLE);
+	float rebornOldPlane[4];
+	const bool rebornRestorePlane = rebornClipShroud && (rebornOldClipMask & D3DCLIPPLANE0) &&
+		SUCCEEDED(DX8Wrapper::_Get_D3D_Device8()->GetClipPlane(0, rebornOldPlane)); // Reborn: Preserve an already active caller's clip plane as well as its mask.
+	if (rebornClipShroud)
+	{
+		float plane[4] = {0.0f, 0.0f, 1.0f, -rebornWaterZ};
+		DX8Wrapper::Set_DX8_Clip_Plane(0, plane);
+		DX8Wrapper::Set_DX8_Render_State(D3DRS_CLIPPLANEENABLE, D3DCLIPPLANE0);
+	}
 	//Added to allow dynamic opacity on additional render passed
 	//without having to create a new material pass per object instance. -MW
 	float oldOpacity=-1.0f;
@@ -1007,6 +1026,13 @@ void MeshClass::Render_Material_Pass(MaterialPassClass * pass,IndexBufferClass *
 		}
 		//MW: Need uninstall custom materials in case they leave D3D in unknown state
 		pass->UnInstall_Materials();
+	}
+	// Reborn: Do not leak the water clip mask into subsequent material passes.
+	if (rebornClipShroud)
+	{
+		if (rebornRestorePlane)
+			DX8Wrapper::Set_DX8_Clip_Plane(0, rebornOldPlane);
+		DX8Wrapper::Set_DX8_Render_State(D3DRS_CLIPPLANEENABLE, rebornOldClipMask);
 	}
 }
 

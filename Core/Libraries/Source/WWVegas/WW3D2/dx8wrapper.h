@@ -541,6 +541,8 @@ public:
 	static const char* Get_DX8_Render_State_Name(D3DRENDERSTATETYPE state);
 	static const char* Get_DX8_Texture_Stage_State_Name(D3DTEXTURESTAGESTATETYPE state);
 	static unsigned Get_DX8_Render_State(D3DRENDERSTATETYPE state) { return RenderStates[state]; }
+	static unsigned Get_Reborn_Texture_Stage_State(unsigned stage, D3DTEXTURESTAGESTATETYPE state) { return TextureStageStates[stage][state]; } // Reborn: Save/restore temporary underwater fog stage settings through the state cache.
+	static TextureBaseClass* Peek_Reborn_Texture(unsigned stage) { return render_state.Textures[stage]; } // Reborn: Preserve an unused stage's cached texture during temporary fog projection.
 
 	// Names of the specific values of render states and texture stage states
 	static void Get_DX8_Texture_Stage_State_Value_Name(StringClass& name, D3DTEXTURESTAGESTATETYPE state, unsigned value);
