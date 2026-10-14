@@ -116,6 +116,7 @@
 #include "GameNetwork/GeneralsOnline/OnlineServices_LobbyInterface.h"
 #include "GameNetwork/GameSpyOverlay.h"
 #include <chrono>
+#include <exception> // Reborn: Preserve standard exception descriptions during startup diagnostics.
 #include "WW3D2/ww3d.h"
 
 static bool g_bTearDownGeneralsOnlineRequested = false;
@@ -216,7 +217,18 @@ void initSubsystem(
 	const char* path2 = nullptr)
 {
 	sysref = sys;
-	TheSubsystemList->initSubsystem(sys, path1, path2, pXfer, name);
+	// Reborn: Identify the subsystem and INI paths being initialized, including failures before the generic startup handler.
+	REBORN_LOG("STARTUP INIT: Begin subsystem=%s path1=%s path2=%s", name.str(), path1 ? path1 : "<none>", path2 ? path2 : "<none>");
+	try
+	{
+		TheSubsystemList->initSubsystem(sys, path1, path2, pXfer, name);
+	}
+	catch (...)
+	{
+		REBORN_LOG("STARTUP INIT: Failed subsystem=%s", name.str());
+		throw; // Reborn: Retain the original exception type and existing startup failure behavior.
+	}
+	REBORN_LOG("STARTUP INIT: Completed subsystem=%s", name.str());
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -409,7 +421,9 @@ Bool GameEngine::isGameHalted()
  */
 void GameEngine::init()
 {
+	const char* startupStage = "Engine bootstrap"; // Reborn: Keep a non-allocating checkpoint for failures outside subsystem initialization.
 	try {
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage); // Reborn: Mark entry into engine initialization before creating subsystems.
 		//create an INI object to use for loading stuff
 		INI ini;
 
@@ -503,6 +517,8 @@ void GameEngine::init()
 
 #ifdef REBORN_BUILD
 		// Reborn: Mount packaged mod data before GameData is parsed, matching loose-file startup behavior.
+		startupStage = "Mount Reborn mod archives"; // Reborn: Distinguish packaged-data mounting failures from GameData parsing.
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage);
 		TheArchiveFileSystem->loadMods();
 #endif
 
@@ -516,9 +532,13 @@ void GameEngine::init()
 
 		DEBUG_ASSERTCRASH(TheWritableGlobalData, ("TheWritableGlobalData expected to be created"));
 		initSubsystem(TheWritableGlobalData, "TheWritableGlobalData", TheWritableGlobalData, &xferCRC, "Data\\INI\\Default\\GameData", "Data\\INI\\GameData");
+		startupStage = "GameData custom definition"; // Reborn: Track custom settings parsed outside the subsystem helper.
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage);
 		TheWritableGlobalData->parseCustomDefinition();
 
 		// Init sentry ASAP to catch early crashes
+		startupStage = "Generals Online InitSentry"; // Reborn: Identify startup failures inside the online crash-reporting dependency.
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage);
 		NGMP_OnlineServicesManager::InitSentry();
 
 #ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
@@ -536,17 +556,25 @@ void GameEngine::init()
 #endif
 
 		// special-case: parse command-line parameters after loading global data
+		startupStage = "Engine command line"; // Reborn: Track startup work that is not a registered subsystem.
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage);
 		CommandLine::parseCommandLineForEngineInit();
 
 		// NGMP_CHANGE: Init our settings before loadMods, which reads DataPacks_UseCommunityPatch. Needs TheGlobalData for the user data path.
+		startupStage = "Generals Online settings"; // Reborn: Distinguish online settings and user-directory failures from graphics initialization.
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage);
 		NGMP_OnlineServicesManager::Settings.Initialize();
 
 #ifndef REBORN_BUILD
 		// Reborn: Other builds retain settings-dependent mod loading; Reborn packages are already mounted.
+		startupStage = "Mount mod archives"; // Reborn: Also identify archive loading in non-Reborn builds.
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage);
 		TheArchiveFileSystem->loadMods();
 #endif
 
 		// doesn't require resets so just create a single instance here.
+		startupStage = "Game LOD and texture conversion"; // Reborn: Identify standalone graphics settings initialization.
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage);
 		TheGameLODManager = MSGNEW("GameEngineSubsystem") GameLODManager;
 		TheGameLODManager->init();
 
@@ -557,6 +585,8 @@ void GameEngine::init()
 		}
 
 		// read the water settings from INI (must do prior to initing GameClient, apparently)
+		startupStage = "Water, weather and RebornCamera INI"; // Reborn: Identify configuration loading outside registered subsystems.
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage);
 		ini.loadFileDirectory("Data\\INI\\Default\\Water", INI_LOAD_OVERWRITE, &xferCRC);
 		ini.loadFileDirectory("Data\\INI\\Water", INI_LOAD_OVERWRITE, &xferCRC);
 		ini.loadFileDirectory("Data\\INI\\Default\\Weather", INI_LOAD_OVERWRITE, &xferCRC);
@@ -589,6 +619,8 @@ void GameEngine::init()
 #ifdef DEBUG_CRC
 		initSubsystem(TheDeepCRCSanityCheck, "TheDeepCRCSanityCheck", MSGNEW("GameEngineSubystem") DeepCRCSanityCheck, nullptr);
 #endif // DEBUG_CRC
+		startupStage = "Subsystem creation and initialization"; // Reborn: Subsequent per-subsystem begin/completion records identify progress, including constructor failures between them.
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage);
 		initSubsystem(TheGameText, "TheGameText", CreateGameTextInterface(), nullptr);
 		updateWindowTitle();
 
@@ -610,7 +642,10 @@ void GameEngine::init()
 		initSubsystem(TheTerrainTypes,"TheTerrainTypes", MSGNEW("GameEngineSubsystem") TerrainTypeCollection(), &xferCRC, "Data\\INI\\Default\\Terrain", "Data\\INI\\Terrain");
 		initSubsystem(TheTerrainRoads,"TheTerrainRoads", MSGNEW("GameEngineSubsystem") TerrainRoadCollection(), &xferCRC, "Data\\INI\\Default\\Roads", "Data\\INI\\Roads");
 		initSubsystem(TheGlobalLanguageData,"TheGlobalLanguageData",MSGNEW("GameEngineSubsystem") GlobalLanguage, nullptr); // must be before the game text
+		startupStage = "Language custom definition"; // Reborn: Track language configuration separately from audio startup.
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage);
 		TheGlobalLanguageData->parseCustomDefinition();
+		startupStage = "Subsystem creation and initialization"; // Reborn: Resume per-subsystem diagnostics after the standalone language step.
 	#ifdef DUMP_PERF_STATS///////////////////////////////////////////////////////////////////////////
 	GetPrecisionTimer(&endTime64);//////////////////////////////////////////////////////////////////
 	sprintf(Buf,"----------------------------------------------------------------------------After TheGlobalLanguageData = %f seconds",((double)(endTime64-startTime64)/(double)(freq64)));
@@ -725,10 +760,13 @@ void GameEngine::init()
 		ini.loadFileDirectory("Data\\INI\\CommandMapDemo", INI_LOAD_MULTIFILE, nullptr, INI::LoadFlags_SearchSubDirs); // Added in Zero Hour
 #endif
 
+		startupStage = "Command map generation and validation"; // Reborn: Identify hotkey validation failures outside the subsystem loader.
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage);
 		TheMetaMap->generateMetaMap();
 		TheMetaMap->verifyMetaMap();
 
 
+		startupStage = "Subsystem creation and initialization"; // Reborn: Resume per-subsystem progress tracking after command-map validation.
 		initSubsystem(TheActionManager,"TheActionManager", MSGNEW("GameEngineSubsystem") ActionManager(), nullptr);
 		//initSubsystem((CComObject<WebBrowser> *)TheWebBrowser,"(CComObject<WebBrowser> *)TheWebBrowser", (CComObject<WebBrowser> *)createWebBrowser(), nullptr);
 		initSubsystem(TheGameStateMap,"TheGameStateMap", MSGNEW("GameEngineSubsystem") GameStateMap, nullptr );
@@ -750,8 +788,12 @@ void GameEngine::init()
 		TheWritableGlobalData->m_iniCRC = xferCRC.getCRC();
 		DEBUG_LOG(("INI CRC is 0x%8.8X", TheGlobalData->m_iniCRC));
 
+		startupStage = "Subsystem postProcessLoadAll"; // Reborn: Separate deferred resource validation from initial subsystem loading.
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage);
 		TheSubsystemList->postProcessLoadAll();
 
+		startupStage = "Frame pacing and audio configuration"; // Reborn: Identify final audio configuration failures before map-cache loading.
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage);
 		TheFramePacer->setFramesPerSecondLimit(TheGlobalData->m_framesPerSecondLimit);
 
 		TheAudio->setOn(TheGlobalData->m_audioOn && TheGlobalData->m_musicOn, AudioAffect_Music);
@@ -772,6 +814,8 @@ void GameEngine::init()
 		// m_quitting = FALSE;
 
 		// initialize the MapCache
+		startupStage = "Map cache creation and update"; // Reborn: Identify startup failures while scanning installed maps.
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage);
 		TheMapCache = MSGNEW("GameEngineSubsystem") MapCache;
 		TheMapCache->updateCache();
 
@@ -795,6 +839,8 @@ void GameEngine::init()
 		//TheShell->push( "Menus/MainMenu.wnd" );
 
 		// This allows us to run a map from the command line
+		startupStage = "Initial map and shell-map validation"; // Reborn: Mark the final initialization checks before subsystem reset.
+		REBORN_LOG("STARTUP INIT: stage=%s", startupStage);
 		if (TheGlobalData->m_initialFile.isEmpty() == FALSE)
 		{
 			AsciiString fname = TheGlobalData->m_initialFile;
@@ -834,6 +880,7 @@ void GameEngine::init()
 	}
 	catch (ErrorCode ec)
 	{
+		REBORN_LOG("STARTUP INIT FAILURE: stage=%s ErrorCode=%u", startupStage, static_cast<unsigned int>(ec)); // Reborn: Record the error code before preserving the existing D3D-specific handling.
 		if (ec == ERROR_INVALID_D3D)
 		{
 			RELEASE_CRASHLOCALIZED("ERROR:D3DFailurePrompt", "ERROR:D3DFailureMessage");
@@ -841,23 +888,35 @@ void GameEngine::init()
 	}
 	catch (INIException e)
 	{
+		REBORN_LOG("STARTUP INIT FAILURE: stage=%s INIException=%s", startupStage, e.mFailureMessage ? e.mFailureMessage : "<no description>"); // Reborn: Identify even INI errors without a populated failure message.
 		if (e.mFailureMessage)
 			RELEASE_CRASH((e.mFailureMessage));
 		else
 			RELEASE_CRASH(("Uncaught Exception during initialization."));
 
 	}
+	catch (const std::exception& e)
+	{
+		// Reborn: Preserve standard exception details that the generic initialization handler previously discarded.
+		REBORN_LOG("STARTUP INIT FAILURE: stage=%s std::exception=%s", startupStage, e.what());
+		RELEASE_CRASH(("Uncaught Exception during initialization."));
+	}
 	catch (...)
 	{
+		REBORN_LOG("STARTUP INIT FAILURE: stage=%s unknown exception", startupStage); // Reborn: Keep a checkpoint even when the exception has no supported description.
 		RELEASE_CRASH(("Uncaught Exception during initialization."));
 	}
 
+	REBORN_LOG("STARTUP INIT: Begin subsystem reset"); // Reborn: Track startup work outside the initialization try/catch as well.
 	resetSubsystems();
+	REBORN_LOG("STARTUP INIT: Completed subsystem reset; hiding control bar"); // Reborn: Distinguish reset failures from UI cleanup.
 
 	HideControlBar();
 
+	REBORN_LOG("STARTUP INIT: Begin Discord RPC initialization"); // Reborn: Identify optional presence initialization before the main loop starts.
 	m_discordRichPresence = new GeneralsOnlineDiscordRPC();
 	m_discordRichPresence->Initialize();
+	REBORN_LOG("STARTUP INIT: Engine initialization completed"); // Reborn: Confirm startup reached the end without changing initialization order.
 }
 
 /** -----------------------------------------------------------------------------------------------
