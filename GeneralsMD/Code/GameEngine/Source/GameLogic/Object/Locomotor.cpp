@@ -290,6 +290,7 @@ LocomotorTemplate::LocomotorTemplate()
 	m_lift = 0.0f;
 	m_braking = BIGNUM;
 	m_minSpeed = 0.0f;
+	m_allowNonZeroHoverMinSpeed = FALSE; // Reborn: Hover units require zero minimum speed unless their locomotor explicitly opts in.
 	m_minTurnSpeed = BIGNUM;
 	m_behaviorZ = Z_NO_Z_MOTIVE_FORCE;
 	m_appearance = LOCO_OTHER;
@@ -467,6 +468,8 @@ const FieldParse* LocomotorTemplate::getFieldParse() const
 		{ "LiftDamaged", INI::parseAccelerationReal, nullptr, offsetof( LocomotorTemplate, m_liftDamaged ) },
 		{ "Braking", INI::parseAccelerationReal, nullptr, offsetof(LocomotorTemplate, m_braking) },
 		{ "MinSpeed", INI::parseVelocityReal, nullptr, offsetof(LocomotorTemplate, m_minSpeed) },
+		// Reborn: Opt in per locomotor for continuously moving hover effects; no movement calculations change.
+		{ "AllowNonZeroHoverMinSpeed", INI::parseBool, nullptr, offsetof(LocomotorTemplate, m_allowNonZeroHoverMinSpeed) },
 		{ "MinTurnSpeed", INI::parseVelocityReal, nullptr, offsetof(LocomotorTemplate, m_minTurnSpeed) },
 		{ "PreferredHeight", INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_preferredHeight) },
 		{ "PreferredHeightDamping", INI::parseReal, nullptr, offsetof(LocomotorTemplate, m_preferredHeightDamping) },
@@ -2644,7 +2647,8 @@ void Locomotor::maintainCurrentPositionHover(Object* obj, PhysicsBehavior *physi
 	if (physics->isMotive())	// no need to stop something that isn't moving.
 	{
 		// Reborn: Identify hover stop failures without changing the object's minimum speed or movement behavior.
-		DEBUG_ASSERTCRASH(m_template->m_minSpeed == 0.0f, ("HOVER should always have zero minSpeeds (otherwise, they WING). Object=%s name='%s' id=%u locomotor='%s' minSpeed=%.6f forwardSpeed=%.6f frame=%u position=(%.3f, %.3f, %.3f)",
+		// Reborn: Preserve intentional positive minimum speed for opted-in hover effects, while checking all other hover units.
+		DEBUG_ASSERTCRASH(m_template->m_minSpeed == 0.0f || (m_template->m_allowNonZeroHoverMinSpeed && m_template->m_minSpeed > 0.0f), ("HOVER should always have zero minSpeeds (otherwise, they WING). Object=%s name='%s' id=%u locomotor='%s' minSpeed=%.6f forwardSpeed=%.6f frame=%u position=(%.3f, %.3f, %.3f)",
 			obj->getTemplate()->getName().str(), obj->getName().str(), obj->getID(),
 			m_template->getName().str(), m_template->m_minSpeed, physics->getForwardSpeed2D(), TheGameLogic->getFrame(),
 			obj->getPosition()->x, obj->getPosition()->y, obj->getPosition()->z));

@@ -114,7 +114,8 @@ void CreditsMenuShutdown( WindowLayout *layout, void *userData )
 	TheCredits->reset();
 	delete TheCredits;
 	TheCredits = nullptr;
-	TheShell->showShellMap(TRUE);
+	// TheShell->showShellMap(TRUE);
+	// Reborn: MainMenuInit restores the shell map after shutdownComplete; do not queue a second new game here.
 
 	// hide menu
 	layout->hide( TRUE );

@@ -154,6 +154,7 @@ private:
 	*/
 	AsciiString								m_name;
 	LocomotorSurfaceTypeMask	m_surfaces;							///< flags indicating the kinds of surfaces we can use
+	Bool m_allowNonZeroHoverMinSpeed; // Reborn: Explicitly allow continuously moving hover effects without relaxing normal hover validation.
 	Real											m_maxSpeed;							///< max speed
 	Real											m_maxSpeedDamaged;			///< max speed when "damaged"
 	Real											m_minSpeed;							///< we should never brake past this
