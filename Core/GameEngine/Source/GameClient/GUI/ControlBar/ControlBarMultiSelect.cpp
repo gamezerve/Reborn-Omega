@@ -38,6 +38,7 @@
 #include "GameClient/GadgetPushButton.h"
 #include "GameClient/GameWindow.h"
 #include "GameClient/InGameUI.h"
+#include "GameClient/HotKey.h" // Reborn: Keep common-command hotkeys synchronized with the final visible slots.
 #include "GameLogic/Object.h"
 
 #include "GameLogic/Reborn/ImageUpgradeReborn.h"
@@ -48,11 +49,14 @@
 //-------------------------------------------------------------------------------------------------
 void ControlBar::resetCommonCommandData()
 {
+	m_unifiedEvacuateSlot = -1; // Reborn: Never carry a synthetic evacuation button into another selection.
 	Int i;
 
 	for( i = 0; i < MAX_COMMANDS_PER_SET; i++ )
 	{
 		m_commonCommands[ i ] = nullptr;
+		if (TheHotKeyManager && m_commandWindows[i]) // Reborn: Clear prior command-window mappings before repopulating a selection.
+			TheHotKeyManager->removeHotKeysForWindow(m_commandWindows[i]);
 		//Clear out any remnant overlays.
 		GadgetButtonDrawOverlayImage( m_commandWindows[ i ], nullptr );
 	}
@@ -94,6 +98,8 @@ void ControlBar::addCommonCommands( Drawable *draw, Bool firstDrawable )
 			if (m_commandWindows[ i ])
 			{
 				m_commandWindows[ i ]->winHide( TRUE );
+				if (TheHotKeyManager) // Reborn: A discarded command must not retain its old shortcut.
+					TheHotKeyManager->removeHotKeysForWindow(m_commandWindows[i]);
 			}
 			// After Every change to the m_commandWIndows, we need to show fill in the missing blanks with the images
 	// removed from multiplayer branch
@@ -187,6 +193,8 @@ void ControlBar::addCommonCommands( Drawable *draw, Bool firstDrawable )
 				// that was placed in this common 'slot' earlier
 				//
 				m_commandWindows[ i ]->winHide( TRUE );
+				if (TheHotKeyManager) // Reborn: Release the key before a recovered action is assigned to another slot.
+					TheHotKeyManager->removeHotKeysForWindow(m_commandWindows[i]);
 			}
 
 		}
@@ -197,6 +205,84 @@ void ControlBar::addCommonCommands( Drawable *draw, Bool firstDrawable )
 	// removed from multiplayer branch
 	//showCommandMarkers();
 
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Find this object's own eligible transport evacuation button without modifying its command set. */
+//-------------------------------------------------------------------------------------------------
+const CommandButton* ControlBar::findMultiSelectEvacuateCommand(const Object* obj) const
+{
+	if (!obj || obj->isKindOf(KINDOF_IGNORED_IN_GUI) || obj->getStatusBits().test(OBJECT_STATUS_SOLD))
+		return nullptr;
+	const CommandSet* commandSet = findCommandSet(obj->getCommandSetString());
+	if (!commandSet)
+		return nullptr;
+	for (Int slot = 0; slot < MAX_COMMANDS_PER_SET; ++slot)
+	{
+		const CommandButton* command = commandSet->getCommandButton(slot);
+		if (!command || !command->isMultiSelectEvacuate()) // Reborn: Membership comes from the INI flag, not a fixed list of names.
+			continue;
+		return command;
+	}
+	return nullptr;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Recover a missing common evacuation action at slot 9, then search backwards without replacing another command. */
+//-------------------------------------------------------------------------------------------------
+void ControlBar::populateUnifiedEvacuateCommand()
+{
+	const CommandButton* sharedCommand = nullptr;
+	Bool mixedCommands = FALSE;
+	Int eligibleObjects = 0;
+	const DrawableList* selection = TheInGameUI->getAllSelectedDrawables();
+	for (DrawableListCIt it = selection->begin(); it != selection->end(); ++it)
+	{
+		Object* obj = *it ? (*it)->getObject() : nullptr;
+		if (!obj || obj->isKindOf(KINDOF_IGNORED_IN_GUI) || obj->getStatusBits().test(OBJECT_STATUS_SOLD))
+			continue;
+		const CommandButton* ownCommand = findMultiSelectEvacuateCommand(obj);
+		if (!ownCommand)
+			continue; // Reborn: Non-transport units must not hide evacuation for the transports selected alongside them.
+		++eligibleObjects;
+		if (!sharedCommand)
+			sharedCommand = ownCommand;
+		else if (sharedCommand != ownCommand)
+			mixedCommands = TRUE;
+		// Reborn: Count additional family buttons in the same set too, not only the first button used for dispatch.
+		const CommandSet* commandSet = findCommandSet(obj->getCommandSetString());
+		for (Int slot = 0; slot < MAX_COMMANDS_PER_SET; ++slot)
+		{
+			const CommandButton* candidate = commandSet->getCommandButton(slot);
+			if (!candidate || candidate == sharedCommand || !candidate->isMultiSelectEvacuate())
+				continue;
+			mixedCommands = TRUE;
+		}
+	}
+	if (eligibleObjects == 0)
+		return;
+	for (Int slot = 0; slot < MAX_COMMANDS_PER_SET; ++slot)
+	{
+		const CommandButton* command = m_commonCommands[slot];
+		if (command && command->isMultiSelectEvacuate())
+			return; // Reborn: Preserve the ordinary common button whenever intersection already succeeds.
+	}
+	const CommandButton* displayCommand = mixedCommands ? findCommandButton("Command_Evacuate") : sharedCommand;
+	if (!displayCommand)
+		return;
+	// Reborn: Prefer 9 then 8..1; if those are occupied, use a later free slot rather than losing evacuation entirely.
+	for (Int attempt = 0; attempt < MAX_COMMANDS_PER_SET; ++attempt)
+	{
+		const Int slot = attempt < 9 ? 8 - attempt : attempt;
+		if (!m_commandWindows[slot] || m_commonCommands[slot])
+			continue;
+		m_unifiedEvacuateSlot = slot;
+		m_commonCommands[slot] = displayCommand;
+		setControlCommand(m_commandWindows[slot], displayCommand);
+		m_commandWindows[slot]->winHide(FALSE);
+		m_commandWindows[slot]->winEnable(TRUE);
+		return;
+	}
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -316,7 +402,7 @@ void ControlBar::populateMultiSelect()
 				if (comparePortrait != portrait)
 				{
 					portrait = nullptr;
-					break;
+					// Reborn: A mixed portrait must not stop command intersection before all selected units are checked.
 				}
 			}
 
@@ -325,6 +411,7 @@ void ControlBar::populateMultiSelect()
 
 	}
 
+	populateUnifiedEvacuateCommand(); // Reborn: Add the fallback only after the normal command intersection is complete.
 	// set the portrait image
 	//setPortraitByObject( portraitObj );
 	setPortraitByObject(portraitObj);
@@ -395,6 +482,20 @@ void ControlBar::updateContextMultiSelect()
 			if( command == nullptr )
 				continue;
 
+			// Reborn: Evaluate the synthetic button using this object's original command and options, not its display template.
+			if (i == m_unifiedEvacuateSlot)
+			{
+				const CommandButton* ownCommand = findMultiSelectEvacuateCommand(obj);
+				if (ownCommand)
+				{
+					const CommandAvailability ownAvailability = getCommandAvailability(ownCommand, obj, win);
+					if (ownAvailability == COMMAND_AVAILABLE || ownAvailability == COMMAND_ACTIVE)
+						++objectsThatCanDoCommand[i];
+				}
+				win->winClearStatus(WIN_STATUS_NOT_READY);
+				win->winClearStatus(WIN_STATUS_ALWAYS_COLOR);
+				continue;
+			}
 			// can we do the command
 			CommandAvailability availability = getCommandAvailability( command, obj, win );
 

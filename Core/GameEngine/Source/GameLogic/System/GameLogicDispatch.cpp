@@ -2006,6 +2006,43 @@ bool GameLogic::onExit(MAYBE_UNUSED GameMessage *msg, AIGroupPtr &currentlySelec
 
 bool GameLogic::onEvacuate(MAYBE_UNUSED GameMessage *msg, AIGroupPtr &currentlySelectedGroup)
 {
+	// Reborn: Optional source IDs support the recovered multiselect button; no-argument messages retain normal group behavior.
+	if (msg->getArgumentCount() != 0)
+	{
+		if (!currentlySelectedGroup || msg->getArgumentCount() != 1 ||
+			msg->getArgumentDataType(0) != ARGUMENTDATATYPE_OBJECTID)
+			return false;
+		const ObjectID sourceID = msg->getArgument(0)->objectID;
+		const VecObjectID& selectedIDs = currentlySelectedGroup->getAllIDs();
+		Bool selected = FALSE;
+		for (VecObjectID::const_iterator it = selectedIDs.begin(); it != selectedIDs.end(); ++it)
+			if (*it == sourceID)
+			{
+				selected = TRUE;
+				break;
+			}
+		Object* source = selected ? findObjectByID(sourceID) : nullptr;
+		if (!source)
+			return false;
+		source->releaseWeaponLock(LOCKED_TEMPORARILY);
+		AIUpdateInterface* ai = source->getAIUpdateInterface();
+		if (ai)
+		{
+			// Reborn: Match AIGroup::groupEvacuate, including the existing landing behavior for airborne transports.
+			if (source->isKindOf(KINDOF_AIRCRAFT) && source->isAirborneTarget())
+			{
+				Coord3D pos = *source->getPosition();
+				PathfindLayerEnum layer = TheTerrainLogic->getHighestLayerForDestination(&pos);
+				pos.z = TheTerrainLogic->getLayerHeight(pos.x, pos.y, layer);
+				ai->aiMoveToAndEvacuate(&pos, CMD_FROM_PLAYER);
+			}
+			else
+				ai->aiEvacuate(FALSE, CMD_FROM_PLAYER);
+		}
+		else if (source->isKindOf(KINDOF_STRUCTURE) && source->getContain())
+			source->getContain()->orderAllPassengersToExit(CMD_FROM_PLAYER, FALSE);
+		return true;
+	}
 	// issue command for either single object or for selected group
 	//	AIGroup *group = TheAI->findGroup( *selectedGroupID );
 	if( currentlySelectedGroup )

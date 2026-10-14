@@ -742,6 +742,31 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 		{
 			// Cancel GUI command mode.
 			TheInGameUI->setGUICommand( nullptr );
+			// Reborn: A recovered common button dispatches only to units that can use their own evacuation command.
+			if (m_currContext == CB_CONTEXT_MULTI_SELECT && m_unifiedEvacuateSlot >= 0 &&
+				control == m_commandWindows[m_unifiedEvacuateSlot])
+			{
+				Bool voicePlayed = FALSE;
+				const DrawableList* selection = TheInGameUI->getAllSelectedDrawables();
+				for (DrawableListCIt it = selection->begin(); it != selection->end(); ++it)
+				{
+					Object* target = *it ? (*it)->getObject() : nullptr;
+					const CommandButton* ownCommand = findMultiSelectEvacuateCommand(target);
+					if (!ownCommand)
+						continue;
+					const CommandAvailability availability = getCommandAvailability(ownCommand, target, control);
+					if (availability != COMMAND_AVAILABLE && availability != COMMAND_ACTIVE)
+						continue;
+					if (!voicePlayed)
+					{
+						pickAndPlayUnitVoiceResponse(selection, GameMessage::MSG_EVACUATE);
+						voicePlayed = TRUE;
+					}
+					GameMessage* evacuate = TheMessageStream->appendMessage(GameMessage::MSG_EVACUATE);
+					evacuate->appendObjectIDArgument(target->getID());
+				}
+				break;
+			}
 
 			if (BitIsSet(commandButton->getOptions(), NEED_TARGET_POS) == FALSE) {
 				pickAndPlayUnitVoiceResponse( TheInGameUI->getAllSelectedDrawables(), GameMessage::MSG_EVACUATE );

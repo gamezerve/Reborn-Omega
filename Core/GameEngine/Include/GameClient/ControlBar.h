@@ -351,6 +351,8 @@ public:
 
 	GUICommandType getCommandType() const { return m_command; }
 	UnsignedInt getOptions() const { return m_options; }
+	// Reborn: INI opt-in is valid only for evacuation actions already allowed in multiselect.
+	Bool isMultiSelectEvacuate() const { return m_multiSelectEvacuate && m_command == GUI_COMMAND_EVACUATE && (m_options & OK_FOR_MULTI_SELECT) != 0; }
 	OVERRIDE<ThingTemplate> getThingTemplate() const { return m_thingTemplate; }
 	const UpgradeTemplate* getUpgradeTemplate() const { return m_upgradeTemplate; }
 	const SpecialPowerTemplate* getSpecialPowerTemplate() const { return m_specialPower; }
@@ -401,6 +403,7 @@ private:
 	GUICommandType								m_command;										///< type of command this button
 	CommandButton*								m_next;
 	UnsignedInt										m_options;										///< command options (see CommandOption enum)
+	Bool m_multiSelectEvacuate; // Reborn: Optional INI membership flag for the recovered common evacuation button.
 	const ThingTemplate*					m_thingTemplate;							///< for commands that use thing templates in command data
 	const UpgradeTemplate*				m_upgradeTemplate;						///< for commands that use upgrade templates in command data
 	const SpecialPowerTemplate*		m_specialPower;								///< actual special power template
@@ -860,6 +863,9 @@ protected:
 
 	/// add the common commands of this drawable to the common command set
 	void addCommonCommands( Drawable *draw, Bool firstDrawable );
+	// Reborn: Recover INI-opted-in evacuation buttons lost by slot/name intersection.
+	const CommandButton* findMultiSelectEvacuateCommand(const Object* obj) const;
+	void populateUnifiedEvacuateCommand();
 
 	/// switch the interface context to the new mode and populate as needed
 	void switchToContext( ControlBarContext context, Drawable *draw );
@@ -990,6 +996,7 @@ protected:
 	IRegion2D m_commandShortcutInkBounds[ MAX_COMMAND_SHORTCUT_BADGES ];
 	Bool m_showShortcutsOnButtons;
 	const CommandButton *m_commonCommands[ MAX_COMMANDS_PER_SET ];	///< shared commands we will use for multi-selection
+	Int m_unifiedEvacuateSlot = -1; // Reborn: Zero-based synthetic slot, valid only for the current multiselect context.
 
 		// removed from multiplayer branch
 	//GameWindow *m_commandMarkers[ MAX_COMMANDS_PER_SET ];			///< When we don't have a command, they want to show an image

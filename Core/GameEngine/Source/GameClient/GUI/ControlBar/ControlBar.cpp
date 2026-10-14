@@ -181,6 +181,7 @@ const FieldParse CommandButton::s_commandButtonFieldParseTable[] =
 
 	{ "Command",							CommandButton::parseCommand, nullptr, offsetof( CommandButton, m_command ) },
 	{ "Options",							INI::parseBitString32,		   TheCommandOptionNames, offsetof( CommandButton, m_options ) },
+	{ "MultiSelectEvacuate",  INI::parseBool,              nullptr, offsetof(CommandButton, m_multiSelectEvacuate) }, // Reborn: Data-driven opt-in; defaults to No.
 	{ "Object",								INI::parseThingTemplate,		 nullptr, offsetof( CommandButton, m_thingTemplate ) },
 	{ "Upgrade",							INI::parseUpgradeTemplate,	 nullptr, offsetof( CommandButton, m_upgradeTemplate ) },
 	{ "WeaponSlot",						INI::parseLookupList,				 TheWeaponSlotTypeNamesLookupList, offsetof( CommandButton, m_weaponSlot ) },
@@ -1532,6 +1533,7 @@ CommandButton::CommandButton()
 	m_invalidCursorName.clear();
 	m_name.clear();
 	m_options = 0;
+	m_multiSelectEvacuate = FALSE; // Reborn: Existing buttons remain outside unified evacuation unless explicitly opted in.
 	m_purchasedLabel.clear();
 	m_textLabel.clear();
 	m_window = nullptr;

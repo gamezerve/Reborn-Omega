@@ -93,6 +93,7 @@ public:
 	//-----------------------------------------------------------------------------------------------
 
 	void addHotKey( GameWindow *win, const AsciiString& key);
+	void removeHotKeysForWindow(GameWindow* win); // Reborn: Remove transient command bindings when multiselect intersection discards a button.
 	Bool executeHotKey( const AsciiString& key); // called front eh HotKeyTranslator
 	Bool hasExecutableHotKey(const AsciiString& key) const;
 

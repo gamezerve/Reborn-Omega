@@ -170,6 +170,9 @@ void HotKeyManager::addHotKey(GameWindow* win, const AsciiString& keyIn)
 	HotKeyMap::iterator it = m_hotKeyMap.find(key);
 	if (it != m_hotKeyMap.end())
 	{
+		// Reborn: Rebinding the same key to the same live window is idempotent, not a conflicting shortcut.
+		if (it->second.m_win == win)
+			return;
 #ifdef RTS_DEBUG
 		const char* existingName = it->second.m_win ? it->second.m_win->winGetInstanceData()->m_decoratedNameString.str() : "";
 #endif
@@ -192,6 +195,20 @@ void HotKeyManager::addHotKey(GameWindow* win, const AsciiString& keyIn)
 	newHK.m_key.set(key);
 	newHK.m_win = win;
 	m_hotKeyMap[key] = newHK;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Release only this window's bindings so discarded multiselect buttons cannot retain hidden shortcuts. */
+//-------------------------------------------------------------------------------------------------
+void HotKeyManager::removeHotKeysForWindow(GameWindow* win)
+{
+	for (HotKeyMap::iterator it = m_hotKeyMap.begin(); it != m_hotKeyMap.end(); )
+	{
+		if (it->second.m_win == win)
+			m_hotKeyMap.erase(it++);
+		else
+			++it;
+	}
 }
 
 //-----------------------------------------------------------------------------
