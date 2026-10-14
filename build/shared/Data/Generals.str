@@ -5011,6 +5011,10 @@ CONTROLBAR:ToolTipBossBuildPaladin
 END
 
 CONTROLBAR:ToolTipUSABuildParticleCannon
+"Fires a particle beam anywhere on the map \n \n Countdown Timer: 4:00"
+END
+
+CONTROLBAR:ToolTipUSABuildParticleCannonSupW
 "Fires a particle beam anywhere on the map \n \n Countdown Timer: 3:00"
 END
 

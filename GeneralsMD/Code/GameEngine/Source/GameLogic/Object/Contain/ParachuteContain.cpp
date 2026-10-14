@@ -441,13 +441,17 @@ UpdateSleepTime ParachuteContain::update()
 					// Reborn: Opening diagnostics identify the cargo/chute pair and the real starting distance, not just the requested move destination.
 					if (!rebornWasOpened)
 					{
+#ifdef RTS_DEBUG
 						const Coord3D* pos = parachute->getPosition();
 						const Real dx = pos->x - m_landingOverride.x;
 						const Real dy = pos->y - m_landingOverride.y;
+#endif
 						// Reborn: Compare edge proximity and cargo altitude with missed drops without altering the landing target.
 						const Coord3D edge = TheTerrainLogic->findClosestEdgePoint(&m_landingOverride);
+#ifdef RTS_DEBUG
 						const Real edgeDx = edge.x - m_landingOverride.x;
 						const Real edgeDy = edge.y - m_landingOverride.y;
+#endif
 						DEBUG_LOG(("PARACHUTE_DIRECT_OPEN: frame=%u chute=%u type=%s rider=%u riderType=%s producer=%u locomotor=%s pos=(%.3f, %.3f, %.3f) target=(%.3f, %.3f, %.3f) horizontalError=%.3f heightAboveTerrain=%.3f ultraAccurate=1 closeEnough=10\n",
 							TheGameLogic->getFrame(), parachute->getID(), parachute->getTemplate()->getName().str(),
 							rider ? rider->getID() : INVALID_ID, rider ? rider->getTemplate()->getName().str() : "<none>",
@@ -542,9 +546,11 @@ void ParachuteContain::onRemoving( Object *rider )
 	// Reborn: Log release rather than assuming a successful landing; destruction can also eject the rider in midair.
 	if (m_isLandingOverrideSet)
 	{
+#ifdef RTS_DEBUG
 		const Coord3D* pos = rider->getPosition();
 		const Real dx = pos->x - m_landingOverride.x;
 		const Real dy = pos->y - m_landingOverride.y;
+#endif
 		DEBUG_LOG(("PARACHUTE_DIRECT_RELEASE: frame=%u chute=%u rider=%u riderType=%s producer=%u pos=(%.3f, %.3f, %.3f) target=(%.3f, %.3f, %.3f) horizontalError=%.3f heightAboveTerrain=%.3f chuteAirborne=%d chuteDead=%d riderDead=%d\n",
 			TheGameLogic->getFrame(), getObject()->getID(), rider->getID(), rider->getTemplate()->getName().str(),
 			getObject()->getProducerID(), pos->x, pos->y, pos->z,
