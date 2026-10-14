@@ -34,6 +34,9 @@
 #include "Common/Player.h"
 #include "Common/Xfer.h"
 #include "GameLogic/Object.h"
+#include "Common/Debug.h" // Reborn: Diagnose which object actually collected a building-pickup money crate.
+#include "Common/ThingTemplate.h" // Reborn: Include object type names in the pickup diagnostic.
+#include "GameLogic/GameLogic.h" // Reborn: Resolve the crate's delivery plane and its producing building for pickup diagnostics.
 #include "GameLogic/Module/MoneyCrateCollide.h"
 
 #include "GameNetwork/GameInfo.h"
@@ -89,6 +92,23 @@ Bool MoneyCrateCollide::executeCrateBehavior( Object *other )
 
 	other->getControllingPlayer()->getMoney()->deposit( money );
 	other->getControllingPlayer()->getScoreKeeper()->addMoneyEarned( money );
+
+	// Reborn: Log only building-pickup money crates after payment; do not change collision eligibility or money calculation.
+#if defined(RTS_DEBUG)
+	if (getMoneyCrateCollideModuleData()->m_isBuildingPickup)
+	{
+		Object* crate = getObject();
+		Object* plane = TheGameLogic->findObjectByID(crate->getProducerID());
+		Object* building = plane ? TheGameLogic->findObjectByID(plane->getProducerID()) : nullptr;
+		const Coord3D* pos = crate->getPosition();
+		const Coord3D* pickedPos = other->getPosition();
+		DEBUG_LOG(("SUPPLY_CRATE_PICKUP: frame=%u crate=%u plane=%u expectedBuilding=%u expectedType=%s collector=%u collectorType=%s collectorPlayer=%d sameAsExpected=%d money=%u cratePos=(%.3f, %.3f, %.3f) collectorPos=(%.3f, %.3f, %.3f)\n",
+			TheGameLogic->getFrame(), crate->getID(), crate->getProducerID(),
+			building ? building->getID() : INVALID_ID, building ? building->getTemplate()->getName().str() : "<unresolved>",
+			other->getID(), other->getTemplate()->getName().str(), other->getControllingPlayer()->getPlayerIndex(),
+			building && building == other, money, pos->x, pos->y, pos->z, pickedPos->x, pickedPos->y, pickedPos->z));
+	}
+#endif
 
 	//Play a crate pickup sound.
 	AudioEventRTS soundToPlay = TheAudio->getMiscAudio()->m_crateMoney;

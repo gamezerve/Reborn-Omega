@@ -301,6 +301,7 @@ UpdateSleepTime ParachuteContain::update()
 		}
 	}
 
+	const Bool rebornWasOpened = m_opened; // Reborn: Log direct-target guidance once, after selecting its actual opened-parachute locomotor.
 	if (!m_opened)
 	{
 		// see if we need to open.
@@ -328,8 +329,15 @@ UpdateSleepTime ParachuteContain::update()
 				if( m_isLandingOverrideSet )
 				{
 					target = m_landingOverride;
-					if( parachuteAI->getCurLocomotor() )
-						parachuteAI->getCurLocomotor()->setUltraAccurate( TRUE );
+					// Reborn: Prepare direct-target guidance before issuing the move; the move state's onEnter otherwise permits destination adjustment around the building.
+					parachuteAI->chooseLocomotorSet(LOCOMOTORSET_NORMAL);
+					Locomotor* directLocomotor = parachuteAI->getCurLocomotor();
+					if (directLocomotor)
+					{
+						directLocomotor->setUltraAccurate(TRUE);
+						directLocomotor->setCloseEnoughDist(10.0f);
+						directLocomotor->setCloseEnoughDist3D(FALSE);
+					}
 				}
 				else
 				{
@@ -398,8 +406,60 @@ UpdateSleepTime ParachuteContain::update()
 				if( m_isLandingOverrideSet )
 				{
 					// Need to wait until after opening to do this, or else we are sending the message to the Freefall locomotor.
+					locomotor->setUltraAccurate( TRUE ); // Reborn: Keep direct-target steering precise on the actual active locomotor, including later reselection.
 					locomotor->setCloseEnoughDist( 10.0 );
 					locomotor->setCloseEnoughDist3D( FALSE );
+					// Reborn: Direct-target crates shed inherited horizontal momentum gradually; preserve vertical descent and ordinary infantry parachutes.
+					PhysicsBehavior* physics = parachute->getPhysics();
+					if (rider && rider->isKindOf(KINDOF_CRATE) && physics)
+					{
+						const Coord3D* pos = parachute->getPosition();
+						const Coord3D* velocity = physics->getVelocity();
+						const Real dx = pos->x - m_landingOverride.x;
+						const Real dy = pos->y - m_landingOverride.y;
+						const Real distance = sqrt(dx * dx + dy * dy);
+						const Real speed = sqrt(velocity->x * velocity->x + velocity->y * velocity->y);
+						const Real remaining = max(0.0f, distance - 10.0f);
+						const Real logicFramesPerSecond = static_cast<Real>(LOGICFRAMES_PER_SECOND);
+						// Reborn: Use the active locomotor's braking distance, with a gentle final approach into the existing arrival radius.
+						const Real stoppingSpeed = sqrt(2.0f * max(0.0f, locomotor->getBraking()) * remaining);
+						const Real approachSpeed = remaining / (0.35f * logicFramesPerSecond);
+						const Real targetSpeed = min(stoppingSpeed, approachSpeed);
+						// Reborn: Limit each correction to a fraction of current speed, so crates already near the target do not stop abruptly.
+						const Real gradualSpeed = speed * (1.0f - 1.0f / (0.15f * logicFramesPerSecond));
+						const Real limitedSpeed = max(targetSpeed, gradualSpeed);
+						if (speed > limitedSpeed)
+						{
+							physics->scrubVelocity2D(limitedSpeed);
+							// Reborn: Sample crate braking without flooding the log every logic frame.
+							if (!rebornWasOpened || TheGameLogic->getFrame() % LOGICFRAMES_PER_SECOND == 0)
+								DEBUG_LOG(("PARACHUTE_DIRECT_BRAKE: frame=%u chute=%u rider=%u horizontalError=%.3f speedBefore=%.6f speedAfter=%.6f verticalSpeed=%.6f\n",
+									TheGameLogic->getFrame(), parachute->getID(), rider->getID(), distance, speed,
+									sqrt(velocity->x * velocity->x + velocity->y * velocity->y), velocity->z));
+						}
+					}
+					// Reborn: Opening diagnostics identify the cargo/chute pair and the real starting distance, not just the requested move destination.
+					if (!rebornWasOpened)
+					{
+						const Coord3D* pos = parachute->getPosition();
+						const Real dx = pos->x - m_landingOverride.x;
+						const Real dy = pos->y - m_landingOverride.y;
+						// Reborn: Compare edge proximity and cargo altitude with missed drops without altering the landing target.
+						const Coord3D edge = TheTerrainLogic->findClosestEdgePoint(&m_landingOverride);
+						const Real edgeDx = edge.x - m_landingOverride.x;
+						const Real edgeDy = edge.y - m_landingOverride.y;
+						DEBUG_LOG(("PARACHUTE_DIRECT_OPEN: frame=%u chute=%u type=%s rider=%u riderType=%s producer=%u locomotor=%s pos=(%.3f, %.3f, %.3f) target=(%.3f, %.3f, %.3f) horizontalError=%.3f heightAboveTerrain=%.3f ultraAccurate=1 closeEnough=10\n",
+							TheGameLogic->getFrame(), parachute->getID(), parachute->getTemplate()->getName().str(),
+							rider ? rider->getID() : INVALID_ID, rider ? rider->getTemplate()->getName().str() : "<none>",
+							parachute->getProducerID(), locomotor->getTemplateName().str(), pos->x, pos->y, pos->z,
+							m_landingOverride.x, m_landingOverride.y, m_landingOverride.z, sqrt(dx * dx + dy * dy), parachute->getHeightAboveTerrain()));
+						DEBUG_LOG(("PARACHUTE_DIRECT_EDGE: frame=%u chute=%u rider=%u targetEdgeDistance=%.3f targetGroundZ=%.3f chuteAboveTargetZ=%.3f riderPos=(%.3f, %.3f, %.3f) riderHeightAboveTerrain=%.3f chuteOffMap=%d\n",
+							TheGameLogic->getFrame(), parachute->getID(), rider ? rider->getID() : INVALID_ID,
+							sqrt(edgeDx * edgeDx + edgeDy * edgeDy), TheTerrainLogic->getGroundHeight(m_landingOverride.x, m_landingOverride.y),
+							pos->z - m_landingOverride.z, rider ? rider->getPosition()->x : pos->x,
+							rider ? rider->getPosition()->y : pos->y, rider ? rider->getPosition()->z : pos->z,
+							rider ? rider->getHeightAboveTerrain() : 0.0f, parachute->isOffMap()));
+					}
 				}
 			}
 
@@ -479,6 +539,18 @@ void ParachuteContain::onRemoving( Object *rider )
 
 	// position him correctly.
 	positionRider(rider);
+	// Reborn: Log release rather than assuming a successful landing; destruction can also eject the rider in midair.
+	if (m_isLandingOverrideSet)
+	{
+		const Coord3D* pos = rider->getPosition();
+		const Real dx = pos->x - m_landingOverride.x;
+		const Real dy = pos->y - m_landingOverride.y;
+		DEBUG_LOG(("PARACHUTE_DIRECT_RELEASE: frame=%u chute=%u rider=%u riderType=%s producer=%u pos=(%.3f, %.3f, %.3f) target=(%.3f, %.3f, %.3f) horizontalError=%.3f heightAboveTerrain=%.3f chuteAirborne=%d chuteDead=%d riderDead=%d\n",
+			TheGameLogic->getFrame(), getObject()->getID(), rider->getID(), rider->getTemplate()->getName().str(),
+			getObject()->getProducerID(), pos->x, pos->y, pos->z,
+			m_landingOverride.x, m_landingOverride.y, m_landingOverride.z, sqrt(dx * dx + dy * dy),
+			rider->getHeightAboveTerrain(), getObject()->isSignificantlyAboveTerrain(), getObject()->isEffectivelyDead(), rider->isEffectivelyDead()));
+	}
 
 	rider->clearModelConditionFlags(MAKE_MODELCONDITION_MASK2(MODELCONDITION_FREEFALL, MODELCONDITION_PARACHUTING));
 	m_needToUpdateRiderBones = true;
