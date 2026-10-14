@@ -106,10 +106,6 @@ static const Real DRAWABLE_OVERSCAN = 75.0f;  ///< 3D world coords of how much t
 
 constexpr const Real NearZ = MAP_XY_FACTOR; ///< Set the near to MAP_XY_FACTOR. Improves z buffer resolution.
 
-//=================================================================================================
-inline Real minf(Real a, Real b) { if (a < b) return a; else return b; }
-inline Real maxf(Real a, Real b) { if (a > b) return a; else return b; }
-
 //-------------------------------------------------------------------------------------------------
 // Normalizes angle to +- PI.
 //-------------------------------------------------------------------------------------------------
@@ -4120,10 +4116,10 @@ void W3DView::moveAlongWaypointPath(Real milliseconds)
 		setPosition(pos);
 		// Note - assuming that the scripter knows what he is doing, we adjust the constraints so that
 		// the scripted action can occur.
-		m_cameraAreaConstraints.lo.x = minf(m_cameraAreaConstraints.lo.x, pos.x);
-		m_cameraAreaConstraints.hi.x = maxf(m_cameraAreaConstraints.hi.x, pos.x);
-		m_cameraAreaConstraints.lo.y = minf(m_cameraAreaConstraints.lo.y, pos.y);
-		m_cameraAreaConstraints.hi.y = maxf(m_cameraAreaConstraints.hi.y, pos.y);
+		m_cameraAreaConstraints.lo.x = min(m_cameraAreaConstraints.lo.x, pos.x);
+		m_cameraAreaConstraints.hi.x = max(m_cameraAreaConstraints.hi.x, pos.x);
+		m_cameraAreaConstraints.lo.y = min(m_cameraAreaConstraints.lo.y, pos.y);
+		m_cameraAreaConstraints.hi.y = max(m_cameraAreaConstraints.hi.y, pos.y);
 		return;
 	}
 
@@ -4227,10 +4223,10 @@ void W3DView::moveAlongWaypointPath(Real milliseconds)
 	setPosition(result);
 	// Note - assuming that the scripter knows what he is doing, we adjust the constraints so that
 	// the scripted action can occur.
-	m_cameraAreaConstraints.lo.x = minf(m_cameraAreaConstraints.lo.x, result.x);
-	m_cameraAreaConstraints.hi.x = maxf(m_cameraAreaConstraints.hi.x, result.x);
-	m_cameraAreaConstraints.lo.y = minf(m_cameraAreaConstraints.lo.y, result.y);
-	m_cameraAreaConstraints.hi.y = maxf(m_cameraAreaConstraints.hi.y, result.y);
+	m_cameraAreaConstraints.lo.x = min(m_cameraAreaConstraints.lo.x, result.x);
+	m_cameraAreaConstraints.hi.x = max(m_cameraAreaConstraints.hi.x, result.x);
+	m_cameraAreaConstraints.lo.y = min(m_cameraAreaConstraints.lo.y, result.y);
+	m_cameraAreaConstraints.hi.y = max(m_cameraAreaConstraints.hi.y, result.y);
 
 }
 
