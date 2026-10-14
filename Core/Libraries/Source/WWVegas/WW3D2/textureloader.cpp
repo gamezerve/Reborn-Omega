@@ -1336,10 +1336,11 @@ static bool	Get_Texture_Information
 	unsigned& d,
 	WW3DFormat& format,
 	unsigned& mip_count,
-	bool compressed
+	bool compressed,
+	bool bypass_thumbnail = false // Reborn: Read dimensions from the selected source when the logical filename stays the same.
 )
 {
-	ThumbnailClass* thumb=ThumbnailManagerClass::Peek_Thumbnail_Instance_From_Any_Manager(filename);
+	ThumbnailClass* thumb = bypass_thumbnail ? nullptr : ThumbnailManagerClass::Peek_Thumbnail_Instance_From_Any_Manager(filename); // Reborn: Legacy and modern files may have different dimensions.
 
 	if (!thumb)
 	{
@@ -1524,7 +1525,8 @@ bool TextureLoadTaskClass::Begin_Compressed_Load()
 				orig_depth,
 				orig_format,
 				orig_mip_count,
-				true
+				true,
+				Texture->Is_Thumbnail_Bypassed() // Reborn: Source-switchable assets must use live file metadata.
 			)
 		)
 	{
@@ -1571,7 +1573,8 @@ bool TextureLoadTaskClass::Begin_Uncompressed_Load()
 				orig_depth,
 				orig_format,
 				orig_mip_count,
-				false
+				false,
+				Texture->Is_Thumbnail_Bypassed() // Reborn: Source-switchable assets must use live file metadata.
 			)
 		)
 	{
@@ -2076,7 +2079,8 @@ bool CubeTextureLoadTaskClass::Begin_Compressed_Load()
 				orig_depth,
 				orig_format,
 				orig_mip_count,
-				true
+				true,
+				Texture->Is_Thumbnail_Bypassed() // Reborn: Source-switchable assets must use live file metadata.
 		  )
 		)
 	{
@@ -2123,7 +2127,8 @@ bool CubeTextureLoadTaskClass::Begin_Uncompressed_Load()
 				orig_depth,
 				orig_format,
 				orig_mip_count,
-				false
+				false,
+				Texture->Is_Thumbnail_Bypassed() // Reborn: Source-switchable assets must use live file metadata.
 			)
 		)
 	{
@@ -2382,7 +2387,8 @@ bool VolumeTextureLoadTaskClass::Begin_Compressed_Load()
 				orig_depth,
 				orig_format,
 				orig_mip_count,
-				true
+				true,
+				Texture->Is_Thumbnail_Bypassed() // Reborn: Source-switchable assets must use live file metadata.
 		  )
 		)
 	{
@@ -2431,7 +2437,8 @@ bool VolumeTextureLoadTaskClass::Begin_Uncompressed_Load()
 				orig_depth,
 				orig_format,
 				orig_mip_count,
-				false
+				false,
+				Texture->Is_Thumbnail_Bypassed() // Reborn: Source-switchable assets must use live file metadata.
 			)
 		)
 	{

@@ -215,6 +215,18 @@ GUI:UseCustomControlBar
 "Use Control Bar Pro"
 END
 
+GUI:UseLegacyInfantryTextures
+"Use Legacy Infantry Textures"
+END
+
+TOOLTIP:UseLegacyInfantryTextures
+"Use the original game textures for Rangers, Missile Defenders, Rebels, RPG Troopers, Workers, Red Guards and Tank Hunters. Applies to all units using these textures immediately when accepted; no restart required."
+END
+
+GUI:LegacyInfantryTexturesFailed
+"The infantry textures could not be changed. Your previous texture setting has been kept. See the Reborn Omega log for details."
+END
+
 GUI:NoCustomControlBarsFound
 "No custom control bars found"
 END

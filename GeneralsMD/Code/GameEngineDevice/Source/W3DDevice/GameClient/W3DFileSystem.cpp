@@ -47,9 +47,86 @@
 #include "Common/GlobalData.h"
 #include "Common/MapObject.h"
 #include "Common/Registry.h"
+#include "Common/RebornOmegaPreferences.h" // Reborn: Restore the infantry texture source preference before loading models.
+#include "Common/UserPreferences.h"
+#include "Common/RebornLog.h"
 #include "W3DDevice/GameClient/W3DFileSystem.h"
 
+#include <atomic> // Reborn: Publish the selected source safely to background texture loaders.
+
 #include <io.h>
+
+// Reborn: Keep the texture selection atomic because W3D also opens files on its loading thread.
+static std::atomic<bool> s_legacyInfantryTextures(false);
+const char* const W3DFileSystem::infantryTextureNames[7] = {
+	"zhca_airanger.tga", "zhca_nithunter.tga", "zhca_uirguard.tga",
+	"zhca_uirtunfan.tga", "zhca_uiworker.tga", "zhca_niconscrpt.tga", "zhca_aimsslguy.tga"
+};
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Identify only the seven logical infantry textures, including the loader's DDS alternatives. */
+//-------------------------------------------------------------------------------------------------
+Int W3DFileSystem::getInfantryTextureIndex(const char* filename)
+{
+	if (!filename) return -1;
+	const char* basename = filename;
+	for (const char* p = filename; *p; ++p)
+		if (*p == '/' || *p == '\\') basename = p + 1;
+	const char* extension = strrchr(basename, '.');
+	if (!extension || (_stricmp(extension, ".tga") != 0 && _stricmp(extension, ".dds") != 0)) return -1;
+	for (Int i = 0; i < 7; ++i)
+	{
+		const size_t length = strlen(infantryTextureNames[i]) - 4;
+		if (size_t(extension - basename) == length && _strnicmp(basename, infantryTextureNames[i], length) == 0) return i;
+	}
+	return -1;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Choose original texture archives explicitly, never the mod PAK or a loose replacement. */
+//-------------------------------------------------------------------------------------------------
+ArchiveFile* W3DFileSystem::findLegacyInfantryArchive(const char* filename)
+{
+	const Int index = getInfantryTextureIndex(filename);
+	if (index < 0 || !TheArchiveFileSystem) return nullptr;
+	// Reborn: Legacy assets are TGA; suppress mod DDS overrides so the loader falls back to the original TGA.
+	const char* extension = strrchr(filename, '.');
+	if (_stricmp(extension, ".tga") != 0) return nullptr;
+	ArchivedDirectoryInfo* directory = TheArchiveFileSystem->friend_getArchivedDirectoryInfo(TGA_DIR_PATH);
+	if (!directory) return nullptr;
+	AsciiString name(infantryTextureNames[index]);
+	const auto entries = directory->m_files.equal_range(name);
+	const char* const archives[] = { "TexturesZH.big", "Textures.big" };
+	for (const char* wanted : archives)
+	{
+		for (auto entry = entries.first; entry != entries.second; ++entry)
+		{
+			ArchiveFile* archive = entry->second;
+			const AsciiString path = archive->getName();
+			const char* basename = path.str();
+			for (const char* p = path.str(); *p; ++p)
+				if (*p == '/' || *p == '\\') basename = p + 1;
+			if (_stricmp(basename, wanted) == 0) return archive;
+		}
+	}
+	return nullptr;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Read the selected infantry source from both rendering and loading threads. */
+//-------------------------------------------------------------------------------------------------
+Bool W3DFileSystem::getLegacyInfantryTextures()
+{
+	return s_legacyInfantryTextures.load();
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Publish the infantry source only after pending texture loads have been drained. */
+//-------------------------------------------------------------------------------------------------
+void W3DFileSystem::setLegacyInfantryTextures(Bool enabled)
+{
+	s_legacyInfantryTextures.store(enabled != FALSE);
+}
 
 // DEFINES ////////////////////////////////////////////////////////////////////////////////////////
 
@@ -165,6 +242,20 @@ char const * GameFileClass::Set_Name( char const *filename )
 
 	// save the filename
 	strlcpy( m_filename, filename, _MAX_PATH );
+
+	// Reborn: Resolve only opted-in infantry textures directly from their original archive; all other lookup rules remain unchanged.
+	m_legacyTextureArchive = nullptr;
+	m_useLegacyTextureSource = FALSE;
+	if (W3DFileSystem::getLegacyInfantryTextures() && W3DFileSystem::getInfantryTextureIndex(filename) >= 0)
+	{
+		m_useLegacyTextureSource = TRUE;
+		m_legacyTextureArchive = W3DFileSystem::findLegacyInfantryArchive(filename);
+		m_fileExists = m_legacyTextureArchive != nullptr;
+		if (m_fileExists)
+			snprintf(m_filePath, ARRAY_SIZE(m_filePath), "%s%s", TGA_DIR_PATH,
+				W3DFileSystem::infantryTextureNames[W3DFileSystem::getInfantryTextureIndex(filename)]);
+		return m_filename;
+	}
 
 	GameFileType fileType = getFileType(filename);
 
@@ -359,7 +450,10 @@ int  GameFileClass::Open(int rights)
 		return(false);
 	}
 
-	m_theFile = TheFileSystem->openFile( m_filePath, File::READ | File::BINARY );
+	// Reborn: Open the archive selected at name resolution instead of reapplying mod/loose-file priority.
+	m_theFile = m_useLegacyTextureSource
+		? (m_legacyTextureArchive ? m_legacyTextureArchive->openFile(m_filePath, File::READ | File::BINARY) : nullptr)
+		: TheFileSystem->openFile(m_filePath, File::READ | File::BINARY);
 
 	return (m_theFile != nullptr);
 }
@@ -438,6 +532,26 @@ W3D file factory.  */
 W3DFileSystem::W3DFileSystem()
 {
 	_TheFileFactory = this; // override the w3d file factory.
+
+	// Reborn: Modern textures remain the default for missing or invalid preference values.
+	UserPreferences preferences;
+	LoadRebornOmegaPreferences(preferences);
+	AsciiString requested = preferences["UseLegacyInfantryTextures"];
+	requested.toLower();
+	Bool legacy = requested == "yes";
+	if (legacy)
+	{
+		for (const char* name : infantryTextureNames)
+			if (!findLegacyInfantryArchive(name))
+			{
+				REBORN_LOG("Legacy infantry textures unavailable: original archive entry %s missing; using modern textures", name);
+				// Reborn: Mirror this texture-source diagnostic to the debugger log.
+				DEBUG_LOG(("Legacy infantry textures unavailable: original archive entry %s missing; using modern textures" "\n", name));
+				legacy = FALSE;
+				break;
+			}
+	}
+	setLegacyInfantryTextures(legacy);
 
 #if RTS_ZEROHOUR && PRIORITIZE_TEXTURES_BY_SIZE
 	reprioritizeTexturesBySize();

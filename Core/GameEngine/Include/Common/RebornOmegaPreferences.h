@@ -49,3 +49,7 @@ class UserPreferences;
 
 Bool LoadRebornOmegaPreferences(UserPreferences& preferences);
 Bool WriteRebornOmegaPreferences(UserPreferences& preferences);
+
+// Reborn: Expose the accepted infantry appearance setting without coupling the options menu to W3D device headers.
+Bool GetLegacyInfantryTextures();
+Bool ApplyLegacyInfantryTextures(Bool enabled);

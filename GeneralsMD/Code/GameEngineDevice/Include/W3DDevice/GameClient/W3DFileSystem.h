@@ -69,6 +69,9 @@ public:
 
 protected:
 
+	ArchiveFile* m_legacyTextureArchive = nullptr; // Reborn: Keep legacy reads bound to the original archive, bypassing loose/mod overrides.
+	Bool m_useLegacyTextureSource = FALSE; // Reborn: Preserve the original open behavior for every unrelated asset.
+
 	File					*m_theFile; /// < The file
 	Bool					m_fileExists;		///< TRUE if the file exists
 	char					m_filePath[_MAX_PATH];  ///< the file name *and* path (relative)
@@ -88,6 +91,13 @@ public:
 
 	virtual FileClass * Get_File( char const *filename ) override;
 	virtual void Return_File( FileClass *file ) override;
+
+	// Reborn: Switch only the seven infantry textures while preserving their logical asset names.
+	static const char* const infantryTextureNames[7];
+	static Int getInfantryTextureIndex(const char* filename);
+	static ArchiveFile* findLegacyInfantryArchive(const char* filename);
+	static Bool getLegacyInfantryTextures();
+	static void setLegacyInfantryTextures(Bool enabled);
 
 private:
 

@@ -72,6 +72,7 @@ public:
 
 	//'Generals' customizations
 	void Report_Used_Assets();
+	Bool setLegacyInfantryTextures(Bool enabled); // Reborn: Reload infantry textures and their house-color copies in place when accepting options.
 	void Report_Used_Prototypes ();
 	void Report_Used_Textures();
 	void Report_Used_Font3DDatas();

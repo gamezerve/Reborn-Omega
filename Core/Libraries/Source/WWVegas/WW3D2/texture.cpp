@@ -854,7 +854,7 @@ void TextureClass::Init()
 
 	if (!Peek_D3D_Base_Texture())
 	{
-		if (!WW3D::Get_Thumbnail_Enabled() || MipLevelCount==MIP_LEVELS_1)
+		if (Is_Thumbnail_Bypassed() || !WW3D::Get_Thumbnail_Enabled() || MipLevelCount==MIP_LEVELS_1) // Reborn: Never briefly show a stale thumbnail after an infantry source switch.
 		{
 //		if (MipLevelCount==MIP_LEVELS_1) {
 			TextureLoader::Request_Foreground_Loading(this);

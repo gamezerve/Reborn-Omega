@@ -68,6 +68,13 @@
 #include "Common/PerfTimer.h"
 #include "Common/GlobalData.h"
 #include "Common/GameCommon.h"
+#include "Common/RebornLog.h" // Reborn: Report source-switch failures without discarding the current infantry appearance.
+#include "Common/Debug.h" // Reborn: Mirror texture switching diagnostics to DEBUG_LOG as well.
+#include "Common/RebornOmegaPreferences.h"
+#include "W3DDevice/GameClient/W3DFileSystem.h"
+#include <memory>
+#include <vector>
+#include <stdexcept>
 
 
 //---------------------------------------------------------------------
@@ -151,6 +158,135 @@ W3DAssetManager::~W3DAssetManager()
 {
 }
 
+// Reborn: Release temporary W3D resources even if preparing a replacement surface fails.
+struct RebornInfantryReleaseRef
+{
+	void operator()(RefCountClass* resource) const { if (resource) resource->Release_Ref(); }
+};
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Read the active texture setting through the options preference interface. */
+//-------------------------------------------------------------------------------------------------
+Bool GetLegacyInfantryTextures()
+{
+	return W3DFileSystem::getLegacyInfantryTextures();
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Apply accepted texture preferences using the game's existing W3D asset manager. */
+//-------------------------------------------------------------------------------------------------
+Bool ApplyLegacyInfantryTextures(Bool enabled)
+{
+	W3DAssetManager* manager = static_cast<W3DAssetManager*>(WW3DAssetManager::Get_Instance());
+	return manager && manager->setLegacyInfantryTextures(enabled);
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Reload the seven infantry texture families in place, including existing house-color copies, without rebuilding units. */
+//-------------------------------------------------------------------------------------------------
+Bool W3DAssetManager::setLegacyInfantryTextures(Bool enabled)
+{
+	const Bool previous = W3DFileSystem::getLegacyInfantryTextures();
+	if (enabled == previous) return TRUE;
+	if (!TextureLoader::Is_DX8_Thread()) return FALSE;
+	if (enabled)
+		for (const char* name : W3DFileSystem::infantryTextureNames)
+			if (!W3DFileSystem::findLegacyInfantryArchive(name))
+			{
+				REBORN_LOG("Cannot switch infantry textures: original archive entry %s is missing", name);
+				// Reborn: Mirror this texture-source diagnostic to the debugger log.
+				DEBUG_LOG(("Cannot switch infantry textures: original archive entry %s is missing" "\n", name));
+				return FALSE;
+			}
+
+	// Reborn: Finish all previous-source tasks before publishing a different source to the loader.
+	TextureLoader::Flush_Pending_Load_Tasks();
+	W3DFileSystem::setLegacyInfantryTextures(enabled);
+	using TextureRef = std::unique_ptr<TextureClass, RebornInfantryReleaseRef>;
+	using SurfaceRef = std::unique_ptr<SurfaceClass, RebornInfantryReleaseRef>;
+	std::vector<std::pair<TextureClass*, TextureRef>> pending;
+	TextureRef sources[7];
+	try
+	{
+		HashTemplateIterator<StringClass, TextureClass*> iterator(TextureHash);
+		for (iterator.First(); !iterator.Is_Done(); iterator.Next())
+		{
+			TextureClass* target = iterator.Peek_Value();
+			const char* name = target->Get_Texture_Name();
+			const char* sourceName = name;
+			Bool recolored = FALSE;
+			Int color = 0;
+			if (name[0] == '#')
+			{
+				char* end = nullptr;
+				const long parsed = strtol(name + 1, &end, 10);
+				if (end == name + 1 || *end != '#') continue;
+				color = Int(parsed);
+				sourceName = end + 1;
+				recolored = TRUE;
+			}
+			const Int index = W3DFileSystem::getInfantryTextureIndex(sourceName);
+			if (index < 0) continue;
+			if (!sources[index])
+			{
+				// Reborn: Load an uncached, uncompressed source so legacy and modern dimensions can differ and house-color remapping stays valid.
+				sources[index].reset(NEW_REF(TextureClass, (W3DFileSystem::infantryTextureNames[index], nullptr,
+					MIP_LEVELS_ALL, WW3D_FORMAT_A8R8G8B8, false, false)));
+				sources[index]->Set_Bypass_Thumbnail(true); // Reborn: Read the selected source's actual dimensions, not a cached thumbnail.
+				TextureLoader::Request_Foreground_Loading(sources[index].get());
+				if (!sources[index]->Is_Initialized() || !sources[index]->Peek_D3D_Texture())
+					throw std::runtime_error("Infantry texture could not be loaded");
+			}
+			if (!recolored)
+			{
+				TextureRef replacement(sources[index].get());
+				replacement->Add_Ref();
+				pending.emplace_back(target, std::move(replacement));
+				continue;
+			}
+			SurfaceClass::SurfaceDescription description;
+			sources[index]->Get_Level_Description(description);
+			SurfaceRef original(sources[index]->Get_Surface_Level());
+			SurfaceRef tinted(NEW_REF(SurfaceClass, (description.Width, description.Height, description.Format)));
+			tinted->Copy(0, 0, 0, 0, description.Width, description.Height, original.get());
+			// Reborn: These seven ZHCA textures encode the same alpha-based team-color mask as their normal load path.
+			Remap_Palette(tinted.get(), color, false, true);
+			TextureRef replacement(NEW_REF(TextureClass, (tinted.get(), MIP_LEVELS_ALL)));
+			if (!replacement->Peek_D3D_Texture()) throw std::runtime_error("House-color texture could not be recreated");
+			pending.emplace_back(target, std::move(replacement));
+		}
+	}
+	catch (const std::exception& error)
+	{
+		W3DFileSystem::setLegacyInfantryTextures(previous);
+		REBORN_LOG("Infantry texture switch cancelled; previous appearance retained: %s", error.what());
+		// Reborn: Mirror this texture-source diagnostic to the debugger log.
+		DEBUG_LOG(("Infantry texture switch cancelled; previous appearance retained: %s" "\n", error.what()));
+		return FALSE;
+	}
+	catch (...)
+	{
+		W3DFileSystem::setLegacyInfantryTextures(previous);
+		REBORN_LOG("Infantry texture switch cancelled; previous appearance retained after a rendering error");
+		// Reborn: Mirror this texture-source diagnostic to the debugger log.
+		DEBUG_LOG(("Infantry texture switch cancelled; previous appearance retained after a rendering error" "\n"));
+		return FALSE;
+	}
+	// Reborn: Commit only after every replacement is ready; preserve texture pointers held by live models and prototypes.
+	for (auto& entry : pending)
+	{
+		entry.first->Set_Bypass_Thumbnail(true); // Reborn: Future reloads must continue using live source metadata.
+		entry.first->Apply_New_Surface(entry.second->Peek_D3D_Texture(), true);
+		entry.first->MipLevelCount = entry.second->MipLevelCount;
+	}
+	REBORN_LOG("Infantry textures switched to %s; refreshed %u cached base/house-color textures",
+		enabled ? "legacy" : "modern", UnsignedInt(pending.size()));
+	// Reborn: Mirror this texture-source diagnostic to the debugger log.
+	DEBUG_LOG(("Infantry textures switched to %s; refreshed %u cached base/house-color textures" "\n",
+		enabled ? "legacy" : "modern", UnsignedInt(pending.size())));
+	return TRUE;
+}
+
 #ifdef DUMP_PERF_STATS
 __int64 Total_Get_Texture_Time=0;
 #endif
@@ -171,13 +307,17 @@ TextureClass *	W3DAssetManager::Get_Texture
 	if (filename && *filename && _strnicmp(filename,"ZHC",3) == 0)
 		allow_reduction = false;	//don't allow reduction on our infantry textures.
 
-	return WW3DAssetManager::Get_Texture(	filename,
+	TextureClass* texture = WW3DAssetManager::Get_Texture(	filename,
 		mip_level_count,
 		texture_format,
 		allow_compression,
 		type,
 		allow_reduction
 	);
+	// Reborn: These seven source-switchable textures must not reuse thumbnail dimensions from another source.
+	if (texture && W3DFileSystem::getInfantryTextureIndex(filename) >= 0)
+		texture->Set_Bypass_Thumbnail(true);
+	return texture;
 }
 
 #if 0	//this function is obsolete in latest C&C3 drop.  Use the one above.

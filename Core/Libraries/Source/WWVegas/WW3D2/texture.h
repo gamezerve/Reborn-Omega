@@ -105,6 +105,9 @@ public:
 	void	Set_Full_Path(const char * path)			{ FullPath = path; }
 	const StringClass& Get_Texture_Name() const		{ return Name; }
 	const StringClass& Get_Full_Path() const			{ if (FullPath.Is_Empty ()) return Name; return FullPath; }
+	// Reborn: Source-switchable textures must read current file dimensions instead of cached thumbnail metadata.
+	void Set_Bypass_Thumbnail(bool bypass) { BypassThumbnail = bypass; }
+	bool Is_Thumbnail_Bypassed() const { return BypassThumbnail; }
 
 	unsigned Get_ID() const { return texture_id; }	// Each textrure has a unique id
 
@@ -206,6 +209,7 @@ protected:
 	void Poke_Texture(IDirect3DBaseTexture8* tex) { D3DTexture = tex; }
 
 	bool Initialized;
+	bool BypassThumbnail = false; // Reborn: Existing textures keep their original thumbnail path unless explicitly opted in.
 
 	// For debug purposes the texture sets this true if it is a lightmap texture
 	bool IsLightmap;

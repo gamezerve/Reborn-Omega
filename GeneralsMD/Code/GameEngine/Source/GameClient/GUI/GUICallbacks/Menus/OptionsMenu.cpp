@@ -207,6 +207,10 @@ static GameWindow* checkShowCommunicatorButton = nullptr;
 // Reborn: Store the accessibility preference without changing command button rendering.
 static NameKeyType checkShowShortcutsOnButtonsID = NAMEKEY_INVALID;
 static GameWindow* checkShowShortcutsOnButtons = nullptr;
+// Reborn: Persist and restore the legacy infantry toggle without changing textures until Accept.
+static NameKeyType checkLegacyInfantryTexturesID = NAMEKEY_INVALID;
+static GameWindow* checkLegacyInfantryTextures = nullptr;
+static Bool advancedSettingsOriginalLegacyInfantryTextures = FALSE;
 static Bool advancedSettingsOriginalZoomFactor = FALSE;
 static Bool advancedSettingsOriginalAutomaticUpdates = FALSE;
 static Bool advancedSettingsOriginalShowCommunicatorButton = TRUE;
@@ -655,6 +659,19 @@ static void saveAdvancedSettings()
 	}
 
 	const Bool canChangeGameFps = !TheGameLogic->isInInteractiveGame();
+
+	// Reborn: Refresh existing models and colored texture copies immediately when this preference is accepted.
+	if (checkLegacyInfantryTextures)
+	{
+		const Bool enabled = GadgetCheckBoxIsChecked(checkLegacyInfantryTextures);
+		const Bool applied = ApplyLegacyInfantryTextures(enabled);
+		const Bool current = GetLegacyInfantryTextures();
+		rebornPreferences["UseLegacyInfantryTextures"] = current ? "yes" : "no";
+		GadgetCheckBoxSetChecked(checkLegacyInfantryTextures, current);
+		if (!applied)
+			MessageBoxOk(TheGameText->fetch("GUI:UseLegacyInfantryTextures"),
+				TheGameText->fetch("GUI:LegacyInfantryTexturesFailed"), nullptr);
+	}
 
 	if (canChangeGameFps && checkCampaignGameplay60Fps)
 	{
@@ -1429,6 +1446,8 @@ static void showAdvancedSettings()
 		advancedSettingsButton->winHide(TRUE);
 
 	advancedSettingsOriginalZoomFactor = checkZoomFactor && GadgetCheckBoxIsChecked(checkZoomFactor);
+	// Reborn: Back restores the selection without reloading textures.
+	advancedSettingsOriginalLegacyInfantryTextures = checkLegacyInfantryTextures && GadgetCheckBoxIsChecked(checkLegacyInfantryTextures);
 	// Reborn: Preserve the custom control bar toggle so Back can discard edits.
 	advancedSettingsOriginalUseCustomControlBar = checkUseCustomControlBar &&
 		GadgetCheckBoxIsChecked(checkUseCustomControlBar);
@@ -1478,6 +1497,9 @@ static void acceptAdvancedSettings()
 
 static void setAdvancedSettingsDefaults()
 {
+	// Reborn: The current mod textures remain the default.
+	if (checkLegacyInfantryTextures)
+		GadgetCheckBoxSetChecked(checkLegacyInfantryTextures, FALSE);
 	if (checkAutomaticUpdateChecks)
 		GadgetCheckBoxSetChecked(checkAutomaticUpdateChecks, TRUE);
 	if (checkZoomFactor)
@@ -1514,6 +1536,9 @@ static void setAdvancedSettingsDefaults()
 
 static void cancelAdvancedSettings()
 {
+	// Reborn: Discard the pending texture selection without touching the renderer.
+	if (checkLegacyInfantryTextures)
+		GadgetCheckBoxSetChecked(checkLegacyInfantryTextures, advancedSettingsOriginalLegacyInfantryTextures);
 	if (checkZoomFactor)
 		GadgetCheckBoxSetChecked(checkZoomFactor, advancedSettingsOriginalZoomFactor);
 	if (checkAutomaticUpdateChecks)
@@ -1625,6 +1650,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	checkShowCommunicatorButtonID = GetOptionsMenuChildKey("CheckShowCommunicatorButton");
 	// Reborn: Resolve the shortcut toggle for either Options menu theme.
 	checkShowShortcutsOnButtonsID = GetOptionsMenuChildKey("CheckShowShortcutsOnButtons");
+	checkLegacyInfantryTexturesID = GetOptionsMenuChildKey("CheckLegacyInfantryTextures"); // Reborn: Bind both layout themes through the shared child-key resolver.
 
 	checkDrawAnchorID = GetOptionsMenuChildKey("CheckBoxDrawAnchor");
 	checkMoveAnchorID = GetOptionsMenuChildKey("CheckBoxMoveAnchor");
@@ -1685,6 +1711,7 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	// Reborn: Bind the reserved accessibility toggle.
 	checkShowShortcutsOnButtons =
 		TheWindowManager->winGetWindowFromId(nullptr, checkShowShortcutsOnButtonsID);
+	checkLegacyInfantryTextures = TheWindowManager->winGetWindowFromId(nullptr, checkLegacyInfantryTexturesID); // Reborn: Locate the texture toggle in the active layout.
 
 	//checkDoubleClickAttackMoveID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckDoubleClickAttackMove" );
 	checkDoubleClickAttackMove   = TheWindowManager->winGetWindowFromId( nullptr, checkDoubleClickAttackMoveID );
@@ -1975,6 +2002,9 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 		GadgetCheckBoxSetChecked(checkShowCommunicatorButton, showCommunicatorButton);
 	// Reborn: Missing or invalid entries from older versions fall back to disabled.
 	const Bool showShortcutsOnButtons = rebornPreferences["ShowShortcutsOnButtons"] == "yes";
+	// Reborn: Display the actual renderer state, including startup fallback when original assets are unavailable.
+	if (checkLegacyInfantryTextures)
+		GadgetCheckBoxSetChecked(checkLegacyInfantryTextures, GetLegacyInfantryTextures());
 	if (checkShowShortcutsOnButtons)
 		GadgetCheckBoxSetChecked(checkShowShortcutsOnButtons, showShortcutsOnButtons);
 
