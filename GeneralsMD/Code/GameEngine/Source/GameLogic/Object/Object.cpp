@@ -2645,7 +2645,11 @@ Bool Object::didExit(const PolygonTrigger *pTrigger) const
 //-------------------------------------------------------------------------------------------------
 Bool Object::isInside(const PolygonTrigger *pTrigger) const
 {
-	DEBUG_ASSERTCRASH(!isKindOf(KINDOF_INERT), ("Asking whether an inert is inside a trigger area. This is invalid."));
+	// Reborn: Identify invalid trigger queries without hiding an unfiltered caller.
+	DEBUG_ASSERTCRASH(!isKindOf(KINDOF_INERT), ("Asking whether an inert is inside a trigger area. This is invalid. Object=%s name='%s' id=%u area='%s' position=(%.3f, %.3f, %.3f)",
+		getTemplate()->getName().str(), getName().str(), getID(),
+		pTrigger ? pTrigger->getTriggerName().str() : "<null>",
+		getPosition()->x, getPosition()->y, getPosition()->z));
 
 	for (Int i=0; i<m_numTriggerAreasActive; i++)
 	{

@@ -486,6 +486,10 @@ Bool ScriptConditions::evaluatePlayerHasUnitTypeInArea(Condition *pCondition, Pa
 				}
 
 				if (types.m_types->isInSet(pObj->getTemplate())) {
+					// Reborn: Inert objects have no trigger tracking; preserve the dead-crate exception for tracked objects.
+					if (pObj->isKindOf(KINDOF_INERT) || (pObj->isEffectivelyDead() && !pObj->isKindOf(KINDOF_CRATE))) {
+						continue;
+					}
 					if (pObj->isInside(pTrig)) {
 
 						//
@@ -493,9 +497,7 @@ Bool ScriptConditions::evaluatePlayerHasUnitTypeInArea(Condition *pCondition, Pa
 						// they have no body and health, but are a class of object we want to
 						// trigger this stuff
 						//
-						if (!(pObj->isEffectivelyDead() || pObj->isKindOf(KINDOF_INERT)) || pObj->isKindOf( KINDOF_CRATE ) ) {
-							count++;
-						}
+						count++;
 					}
 				}
 			}
@@ -576,10 +578,12 @@ Bool ScriptConditions::evaluatePlayerHasUnitKindInArea(Condition *pCondition, Pa
 					continue;
 				}
 				if (pObj->isKindOf(kind)) {
+					// Reborn: Filter excluded objects before querying trigger membership.
+					if (pObj->isEffectivelyDead() || pObj->isKindOf(KINDOF_INERT)) {
+						continue;
+					}
 					if (pObj->isInside(pTrig)) {
-						if (!(pObj->isEffectivelyDead() || pObj->isKindOf(KINDOF_INERT))) {
-							count++;
-						}
+						count++;
 					}
 				}
 			}
@@ -2559,14 +2563,16 @@ Bool ScriptConditions::evaluateSkirmishPlayerHasUnitsInArea(Condition *pConditio
 					continue;
 				}
 
+				// Reborn: Excluded skirmish objects must not be queried for trigger membership.
+				if (pObj->isEffectivelyDead() || pObj->isKindOf(KINDOF_INERT) || pObj->isKindOf(KINDOF_PROJECTILE)) {
+					continue;
+				}
 				if (pObj->isInside(pTrig)) {
 
 					//
 					// dead objects will not be considered.
 					//
-					if (!(pObj->isEffectivelyDead() || pObj->isKindOf(KINDOF_INERT) || pObj->isKindOf(KINDOF_PROJECTILE)) ) {
-						count++;
-					}
+					count++;
 				}
 			}
 		}

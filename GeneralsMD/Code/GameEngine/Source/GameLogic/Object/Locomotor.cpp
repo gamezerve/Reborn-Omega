@@ -2643,7 +2643,11 @@ void Locomotor::maintainCurrentPositionHover(Object* obj, PhysicsBehavior *physi
 	physics->setTurning(TURN_NONE);
 	if (physics->isMotive())	// no need to stop something that isn't moving.
 	{
-		DEBUG_ASSERTCRASH(m_template->m_minSpeed == 0.0f, ("HOVER should always have zero minSpeeds (otherwise, they WING)"));
+		// Reborn: Identify hover stop failures without changing the object's minimum speed or movement behavior.
+		DEBUG_ASSERTCRASH(m_template->m_minSpeed == 0.0f, ("HOVER should always have zero minSpeeds (otherwise, they WING). Object=%s name='%s' id=%u locomotor='%s' minSpeed=%.6f forwardSpeed=%.6f frame=%u position=(%.3f, %.3f, %.3f)",
+			obj->getTemplate()->getName().str(), obj->getName().str(), obj->getID(),
+			m_template->getName().str(), m_template->m_minSpeed, physics->getForwardSpeed2D(), TheGameLogic->getFrame(),
+			obj->getPosition()->x, obj->getPosition()->y, obj->getPosition()->z));
 
 		BodyDamageType bdt = obj->getBodyModule()->getDamageState();
 		Real maxAcceleration = getMaxAcceleration(bdt);

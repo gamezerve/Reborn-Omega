@@ -5276,12 +5276,16 @@ StateReturnType AIAttackAimAtTargetState::onEnter()
 	}
 
 	// Reborn: Reject unreachable targets before immediate transitions can loop on a script-held defender.
-	// Reborn: Preserve in-range fire, contained-unit firepoint handling, and existing leech-range exceptions.
-	if (source->isDisabledByType(DISABLED_HELD) && !containedBy && !inFiringRange && !weapon->hasLeechRange())
+	// Reborn: Use the attack transition's range/sight rules; preserve contained-unit handling and leech-range exceptions.
+	if (source->isDisabledByType(DISABLED_HELD) && !containedBy && !weapon->hasLeechRange())
 	{
-		// Reborn: This early exit has not assigned an aiming locomotor goal; keep onExit cleanup safe.
-		m_setLocomotor = false;
-		return STATE_FAILURE;
+		const Bool unreachable = m_isAttackingObject ? outOfWeaponRangeObject(this, nullptr) : outOfWeaponRangePosition(this, nullptr);
+		if (!inFiringRange || unreachable)
+		{
+			// Reborn: This early exit has not assigned an aiming locomotor goal; keep onExit cleanup safe.
+			m_setLocomotor = false;
+			return STATE_FAILURE;
+		}
 	}
 
 	// add ourself as a targeter BEFORE calling isTemporarilyPreventingAimSuccess().
