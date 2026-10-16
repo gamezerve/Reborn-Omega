@@ -28,6 +28,8 @@ class SortingRendererClass
 	static bool _EnableTriangleDraw;
 
 	static void Flush_Sorting_Pool();
+	// Reborn: Batch oversized pools without narrowing the global vertex count or changing transparency order.
+	static void RebornFlushLargeSortingPool();
 	static void Insert_To_Sorted_List(SortingNodeStruct* state);
 	static void Insert_To_Sorting_Pool(SortingNodeStruct* state);
 

@@ -456,6 +456,91 @@ static void RebornCopySortingVertices(void* destination, const void* source, uns
 #endif
 
 // ----------------------------------------------------------------------------
+/** Reborn: Preserve global transparency order while batching oversized pools into 16-bit vertex/index buffers. */
+// ----------------------------------------------------------------------------
+void SortingRendererClass::RebornFlushLargeSortingPool()
+{
+	TempIndexStruct* tis = Get_Temp_Index_Array(overlapping_polygon_count);
+	// Reborn: Keep source-local indices until after the entire pool has been depth-sorted; global indices would overflow.
+	unsigned polygon_offset = 0;
+	for (unsigned node_id = 0; node_id < overlapping_node_count; ++node_id) {
+		const SortingNodeStruct* state = overlapping_nodes[node_id];
+		const SortingVertexBufferClass* vb = static_cast<SortingVertexBufferClass*>(state->sorting_state.vertex_buffers[0]);
+		const SortingIndexBufferClass* ib = static_cast<SortingIndexBufferClass*>(state->sorting_state.index_buffer);
+		WWASSERT(vb && ib);
+		const unsigned source_offset = (unsigned)state->sorting_state.vba_offset +
+			state->sorting_state.index_base_offset + state->min_vertex_index;
+		WWASSERT(source_offset + state->vertex_count <= vb->Get_Vertex_Count());
+		const VertexFormatXYZNDUV2* vertices = vb->VertexBuffer + source_offset;
+		const unsigned short* indices = ib->index_buffer + state->start_index + state->sorting_state.iba_offset;
+		D3DXMATRIX d3d_mtx = (D3DXMATRIX&)state->sorting_state.world * (D3DXMATRIX&)state->sorting_state.view;
+		const Matrix4x4& mtx = (const Matrix4x4&)d3d_mtx;
+		const bool identity_z = mtx[0][2] == 0.0f && mtx[1][2] == 0.0f && mtx[3][2] == 0.0f && mtx[2][2] == 1.0f;
+		for (unsigned i = 0; i < state->polygon_count; ++i) {
+			TempIndexStruct& triangle = tis[polygon_offset++];
+			triangle.tri.i = indices[i * 3] - state->min_vertex_index;
+			triangle.tri.j = indices[i * 3 + 1] - state->min_vertex_index;
+			triangle.tri.k = indices[i * 3 + 2] - state->min_vertex_index;
+			WWASSERT(triangle.tri.i < state->vertex_count);
+			WWASSERT(triangle.tri.j < state->vertex_count);
+			WWASSERT(triangle.tri.k < state->vertex_count);
+			const VertexFormatXYZNDUV2& v1 = vertices[triangle.tri.i];
+			const VertexFormatXYZNDUV2& v2 = vertices[triangle.tri.j];
+			const VertexFormatXYZNDUV2& v3 = vertices[triangle.tri.k];
+			triangle.idx = (unsigned short)node_id;
+			triangle.z = identity_z ? (v1.z + v2.z + v3.z) / 3.0f :
+				(mtx[0][2] * (v1.x + v2.x + v3.x) + mtx[1][2] * (v1.y + v2.y + v3.y) +
+				 mtx[2][2] * (v1.z + v2.z + v3.z)) / 3.0f + mtx[3][2];
+			DEBUG_ASSERTCRASH((!_isnan(triangle.z) && _finite(triangle.z)), ("Triangle has invalid center"));
+		}
+	}
+	WWASSERT(polygon_offset == overlapping_polygon_count);
+	Sort(tis, tis + overlapping_polygon_count);
+
+	// Reborn: Expand each sorted triangle into three vertices so even interleaved nodes need no overflowing global remap.
+	const unsigned max_triangles = 65535 / 3;
+	for (unsigned offset = 0; offset < overlapping_polygon_count; ) {
+		const unsigned remaining = overlapping_polygon_count - offset;
+		const unsigned count = remaining < max_triangles ? remaining : max_triangles;
+		DynamicVBAccessClass vb_access(BUFFER_TYPE_DYNAMIC_DX8, dynamic_fvf_type, (unsigned short)(count * 3));
+		{
+			DynamicVBAccessClass::WriteLockClass lock(&vb_access);
+			VertexFormatXYZNDUV2* destination = lock.Get_Formatted_Vertex_Array();
+			for (unsigned i = 0; i < count; ++i) {
+				const TempIndexStruct& triangle = tis[offset + i];
+				const SortingNodeStruct* state = overlapping_nodes[triangle.idx];
+				const SortingVertexBufferClass* vb = static_cast<SortingVertexBufferClass*>(state->sorting_state.vertex_buffers[0]);
+				const VertexFormatXYZNDUV2* source = vb->VertexBuffer + state->sorting_state.vba_offset +
+					state->sorting_state.index_base_offset + state->min_vertex_index;
+				destination[i * 3] = source[triangle.tri.i];
+				destination[i * 3 + 1] = source[triangle.tri.j];
+				destination[i * 3 + 2] = source[triangle.tri.k];
+			}
+		}
+		DynamicIBAccessClass ib_access(BUFFER_TYPE_DYNAMIC_DX8, (unsigned short)(count * 3));
+		{
+			DynamicIBAccessClass::WriteLockClass lock(&ib_access);
+			unsigned short* indices = lock.Get_Index_Array();
+			for (unsigned i = 0; i < count * 3; ++i) indices[i] = (unsigned short)i;
+		}
+		DX8Wrapper::Set_Index_Buffer(ib_access, 0);
+		DX8Wrapper::Set_Vertex_Buffer(vb_access);
+		DX8Wrapper::Apply_Render_State_Changes();
+		// Reborn: Only merge adjacent triangles with the same render state, retaining the original global sorted order.
+		for (unsigned first = 0; first < count; ) {
+			const unsigned node_id = tis[offset + first].idx;
+			unsigned end = first + 1;
+			while (end < count && tis[offset + end].idx == node_id) ++end;
+			Apply_Render_State(overlapping_nodes[node_id]->sorting_state);
+			DX8Wrapper::Draw_Triangles((unsigned short)(first * 3), (unsigned short)(end - first),
+				(unsigned short)(first * 3), (unsigned short)((end - first) * 3));
+			first = end;
+		}
+		offset += count;
+	}
+}
+
+// ----------------------------------------------------------------------------
 
 void SortingRendererClass::Flush_Sorting_Pool()
 {
@@ -466,12 +551,18 @@ void SortingRendererClass::Flush_Sorting_Pool()
 	// Fill dynamic index buffer with sorting index buffer vertices
 	TempIndexStruct* tis=Get_Temp_Index_Array(overlapping_polygon_count);
 
+	// Reborn: Retain the original fast path for ordinary scenes; never narrow an oversized vertex request to 16 bits.
+	if (overlapping_vertex_count > 65535) {
+		RebornFlushLargeSortingPool();
+	} else {
 	unsigned vertexAllocCount = overlapping_vertex_count;
 	if (DynamicVBAccessClass::Get_Default_Vertex_Count() < DEFAULT_SORTING_VERTEX_COUNT)
 		vertexAllocCount = DEFAULT_SORTING_VERTEX_COUNT;	//make sure that we force the DX8 dynamic vertex buffer to maximum size
 	if (overlapping_vertex_count > vertexAllocCount)
 		vertexAllocCount = overlapping_vertex_count;
-	WWASSERT(DEFAULT_SORTING_VERTEX_COUNT == 1 || vertexAllocCount <= DEFAULT_SORTING_VERTEX_COUNT);
+	// Reborn: A configured minimum is not permission to exceed the 16-bit buffer capacity.
+	if (vertexAllocCount > 65535) vertexAllocCount = 65535;
+	WWASSERT(vertexAllocCount >= overlapping_vertex_count && vertexAllocCount <= 65535);
 	DynamicVBAccessClass dyn_vb_access(BUFFER_TYPE_DYNAMIC_DX8,dynamic_fvf_type,vertexAllocCount/*overlapping_vertex_count*/);
 	{
 		DynamicVBAccessClass::WriteLockClass lock(&dyn_vb_access);
@@ -639,6 +730,7 @@ void SortingRendererClass::Flush_Sorting_Pool()
 
 		chunkOffset += chunkCount;
 	}
+	} // Reborn: Both rendering paths share the existing reference cleanup below.
 
 	// Release all references and return nodes back to the clean list for the frame...
 	for (unsigned node_id=0;node_id<overlapping_node_count;++node_id) {
