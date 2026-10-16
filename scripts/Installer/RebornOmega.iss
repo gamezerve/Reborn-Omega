@@ -28,6 +28,8 @@ AppName=Zero Hour Reborn Omega
 AppVersion={#RebornVersion}
 AppVerName=Zero Hour {#RebornDisplayName}
 DefaultDirName={code:GetInstallDir}
+; Reborn: Use the folder selected in Browse exactly, without appending the default directory name.
+AppendDefaultDirName=no
 DisableDirPage=no
 DisableProgramGroupPage=yes
 AlwaysShowDirOnReadyPage=yes

@@ -73,6 +73,26 @@
 
 enum { INFINITE_LOOP_COUNT = 1000000 };
 
+#ifdef _WIN32
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Report candidate Miles paths without loading a DLL or changing Windows' module search policy. */
+//-------------------------------------------------------------------------------------------------
+static void rebornLogMilesCandidate(const char* location, const char* directory, const char* relativePath)
+{
+	char path[MAX_PATH] = {};
+	const int length = snprintf(path, sizeof(path), "%s\\%s", directory, relativePath);
+	if (length < 0 || length >= static_cast<int>(sizeof(path)))
+	{
+		REBORN_LOG("AUDIO DLL CANDIDATE: location=%s path=<too long to inspect>", location);
+		return;
+	}
+	const DWORD attributes = GetFileAttributesA(path);
+	const DWORD error = attributes == INVALID_FILE_ATTRIBUTES ? GetLastError() : ERROR_SUCCESS;
+	const Bool isFile = attributes != INVALID_FILE_ATTRIBUTES && (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
+	REBORN_LOG("AUDIO DLL CANDIDATE: location=%s path=%s fileExists=%d win32Error=%lu", location, path, isFile, error);
+}
+#endif
+
 // Callback functions useful for Miles ////////////////////////////////////////////////////////////
 static void AILCALLBACK setSampleCompleted( HSAMPLE sampleCompleted );
 static void AILCALLBACK set3DSampleCompleted( H3DSAMPLE sample3DCompleted );
@@ -1424,6 +1444,41 @@ void MilesAudioManager::openDevice()
 	const DWORD milesFolderAttributes = GetFileAttributesA("MSS"); // Reborn: Distinguish a provider folder from an unrelated file named MSS.
 	REBORN_LOG("AUDIO INIT: cwd=%s provider=%s speaker=%s MSS folder exists=%d", audioWorkingDirectory,
 		m_pref3DProvider.str(), m_prefSpeaker.str(), milesFolderAttributes != INVALID_FILE_ATTRIBUTES && (milesFolderAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0);
+	// Reborn: The upstream runtime loader passes a bare DLL name; log relevant locations without claiming these probes trace Windows' actual search order.
+	REBORN_LOG("AUDIO DLL REQUEST: name=mss32.dll resolver=LoadLibraryA; Windows controls search order; candidate probes below do not change it");
+	char audioExecutablePath[MAX_PATH] = {};
+	const DWORD executableLength = GetModuleFileNameA(nullptr, audioExecutablePath, MAX_PATH);
+	if (executableLength > 0 && executableLength < MAX_PATH)
+	{
+		REBORN_LOG("AUDIO EXE: path=%s", audioExecutablePath);
+		char* lastSlash = strrchr(audioExecutablePath, '\\');
+		if (lastSlash)
+		{
+			*lastSlash = '\0';
+			rebornLogMilesCandidate("EXE directory", audioExecutablePath, "mss32.dll");
+			rebornLogMilesCandidate("EXE MSS subdirectory (not automatically searched)", audioExecutablePath, "MSS\\mss32.dll");
+		}
+	}
+	else
+	{
+		REBORN_LOG("AUDIO EXE: path=<unavailable or truncated> length=%lu", executableLength);
+	}
+	if (audioWorkingDirectory[0])
+	{
+		rebornLogMilesCandidate("Working directory", audioWorkingDirectory, "mss32.dll");
+		rebornLogMilesCandidate("Working directory MSS subdirectory (provider directory, not automatically searched)", audioWorkingDirectory, "MSS\\mss32.dll");
+	}
+	char audioDllDirectory[MAX_PATH] = {};
+	const DWORD dllDirectoryLength = GetDllDirectoryA(MAX_PATH, audioDllDirectory);
+	if (dllDirectoryLength > 0 && dllDirectoryLength < MAX_PATH)
+	{
+		REBORN_LOG("AUDIO DLL DIRECTORY: path=%s", audioDllDirectory);
+		rebornLogMilesCandidate("DLL directory override", audioDllDirectory, "mss32.dll");
+	}
+	else
+	{
+		REBORN_LOG("AUDIO DLL DIRECTORY: path=<empty or unavailable> length=%lu", dllDirectoryLength);
+	}
 #endif
 
 	m_deviceOpened = true;
@@ -1433,6 +1488,15 @@ void MilesAudioManager::openDevice()
 	{
 		DEBUG_LOG(("Failed to load mss32.dll (error %d). Audio will be turned off.", MilesLoader::getLastError()));
 		REBORN_LOG("AUDIO LOAD FAILED: mss32.dll win32Error=%lu; all audio disabled", MilesLoader::getLastError()); // Reborn: The existing failure was only visible in debug output.
+#ifdef _WIN32
+		// Reborn: Preserve the loader's stored error and explain it even when Windows cannot name the missing dependency.
+		char milesLoadErrorText[512] = {};
+		const DWORD milesLoadError = MilesLoader::getLastError();
+		FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, nullptr, milesLoadError, 0,
+			milesLoadErrorText, sizeof(milesLoadErrorText), nullptr);
+		REBORN_LOG("AUDIO LOAD ERROR DETAIL: win32Error=%lu message=%s; error 126 can refer to mss32.dll or one of its dependencies", milesLoadError,
+			milesLoadErrorText[0] ? milesLoadErrorText : "<unavailable>");
+#endif
 		setOn(false, AudioAffect_All);
 		return;
 	}

@@ -995,6 +995,11 @@ static void SelectChapter(Int index)
     TheCampaignManager->setCampaign("GLA_Gen");
     LoadCampaignMaps("GLA_Gen");
   }
+  else if (index == 6) // USAGen
+  {
+    TheCampaignManager->setCampaign("USA_Gen");
+    LoadCampaignMaps("USA_Gen");
+  }
 
 
 }
@@ -1227,8 +1232,8 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
       }
 
 
-      // Reborn: Only Training (0), ChinaGen (2) and GLAGen (4) will be active atm.
-      if (i == 0 || i == 2 || i == 4)
+      // Reborn: Only Training (0), ChinaGen (2), GLAGen (4) and USAGen (6) will be active atm.
+      if (i == 0 || i == 2 || i == 4 || i == 6)
         chapterButtons[i]->winEnable(TRUE);
       else
         chapterButtons[i]->winEnable(FALSE);
