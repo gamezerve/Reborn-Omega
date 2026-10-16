@@ -121,21 +121,47 @@ public:
 	{
 		if (!enabled || !g_rebornUnderwaterFogTexture)
 			return;
+		// Reborn: Complete the snapshot before changing any device state; a failed query must leave the caller untouched.
+		IDirect3DDevice8* device = DX8Wrapper::_Get_D3D_Device8();
+		if (!device)
+			return;
 		const int maxStages = DX8Wrapper::Get_Current_Caps()->Get_Max_Textures_Per_Pass();
+		int fogStage = -1;
 		for (int stage = 1; stage < maxStages; ++stage)
 		{
-			if (DX8Wrapper::Get_Reborn_Texture_Stage_State(stage, D3DTSS_COLOROP) == D3DTOP_DISABLE)
+			unsigned colorOp;
+			if (!ReadStageState(device, stage, D3DTSS_COLOROP, colorOp))
+				return;
+			if (colorOp == D3DTOP_DISABLE)
 			{
-				m_stage = stage;
+				fogStage = stage;
 				break;
 			}
 		}
-		if (m_stage < 0)
+		if (fogStage < 0)
 			return;
 		for (int i = 0; i < 14; ++i)
-			m_oldStates[i] = DX8Wrapper::Get_Reborn_Texture_Stage_State(m_stage, states[i]);
+			if (!ReadStageState(device, fogStage, states[i], m_oldStates[i]))
+				return;
 		m_oldFactor = DX8Wrapper::Get_DX8_Render_State(D3DRS_TEXTUREFACTOR);
-		DX8Wrapper::_Get_DX8_Transform((D3DTRANSFORMSTATETYPE)(D3DTS_TEXTURE0 + m_stage), m_oldTransform);
+		// Reborn: The cache's unknown marker is not a render-state value and must never be restored to the driver.
+		if (m_oldFactor == 0x12345678) {
+			DWORD factor;
+			if (FAILED(device->GetRenderState(D3DRS_TEXTUREFACTOR, &factor)))
+				return;
+			m_oldFactor = factor;
+		}
+		if (FAILED(device->GetTransform((D3DTRANSFORMSTATETYPE)(D3DTS_TEXTURE0 + fogStage), &m_oldTransform)))
+			return;
+		if (fogStage + 1 < maxStages)
+		{
+			if (!ReadStageState(device, fogStage + 1, D3DTSS_COLOROP, m_oldNextColor) ||
+				!ReadStageState(device, fogStage + 1, D3DTSS_ALPHAOP, m_oldNextAlpha))
+				return;
+			m_nextStage = fogStage + 1;
+		}
+		// Reborn: Arm restoration only after all required values were obtained successfully.
+		m_stage = fogStage;
 		m_projected = m_stage < DX8Wrapper::Get_Current_Caps()->Get_Max_Simultaneous_Textures();
 		// Reborn: Old two-texture hardware can still darken RGB via a spare blend stage without replacing the mesh's detail texture.
 		if (m_projected)
@@ -162,11 +188,8 @@ public:
 		DX8Wrapper::Set_DX8_Texture_Stage_State(m_stage, D3DTSS_COLORARG2, D3DTA_CURRENT);
 		DX8Wrapper::Set_DX8_Texture_Stage_State(m_stage, D3DTSS_ALPHAOP, D3DTOP_SELECTARG1);
 		DX8Wrapper::Set_DX8_Texture_Stage_State(m_stage, D3DTSS_ALPHAARG1, D3DTA_CURRENT);
-		if (m_stage + 1 < maxStages)
+		if (m_nextStage >= 0)
 		{
-			m_nextStage = m_stage + 1;
-			m_oldNextColor = DX8Wrapper::Get_Reborn_Texture_Stage_State(m_nextStage, D3DTSS_COLOROP);
-			m_oldNextAlpha = DX8Wrapper::Get_Reborn_Texture_Stage_State(m_nextStage, D3DTSS_ALPHAOP);
 			DX8Wrapper::Set_DX8_Texture_Stage_State(m_nextStage, D3DTSS_COLOROP, D3DTOP_DISABLE);
 			DX8Wrapper::Set_DX8_Texture_Stage_State(m_nextStage, D3DTSS_ALPHAOP, D3DTOP_DISABLE);
 		}
@@ -191,6 +214,21 @@ public:
 		}
 	}
 private:
+	// ----------------------------------------------------------------------------
+	/** Reborn: Resolve unknown cached stage state from the device instead of saving the invalidation marker. */
+	// ----------------------------------------------------------------------------
+	static bool ReadStageState(IDirect3DDevice8* device, unsigned stage, D3DTEXTURESTAGESTATETYPE state, unsigned& value)
+	{
+		value = DX8Wrapper::Get_Reborn_Texture_Stage_State(stage, state);
+		if (value != 0x12345678)
+			return true;
+		DWORD actual;
+		if (FAILED(device->GetTextureStageState(stage, state, &actual)) || actual == 0x12345678)
+			return false;
+		value = actual;
+		return true;
+	}
+
 	static const D3DTEXTURESTAGESTATETYPE states[14];
 	int m_stage, m_nextStage;
 	bool m_projected;
