@@ -5287,20 +5287,18 @@ Object* AIUpdateInterface::getNextMoodTarget( Bool calledByAI, Bool calledDuring
 					return nullptr;
 				}
 
-#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
-				// TheSuperHackers @bugfix Caball009 22/09/2026 Return early to prevent a crash.
-				// This is needed when a Tunnel Network with units is transferred to another player and then sold or destroyed.
-				// The units are not properly transferred and are left in an invalid state.
-				if (!container->getContain())
-				{
-					// remove all such units from the tunnel tracker and destroy them
-					TheGameLogic->friend_destroyInTunnelContain(obj);
+				const ContainModuleInterface* contain = container->getContain();
 
+				if (!contain)
+				{
+#if RTS_GENERALS && RETAIL_COMPATIBLE_CRC
+					// Retail-compatible Generals: clean up stranded tunnel units.
+					TheGameLogic->friend_destroyInTunnelContain(obj);
+#endif
 					return nullptr;
 				}
-#endif
 
-				if( !container->getContain()->isPassengerAllowedToFire() )
+				if (!contain->isPassengerAllowedToFire())
 				{
 					// Sorry, stealthed and not allowed to idle fire when stealthed.
 					// Being in a firing container is an exception to this veto.
