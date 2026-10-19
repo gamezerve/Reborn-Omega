@@ -894,7 +894,7 @@ static void handlePlayerSelection(int index)
 	Int playerType, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
   UnicodeString title = GadgetComboBoxGetText(combo);
-	playerType = (Int)GadgetComboBoxGetItemData(combo, selIndex);
+	playerType = (Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
 	GameInfo *myGame = TheSkirmishGameInfo;
 
 	if (myGame)
@@ -913,7 +913,7 @@ static void handleColorSelection(int index)
 	GameWindow *combo = comboBoxColor[index];
 	Int color, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	color = (Int)GadgetComboBoxGetItemData(combo, selIndex);
+	color = (Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
 
 	GameInfo *myGame = TheSkirmishGameInfo;
 
@@ -953,7 +953,7 @@ static void handlePlayerTemplateSelection(int index)
 	GameWindow *combo = comboBoxPlayerTemplate[index];
 	Int playerTemplate, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	playerTemplate = (Int)GadgetComboBoxGetItemData(combo, selIndex);
+	playerTemplate = (Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
 	GameInfo *myGame = TheSkirmishGameInfo;
 
 	if (myGame)
@@ -1006,7 +1006,7 @@ static void handleTeamSelection(int index)
 	GameWindow *combo = comboBoxTeam[index];
 	Int team, selIndex;
 	GadgetComboBoxGetSelectedPos(combo, &selIndex);
-	team = (Int)GadgetComboBoxGetItemData(combo, selIndex);
+	team = (Int)(intptr_t)GadgetComboBoxGetItemData(combo, selIndex);
 	GameInfo *myGame = TheSkirmishGameInfo;
 
 	if (myGame)
@@ -1033,7 +1033,7 @@ static void handleStartingCashSelection()
 		GadgetComboBoxCenterSelectedEntry(comboBoxStartingCash);
 
     Money startingCash;
-    startingCash.deposit( (UnsignedInt)GadgetComboBoxGetItemData( comboBoxStartingCash, selIndex ), FALSE, FALSE );
+    startingCash.deposit( (UnsignedInt)(uintptr_t)GadgetComboBoxGetItemData( comboBoxStartingCash, selIndex ), FALSE, FALSE );
     myGame->setStartingCash( startingCash );
   }
 }
@@ -1355,7 +1355,7 @@ void updateSkirmishGameOptions()
   Int index = 0;
   for ( ; index < itemCount; index++ )
   {
-    Int value  = (Int)GadgetComboBoxGetItemData(comboBoxStartingCash, index);
+    Int value  = (Int)(intptr_t)GadgetComboBoxGetItemData(comboBoxStartingCash, index);
     if ( value == TheSkirmishGameInfo->getStartingCash().countMoney() )
     {
       GadgetComboBoxSetSelectedPos(comboBoxStartingCash, index, TRUE);
