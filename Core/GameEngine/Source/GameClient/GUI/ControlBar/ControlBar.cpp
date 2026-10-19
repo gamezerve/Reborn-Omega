@@ -1930,6 +1930,7 @@ ControlBar::ControlBar()
 	{
 		m_specialPowerShortcutButtons[i] = nullptr;
 		m_specialPowerShortcutButtonParents[i] = nullptr;
+		m_shortcutButtonAnimations[i] = nullptr; // Reborn: Allocate per-slot animation managers only when a new shortcut enters.
 	}
 
 	m_specialPowerShortcutParent = nullptr;
@@ -1999,6 +2000,12 @@ ControlBar::ControlBar()
 //-------------------------------------------------------------------------------------------------
 ControlBar::~ControlBar()
 {
+	// Reborn: Animation managers reference live windows; release them before any shortcut layout is destroyed.
+	for (Int i = 0; i < MAX_SPECIAL_POWER_SHORTCUTS; ++i)
+	{
+		delete m_shortcutButtonAnimations[i];
+		m_shortcutButtonAnimations[i] = nullptr;
+	}
 
 	// Reborn: Release cached badge strings before the display string manager shuts down.
 	for (Int badge = 0; badge < MAX_COMMAND_SHORTCUT_BADGES; ++badge)
@@ -2532,6 +2539,14 @@ void ControlBar::update()
 
 	if(m_animateWindowManagerForGenShortcuts)
 		m_animateWindowManagerForGenShortcuts->update();
+	// Reborn: Newly added buttons wait offscreen during whole-bar motion instead of receiving two simultaneous slides.
+	if (m_specialPowerShortcutParent && !m_specialPowerShortcutParent->winIsHidden() &&
+		(!m_animateWindowManagerForGenShortcuts ||
+		 (m_animateWindowManagerForGenShortcuts->isFinished() && !m_animateWindowManagerForGenShortcuts->isReversed())))
+	{
+		for (Int i = 0; i < MAX_SPECIAL_POWER_SHORTCUTS; ++i)
+			if (m_shortcutButtonAnimations[i]) m_shortcutButtonAnimations[i]->update();
+	}
 	if (m_animateWindowManagerForGenShortcuts && m_specialPowerShortcutParent)
 		{
 			if (m_animateWindowManagerForGenShortcuts->isFinished() && m_animateWindowManagerForGenShortcuts->isReversed())
@@ -5037,6 +5052,9 @@ void ControlBar::updateRadarAttackGlow ()
 }
 void ControlBar::initSpecialPowershortcutBar( Player *player)
 {
+	// Reborn: Clear all references to the old layout before its windows can be destroyed.
+	resetSpecialPowerShortcutButtonAnimations();
+	if (m_animateWindowManagerForGenShortcuts) m_animateWindowManagerForGenShortcuts->reset();
 	Int i = 0;
 	for( ; i < MAX_SPECIAL_POWER_SHORTCUTS; ++i )
 	{
@@ -5105,6 +5123,12 @@ void ControlBar::populateSpecialPowerShortcut( Player *player)
 			!player->isLocalPlayer() || m_currentlyUsedSpecialPowersButtons == 0 ||
 			m_specialPowerShortcutButtons == nullptr || m_specialPowerShortcutButtonParents == nullptr)
 		return;
+	// Reborn: Compare commands, not compacted slot numbers, so existing shortcuts do not replay their entry on UI refresh.
+	const CommandButton *previousCommands[MAX_SPECIAL_POWER_SHORTCUTS] = {};
+	const Bool barWasVisible = m_specialPowerShortcutParent && !m_specialPowerShortcutParent->winIsHidden();
+	for (Int slot = 0; slot < MAX_SPECIAL_POWER_SHORTCUTS; ++slot)
+		if (m_specialPowerShortcutButtons[slot] && !m_specialPowerShortcutButtons[slot]->winIsHidden())
+			previousCommands[slot] = (const CommandButton *)GadgetButtonGetData(m_specialPowerShortcutButtons[slot]);
 	for( i = 0; i < MAX_SPECIAL_POWER_SHORTCUTS; ++i )
 	{
 		if (m_specialPowerShortcutButtons[i])
@@ -5320,6 +5344,27 @@ void ControlBar::populateSpecialPowerShortcut( Player *player)
 
 		}
 
+	}
+	// Reborn: Animate each new command's tray and button together, without moving or restarting existing commands.
+	for (Int slot = 0; slot < MAX_SPECIAL_POWER_SHORTCUTS; ++slot)
+	{
+		GameWindow *button = m_specialPowerShortcutButtons[slot];
+		const CommandButton *command = button && !button->winIsHidden() ?
+			(const CommandButton *)GadgetButtonGetData(button) : nullptr;
+		if (command && command == previousCommands[slot])
+			continue; // Reborn: Preserve an entry already in progress through ordinary UI refreshes.
+		if (m_shortcutButtonAnimations[slot]) m_shortcutButtonAnimations[slot]->reset();
+		if (!command || !barWasVisible || !m_contextParent[CP_MASTER] || m_contextParent[CP_MASTER]->winIsHidden())
+			continue;
+		Bool wasPresent = FALSE;
+		for (Int oldSlot = 0; oldSlot < MAX_SPECIAL_POWER_SHORTCUTS; ++oldSlot)
+			if (previousCommands[oldSlot] == command) { wasPresent = TRUE; break; }
+		if (!wasPresent && m_specialPowerShortcutButtonParents[slot])
+		{
+			if (!m_shortcutButtonAnimations[slot]) m_shortcutButtonAnimations[slot] = NEW AnimateWindowManager;
+			m_shortcutButtonAnimations[slot]->registerGameWindow(m_specialPowerShortcutButtonParents[slot],
+				WIN_ANIMATION_SLIDE_RIGHT, TRUE, 500, 0);
+		}
 	}
 	if(m_contextParent[ CP_MASTER ] && !m_contextParent[ CP_MASTER ]->winIsHidden() && m_specialPowerShortcutParent->winIsHidden())
 	{
@@ -5596,6 +5641,7 @@ void ControlBar::animateSpecialPowerShortcut( Bool isOn )
 	if(dontAnimate)
 		return;
 
+	resetSpecialPowerShortcutButtonAnimations(); // Reborn: Whole-bar transitions take ownership of motion until they finish.
 	if(isOn)
 	{
 		m_animateWindowManagerForGenShortcuts->reset();
@@ -5630,11 +5676,21 @@ void ControlBar::showSpecialPowerShortcut()
 
 void ControlBar::hideSpecialPowerShortcut()
 {
+	resetSpecialPowerShortcutButtonAnimations(); // Reborn: Never leave a hidden tray at an intermediate animation position.
 	if(!m_specialPowerShortcutParent)
 		return;
 
 	m_specialPowerShortcutParent->winHide(TRUE);
 
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Clear per-button motion while the shortcut windows are still alive. */
+//-------------------------------------------------------------------------------------------------
+void ControlBar::resetSpecialPowerShortcutButtonAnimations()
+{
+	for (Int i = 0; i < MAX_SPECIAL_POWER_SHORTCUTS; ++i)
+		if (m_shortcutButtonAnimations[i]) m_shortcutButtonAnimations[i]->reset();
 }
 
 void ControlBar::setFullViewportHeight()
@@ -5661,6 +5717,7 @@ void ControlBar::refreshCustomAppearance()
 	// Reborn: reset() restores cached OLD rest positions; clear animations BEFORE applying the new layout.
 	if (m_animateWindowManager) m_animateWindowManager->reset();
 	if (m_animateWindowManagerForGenShortcuts) m_animateWindowManagerForGenShortcuts->reset();
+	resetSpecialPowerShortcutButtonAnimations(); // Reborn: Restore tray positions before changing HUD geometry.
 	if (m_generalsScreenAnimate) m_generalsScreenAnimate->reset();
 	// Reborn: Restore fixed positions first, then let the selected scheme own dynamic HUD images.
 	ApplyCustomControlBarAppearance();

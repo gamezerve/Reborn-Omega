@@ -917,6 +917,7 @@ protected:
 	// the following methods are for the special power shortcut window
 
 	void populateSpecialPowerShortcut( Player *player);
+	void resetSpecialPowerShortcutButtonAnimations(); // Reborn: Restore per-button positions before hiding or rebuilding shortcut windows.
 	void updateSpecialPowerShortcut();
 
 	static const Image* calculateVeterancyOverlayForThing( const ThingTemplate *thingTemplate );
@@ -981,6 +982,7 @@ protected:
 	GameWindow *m_sciencePurchaseWindowsRank8[ MAX_PURCHASE_SCIENCE_RANK_8 ];			///< command window controls for easy access
 	GameWindow *m_specialPowerShortcutButtons[ MAX_SPECIAL_POWER_SHORTCUTS ];
 	GameWindow *m_specialPowerShortcutButtonParents[ MAX_SPECIAL_POWER_SHORTCUTS ];
+	AnimateWindowManager *m_shortcutButtonAnimations[ MAX_SPECIAL_POWER_SHORTCUTS ]; // Reborn: Independent entry animations for newly available shortcuts.
 	DisplayString *m_shortcutDisplayStrings[ MAX_SPECIAL_POWER_SHORTCUTS ];
 	Int m_currentlyUsedSpecialPowersButtons; ///< Value will be <= MAX_SPECIAL_POWER_SHORTCUTS;
 
