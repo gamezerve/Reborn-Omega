@@ -461,6 +461,7 @@ public:
 	virtual StateReturnType update() override;
 protected:
 	virtual Bool computePath() override;												///< compute the path
+	Bool computePathInternal(Bool allowPursuitHandoff); // Reborn: Keep initial attack-path fallback separate from normal pursuit handoff.
 
 protected:
 	// snapshot interface

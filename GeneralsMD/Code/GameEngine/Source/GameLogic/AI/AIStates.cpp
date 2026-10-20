@@ -2443,6 +2443,15 @@ static Bool canPursue(Object *source, Weapon *weapon, Object *victim)
  */
 Bool AIAttackApproachTargetState::computePath()
 {
+	// Reborn: Preserve pursuit handoff during normal approach updates and repathing.
+	return computePathInternal(true);
+}
+
+//----------------------------------------------------------------------------------------------------------
+/** Reborn: Allow initial approach entry to request an attack path after pursuit yields without movement. */
+//----------------------------------------------------------------------------------------------------------
+Bool AIAttackApproachTargetState::computePathInternal(Bool allowPursuitHandoff)
+{
 	Bool forceRepath = false;
 
 	// if we're immobile we can't possibly approach the target
@@ -2498,7 +2507,7 @@ Bool AIAttackApproachTargetState::computePath()
 		// remember where we think our victim is, so if it moves, we can re-path
 		Object *victim = getMachineGoalObject();
 		m_prevVictimPos = *victim->getPosition();
-		if (canPursue(source, weapon, victim))
+		if (allowPursuitHandoff && canPursue(source, weapon, victim)) // Reborn: Initial fallback must not hand straight back to the pursuit state that just yielded.
 		{
 			return false;  // break out, and do the pursuit state.
 		}
@@ -2703,10 +2712,7 @@ StateReturnType AIAttackApproachTargetState::onEnter()
 				}
 			}
 		}
-		if (!scriptAirborneTarget && canPursue(source, weapon, victim))
-		{
-			return STATE_SUCCESS;  // break out, and do the pursuit state.
-		}
+		// Reborn: Pursuit already yielded to approach; an unreachable target still needs movement, not immediate aim success.
 	} else {
 		// Attacking a position.  For a variety of reasons, we need to destroy any existing path or we spin. jba. [8/25/2003]
 		ai->destroyPath();
@@ -2732,7 +2738,8 @@ StateReturnType AIAttackApproachTargetState::onEnter()
 		m_goalPosition = groundPos;
 	}
 
-	if (computePath() == false)
+	// Reborn: Use the normal attack path as the initial fallback instead of restarting pursuit/approach/aim in the same frame.
+	if (computePathInternal(false) == false)
 		return STATE_FAILURE;
 
 	setAdjustsDestination(false);

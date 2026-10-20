@@ -517,6 +517,7 @@ private:
 	void applyCorrectModelStateAnimation();
 	const ModelConditionInfo* findTransitionForSig(TransitionSig sig) const;
 	void rebuildWeaponRecoilInfo(const ModelConditionInfo* state);
+	void synchronizeWeaponRecoilInfo(WeaponSlotType wslot); // Reborn: Preserve client recoil effects when barrel data is validated late.
 	void doHideShowProjectileObjects( UnsignedInt showCount, UnsignedInt maxCount, WeaponSlotType slot );///< Means effectively, show m of n.
 	void nukeCurrentRender(Matrix3D* xform);
 	void doStartOrStopParticleSys();

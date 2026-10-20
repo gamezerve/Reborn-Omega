@@ -2873,6 +2873,59 @@ void W3DModelDraw::handleClientTurretPositioning()
 //}
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Synchronize client-only recoil records after a shared barrel cache becomes valid, preserving existing effects. */
+//-------------------------------------------------------------------------------------------------
+void W3DModelDraw::synchronizeWeaponRecoilInfo(WeaponSlotType wslot)
+{
+	if (!m_curState || !(m_curState->m_validStuff & ModelConditionInfo::BARRELS_VALID))
+		return;
+
+	const ModelConditionInfo::WeaponBarrelInfoVec& barrels = m_curState->m_weaponBarrelInfoVec[wslot];
+	WeaponRecoilInfoVec& recoils = m_weaponRecoilInfoVec[wslot];
+	const Int count = barrels.size();
+	const Int recoilCount = recoils.size();
+	if (count != recoilCount)
+	{
+		const Drawable* drawable = getDrawable();
+		const Object* object = drawable ? drawable->getObject() : nullptr;
+		const ThingTemplate* thingTemplate = drawable ? drawable->getTemplate() : nullptr;
+		AsciiString conditionNames;
+		if (drawable)
+		{
+			const ModelConditionFlags& conditions = drawable->getModelConditionFlags();
+			for (Int bit = 0; bit < conditions.size(); ++bit)
+			{
+				if (!conditions.test(bit))
+					continue;
+				if (conditionNames.isNotEmpty())
+					conditionNames.concat(" ");
+				conditionNames.concat(conditions.getNameFromSingleBit(bit));
+			}
+		}
+		const char* stateDescription = "<unavailable in this build>";
+#if defined(RTS_DEBUG) || defined(DEBUG_CRASHING)
+		stateDescription = m_curState->m_description.str();
+#endif
+		char diagnostic[4096];
+		snprintf(diagnostic, sizeof(diagnostic),
+			"Synchronizing barrel/recoil counts. Object='%s' name='%s' id=%u frame=%u slot=%d barrels=%d recoils=%d stateModel='%s' renderModel='%s' transition=%u nextModel='%s' validStuff=0x%X conditions='%s' state='%s'",
+			thingTemplate ? thingTemplate->getName().str() : "<none>",
+			object ? object->getName().str() : "<none>",
+			object ? (unsigned)object->getID() : 0,
+			TheGameLogic ? (unsigned)TheGameLogic->getFrame() : 0,
+			wslot, count, recoilCount, m_curState->m_modelName.str(),
+			m_renderObject ? m_renderObject->Get_Name() : "<none>",
+			(unsigned)m_curState->m_transitionSig,
+			m_nextState ? m_nextState->m_modelName.str() : "<none>",
+			(unsigned)m_curState->m_validStuff, conditionNames.str(), stateDescription);
+		REBORN_LOG("RECOIL_COUNT_RESYNC: %s", diagnostic);
+		DEBUG_LOG(("RECOIL_COUNT_RESYNC: %s\n", diagnostic));
+		// Reborn: Keep existing in-flight recoil effects and initialize only newly discovered barrels to IDLE.
+		recoils.resize(count);
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
 /*
 	Note that, strictly speaking this code is WRONG, since it assumes it will get called every frame,
 	but in fact, will only get called every frame that it is visible. In practice, this isn't a big problem,
@@ -2898,11 +2951,13 @@ void W3DModelDraw::handleClientRecoil()
 		const Bool muzzleFlashDisabled =
 			(d->m_weaponMuzzleFlashDisabledSlots & (1 << wslot)) != 0;
 
+		// Reborn: Late-validated landing states must have recoil records before muzzle-flash processing.
+		synchronizeWeaponRecoilInfo((WeaponSlotType)wslot);
 		const ModelConditionInfo::WeaponBarrelInfoVec& barrels = m_curState->m_weaponBarrelInfoVec[wslot];
 		WeaponRecoilInfoVec& recoils = m_weaponRecoilInfoVec[wslot];
 		Int count = barrels.size();
 		Int recoilCount = recoils.size();
-		DEBUG_ASSERTCRASH(count == recoilCount, ("Barrel count != recoil count!"));
+		DEBUG_ASSERTCRASH(count == recoilCount, ("Barrel count != recoil count after synchronization!"));
 		count = (count>recoilCount)?recoilCount:count;
 		for (Int i = 0; i < count; ++i)
 		{
@@ -4241,6 +4296,8 @@ Bool W3DModelDraw::handleWeaponFireFX(WeaponSlotType wslot, Int specificBarrelTo
 		//			specificBarrelToUse));
 		//#endif
 
+		// Reborn: Firing can precede the next render update; synchronize before indexing the same client-only cache.
+		synchronizeWeaponRecoilInfo(wslot);
 		WeaponRecoilInfo& recoil = m_weaponRecoilInfoVec[wslot][specificBarrelToUse];
 		recoil.m_state = WeaponRecoilInfo::RECOIL_START;
 		recoil.m_recoilRate = getW3DModelDrawModuleData()->m_initialRecoil;
@@ -4436,6 +4493,12 @@ void W3DModelDraw::updateDrawModuleSupplyStatus( Int , Int currentSupply )
 //-------------------------------------------------------------------------------------------------
 void W3DModelDraw::doHideShowProjectileObjects( UnsignedInt showCount, UnsignedInt maxCount, WeaponSlotType slot )
 {
+	// Reborn: States without projectile visuals must not generate numbered subobject names from an empty prefix.
+	if (!m_curState ||
+		(m_curState->m_weaponProjectileHideShowName[slot].isEmpty() &&
+		 m_curState->m_weaponProjectileLaunchBoneName[slot].isEmpty()))
+		return;
+
 	// Loop through the projectile bones, and start hiding off the front.  That is, 8,9 means to hide the first only.
 	if (maxCount < showCount)
 	{
