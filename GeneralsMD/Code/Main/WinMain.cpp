@@ -838,6 +838,19 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		CommandLine::parseCommandLineForStartup();
 
+
+		Bool launchedFromRebornLauncher = FALSE;
+
+		for (Int i = 1; i < __argc; ++i)
+		{
+			if (_stricmp(__argv[i], "-launcher") == 0)
+			{
+				launchedFromRebornLauncher = TRUE;
+				break;
+			}
+		}
+
+
 		#ifdef RTS_DEBUG
 			// Turn on Memory heap tracking
 			int tmpFlag = _CrtSetDbgFlag( _CRTDBG_REPORT_FLAG );
@@ -902,7 +915,7 @@ Int APIENTRY WinMain( HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #endif
 
 		
-			if (!TheGlobalData->m_headless && !TheGlobalData->m_windowed)
+			if (!TheGlobalData->m_headless && !TheGlobalData->m_windowed && !launchedFromRebornLauncher)
 			{
 				// Reborn: Temporarily omit the startup FAQ button; preserve display mode selection.
 				MSGBOXPARAMSA messageBoxParams = {};
