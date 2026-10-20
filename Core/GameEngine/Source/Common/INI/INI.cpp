@@ -370,6 +370,8 @@ void INI::prepFile( AsciiString filename, INILoadType loadType )
 	// save our filename
 	m_filename = filename;
 
+	m_mapAudioDefinitions.clear();
+
 	// save our load type
 	m_loadType = loadType;
 }
@@ -386,6 +388,7 @@ void INI::unPrepFile()
 
 	m_filename = "None";
 	m_loadType = INI_LOAD_INVALID;
+	m_mapAudioDefinitions.clear();
 	m_lineNum = 0;
 	m_endOfFile = FALSE;
 	s_xfer = nullptr;
@@ -631,6 +634,7 @@ void INI::initFromCapturedBlock(
 	m_readBufferUsed = length;
 	m_filename = sourceFilename;
 	m_loadType = loadType;
+	m_mapAudioDefinitions.clear();
 	m_lineNum = 0;
 	m_endOfFile = FALSE;
 

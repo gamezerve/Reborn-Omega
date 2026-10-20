@@ -39,6 +39,34 @@ AudioEventInfo::~AudioEventInfo()
 }
 // @todo: Get these functions unified.
 
+static AudioEventInfo* getAudioDefinitionForParsing(INI* ini, const AsciiString& name)
+{
+	AsciiString filename = ini->getFilename();
+	filename.toLower();
+
+	const std::string path = filename.str();
+	const size_t separator = path.find_last_of("/\\");
+	const std::string basename = path.substr(separator == std::string::npos ? 0 : separator + 1);
+
+	const Bool isMapINI =
+		basename == "map.ini" &&
+		ini->getLoadType() == INI_LOAD_CREATE_OVERRIDES;
+
+	if (!isMapINI)
+		return TheAudio->newAudioEventInfo(name);
+
+	if (!ini->registerMapAudioDefinition(name))
+	{
+		DEBUG_CRASH(("Audio definition '%s' declared multiple times in '%s'!",
+			name.str(), ini->getFilename().str()));
+
+		return TheAudio->findAudioEventInfo(name);
+	}
+
+	AudioEventInfo* existing = TheAudio->findAudioEventInfo(name);
+	return existing ? existing : TheAudio->newAudioEventInfo(name);
+}
+
 //-------------------------------------------------------------------------------------------------
 void INI::parseMusicTrackDefinition( INI* ini )
 {
@@ -49,7 +77,7 @@ void INI::parseMusicTrackDefinition( INI* ini )
 	const char* c = ini->getNextToken();
 	name.set( c );
 
-	track = TheAudio->newAudioEventInfo( name );
+	track = getAudioDefinitionForParsing(ini, name);
 	if (!track) {
 		return;
 	}
@@ -77,7 +105,7 @@ void INI::parseAudioEventDefinition( INI* ini )
 	const char* c = ini->getNextToken();
 	name.set( c );
 
-	track = TheAudio->newAudioEventInfo( name );
+	track = getAudioDefinitionForParsing(ini, name);
 	if (!track) {
 		return;
 	}
@@ -104,7 +132,7 @@ void INI::parseDialogDefinition( INI* ini )
 	const char* c = ini->getNextToken();
 	name.set( c );
 
-	track = TheAudio->newAudioEventInfo( name );
+	track = getAudioDefinitionForParsing(ini, name);
 	if (!track) {
 		return;
 	}

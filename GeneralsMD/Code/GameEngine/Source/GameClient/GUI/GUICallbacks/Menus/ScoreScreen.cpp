@@ -1480,7 +1480,7 @@ static void updateSkirmishBattleHonors(SkirmishBattleHonors& stats)
 	const ThingTemplate *pTemplate = TheThingFactory->findTemplate("GLAScudStorm");
 	if (s->getTotalObjectsBuilt(pTemplate) > 0)
 		stats.setBuiltSCUD();
-	pTemplate = TheThingFactory->findTemplate("Boss_GLAScudStorm");
+	pTemplate = TheThingFactory->findTemplate("Boss_ScudStorm");
 	if (s->getTotalObjectsBuilt(pTemplate) > 0)
 		stats.setBuiltSCUD();
 	pTemplate = TheThingFactory->findTemplate("Chem_GLAScudStorm");
@@ -1492,6 +1492,9 @@ static void updateSkirmishBattleHonors(SkirmishBattleHonors& stats)
 	pTemplate = TheThingFactory->findTemplate("Demo_GLAScudStorm");
 	if (s->getTotalObjectsBuilt(pTemplate) > 0)
 		stats.setBuiltSCUD();
+	pTemplate = TheThingFactory->findTemplate("SupW_AmericaTomahawkStorm");
+	if (s->getTotalObjectsBuilt(pTemplate) > 0)
+		stats.setBuiltSCUD();
 
 	pTemplate = TheThingFactory->findTemplate("AmericaParticleCannonUplink");
 	if (s->getTotalObjectsBuilt(pTemplate) > 0)
@@ -1500,6 +1503,9 @@ static void updateSkirmishBattleHonors(SkirmishBattleHonors& stats)
 	if (s->getTotalObjectsBuilt(pTemplate) > 0)
 		stats.setBuiltParticleCannon();
 	pTemplate = TheThingFactory->findTemplate("Lazr_AmericaParticleCannonUplink");
+	if (s->getTotalObjectsBuilt(pTemplate) > 0)
+		stats.setBuiltParticleCannon();
+	pTemplate = TheThingFactory->findTemplate("Lazr_AmericaLaserCannonUplink");
 	if (s->getTotalObjectsBuilt(pTemplate) > 0)
 		stats.setBuiltParticleCannon();
 	pTemplate = TheThingFactory->findTemplate("SupW_AmericaParticleCannonUplink");
@@ -1522,6 +1528,12 @@ static void updateSkirmishBattleHonors(SkirmishBattleHonors& stats)
 	if (s->getTotalObjectsBuilt(pTemplate) > 0)
 		stats.setBuiltNuke();
 	pTemplate = TheThingFactory->findTemplate("Tank_ChinaNuclearMissileLauncher");
+	if (s->getTotalObjectsBuilt(pTemplate) > 0)
+		stats.setBuiltNuke();
+	pTemplate = TheThingFactory->findTemplate("SupW_AmericaICBM");
+	if (s->getTotalObjectsBuilt(pTemplate) > 0)
+		stats.setBuiltNuke();
+	pTemplate = TheThingFactory->findTemplate("Chem_GLABaikonurMissile");
 	if (s->getTotalObjectsBuilt(pTemplate) > 0)
 		stats.setBuiltNuke();
 	if (stats.builtNuke() && stats.builtParticleCannon() && stats.builtSCUD())

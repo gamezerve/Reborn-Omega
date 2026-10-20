@@ -149,8 +149,10 @@ private:
 				Int yesExtraneousBits = countConditionInverseIntersection(bits, yesFlags);
 
 	#ifdef SPARSEMATCH_DEBUG
-				if (yesMatch == bestYesMatch &&
-						yesExtraneousBits == bestYesExtraneousBits)
+				if (result != nullptr &&
+					result != &(*it) &&
+					yesMatch == bestYesMatch &&
+					yesExtraneousBits == bestYesExtraneousBits)
 				{
 					++numDupMatches;
 					dupMatchStr = it->getDescription();

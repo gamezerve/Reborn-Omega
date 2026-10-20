@@ -30,6 +30,7 @@
 #pragma once
 
 // INCLUDES ///////////////////////////////////////////////////////////////////////////////////////
+#include <set>
 #include <stddef.h>	// for offsetof, which we don't use but everyone who includes us does
 #include <string>
 #include "Common/STLTypedefs.h"
@@ -280,6 +281,12 @@ public:
 	static void parseChallengeModeDefinition( INI* ini );
 
 	AsciiString getFilename() const { return m_filename; }
+	Bool registerMapAudioDefinition(const AsciiString& name)
+	{
+		AsciiString normalized = name;
+		normalized.toLower();
+		return m_mapAudioDefinitions.insert(normalized.str()).second;
+	}
 	INILoadType getLoadType() const { return m_loadType; }
 	UnsignedInt getLineNum() const { return m_lineNum; }
 	Bool isEOF() const { return m_endOfFile; }
@@ -435,6 +442,7 @@ protected:
 	unsigned m_readBufferUsed;                ///< number of bytes in read buffer
 
 	AsciiString m_filename;										///< filename of file currently loading
+	std::set<std::string> m_mapAudioDefinitions;
 	INILoadType m_loadType;										///< load type for current file
 	UnsignedInt m_lineNum;										///< current line number that's been read
 	char m_buffer[ INI_MAX_CHARS_PER_LINE+1 ];///< buffer to read file contents into
