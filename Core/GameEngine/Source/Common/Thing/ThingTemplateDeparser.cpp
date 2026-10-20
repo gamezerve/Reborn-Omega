@@ -476,6 +476,16 @@ Bool ThingTemplateDeparser::deparseKindOf(const FieldParse& field, const void* i
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Export the initial conditions with the same canonical names used by WeaponSet parsing. */
+//-------------------------------------------------------------------------------------------------
+Bool ThingTemplateDeparser::deparseInitialWeaponSetFlags(const FieldParse& field, const void* instance, std::string& output, const char* indent)
+{
+	const ThingTemplate* thingTemplate = static_cast<const ThingTemplate*>(instance);
+	INIFieldDeparser::appendField(output, field.token, formatWeaponSetConditions(thingTemplate->getInitialWeaponSetFlags()), indent);
+	return TRUE;
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Reborn: Deparse any fixed-size integer list from its canonical FieldParse offset and count. */
 //-------------------------------------------------------------------------------------------------
 Bool ThingTemplateDeparser::deparseIntList(const FieldParse& field, const void* instance, std::string& output, const char* indent)

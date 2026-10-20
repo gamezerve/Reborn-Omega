@@ -649,6 +649,8 @@ public:
 	Bool isPrerequisite() const { return m_isPrerequisite; }
 
 	const WeaponTemplateSet* findWeaponTemplateSet(const WeaponSetFlags& t) const;
+	// Reborn: Seed new objects without granting a player or object upgrade.
+	const WeaponSetFlags& getInitialWeaponSetFlags() const { return m_initialWeaponSetFlags; }
 	const ArmorTemplateSet* findArmorTemplateSet(const ArmorSetFlags& t) const;
 
 	// returns true iff we have at least one weaponset that contains a weapon.
@@ -752,6 +754,9 @@ private:
 	// This avoids mismatching in certain maps, for example those that spawn units with veterancy.
 	typedef SparseMatchFinder<WeaponTemplateSet, WeaponSetFlags, SparseMatchFinderFlags_NoCopy> WeaponTemplateSetFinder;
 	typedef SparseMatchFinder<ArmorTemplateSet, ArmorSetFlags, SparseMatchFinderFlags_NoCopy> ArmorTemplateSetFinder;
+
+	// Reborn: Empty by default; copied normally by ObjectInherit and template overrides.
+	WeaponSetFlags m_initialWeaponSetFlags;
 
 	// ---- STL-sized things
 	std::vector<ProductionPrerequisite>	m_prereqInfo;				///< the unit Prereqs for this tech

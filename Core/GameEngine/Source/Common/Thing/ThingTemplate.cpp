@@ -161,6 +161,8 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "IsBridge",							INI::parseBool,												nullptr,		offsetof( ThingTemplate, m_isBridge ) },
 	{ "ArmorSet",							ThingTemplate::parseArmorTemplateSet, nullptr, 0, ThingTemplateDeparser::deparseArmorSets },
 	{ "WeaponSet",						ThingTemplate::parseWeaponTemplateSet,nullptr, 0, ThingTemplateDeparser::deparseWeaponSets },
+	// Reborn: Configure starting weapon conditions independently of salvage pickup or researched upgrades.
+	{ "InitialWeaponSetFlags", WeaponSetFlags::parseFromINI, nullptr, offsetof(ThingTemplate, m_initialWeaponSetFlags), ThingTemplateDeparser::deparseInitialWeaponSetFlags },
 	{ "VisionRange",					INI::parseReal,												nullptr,		offsetof( ThingTemplate, m_visionRange ) },
 	{ "ShroudClearingRange",	INI::parseReal,												nullptr,		offsetof( ThingTemplate, m_shroudClearingRange ) },
 	{ "ShroudRevealToAllRange",	INI::parseReal,											nullptr,		offsetof( ThingTemplate, m_shroudRevealToAllRange ) }, // Added in Zero Hour
@@ -1419,6 +1421,8 @@ void ThingTemplate::parseMaxSimultaneous(INI *ini, void *instance, void *store, 
 ThingTemplate::ThingTemplate() :
 	m_geometryInfo(GEOMETRY_SPHERE, FALSE, 1, 1, 1)
 {
+	// Reborn: Existing objects retain empty starting weapon conditions unless explicitly configured.
+	m_initialWeaponSetFlags.clear();
 	m_moduleParsingMode = MODULEPARSE_NORMAL;
 	m_reskinnedFrom = nullptr;
 	m_radarPriority = RADAR_PRIORITY_INVALID;

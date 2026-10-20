@@ -23,6 +23,8 @@ public:
 	static Bool deparseIntList(const FieldParse& field, const void* instance, std::string& output, const char* indent);
 	static Bool ignoreLegacyGeometry(const FieldParse& field, const void* instance, std::string& output, const char* indent);
 	static Bool deparseGeometryBlock(const FieldParse& field, const void* instance, std::string& output, const char* indent);
+	// Reborn: Preserve initial weapon flags when exporting the effective Object definition.
+	static Bool deparseInitialWeaponSetFlags(const FieldParse& field, const void* instance, std::string& output, const char* indent);
 	static Bool deparseWeaponSets(const FieldParse& field, const void* instance, std::string& output, const char* indent);
 	static Bool deparseArmorSets(const FieldParse& field, const void* instance, std::string& output, const char* indent);
 	static Bool deparsePrerequisites(const FieldParse& field, const void* instance, std::string& output, const char* indent);

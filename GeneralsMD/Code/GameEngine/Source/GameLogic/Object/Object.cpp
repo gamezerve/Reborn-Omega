@@ -261,6 +261,10 @@ Object::Object( const ThingTemplate *tt, const ObjectStatusMaskType &objectStatu
 
 	}
 
+	// Reborn: Seed flags before modules and drawable binding; binding synchronizes the model flags,
+	// and initObject resolves weapons normally. Snapshot loading later restores its saved flags instead.
+	m_curWeaponSetFlags = tt->getInitialWeaponSetFlags();
+
 	// Object's set of these persist for the life of the object.
 	m_partitionLastLook = newInstance(SightingInfo);
 	m_partitionLastLook->reset();
