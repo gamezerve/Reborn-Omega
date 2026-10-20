@@ -521,12 +521,13 @@ AsciiString GameState::findNextSaveFilename( UnicodeString desc )
 
 			// if file does not exist we're all good
 			if( _access( fullPath.str(), 0 ) == -1 )
-
+			{ // Reborn: Return only an unused filename; logging must not make existing saves eligible for overwrite.
 				REBORN_LOG(
 					"GameState::findNextSaveFilename - Selected filename '%s'",
 					filename.str());
 
 				return filename;
+			}
 
 			// test the text filename
 			i++;
