@@ -1781,6 +1781,18 @@ void CommandSet::parseCommandButton( INI* ini, void *instance, void *store, cons
 {
 	const char *token = ini->getNextToken();
 
+	// Reborn: Explicit None clears an inherited slot; all other names retain normal command validation.
+	if (token && stricmp(token, "None") == 0)
+	{
+		const Int buttonIndex = (Int)(intptr_t)userData;
+		DEBUG_ASSERTCRASH(buttonIndex >= 0 && buttonIndex < MAX_COMMANDS_PER_SET,
+			("parseCommandButton: button index '%d' out of range", buttonIndex));
+		if (buttonIndex < 0 || buttonIndex >= MAX_COMMANDS_PER_SET)
+			throw INI_INVALID_DATA;
+		((const CommandButton **)store)[buttonIndex] = nullptr;
+		return;
+	}
+
 	// get find the command button from this name
 	const CommandButton *commandButton = TheControlBar->findCommandButton( AsciiString( token ) );
 	if( commandButton == nullptr )
