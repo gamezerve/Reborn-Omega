@@ -444,6 +444,8 @@ const char *GameMessage::getCommandTypeAsString(GameMessage::Type t)
 	CASE_LABEL(MSG_META_DEBUG_SHOW_AUDIO_LOCATIONS)
 	CASE_LABEL(MSG_META_DEBUG_SHOW_HEALTH)
 	CASE_LABEL(MSG_META_DEBUG_GIVE_VETERANCY)
+	// Reborn: Name the Debug-only salvage command in message diagnostics.
+	CASE_LABEL(MSG_META_DEBUG_GIVE_SALVAGE)
 	CASE_LABEL(MSG_META_DEBUG_TAKE_VETERANCY)
 	CASE_LABEL(MSG_META_DEMO_TOGGLE_AI_DEBUG)
 	CASE_LABEL(MSG_META_DEMO_TOGGLE_SUPPLY_CENTER_PLACEMENT)
@@ -1037,6 +1039,8 @@ static Bool isInvalidDebugCommand( GameMessage::Type t )
 		case GameMessage::MSG_META_DEMO_ENSHROUD:
 		case GameMessage::MSG_META_DEMO_DESHROUD:
 		case GameMessage::MSG_META_DEBUG_GIVE_VETERANCY:
+		// Reborn: Apply the same network/debug-cheat restrictions as the veterancy shortcut.
+		case GameMessage::MSG_META_DEBUG_GIVE_SALVAGE:
 		case GameMessage::MSG_META_DEBUG_TAKE_VETERANCY:
 		case GameMessage::MSG_META_DEMO_ADD_CASH:
 		case GameMessage::MSG_META_DEBUG_INCR_ANIM_SKATE_SPEED:

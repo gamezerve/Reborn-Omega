@@ -4590,6 +4590,56 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 
 		//------------------------------------------------------------------------------- DEMO MESSAGES
 		//-----------------------------------------------------------------------------------------
+		// Reborn: Match normal salvage armor/weapon priority while limiting this shortcut to Debug single-player.
+		case GameMessage::MSG_META_DEBUG_GIVE_SALVAGE:
+		{
+			disp = DESTROY_MESSAGE;
+			if (TheGameLogic->isInMultiplayerGame())
+				break;
+
+			Int upgraded = 0;
+			const DrawableList* list = TheInGameUI->getAllSelectedDrawables();
+			for (DrawableListCIt it = list->begin(); it != list->end(); ++it)
+			{
+				Drawable* draw = *it;
+				Object* object = draw ? draw->getObject() : nullptr;
+				if (!object || object->isEffectivelyDead() || !object->isKindOf(KINDOF_SALVAGER))
+					continue;
+
+				if (object->isKindOf(KINDOF_ARMOR_SALVAGER) && !object->testArmorSetFlag(ARMORSET_CRATE_UPGRADE_TWO))
+				{
+					if (object->testArmorSetFlag(ARMORSET_CRATE_UPGRADE_ONE))
+					{
+						object->clearArmorSetFlag(ARMORSET_CRATE_UPGRADE_ONE);
+						object->setArmorSetFlag(ARMORSET_CRATE_UPGRADE_TWO);
+						object->clearAndSetModelConditionState(MODELCONDITION_ARMORSET_CRATEUPGRADE_ONE, MODELCONDITION_ARMORSET_CRATEUPGRADE_TWO);
+					}
+					else
+					{
+						object->setArmorSetFlag(ARMORSET_CRATE_UPGRADE_ONE);
+						object->setModelConditionState(MODELCONDITION_ARMORSET_CRATEUPGRADE_ONE);
+					}
+					++upgraded;
+				}
+				else if (object->isKindOf(KINDOF_WEAPON_SALVAGER) && !object->testWeaponSetFlag(WEAPONSET_CRATEUPGRADE_TWO))
+				{
+					if (object->testWeaponSetFlag(WEAPONSET_CRATEUPGRADE_ONE))
+					{
+						object->clearWeaponSetFlag(WEAPONSET_CRATEUPGRADE_ONE);
+						object->setWeaponSetFlag(WEAPONSET_CRATEUPGRADE_TWO);
+					}
+					else
+					{
+						object->setWeaponSetFlag(WEAPONSET_CRATEUPGRADE_ONE);
+					}
+					++upgraded;
+				}
+			}
+
+			TheInGameUI->messageNoFormat(TheGameText->FETCH_OR_SUBSTITUTE_FORMAT("GUI:DebugSalvageIncreased", L"Scrap level increased for %d selected units.", upgraded));
+			break;
+		}
+
 		case GameMessage::MSG_META_DEBUG_GIVE_VETERANCY:
 		case GameMessage::MSG_META_DEBUG_TAKE_VETERANCY:
 		{

@@ -441,6 +441,11 @@ public:
 		MSG_META_PLACE_BEACON,
 		MSG_META_REMOVE_BEACON,
 
+#if defined(RTS_DEBUG)
+		// Reborn: Increase the selected units' salvage tier without creating a crate or granting XP/cash.
+		MSG_META_DEBUG_GIVE_SALVAGE,
+#endif
+
 		MSG_END_META_MESSAGES,											///< Marker to delineate "meta" messages
 
 		MSG_MOUSEOVER_DRAWABLE_HINT,								///< (drawableid) the given drawable is under the mouse, regardless of button states

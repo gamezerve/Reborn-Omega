@@ -291,6 +291,8 @@ static const LookupListRec GameMessageMetaTypeNames[] =
   { "DEMO_SHOW_AUDIO_LOCATIONS",								GameMessage::MSG_META_DEBUG_SHOW_AUDIO_LOCATIONS },
   { "DEMO_SHOW_HEALTH",													GameMessage::MSG_META_DEBUG_SHOW_HEALTH },
 	{ "DEMO_GIVE_VETERANCY",											GameMessage::MSG_META_DEBUG_GIVE_VETERANCY },
+	// Reborn: Debug-only salvage tier progression on the current selection.
+	{ "DEMO_GIVE_SALVAGE",                        GameMessage::MSG_META_DEBUG_GIVE_SALVAGE },
 	{ "DEMO_TAKE_VETERANCY",											GameMessage::MSG_META_DEBUG_TAKE_VETERANCY },
 	{ "DEMO_BATTLE_CRY",													GameMessage::MSG_META_DEMO_BATTLE_CRY },
 #ifdef ALLOW_SURRENDER
