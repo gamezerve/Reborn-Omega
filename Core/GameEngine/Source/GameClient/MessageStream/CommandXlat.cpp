@@ -4621,17 +4621,9 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 					}
 					++upgraded;
 				}
-				else if (object->isKindOf(KINDOF_WEAPON_SALVAGER) && !object->testWeaponSetFlag(WEAPONSET_CRATEUPGRADE_TWO))
+				// Reborn: Use the real crate progression and its per-template cap, including explicitly enabled third tiers.
+				else if (object->tryIncreaseWeaponSalvageLevel())
 				{
-					if (object->testWeaponSetFlag(WEAPONSET_CRATEUPGRADE_ONE))
-					{
-						object->clearWeaponSetFlag(WEAPONSET_CRATEUPGRADE_ONE);
-						object->setWeaponSetFlag(WEAPONSET_CRATEUPGRADE_TWO);
-					}
-					else
-					{
-						object->setWeaponSetFlag(WEAPONSET_CRATEUPGRADE_ONE);
-					}
 					++upgraded;
 				}
 			}

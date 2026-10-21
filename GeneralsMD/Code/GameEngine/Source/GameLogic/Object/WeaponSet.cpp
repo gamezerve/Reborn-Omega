@@ -85,6 +85,7 @@ const char* const WeaponSetFlags::s_bitNameList[] =
 	"WEAPON_RIDER12",
 	"WEAPON_RIDER13",
 	"POWERED", // Reborn: INI condition for the power-dependent weapon variant.
+	"CRATEUPGRADE_THREE", // Reborn: Append the third salvage condition without changing previous flag names or indices.
 
 	nullptr
 };

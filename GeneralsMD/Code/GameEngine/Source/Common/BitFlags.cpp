@@ -177,6 +177,7 @@ const char* const ModelConditionFlags::s_bitNameList[] =
 	"RIDER11",
 	"RIDER12",
 	"RIDER13",
+	"WEAPONSET_CRATEUPGRADE_THREE", // Reborn: Opt-in third salvage model state.
 
 	nullptr
 };

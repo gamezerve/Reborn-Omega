@@ -651,6 +651,8 @@ public:
 	const WeaponTemplateSet* findWeaponTemplateSet(const WeaponSetFlags& t) const;
 	// Reborn: Seed new objects without granting a player or object upgrade.
 	const WeaponSetFlags& getInitialWeaponSetFlags() const { return m_initialWeaponSetFlags; }
+	// Reborn: Keep normal units capped at two; individual templates may explicitly allow up to three.
+	UnsignedByte getMaxWeaponSalvageLevel() const { return m_maxWeaponSalvageLevel; }
 	const ArmorTemplateSet* findArmorTemplateSet(const ArmorSetFlags& t) const;
 
 	// returns true iff we have at least one weaponset that contains a weapon.
@@ -757,6 +759,8 @@ private:
 
 	// Reborn: Empty by default; copied normally by ObjectInherit and template overrides.
 	WeaponSetFlags m_initialWeaponSetFlags;
+	// Reborn: Per-template cap, inherited by default; not a global KindOf capability.
+	UnsignedByte m_maxWeaponSalvageLevel;
 
 	// ---- STL-sized things
 	std::vector<ProductionPrerequisite>	m_prereqInfo;				///< the unit Prereqs for this tech

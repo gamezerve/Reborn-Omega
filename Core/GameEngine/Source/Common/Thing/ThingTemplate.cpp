@@ -163,6 +163,8 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "WeaponSet",						ThingTemplate::parseWeaponTemplateSet,nullptr, 0, ThingTemplateDeparser::deparseWeaponSets },
 	// Reborn: Configure starting weapon conditions independently of salvage pickup or researched upgrades.
 	{ "InitialWeaponSetFlags", WeaponSetFlags::parseFromINI, nullptr, offsetof(ThingTemplate, m_initialWeaponSetFlags), ThingTemplateDeparser::deparseInitialWeaponSetFlags },
+	// Reborn: Default two; only explicitly configured objects may reach a third weapon salvage tier.
+	{ "MaxWeaponSalvageLevel", INI::parseUnsignedByte, nullptr, offsetof(ThingTemplate, m_maxWeaponSalvageLevel) },
 	{ "VisionRange",					INI::parseReal,												nullptr,		offsetof( ThingTemplate, m_visionRange ) },
 	{ "ShroudClearingRange",	INI::parseReal,												nullptr,		offsetof( ThingTemplate, m_shroudClearingRange ) },
 	{ "ShroudRevealToAllRange",	INI::parseReal,											nullptr,		offsetof( ThingTemplate, m_shroudRevealToAllRange ) }, // Added in Zero Hour
@@ -1423,6 +1425,8 @@ ThingTemplate::ThingTemplate() :
 {
 	// Reborn: Existing objects retain empty starting weapon conditions unless explicitly configured.
 	m_initialWeaponSetFlags.clear();
+	// Reborn: Preserve the original two-tier progression unless an object explicitly opts in.
+	m_maxWeaponSalvageLevel = 2;
 	m_moduleParsingMode = MODULEPARSE_NORMAL;
 	m_reskinnedFrom = nullptr;
 	m_radarPriority = RADAR_PRIORITY_INVALID;
@@ -1721,6 +1725,14 @@ ThingTemplate::~ThingTemplate()
 //=============================================================================
 void ThingTemplate::resolveNames()
 {
+	// Reborn: Reject unsupported caps or an initial third tier without the matching explicit capability.
+	if (m_maxWeaponSalvageLevel > 3 ||
+		(m_initialWeaponSetFlags.test(WEAPONSET_CRATEUPGRADE_THREE) && m_maxWeaponSalvageLevel < 3))
+	{
+		REBORN_LOG("INI_INVALID_DATA: Invalid MaxWeaponSalvageLevel=%u or initial third salvage flag on Object '%s'.", static_cast<UnsignedInt>(m_maxWeaponSalvageLevel), getName().str());
+		DEBUG_LOG(("INI_INVALID_DATA: Invalid MaxWeaponSalvageLevel=%u or initial third salvage flag on Object '%s'.", static_cast<UnsignedInt>(m_maxWeaponSalvageLevel), getName().str()));
+		throw INI_INVALID_DATA;
+	}
 
 	ThingTemplateUpgradeCaptureScope upgradeCaptureScope(this);
 

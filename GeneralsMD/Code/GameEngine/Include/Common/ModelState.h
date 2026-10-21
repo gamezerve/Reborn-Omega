@@ -243,6 +243,8 @@ enum ModelConditionFlagType CPP_11(: Int)
 // existing values!
 //
 
+	// Reborn: Append the third salvage model condition without renumbering existing saved conditions.
+	MODELCONDITION_WEAPONSET_CRATEUPGRADE_THREE,
 	MODELCONDITION_COUNT,
 	MODELCONDITION_FIRST = 0,
 };

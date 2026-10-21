@@ -3186,6 +3186,53 @@ Bool Object::isDisabled() const
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Read the highest active weapon-salvage tier, independently of veterancy or player research. */
+//-------------------------------------------------------------------------------------------------
+UnsignedByte Object::getWeaponSalvageLevel() const
+{
+	if (testWeaponSetFlag(WEAPONSET_CRATEUPGRADE_THREE)) return 3;
+	if (testWeaponSetFlag(WEAPONSET_CRATEUPGRADE_TWO)) return 2;
+	if (testWeaponSetFlag(WEAPONSET_CRATEUPGRADE_ONE)) return 1;
+	return 0;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Only weapon salvagers below their explicit template cap can gain another weapon tier. */
+//-------------------------------------------------------------------------------------------------
+Bool Object::canGainWeaponSalvageLevel() const
+{
+	return isKindOf(KINDOF_WEAPON_SALVAGER) && getWeaponSalvageLevel() < getTemplate()->getMaxWeaponSalvageLevel();
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Advance one salvage tier atomically, preserving research/veterancy flags and synchronizing artwork once. */
+//-------------------------------------------------------------------------------------------------
+Bool Object::tryIncreaseWeaponSalvageLevel()
+{
+	if (!canGainWeaponSalvageLevel())
+		return FALSE;
+
+	static const WeaponSetType tiers[] = { WEAPONSET_CRATEUPGRADE_ONE, WEAPONSET_CRATEUPGRADE_TWO, WEAPONSET_CRATEUPGRADE_THREE };
+	const UnsignedByte currentLevel = getWeaponSalvageLevel();
+	if (currentLevel >= ARRAY_SIZE(tiers))
+		return FALSE;
+
+	ModelConditionFlags clearFlags;
+	ModelConditionFlags setFlags;
+	for (UnsignedInt i = 0; i < ARRAY_SIZE(tiers); ++i)
+	{
+		m_curWeaponSetFlags.set(tiers[i], FALSE);
+		clearFlags.set(TheWeaponSetTypeToModelConditionTypeMap[tiers[i]]);
+	}
+	m_curWeaponSetFlags.set(tiers[currentLevel]);
+	setFlags.set(TheWeaponSetTypeToModelConditionTypeMap[tiers[currentLevel]]);
+	m_weaponSet.updateWeaponSet(this);
+	if (m_drawable)
+		m_drawable->clearAndSetModelConditionFlags(clearFlags, setFlags);
+	return TRUE;
+}
+
+//-------------------------------------------------------------------------------------------------
 void Object::setWeaponSetFlag(WeaponSetType wst, Bool updateModelCondition)
 {
 	m_curWeaponSetFlags.set(wst);

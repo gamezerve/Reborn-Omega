@@ -63,6 +63,7 @@ enum WeaponSetType CPP_11(: Int)
 	WEAPONSET_RIDER13,
 
 	WEAPONSET_POWERED, // Reborn: Powered weapon variant without changing model conditions.
+	WEAPONSET_CRATEUPGRADE_THREE, // Reborn: Opt-in third salvage tier; append to preserve existing flag indices.
 
 	WEAPONSET_COUNT
 };

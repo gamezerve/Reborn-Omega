@@ -554,6 +554,10 @@ public:
 
 	void setWeaponSetFlag(WeaponSetType wst, Bool updateModelCondition = TRUE);
 	void clearWeaponSetFlag(WeaponSetType wst, Bool updateModelCondition = TRUE);
+	// Reborn: Centralize capped weapon-salvage progression for real crates and Debug commands.
+	UnsignedByte getWeaponSalvageLevel() const;
+	Bool canGainWeaponSalvageLevel() const;
+	Bool tryIncreaseWeaponSalvageLevel();
 	inline Bool testWeaponSetFlag(WeaponSetType wst) const { return m_curWeaponSetFlags.test(wst); }
 	inline const WeaponSetFlags& getWeaponSetFlags() const { return m_curWeaponSetFlags; }
 	Bool setWeaponLock( WeaponSlotType weaponSlot, WeaponLockType lockType ){ return m_weaponSet.setWeaponLock( weaponSlot, lockType ); }

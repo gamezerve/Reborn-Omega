@@ -129,13 +129,8 @@ Bool SalvageCrateCollide::eligibleForWeaponSet( Object *other )
 	if( other == nullptr )
 		return FALSE;
 
-	// A kindof marks eligibility, and you must not be fully upgraded
-	if( !other->isKindOf(KINDOF_WEAPON_SALVAGER) )
-		return FALSE;
-	if( other->testWeaponSetFlag(WEAPONSET_CRATEUPGRADE_TWO) )
-		return FALSE;
-
-	return TRUE;
+	// Reborn: Respect each object's explicit cap; ordinary units still stop at two.
+	return other->canGainWeaponSalvageLevel();
 }
 
 // ------------------------------------------------------------------------------------------------
@@ -201,15 +196,8 @@ Bool SalvageCrateCollide::testLevelChance()
 // ------------------------------------------------------------------------------------------------
 void SalvageCrateCollide::doWeaponSet( Object *other )
 {
-	if( other->testWeaponSetFlag( WEAPONSET_CRATEUPGRADE_ONE ) )
-	{
-		other->clearWeaponSetFlag( WEAPONSET_CRATEUPGRADE_ONE );
-		other->setWeaponSetFlag( WEAPONSET_CRATEUPGRADE_TWO );
-	}
-	else
-	{
-		other->setWeaponSetFlag( WEAPONSET_CRATEUPGRADE_ONE );
-	}
+	// Reborn: Use the same capped, atomic progression as the Debug salvage shortcut.
+	other->tryIncreaseWeaponSalvageLevel();
 }
 
 // ------------------------------------------------------------------------------------------------
