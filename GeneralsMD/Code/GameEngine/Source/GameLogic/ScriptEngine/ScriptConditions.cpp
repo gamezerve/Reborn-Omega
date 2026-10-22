@@ -886,11 +886,7 @@ Bool ScriptConditions::evaluateBuiltByPlayer(Condition *pCondition, Parameter* p
 		return false;
 	}
 
-	const ThingTemplate* pTemplate = TheThingFactory->findTemplate(pTypeParm->getString());
-	if (!pTemplate) {
-		return false;
-	}
-
+	// Reborn: Resolve object lists and individual templates through the same counting path; list names are not ThingTemplates.
 	ObjectTypesTemp types;
 	objectTypesFromParam(pTypeParm, types.m_types);
 
