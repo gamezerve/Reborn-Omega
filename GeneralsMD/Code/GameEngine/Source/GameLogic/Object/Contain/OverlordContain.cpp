@@ -486,6 +486,21 @@ const ContainedItemsList* OverlordContain::getContainedItemsList() const
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Recognize bunker passengers as Overlord passengers so their exit commands remain valid. */
+//-------------------------------------------------------------------------------------------------
+Bool OverlordContain::isContained( const Object *obj ) const
+{
+	if( obj == nullptr )
+		return FALSE;
+
+	if( TransportContain::isContained( obj ) )
+		return TRUE;
+
+	ContainModuleInterface *redirected = getRedirectedContain();
+	return redirected != nullptr && redirected->isContained( obj );
+}
+
+//-------------------------------------------------------------------------------------------------
 Bool OverlordContain::isEnclosingContainerFor( const Object *obj ) const
 {
 	// All of this redirection stuff makes it so that while I am normally a transport

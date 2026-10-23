@@ -791,7 +791,12 @@ void OpenContain::scatterToNearbyPosition(Object* rider)
 #if !RETAIL_COMPATIBLE_CRC
 		ai->friend_setGoalObject(nullptr);
 #endif
-		ai->aiMoveToPosition( &pos, CMD_FROM_AI );
+		// Reborn: Immobile riders (e.g. carpet bombs released from a destroyed bomber) cannot path, so do not order them
+		// to move. If this causes any behavioral difference, this check can be removed to restore the original behavior.
+#if !RETAIL_COMPATIBLE_CRC
+		if( ai->getLocomotorSet().getValidSurfaces() != 0 )
+#endif
+			ai->aiMoveToPosition( &pos, CMD_FROM_AI );
 
 	}
 	else

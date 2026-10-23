@@ -602,7 +602,8 @@ void AIUpdateInterface::requestPath( Coord3D *destination, Bool isFinalGoal )
 #endif
 
 	if (m_locomotorSet.getValidSurfaces() == 0) {
-		DEBUG_CRASH(("Attempting to path immobile unit."));
+		// Reborn: Report the object and AI state to identify the source of immobile path requests.
+		DEBUG_CRASH(("Attempting to path immobile unit (requestPath) - object '%s' (%d), state %d %s", getObject()->getTemplate()->getName().str(), getObject()->getID(), (Int)getStateMachine()->getCurrentStateID(), getStateMachine()->getCurrentStateName().str()));
 	}
 
 	//DEBUG_LOG(("Request Frame %d, obj %s %x", TheGameLogic->getFrame(), getObject()->getTemplate()->getName().str(), getObject()));
@@ -656,7 +657,8 @@ void AIUpdateInterface::requestPath( Coord3D *destination, Bool isFinalGoal )
 void AIUpdateInterface::requestAttackPath( ObjectID victimID, const Coord3D* victimPos )
 {
 	if (m_locomotorSet.getValidSurfaces() == 0) {
-		DEBUG_CRASH(("Attempting to path immobile unit."));
+		// Reborn: Report the object and AI state to identify the source of immobile path requests.
+		DEBUG_CRASH(("Attempting to path immobile unit (requestAttackPath) - object '%s' (%d), state %d %s", getObject()->getTemplate()->getName().str(), getObject()->getID(), (Int)getStateMachine()->getCurrentStateID(), getStateMachine()->getCurrentStateName().str()));
 	}
 	CRCDEBUG_LOG(("AIUpdateInterface::requestAttackPath() - m_isAttackPath = TRUE for object %d", getObject()->getID()));
 	m_requestedDestination = *victimPos;
@@ -679,7 +681,8 @@ void AIUpdateInterface::requestAttackPath( ObjectID victimID, const Coord3D* vic
 void AIUpdateInterface::requestApproachPath( Coord3D *destination )
 {
 	if (m_locomotorSet.getValidSurfaces() == 0) {
-		DEBUG_CRASH(("Attempting to path immobile unit."));
+		// Reborn: Report the object and AI state to identify the source of immobile path requests.
+		DEBUG_CRASH(("Attempting to path immobile unit (requestApproachPath) - object '%s' (%d), state %d %s", getObject()->getTemplate()->getName().str(), getObject()->getID(), (Int)getStateMachine()->getCurrentStateID(), getStateMachine()->getCurrentStateName().str()));
 	}
 	m_requestedDestination = *destination;
 	m_isFinalGoal = TRUE;

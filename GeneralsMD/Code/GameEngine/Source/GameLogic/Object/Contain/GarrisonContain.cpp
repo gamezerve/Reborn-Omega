@@ -92,7 +92,8 @@ Int GarrisonContain::findClosestFreeGarrisonPointIndex( Int conditionIndex,
 {
 // TheSuperHackers @info helmutbuhler 05/05/2025 This debug mutates the code to become CRC incompatible
 #if defined(RTS_DEBUG) || !RETAIL_COMPATIBLE_CRC
-	DEBUG_ASSERTCRASH(m_garrisonPointsInitialized, ("garrisonPoints are not inited"));
+	// Reborn: Report the container, occupant count and drawable state to identify uninitialized garrison point sources.
+	DEBUG_ASSERTCRASH(m_garrisonPointsInitialized, ("garrisonPoints are not inited (findClosestFreeGarrisonPointIndex) - object '%s', contained %d, drawable %s", getObject()->getTemplate()->getName().str(), getContainCount(), getObject()->getDrawable() != nullptr ? "yes" : "no"));
 
 	DEBUG_ASSERTCRASH(conditionIndex >= 0 && conditionIndex < MAX_GARRISON_POINT_CONDITIONS,
 		("GarrisonContain::findClosestFreeGarrisonPointIndex - Invalid condition index '%d'", conditionIndex));
@@ -157,7 +158,8 @@ void GarrisonContain::putObjectAtGarrisonPoint( Object *obj,
 																								Int conditionIndex,
 																								Int pointIndex )
 {
-	DEBUG_ASSERTCRASH(m_garrisonPointsInitialized, ("garrisonPoints are not inited"));
+	// Reborn: Report the container, occupant count and drawable state to identify uninitialized garrison point sources.
+	DEBUG_ASSERTCRASH(m_garrisonPointsInitialized, ("garrisonPoints are not inited (putObjectAtGarrisonPoint) - object '%s', contained %d, drawable %s", getObject()->getTemplate()->getName().str(), getContainCount(), getObject()->getDrawable() != nullptr ? "yes" : "no"));
 
 	// sanity
 	if( obj == nullptr || pointIndex < 0 || pointIndex >= MAX_GARRISON_POINTS ||
@@ -695,7 +697,15 @@ void GarrisonContain::trackTargets()
 	AIUpdateInterface *ai;
 	Object *obj;
 
-	DEBUG_ASSERTCRASH(m_garrisonPointsInitialized || containList.empty(), ("garrisonPoints are not inited"));
+	// Reborn: Initial roster occupants are contained during object construction, before the drawable is bound, and
+	// each addition redeploys the occupants. Garrison points cannot be loaded at that time, so no occupant can be at a
+	// garrison point yet and there is nothing to track. If this causes any behavioral difference, this block can be
+	// removed to restore the original behavior.
+	if( m_garrisonPointsInitialized == FALSE )
+		return;
+
+	// Reborn: Report the container, occupant count and drawable state to identify uninitialized garrison point sources.
+	DEBUG_ASSERTCRASH(m_garrisonPointsInitialized || containList.empty(), ("garrisonPoints are not inited (trackTargets) - object '%s', contained %d, drawable %s", getObject()->getTemplate()->getName().str(), getContainCount(), getObject()->getDrawable() != nullptr ? "yes" : "no"));
 
 	for( ContainedItemsList::const_iterator it = containList.begin(); it != containList.end(); ++it )
 	{
