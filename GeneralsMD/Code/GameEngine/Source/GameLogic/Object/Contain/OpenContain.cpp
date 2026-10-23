@@ -71,6 +71,8 @@ OpenContainModuleData::OpenContainModuleData()
 	m_passengersAllowedToFire = FALSE;
 	m_passengersInTurret = FALSE;
 	m_numberOfExitPaths = 1;
+	// Reborn: Preserve existing transport exits unless their INI explicitly opts in.
+	m_groundAlignedExitStart = FALSE;
 	m_damagePercentageToUnits = 0;
 	m_isBurnedDeathToUnits = TRUE;
 	m_doorOpenTime = 1;
@@ -100,6 +102,8 @@ OpenContainModuleData::OpenContainModuleData()
 		{ "PassengersAllowedToFire",	INI::parseBool, nullptr, offsetof( OpenContainModuleData, m_passengersAllowedToFire ) },
 		{ "PassengersInTurret",				INI::parseBool, nullptr, offsetof( OpenContainModuleData, m_passengersInTurret ) },
 		{ "NumberOfExitPaths",				INI::parseInt, nullptr, offsetof( OpenContainModuleData, m_numberOfExitPaths ) },
+		// Reborn: Let affected transports correct the first visible exit position and facing only.
+		{ "GroundAlignedExitStart", INI::parseBool, nullptr, offsetof( OpenContainModuleData, m_groundAlignedExitStart ) },
 		{ "DoorOpenTime",							INI::parseDurationUnsignedInt, nullptr, offsetof( OpenContainModuleData, m_doorOpenTime ) },
  		{ "WeaponBonusPassedToPassengers", INI::parseBool,	nullptr, offsetof( OpenContainModuleData, m_weaponBonusPassedToPassengers ) },
  		{ "AllowAlliesInside",				INI::parseBool,	nullptr, offsetof( OpenContainModuleData, m_allowAlliesInside ) },
@@ -725,8 +729,24 @@ void OpenContain::removeFromContainViaIterator( ContainedItemsList::iterator it,
 
 	if (isEnclosingContainerFor( rider ))
 	{
-		addOrRemoveObjFromWorld(rider, true);
-  	rider->setPosition( getObject()->getPosition() );
+		Object *outerContainer = getObject()->getContainedBy();
+		if( outerContainer && outerContainer->getContain() &&
+			outerContainer->getContain()->isSpecialOverlordStyleContainer() )
+		{
+			// Reborn: Put bunker evacuees on the ground before revealing them, avoiding a frame at the elevated bunker position.
+			Coord3D exitPosition = *outerContainer->getPosition();
+			exitPosition.z = TheTerrainLogic->getLayerHeight( exitPosition.x, exitPosition.y, outerContainer->getLayer() );
+			rider->setPosition( &exitPosition );
+			// Reborn: Prevent render interpolation from showing the unmasked soldier at its previous elevated fire point.
+			if( Drawable *draw = rider->getDrawable() )
+				draw->resetLogicPositionForInterpolation();
+			addOrRemoveObjFromWorld(rider, true);
+		}
+		else
+		{
+			addOrRemoveObjFromWorld(rider, true);
+  			rider->setPosition( getObject()->getPosition() );
+		}
         // if we are not enclosed, then just walk away from where we "are."
 
 	}
@@ -1062,6 +1082,15 @@ void OpenContain::exitObjectViaDoor( Object *exitObj, ExitDoorType exitDoor )
 
 		//startPosition.x = startPosition.y = 0;
 		Real exitAngle = me->getOrientation();
+		// Reborn: Start selected ground exits on the terrain, already facing their own exit route.
+		if( getOpenContainModuleData()->m_groundAlignedExitStart )
+		{
+			startPosition.z = TheTerrainLogic->getLayerHeight( startPosition.x, startPosition.y, me->getLayer() );
+			const Real exitDX = endPosition.x - startPosition.x;
+			const Real exitDY = endPosition.y - startPosition.y;
+			if( exitDX != 0.0f || exitDY != 0.0f )
+				exitAngle = WWMath::Atan2( exitDY, exitDX );
+		}
 		PhysicsBehavior *physics = exitObj->getPhysics();
 		// Can fall problem - When units exit from planes, they are airborne for a while as they drop.
 		// Airborne units dont' do pathfinding, and this is fine.
@@ -1121,6 +1150,12 @@ void OpenContain::exitObjectViaDoor( Object *exitObj, ExitDoorType exitDoor )
 		if (physics)
 		{
 			physics->setAllowToFall(canFall);
+		}
+		// Reborn: Prevent interpolation from briefly drawing the passenger at its hidden transport position.
+		if( getOpenContainModuleData()->m_groundAlignedExitStart )
+		{
+			if( Drawable *draw = exitObj->getDrawable() )
+				draw->resetLogicPositionForInterpolation();
 		}
 	}
 	else

@@ -462,6 +462,13 @@ void ThingFactory::parseObjectDefinition(INI* ini, const AsciiString& name, cons
 		const ThingTemplate* parentTemplate =
 			TheThingFactory->findTemplate(inheritFrom, FALSE);
 
+		// Reborn: A parent whose own inheritance is still deferred only exists as an empty placeholder.
+		// Defer this child too, so it is rebuilt from the fully resolved parent after loading.
+		const PendingObjectInheritance* pendingParent =
+			TheThingFactory->findPendingObjectInheritance(inheritFrom);
+		if (pendingParent && !pendingParent->m_resolved)
+			parentTemplate = nullptr;
+
 		if (parentTemplate)
 		{
 			thingTemplate->copyFrom(parentTemplate);

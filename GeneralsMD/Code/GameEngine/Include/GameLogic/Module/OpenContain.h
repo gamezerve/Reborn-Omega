@@ -60,6 +60,8 @@ public:
 	Bool m_passengersAllowedToFire;	///< Can the passengers shoot out of us?
 	Bool m_passengersInTurret;			///< The Firepoint bones are in our turret, not our chassis
 	Int m_numberOfExitPaths;				///< Will alternate through ExitStart/End paths as we exit people.
+	// Reborn: Ground-align the first exit position and face the passenger along its selected exit path.
+	Bool m_groundAlignedExitStart;
 	Real m_damagePercentageToUnits;
 	Bool m_isBurnedDeathToUnits;		///< Turn off the hardcoded burn death when killing guys in transport
 	UnsignedInt m_doorOpenTime;

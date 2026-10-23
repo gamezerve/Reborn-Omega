@@ -590,6 +590,7 @@ public:
   Real friend_getEffectiveStealthOpacity() { return m_effectiveStealthOpacity; }
 
 	void snapshotLogicPositionForInterpolation();
+	void resetLogicPositionForInterpolation(); ///< Reborn: Discard a stale render position when a hidden occupant becomes visible after evacuation.
 
 	Coord3D getInterpolatedRenderPosition() const;
 

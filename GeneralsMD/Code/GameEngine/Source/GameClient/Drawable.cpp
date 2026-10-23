@@ -5729,6 +5729,20 @@ void Drawable::snapshotLogicPositionForInterpolation()
 	m_currentLogicOrientation = orientation;
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Start rendering a newly revealed passenger at its exit position instead of interpolating from its old fire point. */
+//-------------------------------------------------------------------------------------------------
+void Drawable::resetLogicPositionForInterpolation()
+{
+	const Coord3D pos = *getPosition();
+	const Real orientation = getOrientation();
+	m_previousLogicPosition = pos;
+	m_currentLogicPosition = pos;
+	m_previousLogicOrientation = orientation;
+	m_currentLogicOrientation = orientation;
+	m_logicPositionInterpolationInitialized = TRUE;
+}
+
 Coord3D Drawable::getInterpolatedRenderPosition() const
 {
 	Coord3D pos = *getPosition();
