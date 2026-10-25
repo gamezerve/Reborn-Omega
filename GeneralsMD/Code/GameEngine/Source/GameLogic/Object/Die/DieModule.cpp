@@ -30,6 +30,9 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #define DEFINE_OBJECT_STATUS_NAMES
+#include "Common/Player.h"
+#include "Common/ThingTemplate.h"
+#include "Common/Upgrade.h"
 #include "Common/Xfer.h"
 #include "GameClient/Drawable.h"
 #include "GameLogic/ExperienceTracker.h"
@@ -57,9 +60,28 @@ const FieldParse* DieMuxData::getFieldParse()
 		{ "VeterancyLevels",	INI::parseVeterancyLevelFlags,			nullptr, offsetof( DieMuxData, m_veterancyLevels ) },
 		{ "ExemptStatus",			ObjectStatusMaskType::parseFromINI,	nullptr,	offsetof( DieMuxData, m_exemptStatus ) },
 		{ "RequiredStatus",		ObjectStatusMaskType::parseFromINI, nullptr,	offsetof( DieMuxData, m_requiredStatus ) },
+		{ "TriggeredBy",	INI::parseAsciiString,						nullptr,	offsetof( DieMuxData, m_requiredUpgradeName ) }, // Reborn
+		{ "ConflictsWith",		INI::parseAsciiString,						nullptr,	offsetof( DieMuxData, m_exemptUpgradeName ) }, // Reborn
 		{ nullptr, nullptr, nullptr, 0 }
 	};
   return dataFieldParse;
+}
+
+//-------------------------------------------------------------------------------------------------
+// Reborn: True if the object itself or its controlling player has completed the named upgrade.
+//-------------------------------------------------------------------------------------------------
+static Bool hasDieMuxUpgrade(const Object* obj, const AsciiString& upgradeName)
+{
+	const UpgradeTemplate* upgrade = TheUpgradeCenter->findUpgrade(upgradeName);
+	DEBUG_ASSERTCRASH(upgrade != nullptr, ("DieMuxData: upgrade '%s' not found for %s", upgradeName.str(), obj->getTemplate()->getName().str()));
+	if (upgrade == nullptr)
+		return false;
+
+	if (obj->hasUpgrade(upgrade))
+		return true;
+
+	const Player* player = obj->getControllingPlayer();
+	return player != nullptr && player->hasUpgradeComplete(upgrade);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -79,6 +101,13 @@ Bool DieMuxData::isDieApplicable(const Object* obj, const DamageInfo *damageInfo
 
 	// all 'required' bits must be set for us to run.
 	if( !obj->getStatusBits().testForAll( m_requiredStatus ) )
+		return false;
+
+	// Reborn: Optional upgrade conditions, e.g. to pick an upgrade-specific slow death.
+	if( m_requiredUpgradeName.isNotEmpty() && !hasDieMuxUpgrade(obj, m_requiredUpgradeName) )
+		return false;
+
+	if( m_exemptUpgradeName.isNotEmpty() && hasDieMuxUpgrade(obj, m_exemptUpgradeName) )
 		return false;
 
 	return true;
