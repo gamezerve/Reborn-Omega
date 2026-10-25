@@ -290,7 +290,7 @@ UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer 
 		AsciiString tempname;
 		tempname = (*it).str() + dirName.getLength();
 
-		if ((tempname.find('\\') == nullptr) && (tempname.find('/') == nullptr)) {
+		if (getFirstPathSeparator(tempname.str()) == nullptr) {
 			// this file doesn't reside in a subdirectory, load it first.
 			filesRead += load( *it, loadType, pXfer );
 		}
@@ -303,7 +303,7 @@ UnsignedInt INI::loadDirectory( AsciiString dirName, INILoadType loadType, Xfer 
 		AsciiString tempname;
 		tempname = (*it).str() + dirName.getLength();
 
-		if ((tempname.find('\\') != nullptr) || (tempname.find('/') != nullptr)) {
+		if (getFirstPathSeparator(tempname.str()) != nullptr) {
 			filesRead += load( *it, loadType, pXfer );
 		}
 		++it;

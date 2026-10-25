@@ -1507,12 +1507,9 @@ void WOLDisplayGameOptions()
 #else
 		AsciiString s = TheGameSpyInfo->getCurrentStagingRoom()->getMap();
 #endif
-		if (s.reverseFind('\\'))
-		{
-			s = s.reverseFind('\\') + 1;
-		}
+
 		UnicodeString mapDisplay;
-		mapDisplay.translate(s);
+		mapDisplay.translate(getFileName(s.str()));
 		GadgetStaticTextSetText(textEntryMapDisplay, mapDisplay);
 	}
 	WOLPositionStartSpots();

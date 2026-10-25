@@ -266,7 +266,7 @@ void MilesAudioManager::audioDebugDisplay(DebugDisplayInterface *dd, void *, FIL
 
 			AudioEventRTS *event = playing->m_audioEventRTS.Peek();
 			filenameNoSlashes = event->getFilename();
-			filenameNoSlashes = filenameNoSlashes.reverseFind('\\') + 1;
+			filenameNoSlashes = getFileName(filenameNoSlashes.str());
 
 			// Calculate Sample volume
 			volume = 100.0f;
@@ -286,7 +286,7 @@ void MilesAudioManager::audioDebugDisplay(DebugDisplayInterface *dd, void *, FIL
 			playing = *it;
 			AudioEventRTS *event = playing->m_audioEventRTS.Peek();
 			filenameNoSlashes = event->getFilename();
-			filenameNoSlashes = filenameNoSlashes.reverseFind( '\\' ) + 1;
+			filenameNoSlashes = getFileName(filenameNoSlashes.str());
 
 			// Calculate Sample volume
 			volume = 100.0f;
@@ -323,7 +323,7 @@ void MilesAudioManager::audioDebugDisplay(DebugDisplayInterface *dd, void *, FIL
 
 			AudioEventRTS *event = playing->m_audioEventRTS.Peek();
 			filenameNoSlashes = event->getFilename();
-			filenameNoSlashes = filenameNoSlashes.reverseFind('\\') + 1;
+			filenameNoSlashes = getFileName(filenameNoSlashes.str());
 
 			// Calculate Sample volume
 			volume = 100.0f;
@@ -375,7 +375,7 @@ void MilesAudioManager::audioDebugDisplay(DebugDisplayInterface *dd, void *, FIL
 			playing = *it;
 			AudioEventRTS *event = playing->m_audioEventRTS.Peek();
 			filenameNoSlashes = event->getFilename();
-			filenameNoSlashes = filenameNoSlashes.reverseFind('\\') + 1;
+			filenameNoSlashes = getFileName(filenameNoSlashes.str());
 
 			// Calculate Sample volume
 			volume = 100.0f;
@@ -399,7 +399,7 @@ void MilesAudioManager::audioDebugDisplay(DebugDisplayInterface *dd, void *, FIL
 			playing = *it;
 			AudioEventRTS *event = playing->m_audioEventRTS.Peek();
 			filenameNoSlashes = event->getFilename();
-			filenameNoSlashes = filenameNoSlashes.reverseFind('\\') + 1;
+			filenameNoSlashes = getFileName(filenameNoSlashes.str());
 
 			// Calculate Sample volume
 			volume = 100.0f;
@@ -423,7 +423,7 @@ void MilesAudioManager::audioDebugDisplay(DebugDisplayInterface *dd, void *, FIL
 			playing = *it;
 			AudioEventRTS *event = playing->m_audioEventRTS.Peek();
 			filenameNoSlashes = event->getFilename();
-			filenameNoSlashes = filenameNoSlashes.reverseFind('\\') + 1;
+			filenameNoSlashes = getFileName(filenameNoSlashes.str());
 
 			// Calculate Sample volume
 			volume = 100.0f;

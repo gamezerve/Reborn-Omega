@@ -2018,7 +2018,7 @@ void ScriptDialog::OnSave()
 	// change it back.
 	char buf[_MAX_PATH];
 	::GetModuleFileName(nullptr, buf, sizeof(buf));
-	if (char *pEnd = strrchr(buf, '\\')) {
+	if (char *pEnd = getLastPathSeparator(buf)) {
 		*pEnd = 0;
 	}
 	::SetCurrentDirectory(buf);
@@ -2237,7 +2237,7 @@ void ScriptDialog::OnLoad()
 	// change it back.
 	char buf[_MAX_PATH];
 	::GetModuleFileName(nullptr, buf, sizeof(buf));
-	if (char *pEnd = strrchr(buf, '\\')) {
+	if (char *pEnd = getLastPathSeparator(buf)) {
 		*pEnd = 0;
 	}
 	CWorldBuilderDoc* pDoc = CWorldBuilderDoc::GetActiveDoc();
