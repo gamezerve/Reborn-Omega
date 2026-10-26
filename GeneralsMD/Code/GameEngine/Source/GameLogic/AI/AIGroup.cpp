@@ -1594,6 +1594,27 @@ void AIGroup::groupMoveToPosition( const Coord3D *p_posIn, Bool addWaypoint, Com
   Coord3D position = *p_posIn;
   Coord3D *pos = &position;
 
+	// Reborn: A move order cancels the carrier's own ground attack, so also cancel ground attacks of
+	// portable structure riders (e.g. the Overlord Gattling Cannon). Their object attacks are left alone.
+	for( std::list<Object *>::iterator it = m_memberList.begin(); it != m_memberList.end(); ++it )
+	{
+		ContainModuleInterface *contain = (*it)->getContain();
+		const ContainedItemsList* items = contain ? contain->getContainedItemsList() : nullptr;
+		if( !items )
+			continue;
+
+		for( ContainedItemsList::const_iterator rider = items->begin(); rider != items->end(); ++rider )
+		{
+			Object *riderObj = *rider;
+			AIUpdateInterface *riderAI = riderObj ? riderObj->getAI() : nullptr;
+			if( riderAI && riderObj->isKindOf( KINDOF_PORTABLE_STRUCTURE ) &&
+					riderAI->isAttacking() && riderAI->getCurrentVictim() == nullptr )
+			{
+				riderAI->aiIdle( cmdSource );
+			}
+		}
+	}
+
 	Bool didInfantry = false;
 	Bool didVehicles = false;
 	// compute current centroid of the team

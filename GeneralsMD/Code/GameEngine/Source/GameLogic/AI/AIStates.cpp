@@ -256,6 +256,7 @@ void AttackStateMachine::loadPostProcess()
 
 //----------------------------------------------------------------------------------------------------------
 static Bool inWeaponRangeObject(State *thisState, void* userData);
+static Bool inWeaponRangePosition(State *thisState, void* userData);
 
 //----------------------------------------------------------------------------------------------------------
 /**
@@ -335,6 +336,14 @@ AttackStateMachine::AttackStateMachine( Object *obj, AIAttackState* att, AsciiSt
 				StateConditionInfo(nullptr, INVALID_STATE_ID, nullptr)
 			};
 
+			// Reborn: Position attacks must return to aiming with the same position range test that sent us here.
+			// The object test always passes without a victim, which made aim and chase swap endlessly in one frame.
+			static const StateConditionInfo portableStructureChasePositionConditions[] =
+			{
+				StateConditionInfo(inWeaponRangePosition, AttackStateMachine::AIM_AT_TARGET, nullptr),
+				StateConditionInfo(nullptr, INVALID_STATE_ID, nullptr)
+			};
+
 			/* we're a rider on a mobile object, so we can't control our motion.
 				just make bogus states that always fall back into "aim".
 			*/
@@ -342,7 +351,7 @@ AttackStateMachine::AttackStateMachine( Object *obj, AIAttackState* att, AsciiSt
 										newInstance(ContinueState)(this),
 										EXIT_MACHINE_WITH_FAILURE,
 										EXIT_MACHINE_WITH_FAILURE,
-										portableStructureChaseConditions );
+										attackingObject ? portableStructureChaseConditions : portableStructureChasePositionConditions );
 		}
 		else if (attackingObject)
 		{
@@ -1164,6 +1173,12 @@ Bool outOfWeaponRangeObject( State *thisState, void* userData )
 static Bool inWeaponRangeObject(State *thisState, void* userData)
 {
 	return !outOfWeaponRangeObject(thisState, userData);
+}
+
+// Reborn: Position counterpart of inWeaponRangeObject, used by portable structure riders.
+static Bool inWeaponRangePosition(State *thisState, void* userData)
+{
+	return !outOfWeaponRangePosition(thisState, userData);
 }
 
 Bool wantToSquishTarget( State *thisState, void* userData )
