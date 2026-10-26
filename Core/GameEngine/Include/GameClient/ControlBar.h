@@ -51,6 +51,7 @@ class AnimateWindowManager;
 class GameWindow;
 class WindowLayout;
 class Player;
+class ProductionPrerequisite; // Reborn: Used by getSidePrefixedRequiresList.
 class PlayerTemplate;
 class AudioEventRTS;
 class ControlBarSchemeManager;
@@ -1059,6 +1060,8 @@ public:
 	void showUpgradeCameoTooltip(GameWindow* window, const UpgradeTemplate* upgrade);
 	const UpgradeTemplate* getUpgradeTemplateForCameoWindow(GameWindow* window) const;
 	static UnicodeString getSidePrefixedThingName(const ThingTemplate* thingTemplate, Bool compact = FALSE);
+	// Reborn: Missing unit prerequisites with side prefixes; OR-ed alternatives are joined with the localized "or".
+	static UnicodeString getSidePrefixedRequiresList(const ProductionPrerequisite* prereq, const Player* player);
 	const UpgradeTemplate* m_rightHUDUpgradeTooltipTemplates[MAX_RIGHT_HUD_UPGRADE_CAMEOS];
 	void showSelectedUnitCameoTooltip(GameWindow* window);
 	void showSelectedUnitTooltipLayout(GameWindow* window, Object* obj);

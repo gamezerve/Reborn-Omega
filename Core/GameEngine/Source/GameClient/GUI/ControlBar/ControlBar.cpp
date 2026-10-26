@@ -175,6 +175,78 @@ UnicodeString ControlBar::getSidePrefixedThingName(const ThingTemplate* thingTem
 }
 
 //-------------------------------------------------------------------------------------------------
+// Reborn: Build the missing unit prerequisites with side prefixes. Alternatives from one
+// "Object = A B" line are OR-ed and joined with CONTROLBAR:OrRequirement, while separate
+// requirements stay comma separated, so players can tell "either" from "both".
+//-------------------------------------------------------------------------------------------------
+UnicodeString ControlBar::getSidePrefixedRequiresList(const ProductionPrerequisite* prereq, const Player* player)
+{
+	if (!prereq || !player)
+		return UnicodeString::TheEmptyString;
+
+	UnicodeString requiresList = prereq->getRequiresList(player);
+	const Int unitCount = prereq->getNumUnitPrereqs();
+
+	if (requiresList.isEmpty() || unitCount <= 0)
+		return requiresList;
+
+	std::vector<const ThingTemplate*> units(unitCount);
+	std::vector<Int> ownCounts(unitCount, 0);
+
+	for (Int i = 0; i < unitCount; ++i)
+		units[i] = prereq->getUnitPrereq(i);
+
+	// Same counting rules as ProductionPrerequisite::calcNumPrereqUnitsOwned.
+	player->countObjectsByThingTemplate(unitCount, &units[0], false, &ownCounts[0]);
+
+	UnicodeString orText;
+	orText.format(L" %ls ", TheGameText->fetch("CONTROLBAR:OrRequirement").str());
+
+	UnicodeString taggedList;
+	Int groupStart = 0;
+
+	while (groupStart < unitCount)
+	{
+		Int groupEnd = groupStart + 1;
+		while (groupEnd < unitCount && prereq->isUnitPrereqOredWithPrevious(groupEnd))
+			++groupEnd;
+
+		Int groupOwned = 0;
+		for (Int i = groupStart; i < groupEnd; ++i)
+			groupOwned += ownCounts[i];
+
+		if (groupOwned == 0)
+		{
+			UnicodeString groupText;
+
+			for (Int i = groupStart; i < groupEnd; ++i)
+			{
+				if (!units[i])
+					continue;
+
+				if (!groupText.isEmpty())
+					groupText.concat(orText);
+
+				groupText.concat(getSidePrefixedThingName(units[i]));
+			}
+
+			if (!groupText.isEmpty())
+			{
+				if (!taggedList.isEmpty())
+					taggedList.concat(L", ");
+
+				taggedList.concat(groupText);
+			}
+		}
+
+		groupStart = groupEnd;
+	}
+
+	// Keep the engine text when no unit group is missing (for example a science requirement).
+	return taggedList.isEmpty() ? requiresList : taggedList;
+}
+
+//-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 const FieldParse CommandButton::s_commandButtonFieldParseTable[] =
 {

@@ -1968,29 +1968,8 @@ if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE &&
 	{
 		prereq = thingTemplate->getNthPrereq(i);
 		//requiresList = prereq->getRequiresList(player);
-		requiresList = prereq->getRequiresList(player);
-
-		if (requiresList != UnicodeString::TheEmptyString && prereq->getNumUnitPrereqs() > 0)
-		{
-			UnicodeString taggedRequiresList = UnicodeString::TheEmptyString;
-
-			for (Int prereqIndex = 0; prereqIndex < prereq->getNumUnitPrereqs(); ++prereqIndex)
-			{
-				const ThingTemplate* prereqThing = prereq->getUnitPrereq(prereqIndex);
-				if (!prereqThing)
-					continue;
-
-				UnicodeString taggedName = getSidePrefixedThingName(prereqThing);
-
-				if (!taggedRequiresList.isEmpty())
-					taggedRequiresList.concat(L", ");
-
-				taggedRequiresList.concat(taggedName);
-			}
-
-			if (!taggedRequiresList.isEmpty())
-				requiresList = taggedRequiresList;
-		}
+		// Reborn: Side-prefixed names, with OR-ed alternatives joined by "or" instead of a comma.
+		requiresList = getSidePrefixedRequiresList(prereq, player);
 
 		if (requiresList != UnicodeString::TheEmptyString)
 		{
@@ -2131,29 +2110,8 @@ if (commandButton->getCommandType() != GUI_COMMAND_OBJECT_UPGRADE &&
 				for( Int i=0; i<thingTemplate->getPrereqCount(); i++ )
 				{
 					prereq = thingTemplate->getNthPrereq(i);
-					requiresList = prereq->getRequiresList(player);
-
-					if (requiresList != UnicodeString::TheEmptyString && prereq->getNumUnitPrereqs() > 0)
-					{
-						UnicodeString taggedRequiresList = UnicodeString::TheEmptyString;
-
-						for (Int prereqIndex = 0; prereqIndex < prereq->getNumUnitPrereqs(); ++prereqIndex)
-						{
-							const ThingTemplate* prereqThing = prereq->getUnitPrereq(prereqIndex);
-							if (!prereqThing)
-								continue;
-
-							UnicodeString taggedName = getSidePrefixedThingName(prereqThing);
-
-							if (!taggedRequiresList.isEmpty())
-								taggedRequiresList.concat(L", ");
-
-							taggedRequiresList.concat(taggedName);
-						}
-
-						if (!taggedRequiresList.isEmpty())
-							requiresList = taggedRequiresList;
-					}
+					// Reborn: Side-prefixed names, with OR-ed alternatives joined by "or" instead of a comma.
+					requiresList = getSidePrefixedRequiresList(prereq, player);
 
 					if( requiresList != UnicodeString::TheEmptyString )
 					{

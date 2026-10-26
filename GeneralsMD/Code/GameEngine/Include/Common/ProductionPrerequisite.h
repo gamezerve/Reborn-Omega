@@ -115,6 +115,13 @@ public:
 		return m_prereqUnits[index].unit;
 	}
 
+	// Reborn: Let tooltips keep OR-ed prerequisite alternatives apart from AND-ed requirements.
+	Bool isUnitPrereqOredWithPrevious(Int index) const
+	{
+		return index > 0 && index < (Int)m_prereqUnits.size()
+			&& (m_prereqUnits[index].flags & UNIT_OR_WITH_PREV) != 0;
+	}
+
 
 private:
 
