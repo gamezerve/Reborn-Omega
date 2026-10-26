@@ -188,6 +188,8 @@ const FieldParse WeaponTemplate::TheWeaponTemplateFieldParseTable[] =
 	{ "WeaponRecoil",							INI::parseAngleReal,										nullptr,							offsetof(WeaponTemplate, m_weaponRecoil) },
 	{ "MinTargetPitch",						INI::parseAngleReal,										nullptr,							offsetof(WeaponTemplate, m_minTargetPitch) },
 	{ "MaxTargetPitch",						INI::parseAngleReal,										nullptr,							offsetof(WeaponTemplate, m_maxTargetPitch) },
+	// Reborn: Limits targets to this many degrees to either side of the source's facing (e.g. a turret that must not fire through its own model).
+	{ "TargetAngleLimit",					INI::parseAngleReal,										nullptr,							offsetof(WeaponTemplate, m_targetAngleLimit) },
 	{ "RadiusDamageAngle",				INI::parseAngleReal,										nullptr,							offsetof(WeaponTemplate, m_radiusDamageAngle) },
 	{ "ProjectileObject",					INI::parseAsciiString,									nullptr,							offsetof(WeaponTemplate, m_projectileName) },
 	{ "FireSound",								INI::parseAudioEventRTS,								nullptr,							offsetof(WeaponTemplate, m_fireSound) },
@@ -276,6 +278,7 @@ WeaponTemplate::WeaponTemplate() : m_nextTemplate(nullptr)
 	m_weaponRecoil									= 0.0f;		// no recoil
 	m_minTargetPitch								= -PI;
 	m_maxTargetPitch								= PI;
+	m_targetAngleLimit							= PI;
 	m_radiusDamageAngle							= PI;	// PI each way, so full circle
 	m_projectileName.clear();					// no projectile
 	m_projectileTmpl								= nullptr;
@@ -2899,6 +2902,25 @@ Bool Weapon::isWithinTargetPitch(const Object *source, const Object *victim) con
 
 	//DEBUG_LOG(("pitch %f-%f is out of range",rad2deg(minPitch),rad2deg(maxPitch),rad2deg(m_template->getMinTargetPitch()),rad2deg(m_template->getMaxTargetPitch())));
 	return false;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Is the target position within TargetAngleLimit of the source's facing? */
+//-------------------------------------------------------------------------------------------------
+Bool Weapon::isWithinTargetAngle(const Object *source, const Coord3D *targetPos) const
+{
+	const Real limit = m_template->getTargetAngleLimit();
+	if (limit >= PI || source == nullptr || targetPos == nullptr || isContactWeapon())
+		return true;
+
+	const Coord3D* src = source->getPosition();
+	const Real dx = targetPos->x - src->x;
+	const Real dy = targetPos->y - src->y;
+	if (dx * dx + dy * dy < 1.0f)
+		return true;
+
+	const Real relAngle = normalizeAngle(WWMath::Atan2(dy, dx) - source->getOrientation());
+	return WWMath::Fabs(relAngle) <= limit;
 }
 
 //-------------------------------------------------------------------------------------------------

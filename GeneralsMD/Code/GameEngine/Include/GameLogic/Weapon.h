@@ -461,6 +461,7 @@ public:
 	Real getWeaponRecoilAmount() const { return m_weaponRecoil; }
 	Real getMinTargetPitch() const { return m_minTargetPitch; }
 	Real getMaxTargetPitch() const { return m_maxTargetPitch; }
+	Real getTargetAngleLimit() const { return m_targetAngleLimit; } ///< Reborn
 	Real getRadiusDamageAngle() const { return m_radiusDamageAngle; }
 	DamageType getDamageType() const { return m_damageType; }
 	ObjectStatusTypes getDamageStatusType() const { return m_damageStatusType; }
@@ -563,6 +564,7 @@ private:
 	Real m_weaponRecoil;										///< amt of recoil caused to firer, in rads
 	Real m_minTargetPitch;									///< min pitch from source->victim allowable in order to target
 	Real m_maxTargetPitch;									///< max pitch from source->victim allowable in order to target
+	Real m_targetAngleLimit;								///< Reborn: max angle between the source's facing and the target direction allowable in order to target (PI = no limit)
 	Real m_radiusDamageAngle;								///< Damage is directional, so max defelection of straight at target (cone) you do damage
 	AsciiString m_projectileName;																			///< if projectile, object name to "fire"
 	const ThingTemplate* m_projectileTmpl;														///< direct access to projectile object type to "fire"
@@ -770,6 +772,7 @@ public:
 
 	Bool isPitchLimited() const { return m_pitchLimited; }
 	Bool isWithinTargetPitch(const Object *source, const Object *victim) const;
+	Bool isWithinTargetAngle(const Object *source, const Coord3D *targetPos) const; ///< Reborn: see TargetAngleLimit
 
 	//Leech range functionality simply means this weapon has unlimited range temporarily. How it works is if the
 	//weapon template has the LeechRangeWeapon set, it means that once the unit has closed to standard weapon range

@@ -42,6 +42,7 @@ class WeaponTemplate;
 
 enum CommandSourceType CPP_11(: Int);
 enum DamageType CPP_11(: Int);
+enum WeaponAntiMaskType CPP_11(: Int); // Reborn
 
 // for WeaponSetType. Part of detangling.
 #include "GameLogic/WeaponSetType.h"
@@ -217,6 +218,7 @@ private:
 	Bool											m_hasDamageWeapon;
 
 	Bool isAnyWithinTargetPitch(const Object* obj, const Object* victim) const;
+	Bool isAnyWithinTargetAngle(const Object* obj, const Coord3D* targetPos, WeaponAntiMaskType targetAntiMask) const; ///< Reborn
 
 protected:
 	// snapshot methods

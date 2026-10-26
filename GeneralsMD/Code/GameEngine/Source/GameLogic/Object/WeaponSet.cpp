@@ -555,6 +555,22 @@ Bool WeaponSet::isAnyWithinTargetPitch(const Object* obj, const Object* victim) 
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Can any weapon that is able to hit this kind of target aim at the target position (TargetAngleLimit)? */
+//-------------------------------------------------------------------------------------------------
+Bool WeaponSet::isAnyWithinTargetAngle(const Object* obj, const Coord3D* targetPos, WeaponAntiMaskType targetAntiMask) const
+{
+	for( Int i = 0; i < WEAPONSLOT_COUNT;	i++ )
+	{
+		const Weapon* weapon = m_weapons[ i ];
+		if (weapon && (weapon->getAntiMask() & targetAntiMask) && weapon->isWithinTargetAngle(obj, targetPos))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+//-------------------------------------------------------------------------------------------------
 CanAttackResult WeaponSet::getAbleToAttackSpecificObject( AbleToAttackType attackType, const Object* source, const Object* victim, CommandSourceType commandSource, WeaponSlotType specificSlot ) const
 {
 
@@ -806,6 +822,10 @@ CanAttackResult WeaponSet::getAbleToUseWeaponAgainstTarget( AbleToAttackType att
 		if ((m_totalAntiMask & targetAntiMask) == 0)
 			return ATTACKRESULT_INVALID_SHOT;
 
+		// Reborn: A weapon may only fire within an angle of its facing (TargetAngleLimit).
+		if (pos && !isAnyWithinTargetAngle(source, pos, targetAntiMask))
+			return ATTACKRESULT_INVALID_SHOT;
+
 		//If we don't have a victim, we are force attacking a position. Because
 		//of the weapon mask check preceding this, the attack is possible!
 		if( !victim )
@@ -976,6 +996,10 @@ Bool WeaponSet::chooseBestWeaponForTarget(const Object* obj, const Object* victi
 			continue;
 
 		if (!weapon->isWithinTargetPitch(obj, victim))
+			continue;
+
+		// Reborn: A weapon may only fire within an angle of its facing (TargetAngleLimit).
+		if (!weapon->isWithinTargetAngle(obj, victim->getPosition()))
 			continue;
 
 		Real damage = weapon->estimateWeaponDamage(obj, victim);
