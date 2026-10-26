@@ -143,6 +143,25 @@ const VecObjectID& AIGroup::getAllIDs() const
 }
 
 
+#if !RETAIL_COMPATIBLE_CRC
+/**
+ * Reborn: Helix style containers keep their portable structure rider (e.g. a gattling cannon) outside
+ * of the contain list. Return that rider so group orders can be relayed to it like to Overlord riders.
+ */
+static Object* findPortableRiderOutsideContainList( ContainModuleInterface *contain )
+{
+	const Object *rider = contain ? contain->friend_getRider() : nullptr;
+	if( !rider || !rider->isKindOf( KINDOF_PORTABLE_STRUCTURE ) )
+		return nullptr;
+
+	const ContainedItemsList* items = contain->getContainedItemsList();
+	if( items && std::find( items->begin(), items->end(), rider ) != items->end() )
+		return nullptr;
+
+	return const_cast<Object*>( rider );
+}
+#endif
+
 /**
  * Return the speed of the group's slowest member
  */
@@ -1599,6 +1618,17 @@ void AIGroup::groupMoveToPosition( const Coord3D *p_posIn, Bool addWaypoint, Com
 	for( std::list<Object *>::iterator it = m_memberList.begin(); it != m_memberList.end(); ++it )
 	{
 		ContainModuleInterface *contain = (*it)->getContain();
+
+#if !RETAIL_COMPATIBLE_CRC
+		// Reborn: Also cancel ground attacks of Helix style portable structures, which are not in the contain list.
+		Object *portable = findPortableRiderOutsideContainList( contain );
+		AIUpdateInterface *portableAI = portable ? portable->getAI() : nullptr;
+		if( portableAI && portableAI->isAttacking() && portableAI->getCurrentVictim() == nullptr )
+		{
+			portableAI->aiIdle( cmdSource );
+		}
+#endif
+
 		const ContainedItemsList* items = contain ? contain->getContainedItemsList() : nullptr;
 		if( !items )
 			continue;
@@ -2372,6 +2402,23 @@ void AIGroup::groupAttackObjectPrivate( Bool forced, Object *victim, Int maxShot
 			}
 		}
 
+#if !RETAIL_COMPATIBLE_CRC
+		// Reborn: Order Helix style portable structures (not in the contain list) to attack too, like Overlord riders.
+		Object *portable = findPortableRiderOutsideContainList( contain );
+		if( portable && contain->isPassengerAllowedToFire( portable->getID() ) )
+		{
+			CanAttackResult result = portable->getAbleToAttackSpecificObject( forced ? ATTACK_NEW_TARGET_FORCED : ATTACK_NEW_TARGET, victim, cmdSource );
+			AIUpdateInterface *portableAI = portable->getAI();
+			if( portableAI && ( result == ATTACKRESULT_POSSIBLE || result == ATTACKRESULT_POSSIBLE_AFTER_MOVING ) )
+			{
+				if (forced)
+					portableAI->aiForceAttackObject( victim, maxShotsToFire, cmdSource );
+				else
+					portableAI->aiAttackObject( victim, maxShotsToFire, cmdSource );
+			}
+		}
+#endif
+
 		//Do a check to see if we have a hive object that has slaved objects.
 		SpawnBehaviorInterface *spawnInterface = theUnit->getSpawnBehaviorInterface();
 		if( spawnInterface && !spawnInterface->doSlavesHaveFreedom() )
@@ -2456,6 +2503,20 @@ void AIGroup::groupAttackPosition( const Coord3D *pos, Int maxShotsToFire, Comma
 				}
 			}
 		}
+
+#if !RETAIL_COMPATIBLE_CRC
+		// Reborn: Order Helix style portable structures (not in the contain list) to attack too, like Overlord riders.
+		Object *portable = findPortableRiderOutsideContainList( contain );
+		if( portable && contain->isPassengerAllowedToFire( portable->getID() ) )
+		{
+			CanAttackResult result = portable->getAbleToUseWeaponAgainstTarget( ATTACK_NEW_TARGET, nullptr, &attackPos, cmdSource );
+			AIUpdateInterface *portableAI = portable->getAI();
+			if( portableAI && ( result == ATTACKRESULT_POSSIBLE || result == ATTACKRESULT_POSSIBLE_AFTER_MOVING ) )
+			{
+				portableAI->aiAttackPosition( &attackPos, maxShotsToFire, cmdSource );
+			}
+		}
+#endif
 
 		//Also handle slaves. If we have slaves, then order them to stop too!
 		SpawnBehaviorInterface *spawnInterface = (*i)->getSpawnBehaviorInterface();

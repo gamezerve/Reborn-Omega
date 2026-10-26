@@ -48,6 +48,10 @@ public:
 
 	TemplateNameList m_payloadTemplateNameData;
   Bool m_drawPips;
+	// Reborn: Optional settings for ground carriers (e.g. the Super Overlord) that use a Helix style portable structure.
+	Bool m_passengersGetGarrisonedBonus;	///< Passengers receive the GARRISONED weapon bonus (default Yes, as on the Helix).
+	Bool m_passengersUseFirePoints;				///< Passengers are placed at FIREPOINT bones instead of the container center.
+	AsciiString m_portableStructureTurretBone; ///< If set, the portable structure follows this bone on the main turret.
 
 
 	static void buildFieldParse(MultiIniFieldParse& p);

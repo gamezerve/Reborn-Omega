@@ -3733,6 +3733,19 @@ void AIUpdateInterface::privateIdle(CommandSourceType cmdSource)
 					ai->aiIdle(cmdSource);
 			}
 		}
+
+#if !RETAIL_COMPATIBLE_CRC
+		// Reborn: Helix style containers keep their portable structure rider outside of the contain list.
+		// Idle it as well, so it stops like Overlord riders do.
+		const Object* rider = contain->friend_getRider();
+		if (rider && rider->isKindOf(KINDOF_PORTABLE_STRUCTURE) &&
+				(!items || std::find(items->begin(), items->end(), rider) == items->end()))
+		{
+			AIUpdateInterface* riderAI = const_cast<Object*>(rider)->getAI();
+			if (riderAI)
+				riderAI->aiIdle(cmdSource);
+		}
+#endif
 	}
 
 }

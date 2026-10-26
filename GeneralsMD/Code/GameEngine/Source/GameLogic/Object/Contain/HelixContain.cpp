@@ -56,6 +56,8 @@ HelixContainModuleData::HelixContainModuleData()
 {
 //	m_initialPayload.count = 0;
   m_drawPips = TRUE;
+	m_passengersGetGarrisonedBonus = TRUE;
+	m_passengersUseFirePoints = FALSE;
 
 }
 
@@ -69,6 +71,10 @@ void HelixContainModuleData::buildFieldParse(MultiIniFieldParse& p)
 	{
     { "PayloadTemplateName",  INI::parseAsciiStringVectorAppend, nullptr, offsetof(HelixContainModuleData, m_payloadTemplateNameData) },
     {"ShouldDrawPips",  INI::parseBool, nullptr, offsetof(HelixContainModuleData, m_drawPips) },
+		// Reborn: Optional settings for ground carriers that use a Helix style portable structure.
+		{ "PassengersGetGarrisonedBonus", INI::parseBool, nullptr, offsetof(HelixContainModuleData, m_passengersGetGarrisonedBonus) },
+		{ "PassengersUseFirePoints", INI::parseBool, nullptr, offsetof(HelixContainModuleData, m_passengersUseFirePoints) },
+		{ "PortableStructureTurretBone", INI::parseAsciiString, nullptr, offsetof(HelixContainModuleData, m_portableStructureTurretBone) },
 
 		{ nullptr, nullptr, nullptr, 0 }
 	};
@@ -121,8 +127,20 @@ UpdateSleepTime HelixContain::update()
   Object *portable = getPortableStructure();
   if ( portable )
   {
-    portable->setPosition( getObject()->getPosition());
-    portable->setOrientation( getObject()->getOrientation());
+		// Reborn: A portable structure mounted on a turret follows the turret bone, so its own turret
+		// aims relative to the main turret it is drawn on, like the Overlord attachments.
+		Matrix3D boneTransform;
+		const AsciiString& turretBone = getHelixContainModuleData()->m_portableStructureTurretBone;
+		if ( turretBone.isNotEmpty() &&
+				getObject()->getSingleLogicalBonePositionOnTurret( TURRET_MAIN, turretBone.str(), nullptr, &boneTransform ) )
+		{
+			portable->setTransformMatrix( &boneTransform );
+		}
+		else
+		{
+			portable->setPosition( getObject()->getPosition());
+			portable->setOrientation( getObject()->getOrientation());
+		}
   }
 
   return TransportContain::update(); // extend base
@@ -131,6 +149,13 @@ UpdateSleepTime HelixContain::update()
 
 void HelixContain::redeployOccupants()
 {
+	// Reborn: Optionally let passengers fire from the FIREPOINT bones of the art, like other transports.
+	if ( getHelixContainModuleData()->m_passengersUseFirePoints )
+	{
+		TransportContain::redeployOccupants();
+		return;
+	}
+
   Coord3D firePos = *getObject()->getPosition();
   firePos.z += 8;
 
@@ -372,6 +397,12 @@ Bool HelixContain::isPassengerAllowedToFire( ObjectID id ) const
 
   if ( m_portableStructureID != INVALID_ID && m_portableStructureID == id )
     return TRUE;
+#if !RETAIL_COMPATIBLE_CRC
+  // Reborn: A query without a specific passenger asks whether passengers may fire at all
+  // (e.g. when relaying attack orders). Answer it like other transports instead of always refusing.
+  else if ( id == INVALID_ID )
+    return TransportContain::isPassengerAllowedToFire( id );
+#endif
   else
   {
     const Object *rider = TheGameLogic->findObjectByID( id );
@@ -395,7 +426,9 @@ void HelixContain::onContaining( Object *obj, Bool wasSelected )
 	TransportContain::onContaining( obj, wasSelected );
 
 	// give the object a garrisoned version of its weapon
-	obj->setWeaponBonusCondition( WEAPONBONUSCONDITION_GARRISONED );
+	// Reborn: Optional, so ground carriers can match the Overlord Battle Bunker which gives no garrison bonus.
+	if ( getHelixContainModuleData()->m_passengersGetGarrisonedBonus )
+		obj->setWeaponBonusCondition( WEAPONBONUSCONDITION_GARRISONED );
   obj->setDisabled( DISABLED_HELD );
 
 
@@ -422,7 +455,8 @@ void HelixContain::onRemoving( Object *obj )
 	TransportContain::onRemoving(obj);
 
 	// give the object back a regular weapon
-	obj->clearWeaponBonusCondition( WEAPONBONUSCONDITION_GARRISONED );
+	if ( getHelixContainModuleData()->m_passengersGetGarrisonedBonus )
+		obj->clearWeaponBonusCondition( WEAPONBONUSCONDITION_GARRISONED );
   obj->clearDisabled( DISABLED_HELD );
 
 }
