@@ -182,7 +182,7 @@ Bool ApplyLegacyInfantryTextures(Bool enabled)
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Reborn: Reload the seven infantry texture families in place, including existing house-color copies, without rebuilding units. */
+/** Reborn: Reload the listed infantry texture families in place, including existing house-color copies, without rebuilding units. */
 //-------------------------------------------------------------------------------------------------
 Bool W3DAssetManager::setLegacyInfantryTextures(Bool enabled)
 {
@@ -205,7 +205,7 @@ Bool W3DAssetManager::setLegacyInfantryTextures(Bool enabled)
 	using TextureRef = std::unique_ptr<TextureClass, RebornInfantryReleaseRef>;
 	using SurfaceRef = std::unique_ptr<SurfaceClass, RebornInfantryReleaseRef>;
 	std::vector<std::pair<TextureClass*, TextureRef>> pending;
-	TextureRef sources[7];
+	TextureRef sources[W3DFileSystem::INFANTRY_TEXTURE_COUNT];
 	try
 	{
 		HashTemplateIterator<StringClass, TextureClass*> iterator(TextureHash);
@@ -249,7 +249,7 @@ Bool W3DAssetManager::setLegacyInfantryTextures(Bool enabled)
 			SurfaceRef original(sources[index]->Get_Surface_Level());
 			SurfaceRef tinted(NEW_REF(SurfaceClass, (description.Width, description.Height, description.Format)));
 			tinted->Copy(0, 0, 0, 0, description.Width, description.Height, original.get());
-			// Reborn: These seven ZHCA textures encode the same alpha-based team-color mask as their normal load path.
+			// Reborn: These ZHCA textures encode the same alpha-based team-color mask as their normal load path.
 			Remap_Palette(tinted.get(), color, false, true);
 			TextureRef replacement(NEW_REF(TextureClass, (tinted.get(), MIP_LEVELS_ALL)));
 			if (!replacement->Peek_D3D_Texture()) throw std::runtime_error("House-color texture could not be recreated");
@@ -314,7 +314,7 @@ TextureClass *	W3DAssetManager::Get_Texture
 		type,
 		allow_reduction
 	);
-	// Reborn: These seven source-switchable textures must not reuse thumbnail dimensions from another source.
+	// Reborn: These source-switchable textures must not reuse thumbnail dimensions from another source.
 	if (texture && W3DFileSystem::getInfantryTextureIndex(filename) >= 0)
 		texture->Set_Bypass_Thumbnail(true);
 	return texture;

@@ -92,8 +92,9 @@ public:
 	virtual FileClass * Get_File( char const *filename ) override;
 	virtual void Return_File( FileClass *file ) override;
 
-	// Reborn: Switch only the seven infantry textures while preserving their logical asset names.
-	static const char* const infantryTextureNames[7];
+	// Reborn: Switch only the listed infantry textures while preserving their logical asset names.
+	enum { INFANTRY_TEXTURE_COUNT = 10 }; // Reborn: Single source of truth for the switchable infantry texture list.
+	static const char* const infantryTextureNames[INFANTRY_TEXTURE_COUNT];
 	static Int getInfantryTextureIndex(const char* filename);
 	static ArchiveFile* findLegacyInfantryArchive(const char* filename);
 	static Bool getLegacyInfantryTextures();

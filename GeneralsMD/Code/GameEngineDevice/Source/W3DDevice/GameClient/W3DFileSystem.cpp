@@ -58,13 +58,15 @@
 
 // Reborn: Keep the texture selection atomic because W3D also opens files on its loading thread.
 static std::atomic<bool> s_legacyInfantryTextures(false);
-const char* const W3DFileSystem::infantryTextureNames[7] = {
+const char* const W3DFileSystem::infantryTextureNames[INFANTRY_TEXTURE_COUNT] = {
 	"zhca_airanger.tga", "zhca_nithunter.tga", "zhca_uirguard.tga",
-	"zhca_uirtunfan.tga", "zhca_uiworker.tga", "zhca_niconscrpt.tga", "zhca_aimsslguy.tga"
+	"zhca_uirtunfan.tga", "zhca_uiworker.tga", "zhca_niconscrpt.tga", "zhca_aimsslguy.tga",
+	// Reborn: China Hacker, GLA Stinger Soldier and GLA Terrorist also have Reborn texture replacements.
+	"zhca_nihacker.tga", "zhca_uirstnger.tga", "zhca_uiter.tga"
 };
 
 //-------------------------------------------------------------------------------------------------
-/** Reborn: Identify only the seven logical infantry textures, including the loader's DDS alternatives. */
+/** Reborn: Identify only the listed logical infantry textures, including the loader's DDS alternatives. */
 //-------------------------------------------------------------------------------------------------
 Int W3DFileSystem::getInfantryTextureIndex(const char* filename)
 {
@@ -74,7 +76,7 @@ Int W3DFileSystem::getInfantryTextureIndex(const char* filename)
 		if (*p == '/' || *p == '\\') basename = p + 1;
 	const char* extension = strrchr(basename, '.');
 	if (!extension || (_stricmp(extension, ".tga") != 0 && _stricmp(extension, ".dds") != 0)) return -1;
-	for (Int i = 0; i < 7; ++i)
+	for (Int i = 0; i < INFANTRY_TEXTURE_COUNT; ++i)
 	{
 		const size_t length = strlen(infantryTextureNames[i]) - 4;
 		if (size_t(extension - basename) == length && _strnicmp(basename, infantryTextureNames[i], length) == 0) return i;

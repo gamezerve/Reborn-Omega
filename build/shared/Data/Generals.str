@@ -220,7 +220,7 @@ GUI:UseLegacyInfantryTextures
 END
 
 TOOLTIP:UseLegacyInfantryTextures
-"Use the original game textures for Rangers, Missile Defenders, Rebels, RPG Troopers, Workers, Red Guards and Tank Hunters. Applies to all units using these textures immediately when accepted; no restart required."
+"Use the original game textures for Rangers, Missile Defenders, Rebels, RPG Troopers, Workers, Terrorists, Stinger Soldiers, Red Guards, Tank Hunters and Hackers. Applies to all units using these textures immediately when accepted; no restart required."
 END
 
 GUI:LegacyInfantryTexturesFailed
