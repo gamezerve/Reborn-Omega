@@ -905,16 +905,19 @@ StateReturnType DeliveringState::update() // Kick a dude out every so often
 }
 
 //-------------------------------------------------------------------------------------------------
-void DeliveringState::onExit( StateExitType ) // Close the doors
+void DeliveringState::onExit(StateExitType status) // Close the doors
 {
-	Object *owner = getMachineOwner();
-	DeliverPayloadAIUpdate *ai = (DeliverPayloadAIUpdate*)owner->getAIUpdateInterface();
+	Object* owner = getMachineOwner();
+	DeliverPayloadAIUpdate* ai = (DeliverPayloadAIUpdate*)owner->getAIUpdateInterface();
 	if (ai)
 		ai->friend_setFreeToExit(false);
 
-	DEBUG_ASSERTCRASH(m_didOpen, ("Not enough time for the doors to open to drop anything!"));
-				/// @todo srj -- for now, this assumes at most one door
-	owner->clearAndSetModelConditionState( MODELCONDITION_DOOR_1_OPENING, MODELCONDITION_DOOR_1_CLOSING );
+	// Reborn: Only a normal state transition must happen after the doors opened. A reset exit happens when the
+	// delivery state machine is deleted, e.g. when the deliverer is shot down and then removed while its doors
+	// were still opening, which is a valid case and should not assert.
+	DEBUG_ASSERTCRASH(m_didOpen || status == EXIT_RESET, ("Not enough time for the doors to open to drop anything!"));
+	/// @todo srj -- for now, this assumes at most one door
+	owner->clearAndSetModelConditionState(MODELCONDITION_DOOR_1_OPENING, MODELCONDITION_DOOR_1_CLOSING);
 }
 
 //-------------------------------------------------------------------------------------------------
