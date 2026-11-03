@@ -23,6 +23,11 @@
 #define RETAIL_COMPATIBLE_CRC (0) // Reborn: Disable retail CRC compatibility by default.
 #endif
 
+#ifndef RETAIL_COMPATIBLE_DATA
+//#define RETAIL_COMPATIBLE_DATA (1) // Game and tool data files are expected to be compatible with retail Generals 1.08 and Zero Hour 1.04
+#define RETAIL_COMPATIBLE_DATA (0) // Reborn: Game and tool data files are not expected to remain compatible with retail Zero Hour data.
+#endif
+
 #ifndef USE_DETERMINISTIC_MATH
 #define USE_DETERMINISTIC_MATH (1) // Game uses deterministic math for game simulation compatibility among different system architectures in peer to peer networks
 #endif
