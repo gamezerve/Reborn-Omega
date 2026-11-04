@@ -5527,6 +5527,10 @@ CONTROLBAR:UpgradeGLARadarVanScan
 "&Radar Scan"
 END
 
+CONTROLBAR:UpgradeGLARadarVanScan_CHI06
+"Ra&dar Scan"
+END
+
 CONTROLBAR:UpgradeGLARebelCaptureBuilding
 "&Capture Building"
 END
