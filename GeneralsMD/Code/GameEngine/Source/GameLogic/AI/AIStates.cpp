@@ -1188,6 +1188,11 @@ Bool wantToSquishTarget( State *thisState, void* userData )
 
 	if (obj && victim)
 	{
+		// Reborn: Match pursuit eligibility for script-held units before choosing to crush.
+		if (obj->isDisabledByType(DISABLED_HELD) && !obj->getContainedBy())
+		{
+			return false;
+		}
 		if (victim->getContainedBy()) {
 			return false; // can't crush guys in buildings or vehicles.
 		}

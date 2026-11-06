@@ -4711,6 +4711,20 @@ void ScriptActions::doUnitExitBuilding(const AsciiString& unitName)
 	}
 
 	ai->chooseLocomotorSet(LOCOMOTORSET_NORMAL);
+#if !RETAIL_COMPATIBLE_CRC
+	// Reborn: Complete Jarmen's garrison exit before CHI07 re-arms his sniper weapon.
+	if (unitName == "Jarmen" && TheGlobalData &&
+		TheGlobalData->m_mapName.compareNoCase( "Maps\\CHI07\\CHI07.map" ) == 0)
+	{
+		const Object* building = theUnit->getContainedBy();
+		const ContainModuleInterface* contain = building ? building->getContain() : nullptr;
+		if (contain && contain->isGarrisonable())
+		{
+			ai->aiExitInstantly(nullptr, CMD_FROM_SCRIPT);
+			return;
+		}
+	}
+#endif
 	ai->aiExit(nullptr, CMD_FROM_SCRIPT);
 }
 

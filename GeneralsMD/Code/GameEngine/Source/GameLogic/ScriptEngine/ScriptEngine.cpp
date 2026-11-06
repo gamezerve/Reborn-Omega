@@ -6619,6 +6619,16 @@ Bool ScriptEngine::evaluateFlag( Condition *pCondition )
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Set a named flag that remains available until a map script consumes it. */
+//-------------------------------------------------------------------------------------------------
+void ScriptEngine::setFlagValue( const AsciiString& name, Bool value )
+{
+	const Int index = allocateFlag( name );
+	if (index != 0)
+		m_flags[index].value = value;
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Sets a flag */
 //-------------------------------------------------------------------------------------------------
 void ScriptEngine::setFlag( ScriptAction *pAction )

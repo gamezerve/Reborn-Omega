@@ -287,6 +287,8 @@ public:
 	virtual void notifyOfCompletedUpgrade			( Int playerIndex, const AsciiString& upgrade,				 ObjectID sourceObj );
 	virtual void notifyOfAcquiredScience				( Int playerIndex, ScienceType science );
 
+	void setFlagValue( const AsciiString& name, Bool value ); ///< Reborn: Set a persistent script flag from game logic.
+
 	virtual void signalUIInteract(const AsciiString& hookName);	///< Notify that a UI button was pressed and some flag should go true, for one frame only.
 
 	virtual Bool isVideoComplete( const AsciiString& completedVideo, Bool removeFromList );	///< Determine whether a video has completed
