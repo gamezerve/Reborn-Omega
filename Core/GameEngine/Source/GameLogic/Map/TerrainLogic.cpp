@@ -214,7 +214,8 @@ Object *Bridge::createTower( Coord3D *worldPos,
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
 Bridge::Bridge(BridgeInfo &theInfo, Dict *props, AsciiString bridgeTemplateName) :
-m_bridgeInfo(theInfo)
+m_bridgeInfo(theInfo),
+m_isLandmarkBridge(FALSE) // Reborn: Terrain bridges own a generated GenericBridge object that must never disappear.
 {
 
 	// save the template name
@@ -315,7 +316,8 @@ m_bridgeInfo(theInfo)
 
 //-------------------------------------------------------------------------------------------------
 //-------------------------------------------------------------------------------------------------
-Bridge::Bridge(Object *bridgeObj)
+Bridge::Bridge(Object *bridgeObj) :
+m_isLandmarkBridge(TRUE) // Reborn: Landmark bridges are ordinary map objects that scripts can remove.
 {
 
 	// save the template name
@@ -889,7 +891,16 @@ void Bridge::updateDamageState()
 		}
 	}	else {
 		m_bridgeInfo.bridgeObjectID = INVALID_ID;
-		DEBUG_CRASH(("Bridge object disappeared - unexpected. jba."));
+		// Reborn: A landmark bridge object may be deleted on purpose by a script (CHI06's ending replaces the train
+		// bridge with a cinematic copy). The bridge is already detached above, so only log that expected case.
+		if (m_isLandmarkBridge)
+		{
+			DEBUG_LOG(("Bridge::updateDamageState - landmark bridge object '%s' was removed; detaching it from the bridge logic.", m_templateName.str()));
+		}
+		else
+		{
+			DEBUG_CRASH(("Bridge object disappeared - unexpected. jba."));
+		}
 	}
 
 }

@@ -5774,6 +5774,19 @@ void Object::doCommandButton( const CommandButton *commandButton, CommandSourceT
 					}
 					else
 					{
+#if !RETAIL_COMPATIBLE_CRC
+						// Reborn: CHI07 was scripted for the original Generals engine, where a script FIRE_WEAPON command
+						// only armed the button's weapon slot until the next attack finished. Keep that behaviour on this map
+						// so Jarmen Kell snipes vehicles entering his range; every other map keeps the Zero Hour logic below.
+						if( cmdSource == CMD_FROM_SCRIPT && TheGlobalData &&
+							TheGlobalData->m_mapName.compareNoCase( "Maps\\CHI07\\CHI07.map" ) == 0 )
+						{
+							setWeaponLock( commandButton->getWeaponSlot(), LOCKED_TEMPORARILY );
+							DEBUG_LOG( ("Script doCommandButton for button %s armed weapon slot %d using the original Generals behaviour on CHI07.",
+								commandButton->getName().str(), (Int)commandButton->getWeaponSlot()) );
+							return;
+						}
+#endif
 						DEBUG_CRASH( ("WARNING: Script doCommandButton for button %s cannot fire weapon with NO POSITION. Skipping.", commandButton->getName().str()) );
 					}
 					return;

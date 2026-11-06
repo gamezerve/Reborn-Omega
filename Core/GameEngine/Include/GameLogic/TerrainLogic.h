@@ -174,6 +174,7 @@ protected:
 	BridgeInfo				m_bridgeInfo;
 	Region2D					m_bounds; /// 2d bounds for quick screening.
 	PathfindLayerEnum	m_layer;  ///< Pathfind layer for this bridge.
+	Bool							m_isLandmarkBridge; ///< Reborn: Created from a placed landmark bridge object, which scripts may delete (e.g. CHI06's ending cinematic).
 
 public:
 	// should be protected, but friendly access needed (srj)
