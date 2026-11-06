@@ -61,7 +61,7 @@ const FieldParse* DieMuxData::getFieldParse()
 		{ "ExemptStatus",			ObjectStatusMaskType::parseFromINI,	nullptr,	offsetof( DieMuxData, m_exemptStatus ) },
 		{ "RequiredStatus",		ObjectStatusMaskType::parseFromINI, nullptr,	offsetof( DieMuxData, m_requiredStatus ) },
 		{ "TriggeredBy",	INI::parseAsciiString,						nullptr,	offsetof( DieMuxData, m_requiredUpgradeName ) }, // Reborn
-		{ "ConflictsWith",		INI::parseAsciiString,						nullptr,	offsetof( DieMuxData, m_exemptUpgradeName ) }, // Reborn
+		{ "ConflictsWith",		INI::parseAsciiStringVector,			nullptr,	offsetof( DieMuxData, m_exemptUpgradeNames ) }, // Reborn: Allow more than one conflicting upgrade.
 		{ nullptr, nullptr, nullptr, 0 }
 	};
   return dataFieldParse;
@@ -107,8 +107,12 @@ Bool DieMuxData::isDieApplicable(const Object* obj, const DamageInfo *damageInfo
 	if( m_requiredUpgradeName.isNotEmpty() && !hasDieMuxUpgrade(obj, m_requiredUpgradeName) )
 		return false;
 
-	if( m_exemptUpgradeName.isNotEmpty() && hasDieMuxUpgrade(obj, m_exemptUpgradeName) )
-		return false;
+	// Reborn: Any completed conflict suppresses this death effect.
+	for( const AsciiString& upgradeName : m_exemptUpgradeNames )
+	{
+		if( hasDieMuxUpgrade(obj, upgradeName) )
+			return false;
+	}
 
 	return true;
 }

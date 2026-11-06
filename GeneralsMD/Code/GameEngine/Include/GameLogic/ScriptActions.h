@@ -146,7 +146,8 @@ protected:
 	void doNamedExitAll(const AsciiString& unitName);
 	void doTeamExitAll(const AsciiString& teamName);
   void doNamedSetGarrisonEvacDisposition(const AsciiString& unitName, UnsignedInt disp );
-	void doNamedFollowWaypoints(const AsciiString& unitName, const AsciiString& waypointName);
+	// Reborn: Allow explicit script orders to preserve active construction.
+	void doNamedFollowWaypoints(const AsciiString& unitName, const AsciiString& waypointName, Bool preserveActiveConstruction = FALSE);
 	void doTeamFollowWaypoints(const AsciiString& teamName, const AsciiString& waypointName, Bool asTeam);
 	void doTeamFollowWaypointsExact(const AsciiString& teamName, const AsciiString& waypointName, Bool asTeam);
 	void doNamedFollowWaypointsExact(const AsciiString& unitName, const AsciiString& waypointName);

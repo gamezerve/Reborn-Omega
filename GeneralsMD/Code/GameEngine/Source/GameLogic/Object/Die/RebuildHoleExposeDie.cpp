@@ -66,6 +66,8 @@ RebuildHoleExposeDieModuleData::RebuildHoleExposeDieModuleData()
 	{
 		{ "HoleName", INI::parseAsciiString, nullptr, offsetof( RebuildHoleExposeDieModuleData, m_holeName ) },
 		{ "HoleMaxHealth", INI::parseReal, nullptr, offsetof( RebuildHoleExposeDieModuleData, m_holeMaxHealth ) },
+		// Reborn: Accept a building-specific delay for holes shared by multiple structures.
+		{ "WorkerRespawnDelay", INI::parseDurationUnsignedInt, nullptr, offsetof( RebuildHoleExposeDieModuleData, m_workerRespawnDelay ) },
 		{ "TransferAttackers", INI::parseBool, nullptr, offsetof( RebuildHoleExposeDieModuleData, m_transferAttackers ) },
 		{ nullptr, nullptr, nullptr, 0 }
 	};

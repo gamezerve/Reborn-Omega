@@ -34,6 +34,8 @@
 #include "GameLogic/Module/BehaviorModule.h"
 #include "Common/ObjectStatusTypes.h"
 
+#include <vector>
+
 //-------------------------------------------------------------------------------------------------
 /** OBJECT DIE MODULE base class */
 //-------------------------------------------------------------------------------------------------
@@ -55,7 +57,7 @@ public:
 	ObjectStatusMaskType	m_exemptStatus;						///< die module is ignored if any of these status bits are set
 	ObjectStatusMaskType	m_requiredStatus;					///< die module is ignored if any of these status bits are clear
 	AsciiString						m_requiredUpgradeName;		///< Reborn: die module is ignored unless the object or its controlling player has this upgrade
-	AsciiString						m_exemptUpgradeName;			///< Reborn: die module is ignored if the object or its controlling player has this upgrade
+	std::vector<AsciiString>	m_exemptUpgradeNames;		///< Reborn: Ignore the die module if any conflicting upgrade is complete.
 
 	DieMuxData();
 	static const FieldParse* getFieldParse();

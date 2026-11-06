@@ -75,6 +75,7 @@
 #include "GameLogic/Module/CommandSetUpgrade.h"
 #include "GameLogic/Module/ContainModule.h"
 #include "GameLogic/Module/DeliverPayloadAIUpdate.h"
+#include "GameLogic/Module/DozerAIUpdate.h" // Reborn: Check the dozer task before a conditional waypoint order.
 #include "GameLogic/Module/SpecialPowerModule.h"
 #include "GameLogic/Module/SupplyWarehouseDockUpdate.h"
 #include "GameLogic/Module/TransportContain.h"
@@ -2500,9 +2501,9 @@ void ScriptActions::doNamedSetGarrisonEvacDisposition(const AsciiString& unitNam
 
 
 //-------------------------------------------------------------------------------------------------
-/** doNamedFollowWaypoints */
+/** Reborn: Follow waypoints, with an option to let a dozer finish active construction. */
 //-------------------------------------------------------------------------------------------------
-void ScriptActions::doNamedFollowWaypoints(const AsciiString& unitName, const AsciiString& waypointPathLabel)
+void ScriptActions::doNamedFollowWaypoints(const AsciiString& unitName, const AsciiString& waypointPathLabel, Bool preserveActiveConstruction)
 {
 	Object *theUnit = TheScriptEngine->getUnitNamed( unitName );
 	if (!theUnit) {
@@ -2520,6 +2521,20 @@ void ScriptActions::doNamedFollowWaypoints(const AsciiString& unitName, const As
 	}
 
 	DEBUG_ASSERTLOG(TheTerrainLogic->isPurposeOfPath(way, waypointPathLabel), ("***Wrong waypoint purpose. Make jba fix this."));
+
+	// Reborn: A dozer already at its construction site keeps working. A pending build yields to the route.
+	if (preserveActiveConstruction)
+	{
+		DozerAIInterface* dozer = aiUpdate->getDozerAIInterface();
+		if (!dozer)
+			return;
+		if (dozer->isTaskPending(DOZER_TASK_BUILD))
+		{
+			if (dozer->getCurrentTask() == DOZER_TASK_BUILD && dozer->getBuildSubTask() == DOZER_DO_BUILD_AT_DOCK)
+				return;
+			dozer->cancelTask(DOZER_TASK_BUILD);
+		}
+	}
 
 	theUnit->leaveGroup();
 	aiUpdate->chooseLocomotorSet(LOCOMOTORSET_NORMAL);
@@ -8355,6 +8370,11 @@ void ScriptActions::executeAction( ScriptAction *pAction )
 		default:
 			DEBUG_CRASH(("Unknown ScriptAction type %d", pAction->getActionType())); return;
 
+
+		// Reborn: Preserve active construction when issuing a route to the named dozer.
+		case ScriptAction::ACTION_REBORN_NAMED_FOLLOW_WAYPOINTS_UNLESS_BUILDING:
+			doNamedFollowWaypoints(pAction->getParameter(0)->getString(), pAction->getParameter(1)->getString(), TRUE);
+			return;
 
 		// Reborn: Campaign reinforcement transfer excludes aircraft and infantry still inside parachutes.
 		case ScriptAction::ACTION_REBORN_TRANSFER_LANDED_INFANTRY:
