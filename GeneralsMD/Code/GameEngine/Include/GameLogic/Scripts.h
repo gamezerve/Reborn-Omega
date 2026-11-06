@@ -560,6 +560,9 @@ public:
 		// Reborn: Select cinematic or player-return height for a blur jump without changing legacy action parameters.
 		ACTION_REBORN_CAMERA_BLUR_JUMP,
 
+		// Reborn: Follow a waypoint path only when the named dozer is free to move.
+		ACTION_REBORN_NAMED_FOLLOW_WAYPOINTS_UNLESS_BUILDING,
+
 		// add new items here, please
 		NUM_ITEMS
 	};

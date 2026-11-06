@@ -40,6 +40,7 @@
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/Module/BodyModule.h"
 #include "GameLogic/Module/RebuildHoleBehavior.h"
+#include "GameLogic/Module/RebuildHoleExposeDie.h"
 #include "GameLogic/Module/StickyBombUpdate.h"
 
 
@@ -126,6 +127,22 @@ void RebuildHoleBehavior::newWorkerRespawnProcess( Object *existingWorker )
 
 	// set the timer for the next worker respawn
 	m_workerWaitCounter = modData->m_workerRespawnDelay;
+
+	// Reborn: Keep the shared hole and use the rebuilding structure's delay when configured.
+	if( m_rebuildTemplate )
+	{
+		const AsciiString& holeName = getObject()->getTemplate()->getName();
+		const ModuleInfo& behaviorModules = m_rebuildTemplate->getBehaviorModuleInfo();
+		for( Int i = 0; i < behaviorModules.getCount(); ++i )
+		{
+			const auto* data = dynamic_cast<const RebuildHoleExposeDieModuleData*>( behaviorModules.getNthData( i ) );
+			if( data && data->m_holeName == holeName && data->m_workerRespawnDelay > 0 )
+			{
+				m_workerWaitCounter = data->m_workerRespawnDelay;
+				break;
+			}
+		}
+	}
 
 	//
 	// this method is called when a worker needs to be respawned from the hole.  One of those
@@ -479,8 +496,12 @@ void RebuildHoleBehavior::xfer( Xfer *xfer )
 // ------------------------------------------------------------------------------------------------
 void RebuildHoleBehavior::loadPostProcess()
 {
-
-	// extend base class
 	UpdateModule::loadPostProcess();
 
+#if !RETAIL_COMPATIBLE_CRC
+	// Reborn: Restore the hole link in saves where construction overwrote it with the worker ID.
+	Object *reconstructing = TheGameLogic->findObjectByID( m_reconstructingID );
+	if( reconstructing && reconstructing->testStatus( OBJECT_STATUS_RECONSTRUCTING ) )
+		reconstructing->setProducer( getObject() );
+#endif
 }

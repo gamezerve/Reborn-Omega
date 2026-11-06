@@ -542,15 +542,13 @@ StateReturnType DozerActionDoActionState::update()
 				BodyModuleInterface *body = goalObject->getBodyModule();
 				body->internalChangeHealth( body->getMaxHealth() / INT_TO_REAL( framesToBuild ) );
 
-				//
-				// since we've just actually contributed a "piece" to this building, we'll say that
-				// we are now the producer and the builder
-				//
-				goalObject->setProducer( dozer );
+				const Bool constructionComplete = goalObject->getConstructionPercent() >= 100.0f;
+				// Reborn: Keep the hole as the producer until reconstruction finishes so attacks can return to it.
+				if( RETAIL_COMPATIBLE_CRC || constructionComplete || !goalObject->testStatus( OBJECT_STATUS_RECONSTRUCTING ) )
+					goalObject->setProducer( dozer );
 				goalObject->setBuilder( dozer );
 
-				// check for construction complete
-				if( goalObject->getConstructionPercent() >= 100.0f )
+				if( constructionComplete )
 				{
 
 					// clear the under construction status

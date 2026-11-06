@@ -4205,6 +4205,18 @@ void ScriptEngine::init()
 	curTemplate->m_uiStrings[1] = " into team ";
 	curTemplate->m_uiStrings[2] = ".";
 
+	// Reborn: Let each dozer keep building when a map orders it to follow waypoints.
+	curTemplate = &m_actionTemplates[ScriptAction::ACTION_REBORN_NAMED_FOLLOW_WAYPOINTS_UNLESS_BUILDING];
+	curTemplate->m_internalName = "ACTION_REBORN_NAMED_FOLLOW_WAYPOINTS_UNLESS_BUILDING";
+	curTemplate->m_uiName = "Reborn/Named Dozer Follows Waypoints Unless Building";
+	curTemplate->m_numParameters = 2;
+	curTemplate->m_parameters[0] = Parameter::UNIT;
+	curTemplate->m_parameters[1] = Parameter::WAYPOINT_PATH;
+	curTemplate->m_numUiStrings = 3;
+	curTemplate->m_uiStrings[0] = "Dozer ";
+	curTemplate->m_uiStrings[1] = " follows waypoint path ";
+	curTemplate->m_uiStrings[2] = " unless it is actively building.";
+
 	/* Recipe for adding a condition:
 			1. In Scripts.h, add an enum element to enum ConditionType just before NUM_ITEMS.
 			2. Go to the end of this section of templates, and create a template.
