@@ -20,6 +20,7 @@
 
 #include "Common/ReplaySimulation.h"
 
+#include "Common/CRCDebug.h"
 #include "Common/GameEngine.h"
 #include "Common/LocalFileSystem.h"
 #include "Common/Recorder.h"
@@ -170,10 +171,11 @@ int ReplaySimulation::simulateReplaysInWorkerProcesses(const std::vector<AsciiSt
 			UnicodeString filenameWide;
 			filenameWide.translate(filenames[filenamePositionStarted]);
 			UnicodeString command;
-			command.format(L"\"%s\"%s%s -replay \"%s\"",
+			command.format(L"\"%s\"%s%s%s -replay \"%s\"",
 				exePath,
 				TheGlobalData->m_windowed ? L" -win" : L"",
 				TheGlobalData->m_headless ? L" -headless" : L"",
+				TheDebugIgnoreReplaySyncErrors ? L" -ignoreReplaySyncErrors" : L"",
 				filenameWide.str());
 
 			processes.push_back(WorkerProcess());
