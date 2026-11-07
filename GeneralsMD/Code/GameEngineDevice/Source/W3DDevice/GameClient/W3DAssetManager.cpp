@@ -75,6 +75,7 @@
 #include <memory>
 #include <vector>
 #include <stdexcept>
+#include <string> // Reborn: Build a cache key for the full set of texture swaps.
 
 
 //---------------------------------------------------------------------
@@ -844,13 +845,15 @@ __int64 Total_Create_Render_Obj_Time=0;
 //---------------------------------------------------------------------
 /** Generals specific code to generate customized render objects for each team color
 	Scale==1.0, color==0x00000000, and oldTexture==nullptr are defaults that do nothing.
+	Reborn: A draw module can also supply its own texture swaps for this render prototype.
 */
 RenderObjClass * W3DAssetManager::Create_Render_Obj(
 	const char * name,
 	float scale,
 	const int color,
 	const char *oldTexture,
-	const char *newTexture
+	const char *newTexture,
+	const std::vector<std::pair<AsciiString, AsciiString>>* textureReplacements
 )
 {
 	#ifdef DUMP_PERF_STATS
@@ -862,8 +865,9 @@ RenderObjClass * W3DAssetManager::Create_Render_Obj(
 	Bool reallycolor = (color & 0xFFFFFF) != 0;	//black is not a valid color and assumes no custom coloring.
 	Bool reallytexture = (oldTexture != nullptr && newTexture != nullptr);
 
-	// base case, no scale or color
-	if (!reallyscale && !reallycolor && !reallytexture)
+	// Reborn: Use the shared prototype only if no visual customization was requested.
+	const Bool hasModuleTextures = textureReplacements && !textureReplacements->empty();
+	if (!reallyscale && !reallycolor && !reallytexture && !hasModuleTextures)
 	{
 		RenderObjClass *robj=WW3DAssetManager::Create_Render_Obj(name);
 	#ifdef DUMP_PERF_STATS
@@ -876,11 +880,32 @@ RenderObjClass * W3DAssetManager::Create_Render_Obj(
 	char newname[512];
 	Munge_Render_Obj_Name(newname, ARRAY_SIZE(newname), name, scale, color, newTexture);
 
+	// Reborn: Cache by the full texture mapping so one faction's material cannot leak into another.
+	std::string replacementName;
+	const char* prototypeName = newname;
+	if (hasModuleTextures)
+	{
+		replacementName = newname;
+		if (reallytexture)
+		{
+			replacementName += '|';
+			replacementName += oldTexture;
+		}
+		for (const auto& replacement : *textureReplacements)
+		{
+			replacementName += '|';
+			replacementName += replacement.first.str();
+			replacementName += '>';
+			replacementName += replacement.second.str();
+		}
+		prototypeName = replacementName.c_str();
+	}
+
 	// see if we got a cached version
 	RenderObjClass *rendobj = nullptr;
 
 	Set_WW3D_Load_On_Demand(false); // munged name will never be found in a file.
-	rendobj = WW3DAssetManager::Create_Render_Obj(newname);
+	rendobj = WW3DAssetManager::Create_Render_Obj(prototypeName); // Reborn: Look up the isolated texture variant.
 	if (rendobj)
 	{	//store the color that we used to create asset so we can read it back out
 		//when we need to save this render object to a file.  Used during saving
@@ -956,7 +981,7 @@ RenderObjClass * W3DAssetManager::Create_Render_Obj(
 		rendobj->Scale(scale);	//this also makes it unique
 
 	//Make_Unique(rendobj,reallyscale,reallycolor);
-	Make_Unique(rendobj, reallyscale, reallycolor, reallytexture);
+	Make_Unique(rendobj, reallyscale, reallycolor, reallytexture || hasModuleTextures); // Reborn: Detach shared materials before swapping textures.
 
 	if (reallytexture)
 	{
@@ -967,10 +992,17 @@ RenderObjClass * W3DAssetManager::Create_Render_Obj(
 		REF_PTR_RELEASE(oldTex);
 	}
 
+	// Reborn: Apply every module swap to the detached render object, preserving state-specific swaps.
+	if (hasModuleTextures)
+	{
+		for (const auto& replacement : *textureReplacements)
+			replacePrototypeTexture(rendobj, replacement.first.str(), replacement.second.str());
+	}
+
 	if (reallycolor)
 		Recolor_Asset(rendobj,color);
 
-	W3DPrototypeClass *w3dproto = newInstance(W3DPrototypeClass)(rendobj, newname);
+	W3DPrototypeClass *w3dproto = newInstance(W3DPrototypeClass)(rendobj, prototypeName);
 	rendobj->Release_Ref();
 	Add_Prototype(w3dproto);
 

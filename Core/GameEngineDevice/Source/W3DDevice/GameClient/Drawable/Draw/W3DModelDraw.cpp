@@ -1203,6 +1203,28 @@ static void parseAsciiStringLC( INI* ini, void * /*instance*/, void *store, cons
 //-------------------------------------------------------------------------------------------------
 static void parseOverrideConditionState(INI* ini, void* instance, void* store, const void* userData);
 
+#if RTS_ZEROHOUR
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Read a texture swap that applies to all model states in this draw module. */
+//-------------------------------------------------------------------------------------------------
+static void parseModuleReplaceTexture(INI* ini, void* instance, void* /*store*/, const void* /*userData*/)
+{
+	AsciiString source = ini->getNextAsciiString();
+	AsciiString target = ini->getNextAsciiString();
+	source.toLower();
+	target.toLower();
+
+	if (source.isEmpty() || target.isEmpty() || source.isNone() || target.isNone())
+	{
+		DEBUG_CRASH(("Draw-module ReplaceTexture requires a source and a replacement texture."));
+		throw INI_INVALID_DATA;
+	}
+
+	auto* data = static_cast<W3DModelDrawModuleData*>(instance);
+	data->m_textureReplacements.emplace_back(source, target);
+}
+#endif
+
 //-------------------------------------------------------------------------------------------------
 void W3DModelDrawModuleData::buildFieldParse(MultiIniFieldParse& p)
 {
@@ -1225,6 +1247,9 @@ void W3DModelDrawModuleData::buildFieldParse(MultiIniFieldParse& p)
 		{ "DefaultConditionState", W3DModelDrawModuleData::parseConditionState, (void*)PARSE_DEFAULT, 0 },
 		{ "ConditionState", W3DModelDrawModuleData::parseConditionState, (void*)PARSE_NORMAL, 0 },
 		{ "OverrideConditionState", parseOverrideConditionState, nullptr, 0 },
+#if RTS_ZEROHOUR
+		{ "ReplaceTexture", parseModuleReplaceTexture, nullptr, 0 }, // Reborn: Allow multiple module-wide texture swaps.
+#endif
 		{ "AliasConditionState", W3DModelDrawModuleData::parseConditionState, (void*)PARSE_ALIAS, 0 },
 		{ "TransitionState", W3DModelDrawModuleData::parseConditionState, (void*)PARSE_TRANSITION, 0 },
 		{ "TrackMarks", parseAsciiStringLC, nullptr, offsetof(W3DModelDrawModuleData, m_trackFile) },
@@ -3541,12 +3566,15 @@ void W3DModelDraw::setModelState(const ModelConditionInfo* newState)
 			const char* newTexture = nullptr;
 			getTextureSwapForState(newState, oldTexture, newTexture);
 
+#if RTS_ZEROHOUR
+			// Reborn: Apply draw-module texture swaps to normal models and transition models.
 			m_renderObject = W3DDisplay::m_assetManager->Create_Render_Obj(
-				newState->m_modelName.str(),
-				draw->getScale(),
-				m_hexColor,
-				oldTexture,
-				newTexture);
+				newState->m_modelName.str(), draw->getScale(), m_hexColor, oldTexture, newTexture,
+				&getW3DModelDrawModuleData()->m_textureReplacements);
+#else
+			m_renderObject = W3DDisplay::m_assetManager->Create_Render_Obj(
+				newState->m_modelName.str(), draw->getScale(), m_hexColor, oldTexture, newTexture);
+#endif
 			DEBUG_ASSERTCRASH(m_renderObject, ("*** ASSET ERROR: Model %s not found!",newState->m_modelName.str()));
 		}
 

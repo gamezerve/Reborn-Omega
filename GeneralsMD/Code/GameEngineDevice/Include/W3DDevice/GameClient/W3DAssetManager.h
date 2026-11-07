@@ -45,6 +45,9 @@
 #pragma once
 
 #include "WW3D2/assetmgr.h"
+#include "Common/AsciiString.h" // Reborn: Draw-module texture swap names.
+#include <utility>
+#include <vector>
 
 class Vector3;
 class VertexMaterialClass;
@@ -78,7 +81,10 @@ public:
 	void Report_Used_Font3DDatas();
 	void Report_Used_FontChars ();
 
-	virtual RenderObjClass * Create_Render_Obj(const char * name,float scale, const int color, const char *oldTexture=nullptr, const char *newTexture=nullptr);
+	// Reborn: Keep draw-module texture swaps on the customized render prototype.
+	virtual RenderObjClass * Create_Render_Obj(const char * name, float scale, const int color,
+		const char *oldTexture = nullptr, const char *newTexture = nullptr,
+		const std::vector<std::pair<AsciiString, AsciiString>>* textureReplacements = nullptr);
 	///Swaps the specified textures in the render object prototype.
 	int replacePrototypeTexture(RenderObjClass *robj, const char * oldname, const char * newname);
 
