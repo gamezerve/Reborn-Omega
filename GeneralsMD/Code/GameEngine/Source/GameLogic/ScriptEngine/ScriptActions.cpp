@@ -5938,9 +5938,9 @@ void ScriptActions::doWaterChangeHeightOverTime( const AsciiString& waterName, R
 }
 
 //-------------------------------------------------------------------------------------------------
-/** doBorderSwitch */
+/** Reborn: Switch the boundary and optionally discard a player's carried-over shroud. */
 //-------------------------------------------------------------------------------------------------
-void ScriptActions::doBorderSwitch(Int borderToUse)
+void ScriptActions::doBorderSwitch(Int borderToUse, const AsciiString& resetShroudPlayerName)
 {
 	/*
 	 *	The observer player always has to have the map completely revealed for him.
@@ -5963,7 +5963,11 @@ void ScriptActions::doBorderSwitch(Int borderToUse)
 		ThePartitionManager->undoRevealMapForPlayerPermanently( observerPlayerIndex );
 	}
 
-	TheTerrainLogic->setActiveBoundary(borderToUse);
+	// Reborn: Keep the old shroud behavior when the script specifies no player.
+	const Player* resetShroudPlayer = resetShroudPlayerName.isNotEmpty() && resetShroudPlayerName != "???"
+		? TheScriptEngine->getPlayerFromAsciiString(resetShroudPlayerName)
+		: nullptr;
+	TheTerrainLogic->setActiveBoundary(borderToUse, resetShroudPlayer ? resetShroudPlayer->getPlayerIndex() : -1);
 
 	if (observerPlayerIndex != -1)
 	{
@@ -9290,7 +9294,8 @@ void ScriptActions::executeAction( ScriptAction *pAction )
 			return;
 
 		case ScriptAction::MAP_SWITCH_BORDER:
-			doBorderSwitch(pAction->getParameter(0)->getInt());
+			// Reborn: Use the map's optional shroud reset player.
+			doBorderSwitch(pAction->getParameter(0)->getInt(), pAction->getParameter(1)->getString());
 			return;
 
 		case ScriptAction::OBJECT_FORCE_SELECT:

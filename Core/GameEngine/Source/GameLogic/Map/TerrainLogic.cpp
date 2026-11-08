@@ -2537,7 +2537,10 @@ void TerrainLogic::findAxisAlignedBoundingRect( const WaterHandle *water, Region
 
 }
 
-void TerrainLogic::setActiveBoundary(Int newActiveBoundary)
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Rebuild the boundary, optionally starting one player with fresh shroud. */
+//-------------------------------------------------------------------------------------------------
+void TerrainLogic::setActiveBoundary(Int newActiveBoundary, Int resetShroudPlayerIndex)
 {
 	if (newActiveBoundary < 0 || (size_t)newActiveBoundary >= m_boundaries.size()) {
 		// probably should DEBUG_ASSERT here
@@ -2578,6 +2581,14 @@ void TerrainLogic::setActiveBoundary(Int newActiveBoundary)
 
 	//Store permanently revealed cells.
 	ThePartitionManager->storeFoggedCells(partitionStore, FALSE);
+
+	// Reborn: Do not turn the player's old unit vision into permanent reveal during this switch.
+	// Current unit vision is rebuilt when the objects are registered with the new boundary.
+	if (resetShroudPlayerIndex >= 0 && resetShroudPlayerIndex < MAX_PLAYER_COUNT)
+	{
+		auto& storedShroud = partitionStore.m_foggedOrRevealed[resetShroudPlayerIndex];
+		std::fill(storedShroud.begin(), storedShroud.end(), STORE_DONTTOUCH);
+	}
 
 	ThePartitionManager->reset();
 	ThePartitionManager->init();

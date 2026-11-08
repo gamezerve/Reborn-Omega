@@ -3328,11 +3328,14 @@ void ScriptEngine::init()
 	curTemplate = &m_actionTemplates[ScriptAction::MAP_SWITCH_BORDER];
 	curTemplate->m_internalName = "MAP_SWITCH_BORDER";
 	curTemplate->m_uiName = "Map_/ Change the active boundary.";
-	curTemplate->m_numParameters = 1;
+	// Reborn: Let the map request fresh shroud for a specific player during the switch.
+	curTemplate->m_numParameters = 2;
 	curTemplate->m_parameters[0] = Parameter::BOUNDARY;
-	curTemplate->m_numUiStrings = 2;
+	curTemplate->m_parameters[1] = Parameter::SIDE;
+	curTemplate->m_numUiStrings = 3;
 	curTemplate->m_uiStrings[0] = " ";
-	curTemplate->m_uiStrings[1] = " becomes the active border.";
+	curTemplate->m_uiStrings[1] = " becomes the active border. Optional player whose shroud is reset: ";
+	curTemplate->m_uiStrings[2] = ".";
 
 	curTemplate = &m_actionTemplates[ScriptAction::OBJECT_FORCE_SELECT];
 	curTemplate->m_internalName = "OBJECT_FORCE_SELECT";
