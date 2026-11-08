@@ -4711,6 +4711,20 @@ void ScriptActions::doUnitExitBuilding(const AsciiString& unitName)
 	}
 
 	ai->chooseLocomotorSet(LOCOMOTORSET_NORMAL);
+#if !RETAIL_COMPATIBLE_CRC
+	// Reborn: Complete Jarmen's garrison exit before CHI07 re-arms his sniper weapon.
+	if (unitName == "Jarmen" && TheGlobalData &&
+		TheGlobalData->m_mapName.compareNoCase( "Maps\\CHI07\\CHI07.map" ) == 0)
+	{
+		const Object* building = theUnit->getContainedBy();
+		const ContainModuleInterface* contain = building ? building->getContain() : nullptr;
+		if (contain && contain->isGarrisonable())
+		{
+			ai->aiExitInstantly(nullptr, CMD_FROM_SCRIPT);
+			return;
+		}
+	}
+#endif
 	ai->aiExit(nullptr, CMD_FROM_SCRIPT);
 }
 
@@ -5924,9 +5938,9 @@ void ScriptActions::doWaterChangeHeightOverTime( const AsciiString& waterName, R
 }
 
 //-------------------------------------------------------------------------------------------------
-/** doBorderSwitch */
+/** Reborn: Switch the boundary and optionally discard a player's carried-over shroud. */
 //-------------------------------------------------------------------------------------------------
-void ScriptActions::doBorderSwitch(Int borderToUse)
+void ScriptActions::doBorderSwitch(Int borderToUse, const AsciiString& resetShroudPlayerName)
 {
 	/*
 	 *	The observer player always has to have the map completely revealed for him.
@@ -5949,7 +5963,11 @@ void ScriptActions::doBorderSwitch(Int borderToUse)
 		ThePartitionManager->undoRevealMapForPlayerPermanently( observerPlayerIndex );
 	}
 
-	TheTerrainLogic->setActiveBoundary(borderToUse);
+	// Reborn: Keep the old shroud behavior when the script specifies no player.
+	const Player* resetShroudPlayer = resetShroudPlayerName.isNotEmpty() && resetShroudPlayerName != "???"
+		? TheScriptEngine->getPlayerFromAsciiString(resetShroudPlayerName)
+		: nullptr;
+	TheTerrainLogic->setActiveBoundary(borderToUse, resetShroudPlayer ? resetShroudPlayer->getPlayerIndex() : -1);
 
 	if (observerPlayerIndex != -1)
 	{
@@ -9276,7 +9294,8 @@ void ScriptActions::executeAction( ScriptAction *pAction )
 			return;
 
 		case ScriptAction::MAP_SWITCH_BORDER:
-			doBorderSwitch(pAction->getParameter(0)->getInt());
+			// Reborn: Use the map's optional shroud reset player.
+			doBorderSwitch(pAction->getParameter(0)->getInt(), pAction->getParameter(1)->getString());
 			return;
 
 		case ScriptAction::OBJECT_FORCE_SELECT:

@@ -56,6 +56,7 @@
 #include "Common/Snapshot.h"
 #include "Common/Geometry.h"
 #include "GameClient/Display.h"	// for ShroudLevel
+#include <source_location> // Reborn: Preserve the caller of shroud removal operations.
 
 //-----------------------------------------------------------------------------
 //           defines
@@ -330,7 +331,9 @@ public:
 	Int getCellY() const { return m_cellY; }
 
 	void addLooker( Int playerIndex );
-	void removeLooker( Int playerIndex );
+	// Reborn: Report the first invalid cell for each removal operation.
+	void removeLooker( Int playerIndex, const std::source_location& caller = std::source_location::current(),
+		Bool* loggedMismatch = nullptr );
 	void addShrouder( Int playerIndex );
 	void removeShrouder( Int playerIndex );
 	CellShroudStatus getShroudStatusForPlayer( Int playerIndex ) const;
@@ -1303,7 +1306,7 @@ protected:
 	// These are all friend functions now. They will continue to function as before, but can be passed into
 	// the DiscreteCircle::drawCircle function.
 	friend void hLineAddLooker(Int x1, Int x2, Int y, void *playerIndex);
-	friend void hLineRemoveLooker(Int x1, Int x2, Int y, void *playerIndex);
+	friend void hLineRemoveLooker(Int x1, Int x2, Int y, void *context); // Reborn: Pass the diagnostic context with the player.
 	friend void hLineAddShrouder(Int x1, Int x2, Int y, void *playerIndex);
 	friend void hLineRemoveShrouder(Int x1, Int x2, Int y, void *playerIndex);
 
@@ -1353,7 +1356,9 @@ public:
 	/// A convenience function to reveal shroud at some location
 	// Queuing does not give you control of the timestamp to enforce the queue.  I own the delay, you don't.
 	void doShroudReveal( Real centerX, Real centerY, Real radius, PlayerMaskType playerMask);
-	void undoShroudReveal( Real centerX, Real centerY, Real radius, PlayerMaskType playerMask);
+	// Reborn: Keep the source of the removal through the cell scan.
+	void undoShroudReveal( Real centerX, Real centerY, Real radius, PlayerMaskType playerMask,
+		const std::source_location& caller = std::source_location::current() );
 	void queueUndoShroudReveal( Real centerX, Real centerY, Real radius, PlayerMaskType playerMask );
 
 	void doShroudCover( Real centerX, Real centerY, Real radius, PlayerMaskType playerMask);
@@ -1507,7 +1512,9 @@ public:
 	/**
 		Adds a layer of permanent blindness.  Used solely to undo the permanent reveal for debugging
 		*/
-	void undoRevealMapForPlayerPermanently( Int playerIndex );
+	// Reborn: Identify which caller requested removal of full-map vision.
+	void undoRevealMapForPlayerPermanently( Int playerIndex,
+		const std::source_location& caller = std::source_location::current() );
 
 	/**
 		Resets the shroud for the given player with passive shroud (can re-explore).

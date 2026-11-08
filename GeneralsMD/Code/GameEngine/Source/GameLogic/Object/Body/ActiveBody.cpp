@@ -51,6 +51,7 @@
 #include "GameLogic/Object.h"
 #include "GameLogic/Damage.h"
 #include "GameLogic/PartitionManager.h"
+#include "GameLogic/ScriptEngine.h"
 #include "GameLogic/TerrainLogic.h"
 #include "GameLogic/Weapon.h"
 #include "GameLogic/Module/AIUpdate.h"
@@ -424,6 +425,13 @@ void ActiveBody::attemptDamage( DamageInfo *damageInfo )
 				}
 				else
 				{
+#if !RETAIL_COMPATIBLE_CRC
+					// Reborn: Detect CHI07's named Jarmen before the vehicle leaves its original team.
+					const Bool notifyChi07Snipe = damager && TheScriptEngine && TheGlobalData &&
+						TheGlobalData->m_mapName.compareNoCase( "Maps\\CHI07\\CHI07.map" ) == 0 &&
+						TheScriptEngine->getUnitNamed( "Jarmen" ) == damager &&
+						obj->getControllingPlayer() != ThePlayerList->getNeutralPlayer();
+#endif
 					// Make it unmanned, so units can easily check the ability to "take control of it"
 					obj->setDisabled( DISABLED_UNMANNED );
 					TheGameLogic->deselectObject(obj, PLAYERMASK_ALL, TRUE);
@@ -433,6 +441,11 @@ void ActiveBody::attemptDamage( DamageInfo *damageInfo )
 
 					// Convert it to the neutral team so it renders gray giving visual representation that it is unmanned.
 					obj->setTeam( ThePlayerList->getNeutralPlayer()->getDefaultTeam() );
+#if !RETAIL_COMPATIBLE_CRC
+					// Reborn: Let script 1.2 observe the completed snipe after the target becomes neutral.
+					if (notifyChi07Snipe)
+						TheScriptEngine->setFlagValue( "Reborn_CHI07_JarmenVehicleSniped", TRUE );
+#endif
 				}
 
 				//We don't care which team sniped the vehicle... we use this information to flag whether or not

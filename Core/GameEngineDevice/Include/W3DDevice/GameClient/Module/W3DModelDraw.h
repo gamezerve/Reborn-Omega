@@ -54,6 +54,9 @@ public:
 #include "Common/SparseMatchFinder.h"
 #include "GameClient/ParticleSys.h"
 #include "Common/STLTypedefs.h"
+#if RTS_ZEROHOUR
+#include <utility> // Reborn: Store source and replacement textures together.
+#endif
 
 // FORWARD REFERENCES /////////////////////////////////////////////////////////////////////////////
 class Thing;
@@ -288,6 +291,9 @@ public:
 																		m_conditionStateMap;
 	mutable TransitionMap							m_transitionMap;
 	std::vector<AsciiString>					m_extraPublicBones;
+#if RTS_ZEROHOUR
+	std::vector<std::pair<AsciiString, AsciiString>> m_textureReplacements; ///< Reborn: Apply these swaps across all states in this draw.
+#endif
 	AsciiString												m_trackFile;						///< if present, leaves tracks using this texture
 	AsciiString												m_attachToDrawableBone;
 #ifdef CACHE_ATTACH_BONE

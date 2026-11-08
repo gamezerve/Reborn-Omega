@@ -321,7 +321,8 @@ protected:
 	void doTeamIdleForFramecount(const AsciiString& teamName, Int framecount);
 	void doWaterChangeHeight(const AsciiString& waterName, Real newHeight);
 	void doWaterChangeHeightOverTime( const AsciiString& waterName, Real newHeight, Real time, Real damage );
-	void doBorderSwitch(Int borderToUse);
+	// Reborn: An optional player starts with fresh shroud after the switch.
+	void doBorderSwitch(Int borderToUse, const AsciiString& resetShroudPlayerName);
 	void doForceObjectSelection(const AsciiString& teamName, const AsciiString& objectType, Bool centerInView, const AsciiString& audioToPlay);
 	void doDestroyAllContained(const AsciiString& unitName, Int damageType);
 	void doRadarForceEnable();

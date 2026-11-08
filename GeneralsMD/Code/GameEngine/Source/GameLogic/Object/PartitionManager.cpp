@@ -54,6 +54,7 @@
 #include "Common/GameEngine.h"
 #include "Common/GameState.h"
 #include "Common/GameUtility.h"
+#include "Common/GlobalData.h" // Reborn: Include the current map in shroud diagnostics.
 #include "Common/MessageStream.h"
 #include "Common/NameKeyGenerator.h"
 #include "Common/PerfTimer.h"
@@ -302,8 +303,16 @@ inline Real calcSqrDist_3D(const Coord3D *dist)
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
+// Reborn: Track the first invalid cell of an area removal separately for each player.
+struct RemoveLookerContext
+{
+	Int playerIndex;
+	const std::source_location& caller;
+	Bool loggedMismatch = FALSE;
+};
+
 void hLineAddLooker(Int x1, Int x2, Int y, void *playerIndexVoid);
-void hLineRemoveLooker(Int x1, Int x2, Int y, void *playerIndexVoid);
+void hLineRemoveLooker(Int x1, Int x2, Int y, void *context);
 void hLineAddShrouder(Int x1, Int x2, Int y, void *playerIndexVoid);
 void hLineRemoveShrouder(Int x1, Int x2, Int y, void *playerIndexVoid);
 void hLineAddThreat(Int x1, Int x2, Int y, void *threatValueParms);
@@ -1677,7 +1686,9 @@ void PartitionCell::addLooker(Int playerIndex)
 }
 
 //-----------------------------------------------------------------------------
-void PartitionCell::removeLooker(Int playerIndex)
+/** Reborn: Log unmatched vision removals before the existing assertion. */
+//-----------------------------------------------------------------------------
+void PartitionCell::removeLooker(Int playerIndex, const std::source_location& caller, Bool* loggedMismatch)
 {
 	CellShroudStatus oldShroud = getShroudStatusForPlayer( playerIndex );
 	// the increasing Algorithm: a -1 goes up to min(1,activeLevel), otherwise it just gets incremented
@@ -1685,6 +1696,34 @@ void PartitionCell::removeLooker(Int playerIndex)
 		m_shroudLevel[playerIndex].m_currentShroud = min( m_shroudLevel[playerIndex].m_activeShroudLevel, (Short)1 );
 	else
 	{
+#ifdef DEBUG_LOGGING
+		// Reborn: Keep one diagnostic per player per operation even when a large area is affected.
+		if (m_shroudLevel[playerIndex].m_currentShroud >= 0 && (!loggedMismatch || !*loggedMismatch))
+		{
+			if (loggedMismatch)
+				*loggedMismatch = TRUE;
+
+			AsciiString map = TheGameState ? TheGameState->getPristineMapName() : AsciiString();
+			if (map.isEmpty() && TheGlobalData)
+				map = TheGlobalData->m_mapName;
+
+			Player* player = ThePlayerList ? ThePlayerList->getNthPlayer(playerIndex) : nullptr;
+			AsciiString playerName;
+			if (player)
+			{
+				playerName.translate(player->getPlayerDisplayName());
+				if (playerName.isEmpty() && TheNameKeyGenerator)
+					playerName = KEYNAME(player->getPlayerNameKey());
+			}
+
+			DEBUG_LOG(("SHROUD_REMOVE_LOOKER_MISMATCH caller='%s' line=%u map='%s' frame=%u "
+				"player=%d playerName='%s' cell=(%d,%d) currentShroud=%d activeShroud=%d\n",
+				caller.function_name(), static_cast<unsigned int>(caller.line()), map.isEmpty() ? "<unknown>" : map.str(),
+				TheGameLogic ? TheGameLogic->getFrame() : 0, playerIndex, playerName.isEmpty() ? "<unknown>" : playerName.str(),
+				m_cellX, m_cellY, m_shroudLevel[playerIndex].m_currentShroud, m_shroudLevel[playerIndex].m_activeShroudLevel));
+		}
+#endif
+
 		DEBUG_ASSERTCRASH( m_shroudLevel[playerIndex].m_currentShroud < 0, ("Someone is RemoveLooker-ing on a cell that is not looked at.  This will make a permanent shroud blob.") );
 		m_shroudLevel[playerIndex].m_currentShroud++;
 	}
@@ -3684,16 +3723,17 @@ void PartitionManager::revealMapForPlayerPermanently( Int playerIndex )
 /**
 		Adds a layer of permanent blindness.  Used solely to undo the permanent reveal for debugging
 	*/
-void PartitionManager::undoRevealMapForPlayerPermanently( Int playerIndex )
+void PartitionManager::undoRevealMapForPlayerPermanently( Int playerIndex, const std::source_location& caller )
 {
 	//First make sure no lingering looks will leave holes when they aren't wanted.
 	processEntirePendingUndoShroudRevealQueue();
 
 	// This will have amusing consequences if done without a preceding revealMapForPlayerPermanently.
 	// Everything you own can become shrouded.
+	Bool loggedMismatch = FALSE; // Reborn: Log only the first affected cell of this full-map operation.
 	for (int i = 0; i < m_totalCellCount; ++i)
 	{
-		m_cells[i].removeLooker( playerIndex );
+		m_cells[i].removeLooker( playerIndex, caller, &loggedMismatch );
 	}
 }
 
@@ -4743,7 +4783,8 @@ void PartitionManager::resetPendingUndoShroudRevealQueue()
 }
 
 //-----------------------------------------------------------------------------
-void PartitionManager::undoShroudReveal(Real centerX, Real centerY, Real radius, PlayerMaskType playerMask)
+void PartitionManager::undoShroudReveal(Real centerX, Real centerY, Real radius, PlayerMaskType playerMask,
+	const std::source_location& caller)
 {
 	Int cellCenterX, cellCenterY;
 	worldToCell(centerX, centerY, &cellCenterX, &cellCenterY);
@@ -4759,7 +4800,9 @@ void PartitionManager::undoShroudReveal(Real centerX, Real centerY, Real radius,
 		const Player *currentPlayer = ThePlayerList->getNthPlayer( currentIndex );
 		if( BitIsSet( playerMask, currentPlayer->getPlayerMask() ) )
 		{
-			circle.drawCircle(hLineRemoveLooker, (void*)currentIndex);
+			// Reborn: Retain the initiating caller for the entire area and report one cell per player.
+			RemoveLookerContext context{currentIndex, caller};
+			circle.drawCircle(hLineRemoveLooker, &context);
 		}
 	}
 }
@@ -6355,19 +6398,21 @@ void hLineAddLooker(Int x1, Int x2, Int y, void *playerIndexVoid)
 }
 
 // -----------------------------------------------------------------------------
-void hLineRemoveLooker(Int x1, Int x2, Int y, void *playerIndexVoid)
+/** Reborn: Forward the shroud removal caller to each affected cell. */
+// -----------------------------------------------------------------------------
+void hLineRemoveLooker(Int x1, Int x2, Int y, void *context)
 {
 	if (y < 0 || y >= ThePartitionManager->m_cellCountY || x1 >= ThePartitionManager->m_cellCountX || x2 < 0)
 		return;
 
-	Int playerIndex = (Int)(intptr_t)(playerIndexVoid);
+	auto& removal = *static_cast<RemoveLookerContext*>(context);
 
 	PartitionCell* cell = &ThePartitionManager->m_cells[y * ThePartitionManager->m_cellCountX + x1];	// yes, this could be invalid. we'll skip the bad ones.
 	for (Int x = x1; x <= x2; ++x, ++cell)
 	{
 		if (x < 0 || x >= ThePartitionManager->m_cellCountX)
 			continue;
-		cell->removeLooker(playerIndex);
+		cell->removeLooker(removal.playerIndex, removal.caller, &removal.loggedMismatch);
 	}
 }
 

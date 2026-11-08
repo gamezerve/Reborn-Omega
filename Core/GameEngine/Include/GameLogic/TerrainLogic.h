@@ -310,7 +310,8 @@ public:
 
 	// This is stuff to get the currently active boundary information
 	Int getActiveBoundary() { return m_activeBoundary; }
-	void setActiveBoundary(Int newActiveBoundary);
+	// Reborn: A scripted boundary switch can discard one player's saved shroud.
+	void setActiveBoundary(Int newActiveBoundary, Int resetShroudPlayerIndex = -1);
 
   void flattenTerrain(Object *obj);  ///< Flatten the terrain under a building.
   void createCraterInTerrain(Object *obj);  ///< Flatten the terrain under a building.

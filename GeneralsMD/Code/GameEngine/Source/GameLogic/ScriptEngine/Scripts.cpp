@@ -2522,6 +2522,15 @@ ScriptAction *ScriptAction::ParseAction(DataChunkInput &file, DataChunkInfo *inf
 				pScriptAction->m_parms[1] = newInstance(Parameter)(Parameter::AI_MOOD, pScriptAction->m_parms[1]->getInt());
 			}
 			break;
+		case MAP_SWITCH_BORDER:
+			// Reborn: Older scripts preserve all players' shroud across the switch.
+			if (pScriptAction->getNumParameters() == 1)
+			{
+				pScriptAction->m_numParms = 2;
+				pScriptAction->m_parms[1] = newInstance(Parameter)(Parameter::SIDE);
+				pScriptAction->m_parms[1]->friend_setString(AsciiString::TheEmptyString);
+			}
+			break;
 		case MAP_REVEAL_AT_WAYPOINT:
 		case MAP_SHROUD_AT_WAYPOINT:
 			if (pScriptAction->getNumParameters() == 2)
