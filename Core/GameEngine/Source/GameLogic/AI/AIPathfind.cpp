@@ -28,6 +28,13 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "GameLogic/AIPathfind.h"
+
+// Reborn: Sweep a boat against the horizontal footprint of a water blocker.
+#include "WWMath/aabox.h"
+#include "WWMath/castres.h"
+#include "WWMath/colmath.h"
+#include "WWMath/lineseg.h"
+#include <algorithm>
 #include "GameLogic/Pathfinder/PathfindConstants.h"
 
 #include "Common/PerfTimer.h"
@@ -161,6 +168,7 @@ Pathfinder::~Pathfinder()
 
 void Pathfinder::reset()
 {
+	m_waterPathBlockers.clear(); // Reborn: Drop water blockers when the pathfinding map is reset.
 	frameToShowObstacles = 0;
 	DEBUG_LOG(("Pathfind cell is %d bytes, PathfindCellInfo is %d bytes", sizeof(PathfindCell), sizeof(PathfindCellInfo)));
 
@@ -512,6 +520,15 @@ void Pathfinder::classifyObjectFootprint( Object *obj, Bool insert )
 	}
 	if (!obj->isKindOf(KINDOF_STRUCTURE)) {
 		return;  // Only path around structures.
+	}
+	// Reborn: Keep the physical footprint available even when the structure becomes rubble.
+	if (obj->getTemplate()->blocksWaterPathfinding())
+	{
+		const auto blocker = std::find(m_waterPathBlockers.begin(), m_waterPathBlockers.end(), obj->getID());
+		if (insert && blocker == m_waterPathBlockers.end())
+			m_waterPathBlockers.push_back(obj->getID());
+		else if (!insert && blocker != m_waterPathBlockers.end())
+			m_waterPathBlockers.erase(blocker);
 	}
 	if (obj->isMobile()) {
 
@@ -939,6 +956,7 @@ void Pathfinder::classifyMapCell( Int i, Int j , PathfindCell *cell)
  */
 void Pathfinder::newMap()
 {
+	m_waterPathBlockers.clear(); // Reborn: Rebuild the blocker list for newly loaded maps and saves.
 	m_wallHeight = TheAI->getAiData()->m_wallHeight; // may be updated by map.ini.
 	Region3D terrainExtent;
 	TheTerrainLogic->getMaximumPathfindExtent( &terrainExtent );
@@ -992,8 +1010,21 @@ void Pathfinder::newMap()
 /**
  * Classify all cells in grid as obstacles, etc.
  */
-void Pathfinder::classifyMap()
+void Pathfinder::classifyMap(Bool refreshWaterPathObstacles)
 {
+	// Reborn: Clear opted-in footprints so water cells can be reclassified at the new level.
+	std::vector<Object*> waterPathObstacles;
+	if (refreshWaterPathObstacles)
+	{
+		for (Object* obj = TheGameLogic->getFirstObject(); obj; obj = obj->getNextObject())
+		{
+			if (obj->getTemplate()->blocksWaterPathfinding())
+			{
+				waterPathObstacles.push_back(obj);
+				classifyObjectFootprint(obj, false);
+			}
+		}
+	}
 
 	Int i, j;
 	// for now, sample cell corners and classify cell accordingly
@@ -1003,6 +1034,12 @@ void Pathfinder::classifyMap()
 		{
 			classifyMapCell( i, j, &m_map[i][j]);
 		}
+	}
+
+	// Reborn: Apply each footprint to the new water cells before calculating connectivity.
+	for (Object* obstacle : waterPathObstacles)
+	{
+		classifyObjectFootprint(obstacle, true);
 	}
 #if 1
 	// Expand all cliff cells one step (mark pinched)
@@ -1075,7 +1112,51 @@ void Pathfinder::classifyMap()
  */
 void Pathfinder::forceMapRecalculation()
 {
-	classifyMap();
+	classifyMap(TRUE); // Reborn: Reapply water obstacles after terrain water levels change.
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Stop naval movement at a water blocker's footprint independently of terrain height. */
+//-------------------------------------------------------------------------------------------------
+Bool Pathfinder::isBoatMovementBlocked(const Object* boat, const Coord3D& from, const Coord3D& to) const
+{
+	if (m_waterPathBlockers.empty() || (from.x == to.x && from.y == to.y))
+		return false;
+
+	const Real clearance = boat->getGeometryInfo().getMinorRadius();
+	for (ObjectID id : m_waterPathBlockers)
+	{
+		const Object* blocker = TheGameLogic->findObjectByID(id);
+		if (!blocker || blocker == boat)
+			continue;
+
+		const Coord3D& center = *blocker->getPosition();
+		const Coord3D* direction = blocker->getUnitDirectionVector2D();
+		const Real fromX = from.x - center.x;
+		const Real fromY = from.y - center.y;
+		const Real toX = to.x - center.x;
+		const Real toY = to.y - center.y;
+		const Vector3 start(fromX * direction->x + fromY * direction->y,
+			fromY * direction->x - fromX * direction->y, 0.0f);
+		const Vector3 end(toX * direction->x + toY * direction->y,
+			toY * direction->x - toX * direction->y, 0.0f);
+		const GeometryInfo& geometry = blocker->getGeometryInfo();
+		const Vector3 extent(geometry.getMajorRadius() + clearance, geometry.getMinorRadius() + clearance, 1.0f);
+		const AABoxClass footprint(Vector3(0.0f, 0.0f, 0.0f), extent);
+		CastResultStruct hit;
+		if (!CollisionMath::Collide(LineSegClass(start, end), footprint, &hit))
+			continue;
+		if (!hit.StartBad)
+			return true;
+
+		// Reborn: A boat already overlapping a blocker may retreat through its nearest edge.
+		const Bool nearestEdgeIsX = extent.X - WWMath::Fabsf(start.X) < extent.Y - WWMath::Fabsf(start.Y);
+		const Real startAxis = nearestEdgeIsX ? start.X : start.Y;
+		const Real endAxis = nearestEdgeIsX ? end.X : end.Y;
+		if (startAxis * endAxis < 0.0f || WWMath::Fabsf(endAxis) <= WWMath::Fabsf(startAxis))
+			return true;
+	}
+	return false;
 }
 
 /**
@@ -1394,13 +1475,16 @@ Bool Pathfinder::checkForMovement(const Object *obj, TCheckMovementInfo &info)
 				ObjectID obstacleID = cell->getObstacleID();
 
 				if (obstacleID != INVALID_ID &&
-					obstacleID != obj->getID() &&
-					obstacleID != ignoreId)
+					obstacleID != obj->getID())
 				{
 					Object* obstacle =
 						TheGameLogic->findObjectByID(obstacleID);
 
-					if (obstacle &&
+					// Reborn: Keep the hull clear of water blockers when checking neighboring cells.
+					if (obstacle && obstacle->getTemplate()->blocksWaterPathfinding())
+						return false;
+
+					if (obstacle && obstacleID != ignoreId &&
 						obstacle->isKindOf(KINDOF_BOAT))
 					{
 						Bool canCrush =
@@ -6074,6 +6158,10 @@ Bool Pathfinder::isLinePassable( const Object *obj, LocomotorSurfaceTypeMask acc
 																const Coord3D& endWorld, Bool blocked,
 																Bool allowPinched)
 {
+	// Reborn: Keep direct and optimized boat routes from cutting across the physical footprint.
+	if (obj && obj->isKindOf(KINDOF_BOAT) && isBoatMovementBlocked(obj, startWorld, endWorld))
+		return false;
+
 	LinePassableStruct info;
 	//CRCDEBUG_LOG(("Pathfinder::isLinePassable(): %d %d %d ", m_ignoreObstacleID, m_isMapReady, m_isTunneling));
 

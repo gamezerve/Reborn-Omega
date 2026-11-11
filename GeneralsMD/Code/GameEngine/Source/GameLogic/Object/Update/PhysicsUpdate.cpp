@@ -37,6 +37,9 @@
 #include "Common/ThingTemplate.h"
 #include "Common/Xfer.h"
 #include "GameClient/FXList.h"
+// Reborn: Enforce the naval barrier during physics integration.
+#include "GameLogic/AI.h"
+#include "GameLogic/AIPathfind.h"
 #include "GameLogic/GameLogic.h"
 #include "GameLogic/Module/AIUpdate.h"
 #include "GameLogic/Module/BodyModule.h"
@@ -673,6 +676,15 @@ UpdateSleepTime PhysicsBehavior::update()
 		}
 		else
 		{
+			// Reborn: Check actual boat movement, including momentum and paths already in progress.
+			if (obj->isKindOf(KINDOF_BOAT) && (m_vel.x != 0.0f || m_vel.y != 0.0f))
+			{
+				Coord3D nextPos = prevPos;
+				nextPos.x += m_vel.x;
+				nextPos.y += m_vel.y;
+				if (TheAI->pathfinder()->isBoatMovementBlocked(obj, prevPos, nextPos))
+					scrubVelocity2D(0.0f);
+			}
 			mtx.Adjust_X_Translation(m_vel.x);
 			mtx.Adjust_Y_Translation(m_vel.y);
 			mtx.Adjust_Z_Translation(m_vel.z);

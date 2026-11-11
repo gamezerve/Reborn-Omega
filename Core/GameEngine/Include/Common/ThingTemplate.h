@@ -569,6 +569,9 @@ public:
 	Real getInstanceScaleFuzziness() const { return m_instanceScaleFuzziness; }						///< return uniform scaling
 	Real getStructureRubbleHeight() const { return (Real)m_structureRubbleHeight; }						///< return uniform scaling
 
+	// Reborn: Preserve the water obstruction even when the structure is rubble.
+	Bool blocksWaterPathfinding() const { return m_blocksWaterPathfinding; }
+
 	/*
 		NOTE: if you have a Thing, don't call this function; call Thing::getGeometryInfo instead, since
 		geometry can now vary on a per-object basis. Only call this when you have no Thing around,
@@ -821,6 +824,7 @@ private:
 	Bool					m_isForbidden;								///< useful when overriding in <mapfile>.ini
 	Bool					m_armorCopiedFromDefault;
 	Bool					m_weaponsCopiedFromDefault;
+	Bool					m_blocksWaterPathfinding; ///< Reborn: Reserve water cells within the structure footprint.
 
 	// ---- Byte-sized things
 	Byte					m_radarPriority;						///< does object appear on radar, and if so at what priority

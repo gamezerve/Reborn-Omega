@@ -16,6 +16,7 @@
 **	along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "Common/ThingTemplate.h" // Reborn: Read the structure water obstruction setting.
 #include "GameLogic/Object.h"
 #include "GameLogic/Pathfinder/PathfindCell.h"
 #include "GameLogic/Pathfinder/PathfindCellInfo.h"
@@ -369,18 +370,19 @@ Bool PathfindCell::setTypeAsObstacle( Object *obstacle, Bool isFence, const ICoo
 	//if (m_type!=PathfindCell::CELL_CLEAR && m_type != PathfindCell::CELL_IMPASSABLE) {
 	//	return false;
 	//}
-	Bool boatOnWater =
-		obstacle->isKindOf(KINDOF_BOAT) &&
-		m_type == PathfindCell::CELL_WATER;
+	// Reborn: Allow the structure footprint to obstruct water alongside boat obstacles.
+	const Bool isWaterCell = m_type == PathfindCell::CELL_WATER;
+	const Bool isWaterPathBlocker = isWaterCell && obstacle->getTemplate()->blocksWaterPathfinding();
+	const Bool blocksWaterCell = isWaterPathBlocker || (isWaterCell && obstacle->isKindOf(KINDOF_BOAT));
 
 	if (m_type != PathfindCell::CELL_CLEAR &&
 		m_type != PathfindCell::CELL_IMPASSABLE &&
-		!boatOnWater)
+		!blocksWaterCell)
 	{
 		return false;
 	}
 
-	m_obstacleWasWater = boatOnWater;
+	m_obstacleWasWater = blocksWaterCell;
 
 	Bool isRubble = false;
 	if (obstacle->getBodyModule() && obstacle->getBodyModule()->getDamageState() == BODY_RUBBLE)
@@ -388,7 +390,8 @@ Bool PathfindCell::setTypeAsObstacle( Object *obstacle, Bool isFence, const ICoo
 		isRubble = true;
 	}
 
-	if (isRubble) {
+	// Reborn: Keep opted-in structures solid for pathfinding on water after destruction.
+	if (isRubble && !isWaterPathBlocker) {
 		m_type = PathfindCell::CELL_RUBBLE;
 		m_obstacleID = INVALID_ID;
 		m_obstacleIsFence = false;
@@ -409,7 +412,8 @@ Bool PathfindCell::setTypeAsObstacle( Object *obstacle, Bool isFence, const ICoo
 	m_type = PathfindCell::CELL_OBSTACLE;
 	m_obstacleID = obstacle->getID();
 	m_obstacleIsFence = isFence;
-	m_obstacleIsTransparent = obstacle->isKindOf(KINDOF_CAN_SEE_THROUGH_STRUCTURE);
+	// Reborn: Water path blockers preserve sight through the cells they reserve.
+	m_obstacleIsTransparent = isWaterPathBlocker || obstacle->isKindOf(KINDOF_CAN_SEE_THROUGH_STRUCTURE);
 #if RETAIL_COMPATIBLE_PATHFINDING_ALLOCATION
 	// TheSuperHackers @info In retail mode we need to track orphaned cells set as obstacles so we can cleanup and failover properly
 	// So we always make sure to set and clear the local obstacle data on the PathfindCell regardless of retail compat or not
@@ -426,7 +430,7 @@ Bool PathfindCell::setTypeAsObstacle( Object *obstacle, Bool isFence, const ICoo
 	}
 	m_info->m_obstacleID = obstacle->getID();
 	m_info->m_obstacleIsFence = isFence;
-	m_info->m_obstacleIsTransparent = obstacle->isKindOf(KINDOF_CAN_SEE_THROUGH_STRUCTURE);
+	m_info->m_obstacleIsTransparent = m_obstacleIsTransparent;
 #endif
 	return true;
 }

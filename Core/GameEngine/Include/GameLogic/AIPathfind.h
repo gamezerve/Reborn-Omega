@@ -29,6 +29,7 @@
 #pragma once
 
 #include "Common/GameType.h"
+#include <vector> // Reborn: Track active water path blockers.
 #include "Common/Snapshot.h"
 //#include "GameLogic/Locomotor.h"	// no, do not include this, unless you like long recompiles
 #include "GameLogic/LocomotorSet.h"
@@ -149,6 +150,8 @@ public:
 
 	Bool queueForPath(ObjectID id);	 ///< The object wants to request a pathfind, so put it on the list to process.
 	void processPathfindQueue(); ///< Process some or all of the queued pathfinds.
+	// Reborn: Check the actual horizontal movement of a boat against registered water blockers.
+	Bool isBoatMovementBlocked(const Object* boat, const Coord3D& from, const Coord3D& to) const;
 	void forceMapRecalculation();	///< Force pathfind map recomputation. If region is given, only that area is recomputed
 
 	/** Returns an aircraft path to the goal.  */
@@ -314,7 +317,7 @@ protected:
 
 	static Int segmentIntersectsBuildingCallback(Pathfinder* pathfinder, PathfindCell* from, PathfindCell* to, Int to_x, Int to_y, void* userData);
 
-	void classifyMap();					///< Classify all cells in grid as obstacles, etc
+	void classifyMap(Bool refreshWaterPathObstacles = FALSE); ///< Reborn: Refresh opted-in footprints when water levels change.
 	void classifyObjectFootprint( Object *obj, Bool insert );	/** Classify the cells under the given object
 																																If 'insert' is true, object is being added
 																																If 'insert' is false, object is being removed */
@@ -354,6 +357,7 @@ protected:
 private:
 	/// This uses WAY too much memory.  Should at least be array of pointers to cells w/ many fewer cells
 	PathfindCell *m_blockOfMapCells;		///< Pathfinding map - contains iconic representation of the map
+	std::vector<ObjectID> m_waterPathBlockers; ///< Reborn: Kept in sync with static obstacle registration.
 	PathfindCell **m_map;		///< Pathfinding map indexes - contains matrix indexing into the map.
 	IRegion2D m_extent;														///< Grid extent limits
 	IRegion2D m_logicalExtent;										///< Logical grid extent limits

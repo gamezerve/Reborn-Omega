@@ -300,6 +300,8 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "Locomotor",						AIUpdateModuleData::parseLocomotorSet, nullptr, 0, ThingTemplateDeparser::deparseLocomotorSets },
 	{ "InstanceScaleFuzziness",	INI::parseReal,					nullptr, offsetof(ThingTemplate, m_instanceScaleFuzziness ) },
 	{ "StructureRubbleHeight",	INI::parseUnsignedByte,					nullptr, offsetof(ThingTemplate, m_structureRubbleHeight ) },
+	// Reborn: Allow individual structures to keep their footprint blocked on water.
+	{ "BlocksWaterPathfinding",	INI::parseBool,					nullptr, offsetof(ThingTemplate, m_blocksWaterPathfinding ) },
 	{ "ThreatValue",						INI::parseUnsignedShort,		nullptr, offsetof(ThingTemplate, m_threatValue ) },
     { "MaxSimultaneousOfType",	ThingTemplate::parseMaxSimultaneous,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousOfType ), ThingTemplateDeparser::deparseMaxSimultaneous },
     { "MaxSimultaneousLinkKey",	NameKeyGenerator::parseStringAsNameKeyType,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousLinkKey ), ThingTemplateDeparser::deparseMaxSimultaneousLinkKey },
@@ -1477,6 +1479,7 @@ ThingTemplate::ThingTemplate() :
 	m_occlusionDelay = TheGlobalData->m_defaultOcclusionDelay;
 
 	m_structureRubbleHeight = 0;
+	m_blocksWaterPathfinding = FALSE; // Reborn: Water obstruction is opt-in.
 	m_instanceScaleFuzziness = 0;
 	m_threatValue = 0;
 	m_maxSimultaneousOfType = 0;	// unlimited
@@ -1861,6 +1864,7 @@ void ThingTemplate::initForLTA(const AsciiString& name)
 	m_assetScale = 1.0f;
 	m_instanceScaleFuzziness = 0.0f;	///< tolerance to randomly vary scale per instance
 	m_structureRubbleHeight = 0.0f;		// zero means "use global default"
+	m_blocksWaterPathfinding = FALSE; // Reborn: Generated art templates use the default pathfinding behavior.
 	m_displayName.translate( name );
 	// Reborn: LTA-generated templates retain the same label used to create their translated display name.
 	m_displayNameLabel = name;
