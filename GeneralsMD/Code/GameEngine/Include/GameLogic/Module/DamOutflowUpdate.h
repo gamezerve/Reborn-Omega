@@ -20,6 +20,8 @@
 
 #include "GameLogic/Module/UpdateModule.h"
 
+#include <map> // Reborn: Track ships by ID in deterministic order.
+
 // Reborn: Configure the downstream current for the intact dam and its rubble.
 class DamOutflowUpdateModuleData : public ModuleData
 {
@@ -31,6 +33,8 @@ public:
 	Real m_rubbleRange = 0.0f;
 	Real m_rubbleWidth = 0.0f;
 	Real m_rubblePeakAcceleration = 0.0f;
+	Real m_rubblePullRange = 0.0f; ///< Reborn: Extent of the upstream current.
+	Real m_rubblePullPeakAcceleration = 0.0f; ///< Reborn: Maximum pull toward the opening.
 
 	static void buildFieldParse(MultiIniFieldParse& p);
 };
@@ -51,4 +55,9 @@ public:
 protected:
 	// Reborn: Queue the current before physics moves the vessels.
 	virtual SleepyUpdatePhase getUpdatePhase() const override { return PHASE_INITIAL; }
+
+private:
+	// Reborn: Remember the upper water height for ships entering the breach.
+	std::map<ObjectID, Real> m_fallingBoats;
+	void xferFallingBoats(Xfer* xfer);
 };

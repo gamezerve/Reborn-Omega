@@ -571,6 +571,7 @@ public:
 
 	// Reborn: Preserve the water obstruction even when the structure is rubble.
 	Bool blocksWaterPathfinding() const { return m_blocksWaterPathfinding; }
+	Real getRubbleWaterPassageWidth() const { return m_rubbleWaterPassageWidth; } ///< Reborn: Width of the downstream-only opening.
 
 	/*
 		NOTE: if you have a Thing, don't call this function; call Thing::getGeometryInfo instead, since
@@ -798,6 +799,8 @@ private:
 	Real					m_shadowSizeY;				///< world-space extent of decal shadow texture
 	Real					m_shadowOffsetX;			///< world-space offset of decal shadow texture
 	Real					m_shadowOffsetY;			///< world-space offset of decal shadow texture
+
+	Real					m_rubbleWaterPassageWidth; ///< Reborn: A positive width opens a passage in rubble.
 
 	// ---- Int-sized things
 	Int						m_energyProduction;						///< how much Energy this takes (negative values produce Energy, rather than consuming it)

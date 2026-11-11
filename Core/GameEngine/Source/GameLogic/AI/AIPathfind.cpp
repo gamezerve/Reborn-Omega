@@ -52,6 +52,7 @@
 #include "GameLogic/Locomotor.h"
 #include "GameLogic/Module/ContainModule.h"
 #include "GameLogic/Module/AIUpdate.h"
+#include "GameLogic/Module/BodyModule.h" // Reborn: Open the water passage only in rubble.
 #include "GameLogic/Module/PhysicsUpdate.h"
 #include "GameLogic/Object.h"
 #include "GameLogic/PartitionManager.h"
@@ -1116,7 +1117,26 @@ void Pathfinder::forceMapRecalculation()
 }
 
 //-------------------------------------------------------------------------------------------------
-/** Reborn: Stop naval movement at a water blocker's footprint independently of terrain height. */
+/** Reborn: A crossing must fit through the opening throughout its overlap with the dam. */
+//-------------------------------------------------------------------------------------------------
+static Bool fitsDownstreamWaterPassage(const Vector3& start, const Vector3& end, Real depth, Real halfWidth)
+{
+	if (end.Y > start.Y || start.Y < -depth || end.Y > depth)
+		return false;
+
+	if (end.Y == start.Y)
+		return WWMath::Fabsf(start.X) <= halfWidth && WWMath::Fabsf(end.X) <= halfWidth;
+
+	const Real deltaY = start.Y - end.Y;
+	const Real deltaX = end.X - start.X;
+	const Real entry = max(0.0f, (start.Y - depth) / deltaY);
+	const Real exit = min(1.0f, (start.Y + depth) / deltaY);
+	return WWMath::Fabsf(start.X + entry * deltaX) <= halfWidth &&
+		WWMath::Fabsf(start.X + exit * deltaX) <= halfWidth;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Stop naval movement at a water blocker's footprint, except through an open downstream passage. */
 //-------------------------------------------------------------------------------------------------
 Bool Pathfinder::isBoatMovementBlocked(const Object* boat, const Coord3D& from, const Coord3D& to) const
 {
@@ -1146,6 +1166,20 @@ Bool Pathfinder::isBoatMovementBlocked(const Object* boat, const Coord3D& from, 
 		CastResultStruct hit;
 		if (!CollisionMath::Collide(LineSegClass(start, end), footprint, &hit))
 			continue;
+
+		// Reborn: The upper-side current can carry a ship downstream through the breach.
+		const Real passageHalfWidth = blocker->getTemplate()->getRubbleWaterPassageWidth() * 0.5f - clearance;
+		const BodyModuleInterface* body = blocker->getBodyModule();
+		if (passageHalfWidth > 0.0f && body && body->getDamageState() == BODY_RUBBLE)
+		{
+			if (fitsDownstreamWaterPassage(start, end, extent.Y, passageHalfWidth))
+				continue;
+
+			// Reborn: A boat at the center of the opening can only retreat downstream.
+			if (hit.StartBad && start.Y <= 0.0f && WWMath::Fabsf(start.X) <= passageHalfWidth && end.Y > start.Y)
+				return true;
+		}
+
 		if (!hit.StartBad)
 			return true;
 

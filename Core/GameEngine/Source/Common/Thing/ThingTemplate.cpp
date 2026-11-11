@@ -302,6 +302,7 @@ const FieldParse ThingTemplate::s_objectFieldParseTable[] =
 	{ "StructureRubbleHeight",	INI::parseUnsignedByte,					nullptr, offsetof(ThingTemplate, m_structureRubbleHeight ) },
 	// Reborn: Allow individual structures to keep their footprint blocked on water.
 	{ "BlocksWaterPathfinding",	INI::parseBool,					nullptr, offsetof(ThingTemplate, m_blocksWaterPathfinding ) },
+	{ "RubbleWaterPassageWidth", INI::parseReal, nullptr, offsetof(ThingTemplate, m_rubbleWaterPassageWidth) }, // Reborn: Opt in to a downstream-only opening.
 	{ "ThreatValue",						INI::parseUnsignedShort,		nullptr, offsetof(ThingTemplate, m_threatValue ) },
     { "MaxSimultaneousOfType",	ThingTemplate::parseMaxSimultaneous,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousOfType ), ThingTemplateDeparser::deparseMaxSimultaneous },
     { "MaxSimultaneousLinkKey",	NameKeyGenerator::parseStringAsNameKeyType,		nullptr, offsetof(ThingTemplate, m_maxSimultaneousLinkKey ), ThingTemplateDeparser::deparseMaxSimultaneousLinkKey },
@@ -1480,6 +1481,7 @@ ThingTemplate::ThingTemplate() :
 
 	m_structureRubbleHeight = 0;
 	m_blocksWaterPathfinding = FALSE; // Reborn: Water obstruction is opt-in.
+	m_rubbleWaterPassageWidth = 0.0f; // Reborn: Keep the water passage closed by default.
 	m_instanceScaleFuzziness = 0;
 	m_threatValue = 0;
 	m_maxSimultaneousOfType = 0;	// unlimited
@@ -1865,6 +1867,7 @@ void ThingTemplate::initForLTA(const AsciiString& name)
 	m_instanceScaleFuzziness = 0.0f;	///< tolerance to randomly vary scale per instance
 	m_structureRubbleHeight = 0.0f;		// zero means "use global default"
 	m_blocksWaterPathfinding = FALSE; // Reborn: Generated art templates use the default pathfinding behavior.
+	m_rubbleWaterPassageWidth = 0.0f; // Reborn: Generated art has no rubble water passage.
 	m_displayName.translate( name );
 	// Reborn: LTA-generated templates retain the same label used to create their translated display name.
 	m_displayNameLabel = name;

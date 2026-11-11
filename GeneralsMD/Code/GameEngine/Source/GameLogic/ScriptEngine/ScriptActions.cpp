@@ -1501,6 +1501,14 @@ void ScriptActions::doModCameraLookToward(const AsciiString& waypoint)
 			destination.y,
 			destination.z));
 
+	// Reborn: Apply the village cut's look direction after its instant move, including when loaded from a save.
+	if (mapName.compareNoCase("CHI03.map") == 0 &&
+		waypoint.compareNoCase("WP(Dam)_Look_From Village") == 0)
+	{
+		TheTacticalView->cameraLookTowardImmediate(&destination);
+		return;
+	}
+
 	// Reborn: The original GLA04 script applies this look-toward command
 	// immediately after a zero-duration camera move. cameraModLookToward()
 	// normally only handles waypoint-path movements, so apply the angle
