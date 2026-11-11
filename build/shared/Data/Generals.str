@@ -2297,6 +2297,10 @@ CAMPAIGN:CHALLENGE_8
 "Demolitions General Challenge"
 END
 
+CAMPAIGN:CHALLENGE_9
+"Boss General Challenge"
+END
+
 CAMPAIGN:China
 "CHINA ZH"
 END
