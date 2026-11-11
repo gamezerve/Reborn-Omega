@@ -32,7 +32,6 @@ set(GAMEENGINEDEVICE_SRC
     Include/W3DDevice/GameClient/TerrainTex.h
     Include/W3DDevice/GameClient/TileData.h
 #    Include/W3DDevice/GameClient/W3DAssetManager.h
-#    Include/W3DDevice/GameClient/W3DAssetManagerExposed.h
 #    Include/W3DDevice/GameClient/W3DBibBuffer.h
 #    Include/W3DDevice/GameClient/W3DBridgeBuffer.h
 #    Include/W3DDevice/GameClient/W3DBufferManager.h
@@ -132,7 +131,6 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameClient/GUI/Gadget/W3DVerticalSlider.cpp
     Source/W3DDevice/GameClient/GUI/GUICallbacks/W3DControlBar.cpp
     Source/W3DDevice/GameClient/GUI/GUICallbacks/W3DMainMenu.cpp
-    Source/W3DDevice/GameClient/GUI/GUICallbacks/W3DMOTD.cpp
     Source/W3DDevice/GameClient/GUI/W3DGameFont.cpp
     Source/W3DDevice/GameClient/GUI/W3DGameWindow.cpp
     Source/W3DDevice/GameClient/GUI/W3DGameWindowManager.cpp
@@ -144,7 +142,6 @@ set(GAMEENGINEDEVICE_SRC
     Source/W3DDevice/GameClient/TerrainTex.cpp
     Source/W3DDevice/GameClient/TileData.cpp
 #    Source/W3DDevice/GameClient/W3DAssetManager.cpp
-#    Source/W3DDevice/GameClient/W3DAssetManagerExposed.cpp
 #    Source/W3DDevice/GameClient/W3DBibBuffer.cpp
 #    Source/W3DDevice/GameClient/W3DBridgeBuffer.cpp
     Source/W3DDevice/GameClient/W3DDebugDisplay.cpp
