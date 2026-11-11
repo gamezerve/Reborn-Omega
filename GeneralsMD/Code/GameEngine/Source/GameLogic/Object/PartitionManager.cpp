@@ -2165,7 +2165,34 @@ void PartitionData::removeAllTouchedCells()
 // -----------------------------------------------------------------------------
 void PartitionData::addSubPixToCoverage(PartitionCell *cell)
 {
-	DEBUG_ASSERTCRASH(m_coiInUseCount < m_coiArrayCount, ("not enough cois allocated for this object"));
+#ifdef DEBUG_CRASHING
+	// Reborn: Distinguish a full array on entry from an unregistered cell that needs another slot.
+	const auto formatCoiDetails = [&](const char* check)
+	{
+		const Object* object = getObject();
+		const GeometryInfo* geometry = object ? &object->getGeometryInfo() : nullptr;
+		const Coord3D* position = object ? object->getPosition() :
+			(m_ghostObject ? m_ghostObject->getParentPosition() : nullptr);
+		AsciiString map = TheGameState ? TheGameState->getPristineMapName() : AsciiString();
+		if (map.isEmpty() && TheGlobalData)
+			map = TheGlobalData->m_mapName;
+
+		AsciiString details;
+		details.format("not enough cois allocated for this object: check=%s object='%s' name='%s' id=%d "
+			"map='%s' frame=%u cell=(%d,%d) used=%d allocated=%d pos=(%.2f,%.2f,%.2f) geom=%d radii=(%.2f,%.2f) shapes=%d",
+			check, object ? object->getTemplate()->getName().str() : (m_ghostObject ? "<ghost>" : "<none>"),
+			object ? object->getName().str() : "", static_cast<Int>(object ? object->getID() : INVALID_ID),
+			map.isEmpty() ? "<unknown>" : map.str(), TheGameLogic ? TheGameLogic->getFrame() : 0u,
+			cell ? cell->getCellX() : -1, cell ? cell->getCellY() : -1, m_coiInUseCount, m_coiArrayCount,
+			position ? position->x : 0.0f, position ? position->y : 0.0f, position ? position->z : 0.0f,
+			geometry ? static_cast<Int>(geometry->getGeomType()) : (m_ghostObject ? static_cast<Int>(m_ghostObject->getGeometryType()) : -1),
+			geometry ? geometry->getMajorRadius() : (m_ghostObject ? m_ghostObject->getGeometryMajorRadius() : 0.0f),
+			geometry ? geometry->getMinorRadius() : (m_ghostObject ? m_ghostObject->getGeometryMinorRadius() : 0.0f),
+			geometry ? geometry->getShapeCount() : (m_ghostObject ? 1 : 0));
+		return details;
+	};
+#endif
+	DEBUG_ASSERTCRASH(m_coiInUseCount < m_coiArrayCount, ("%s", formatCoiDetails("before-lookup").str()));
 	if (cell)
 	{
 		// see if we already have a coi for this cell.
@@ -2179,7 +2206,7 @@ void PartitionData::addSubPixToCoverage(PartitionCell *cell)
 				break;
 			}
 		}
-		DEBUG_ASSERTCRASH(coiToUse != nullptr || m_coiInUseCount < m_coiArrayCount, ("not enough cois allocated for this object"));
+		DEBUG_ASSERTCRASH(coiToUse != nullptr || m_coiInUseCount < m_coiArrayCount, ("%s", formatCoiDetails("new-cell").str()));
 		if (coiToUse == nullptr && m_coiInUseCount < m_coiArrayCount)
 		{
 			// nope, no coi for this cell, allocate a new one
