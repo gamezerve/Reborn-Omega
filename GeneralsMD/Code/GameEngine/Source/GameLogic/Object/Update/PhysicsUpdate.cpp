@@ -678,6 +678,19 @@ UpdateSleepTime PhysicsBehavior::update()
 	}
 	m_prevAccel = m_accel;
 
+	// Reborn: Use the same swept dam collision for live boats and sinking wrecks.
+	const auto stopAtWaterBlocker = [&]()
+	{
+		if (obj->isKindOf(KINDOF_BOAT) && (m_vel.x != 0.0f || m_vel.y != 0.0f))
+		{
+			Coord3D nextPos = prevPos;
+			nextPos.x += m_vel.x;
+			nextPos.y += m_vel.y;
+			if (TheAI->pathfinder()->isBoatMovementBlocked(obj, prevPos, nextPos))
+				scrubVelocity2D(0.0f);
+		}
+	};
+
 	if (!obj->isDisabledByType(DISABLED_HELD))
 	{
 		Matrix3D mtx = *obj->getTransformMatrix();
@@ -713,15 +726,7 @@ UpdateSleepTime PhysicsBehavior::update()
 		}
 		else
 		{
-			// Reborn: Check actual boat movement, including momentum and paths already in progress.
-			if (obj->isKindOf(KINDOF_BOAT) && (m_vel.x != 0.0f || m_vel.y != 0.0f))
-			{
-				Coord3D nextPos = prevPos;
-				nextPos.x += m_vel.x;
-				nextPos.y += m_vel.y;
-				if (TheAI->pathfinder()->isBoatMovementBlocked(obj, prevPos, nextPos))
-					scrubVelocity2D(0.0f);
-			}
+			stopAtWaterBlocker();
 			mtx.Adjust_X_Translation(m_vel.x);
 			mtx.Adjust_Y_Translation(m_vel.y);
 			mtx.Adjust_Z_Translation(m_vel.z);
@@ -863,6 +868,40 @@ UpdateSleepTime PhysicsBehavior::update()
 		{
 			obj->setTransformMatrix(&mtx);
 		}
+	}
+
+	else if (inWaterCurrent && obj->isKindOf(KINDOF_BOAT) && obj->isEffectivelyDead())
+	{
+		// Reborn: A sinking boat is held by SlowDeathBehavior, but the dam can still carry it horizontally.
+		applyFrictionalForces();
+		m_vel.x += m_accel.x;
+		m_vel.y += m_accel.y;
+		stopAtWaterBlocker();
+
+		Coord3D nextPos = prevPos;
+		nextPos.x += m_vel.x;
+		nextPos.y += m_vel.y;
+
+		// Reborn: Apply gravity over the drop and let SlowDeathBehavior control sinking at the surface.
+		Real waterHeight;
+		Real groundHeight;
+		const Bool overWater = TheTerrainLogic->isUnderwater(nextPos.x, nextPos.y, &waterHeight, &groundHeight);
+		const Real surfaceHeight = overWater ? waterHeight : groundHeight;
+		const Real hoverClearance = 5.0f;
+		if (nextPos.z > surfaceHeight + hoverClearance || (nextPos.z > surfaceHeight && m_vel.z < 0.0f))
+		{
+			m_vel.z = min(0.0f, m_vel.z) + TheGlobalData->m_gravity;
+			nextPos.z = max(surfaceHeight, nextPos.z + m_vel.z);
+			if (nextPos.z <= surfaceHeight)
+				m_vel.z = 0.0f;
+		}
+		else
+		{
+			m_vel.z = 0.0f;
+		}
+
+		m_velMag = INVALID_VEL_MAG;
+		obj->setPosition(&nextPos);
 	}
 
 	// reset the acceleration for accumulation next frame

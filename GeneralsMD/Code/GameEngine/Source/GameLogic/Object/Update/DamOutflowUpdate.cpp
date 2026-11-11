@@ -83,6 +83,21 @@ static Real outflowStrength(Real downstream, Real lateral, Real nearDistance, Re
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Sinking wrecks remain eligible while other held boats stay anchored. */
+//-------------------------------------------------------------------------------------------------
+static PhysicsBehavior* getDamCurrentPhysics(Object* boat)
+{
+	if (!boat || boat->isDestroyed() || boat->getContainedBy())
+		return nullptr;
+
+	if (!boat->isEffectivelyDead())
+		return boat->isDisabledByType(DISABLED_HELD) ? nullptr : boat->getPhysics();
+
+	const BodyModuleInterface* body = boat->getBodyModule();
+	return body && body->getDamageState() == BODY_RUBBLE ? boat->getPhysics() : nullptr;
+}
+
+//-------------------------------------------------------------------------------------------------
 /** Reborn: Push vessels downstream and pull them toward the opening after the dam collapses. */
 //-------------------------------------------------------------------------------------------------
 UpdateSleepTime DamOutflowUpdate::update()
@@ -109,8 +124,8 @@ UpdateSleepTime DamOutflowUpdate::update()
 	for (auto entry = m_fallingBoats.begin(); entry != m_fallingBoats.end(); )
 	{
 		Object* boat = TheGameLogic->findObjectByID(entry->first);
-		if (pullRange <= 0.0f || !boat || !boat->getBodyModule() || boat->isEffectivelyDead() ||
-			boat->getContainedBy() || boat->isDisabledByType(DISABLED_HELD))
+		PhysicsBehavior* physics = getDamCurrentPhysics(boat);
+		if (pullRange <= 0.0f || !physics || !boat->getBodyModule())
 		{
 			entry = m_fallingBoats.erase(entry);
 			continue;
@@ -136,12 +151,21 @@ UpdateSleepTime DamOutflowUpdate::update()
 			const Bool overWater = TheTerrainLogic->isUnderwater(pos.x, pos.y, &waterHeight, &groundHeight);
 			const Real surfaceHeight = overWater ? waterHeight : groundHeight;
 			const Real minimumDrop = 10.0f;
-			const Real landingTolerance = 5.0f; // Reborn: Account for a boat's hover height above water.
-			if (surfaceHeight <= entry->second - minimumDrop && pos.z <= surfaceHeight + landingTolerance)
+			const Bool wreck = boat->isEffectivelyDead();
+			const Real landingTolerance = wreck ? 0.0f : 5.0f; // Reborn: Live boats hover slightly above the surface.
+			if (surfaceHeight <= entry->second - minimumDrop)
 			{
-				entry = m_fallingBoats.erase(entry);
-				boat->kill();
-				continue;
+				if (pos.z <= surfaceHeight + landingTolerance)
+				{
+					entry = m_fallingBoats.erase(entry);
+					if (!wreck)
+						boat->kill();
+					continue;
+				}
+
+				// Reborn: Let a falling wreck keep moving even after leaving the spillway's force area.
+				if (wreck)
+					physics->applyWaterCurrent({ 0.0f, 0.0f });
 			}
 		}
 		++entry;
@@ -158,8 +182,8 @@ UpdateSleepTime DamOutflowUpdate::update()
 	MemoryPoolObjectHolder hold(iter);
 	for (Object* boat = iter->first(); boat; boat = iter->next())
 	{
-		PhysicsBehavior* physics = boat->getPhysics();
-		if (!physics || boat->isEffectivelyDead() || boat->getContainedBy() || boat->isDisabledByType(DISABLED_HELD))
+		PhysicsBehavior* physics = getDamCurrentPhysics(boat);
+		if (!physics)
 			continue;
 
 		const Coord3D& pos = *boat->getPosition();
@@ -201,7 +225,7 @@ UpdateSleepTime DamOutflowUpdate::update()
 					(direction.y * forward - along.y * lateral) * acceleration
 				};
 				physics->applyWaterCurrent(current);
-				// Reborn: Only ships pulled into the opening from the upper water can be lost in the drop.
+				// Reborn: Track live boats and wrecks entering the drop from the upper water.
 				if (afloat && absLateral <= opening && -downstream <= passageDepth + 10.0f)
 					m_fallingBoats.try_emplace(boat->getID(), waterHeight);
 			}

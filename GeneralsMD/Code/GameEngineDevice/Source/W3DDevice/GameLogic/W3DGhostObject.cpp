@@ -614,6 +614,10 @@ void W3DGhostObject::xfer( Xfer *xfer )
 	// extend base class
 	GhostObject::xfer( xfer );
 
+	// Reborn: Register detached ghosts using their restored geometry before loading player shroud state.
+	if (xfer->getXferMode() == XFER_LOAD && !m_parentObject && !m_partitionData)
+		ThePartitionManager->registerGhostObject(this);
+
 	// xfer the drawable info object id
 	xfer->xferObjectID( &m_drawableInfo.m_shroudStatusObjectID );
 
@@ -1230,11 +1234,8 @@ void W3DGhostObjectManager::xfer( Xfer *xfer )
 			}
 			else
 			{
-				// create object with no object or partition data
+				// Reborn: The detached ghost registers itself once its saved geometry has been read.
 				ghostObject = addGhostObject( nullptr, nullptr );
-
-				// register ghost object object with partition system and fill out partition data
-				ThePartitionManager->registerGhostObject( ghostObject );
 			}
 
 			// read ghost object data
