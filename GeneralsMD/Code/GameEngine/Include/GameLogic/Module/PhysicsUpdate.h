@@ -107,6 +107,10 @@ public:
 	// Disabled conditions to process -- all
 	virtual DisabledMaskType getDisabledTypesToProcess() const override { return DISABLEDMASK_ALL; }
 
+	// Reborn: Accumulate water acceleration independently of the vessel motor.
+	void applyWaterCurrent(const Coord2D& acceleration);
+	Bool hasRecentWaterCurrent() const;
+
 	void applyForce( const Coord3D *force );		///< apply a force at the object's CG
 	void applyShock( const Coord3D *force );					///< apply a shockwave force against the object's CG
 	void applyRandomRotation();											  ///< apply a random rotation at the object's CG
@@ -264,6 +268,9 @@ private:
 	Real												m_rollRate;								///< rate of rotation around forward vector
 	Real												m_pitchRate;							///< rate or rotation around side vector
 	RefCountPtr<DynamicAudioEventRTS> m_bounceSound;			///< The sound for when this thing bounces, or nullptr
+	// Reborn: Transient current for the logic frame before physics integration.
+	Coord2D m_waterCurrentAcceleration;
+	UnsignedInt m_waterCurrentFrame;
 	Coord3D											m_accel;									///< current acceleration
 	Coord3D											m_prevAccel;							///< last frame's acceleration
 	Coord3D											m_vel;										///< current velocity

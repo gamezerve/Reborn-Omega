@@ -112,6 +112,7 @@
 #include "GameLogic/Module/ChinookAIUpdate.h"
 #include "GameLogic/Module/ComancheTransportAIUpdate.h"
 #include "GameLogic/Module/DefaultProductionExitUpdate.h"
+#include "GameLogic/Module/DamOutflowUpdate.h" // Reborn: Dam-local naval current.
 #include "GameLogic/Module/DeletionUpdate.h"
 #include "GameLogic/Module/SmartBombTargetHomingUpdate.h"
 #include "GameLogic/Module/DeliverPayloadAIUpdate.h"
@@ -394,6 +395,7 @@ void ModuleFactory::init()
 	addModule( BaseRegenerateUpdate );
 	addModule( StealthDetectorUpdate );
 	addModule( StealthUpdate );
+	addModule( DamOutflowUpdate ); // Reborn: Register the dam outflow behavior.
 	addModule( DeletionUpdate );
 	addModule( SmartBombTargetHomingUpdate );
 	addModule( DynamicShroudClearingRangeUpdate );

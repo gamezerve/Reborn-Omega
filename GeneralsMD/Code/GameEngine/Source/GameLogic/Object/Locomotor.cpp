@@ -1141,7 +1141,9 @@ void Locomotor::locoUpdate_moveTowardsPosition(Object* obj, const Coord3D& goalP
 		setFlag(IS_BRAKING, false);
 	}
 
-	Bool wasBraking = obj->getStatusBits().test( OBJECT_STATUS_BRAKING );
+	// Reborn: Let physics move a boat in a current instead of snapping it toward its goal.
+	const Bool inWaterCurrent = physics->hasRecentWaterCurrent();
+	Bool wasBraking = !inWaterCurrent && obj->getStatusBits().test( OBJECT_STATUS_BRAKING );
 
 	physics->setTurning(TURN_NONE);
 	if (getAllowMotiveForceWhileAirborne() || !treatAsAirborne)
@@ -1179,7 +1181,7 @@ void Locomotor::locoUpdate_moveTowardsPosition(Object* obj, const Coord3D& goalP
 
 	handleBehaviorZ(obj, physics, goalPos);
 	// Objects that are braking don't follow the normal physics, so they end up at their destination exactly.
-	obj->setStatus( MAKE_OBJECT_STATUS_MASK( OBJECT_STATUS_BRAKING ), getFlag(IS_BRAKING) );
+	obj->setStatus( MAKE_OBJECT_STATUS_MASK( OBJECT_STATUS_BRAKING ), getFlag(IS_BRAKING) && !inWaterCurrent ); // Reborn: Preserve drift while slowing.
 
 	if (wasBraking)
 	{
@@ -2644,6 +2646,9 @@ void Locomotor::maintainCurrentPositionWings(Object* obj, PhysicsBehavior *physi
 void Locomotor::maintainCurrentPositionHover(Object* obj, PhysicsBehavior *physics)
 {
 	physics->setTurning(TURN_NONE);
+	// Reborn: A stopped boat drifts with the current rather than holding its position under power.
+	if (physics->hasRecentWaterCurrent())
+		return;
 	if (physics->isMotive())	// no need to stop something that isn't moving.
 	{
 		// Reborn: Identify hover stop failures without changing the object's minimum speed or movement behavior.

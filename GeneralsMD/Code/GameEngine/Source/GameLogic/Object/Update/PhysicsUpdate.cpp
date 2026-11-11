@@ -206,6 +206,7 @@ const Real INVALID_VEL_MAG = -1.0f;
 //-------------------------------------------------------------------------------------------------
 PhysicsBehavior::PhysicsBehavior( Thing *thing, const ModuleData* moduleData ) : UpdateModule( thing, moduleData )
 {
+	m_waterCurrentFrame = FOREVER; // Reborn: No current has been applied on creation.
 	m_accel.zero();
 	m_prevAccel = m_accel;
 	m_vel.zero();
@@ -309,6 +310,33 @@ Real PhysicsBehavior::getZFriction() const
 	if (f < MIN_NON_AERO_FRICTION) f = MIN_NON_AERO_FRICTION;
 	if (f > MAX_FRICTION) f = MAX_FRICTION;
 	return f;
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Queue horizontal water acceleration for this frame, including when the engine is driving the boat. */
+//-------------------------------------------------------------------------------------------------
+void PhysicsBehavior::applyWaterCurrent(const Coord2D& acceleration)
+{
+	const UnsignedInt frame = TheGameLogic->getFrame();
+	if (m_waterCurrentFrame != frame)
+	{
+		m_waterCurrentFrame = frame;
+		m_waterCurrentAcceleration = acceleration;
+		setWakeFrame(getObject(), UPDATE_SLEEP_NONE);
+	}
+	else
+	{
+		m_waterCurrentAcceleration.x += acceleration.x;
+		m_waterCurrentAcceleration.y += acceleration.y;
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Keep precise arrival from counteracting current when the boat update runs before the dam. */
+//-------------------------------------------------------------------------------------------------
+Bool PhysicsBehavior::hasRecentWaterCurrent() const
+{
+	return m_waterCurrentFrame != FOREVER && TheGameLogic->getFrame() - m_waterCurrentFrame <= 1u;
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -425,6 +453,7 @@ void PhysicsBehavior::applyMotiveForce( const Coord3D *force )
 //-------------------------------------------------------------------------------------------------
 void PhysicsBehavior::resetDynamicPhysics()
 {
+	m_waterCurrentFrame = FOREVER; // Reborn: Discard the pending water acceleration when resetting physics.
 	m_accel.zero();
 	m_prevAccel.zero();
 	m_vel.zero();
@@ -640,6 +669,13 @@ UpdateSleepTime PhysicsBehavior::update()
 	}
 
 	Coord3D prevPos = *obj->getPosition();
+	// Reborn: Integrate the current directly so motive-force filtering does not remove it.
+	const Bool inWaterCurrent = m_waterCurrentFrame == TheGameLogic->getFrame();
+	if (inWaterCurrent)
+	{
+		m_accel.x += m_waterCurrentAcceleration.x;
+		m_accel.y += m_waterCurrentAcceleration.y;
+	}
 	m_prevAccel = m_accel;
 
 	if (!obj->isDisabledByType(DISABLED_HELD))
@@ -665,7 +701,8 @@ UpdateSleepTime PhysicsBehavior::update()
 		Real oldPosZ = mtx.Get_Z_Translation();
 
 		// integrate velocity into position
-		if (obj->testStatus(OBJECT_STATUS_BRAKING))
+		// Reborn: A boat can still drift when its locomotor is braking.
+		if (obj->testStatus(OBJECT_STATUS_BRAKING) && !inWaterCurrent)
 		{
 			// Don't update position if the locomotor is braking.
 			if (!obj->isKindOf(KINDOF_PROJECTILE))

@@ -2863,6 +2863,10 @@ UpdateSleepTime AIUpdateInterface::doLocomotor()
 
 				case NONE:
 					{
+						// Reborn: Release exact destination positioning when water carries the boat away.
+						const PhysicsBehavior* physics = m_doFinalPosition ? getObject()->getPhysics() : nullptr;
+						if (physics && physics->hasRecentWaterCurrent())
+							m_doFinalPosition = FALSE;
 						if (m_doFinalPosition)
 						{
 							Coord3D pos = *getObject()->getPosition();
