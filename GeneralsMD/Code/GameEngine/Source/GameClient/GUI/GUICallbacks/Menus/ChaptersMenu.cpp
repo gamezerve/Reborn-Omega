@@ -45,6 +45,7 @@
 #include "GameClient/Display.h"
 #include "GameClient/Gadget.h"
 #include "GameClient/GadgetListBox.h"
+#include "GameClient/GadgetPushButton.h"
 #include "GameClient/GadgetStaticText.h"
 #include "GameClient/GameText.h"
 #include "GameClient/GameWindow.h"
@@ -1199,6 +1200,7 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
   if (chapterToSelect < 0)
     chapterToSelect = 0;
 
+  const Image* comingSoonImage = TheMappedImageCollection->findImageByName("ChaptersComingSoon");
   for (Int i = 0; i < 8; ++i)
   {
     chapterButtons[i] = TheWindowManager->winGetWindowFromId(
@@ -1238,6 +1240,8 @@ void ChaptersMenuInit(WindowLayout* layout, void* userData)
       else
         chapterButtons[i]->winEnable(FALSE);
 
+      // Reborn: Place the corner label above the text of disabled Chapters tabs in either theme.
+      GadgetButtonDrawOverlayImage(chapterButtons[i], chapterButtons[i]->winGetEnabled() ? nullptr : comingSoonImage);
     }
   }
   chapterImagesCached = TRUE;
