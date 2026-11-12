@@ -467,9 +467,8 @@ void SortingRendererClass::RebornFlushLargeSortingPool()
 		WWASSERT(source_offset + state->vertex_count <= vb->Get_Vertex_Count());
 		const VertexFormatXYZNDUV2* vertices = vb->VertexBuffer + source_offset;
 		const unsigned short* indices = ib->index_buffer + state->start_index + state->sorting_state.iba_offset;
-		D3DXMATRIX d3d_mtx = (D3DXMATRIX&)state->sorting_state.world * (D3DXMATRIX&)state->sorting_state.view;
-		const Matrix4x4& mtx = (const Matrix4x4&)d3d_mtx;
-		const bool identity_z = mtx[0][2] == 0.0f && mtx[1][2] == 0.0f && mtx[3][2] == 0.0f && mtx[2][2] == 1.0f;
+		const Matrix4x4 mtx = To_Matrix4x4(state->sorting_state.view) * To_Matrix4x4(state->sorting_state.world);
+		const bool identity_z = mtx[2][0] == 0.0f && mtx[2][1] == 0.0f && mtx[2][3] == 0.0f && mtx[2][2] == 1.0f;
 		for (unsigned i = 0; i < state->polygon_count; ++i) {
 			TempIndexStruct& triangle = tis[polygon_offset++];
 			triangle.tri.i = indices[i * 3] - state->min_vertex_index;
@@ -483,8 +482,8 @@ void SortingRendererClass::RebornFlushLargeSortingPool()
 			const VertexFormatXYZNDUV2& v3 = vertices[triangle.tri.k];
 			triangle.idx = (unsigned short)node_id;
 			triangle.z = identity_z ? (v1.z + v2.z + v3.z) / 3.0f :
-				(mtx[0][2] * (v1.x + v2.x + v3.x) + mtx[1][2] * (v1.y + v2.y + v3.y) +
-				 mtx[2][2] * (v1.z + v2.z + v3.z)) / 3.0f + mtx[3][2];
+				(mtx[2][0] * (v1.x + v2.x + v3.x) + mtx[2][1] * (v1.y + v2.y + v3.y) +
+					mtx[2][2] * (v1.z + v2.z + v3.z)) / 3.0f + mtx[2][3];
 			DEBUG_ASSERTCRASH((!_isnan(triangle.z) && _finite(triangle.z)), ("Triangle has invalid center"));
 		}
 	}
