@@ -618,7 +618,16 @@ StateReturnType ApproachState::update()
       return STATE_FAILURE;
     else
     {
-		  DEBUG_CRASH(("hmm, bailed from moveto state early... should this be possible?"));
+			// Reborn: Report the deliverer, the AI state that replaced the approach move and the source of the last
+			// AI command, to identify what interrupts payload deliverers (e.g. team or skirmish AI commands).
+			DEBUG_CRASH(("hmm, bailed from moveto state early... should this be possible? - object '%s' (%d), team '%s', player '%s', AI state type %d %s, last command source %d",
+				owner->getTemplate()->getName().str(),
+				owner->getID(),
+				owner->getTeam() ? owner->getTeam()->getName().str() : "<none>",
+				owner->getControllingPlayer() ? TheNameKeyGenerator->keyToName(owner->getControllingPlayer()->getPlayerNameKey()).str() : "<none>",
+				(Int)ai->getAIStateType(),
+				ai->getCurrentStateName().str(),
+				(Int)ai->getLastCommandSource()));
 		  ai->aiMoveToPosition( ai->getMoveToPos(), CMD_FROM_AI );
     }
 
