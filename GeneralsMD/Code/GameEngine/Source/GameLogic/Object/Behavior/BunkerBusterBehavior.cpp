@@ -138,7 +138,8 @@ UpdateSleepTime BunkerBusterBehavior::update()
       Object *victim = ai->getCurrentVictim();
       if ( victim )
         m_victimID = victim->getID();
-      DEBUG_ASSERTCRASH( victim, ("BunkerBusterBehavior::update... AIUpdateInterface reports no victim." ) );
+      // Reborn: No victim is valid here. The missile was fired at a ground position, or its victim died
+      // before this first update. bustTheBunker() then uses the missile itself for the FX, so do not assert.
     }
     DEBUG_ASSERTCRASH( ai, ("BunkerBusterBehavior::update could not find an AIUpdateInterface." ) );
 
