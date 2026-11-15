@@ -33,9 +33,109 @@
 #include "Common/DataChunk.h"
 #include "Common/file.h"
 #include "Common/FileSystem.h"
+#include "Common/PlayerTemplate.h" // Reborn: Resolve the Hard Air Force layout from the Challenge player.
+#include "GameClient/CampaignManager.h"
+#include "GameLogic/GameLogic.h"
+#include "GameLogic/ScriptEngine.h"
+#include "GameNetwork/GameInfo.h"
 
 // If verbose, lots of debug logging.
 #define not_VERBOSE
+
+
+namespace
+{
+	constexpr char infantryVariantMarker[] = "ROINFV1";
+
+	struct InfantryMapVariant
+	{
+		UnsignedInt offset;
+		UnsignedInt headerSize;
+		UnsignedInt tailSize;
+	};
+
+	struct InfantryMapVariantTable
+	{
+		UnsignedInt baseHeaderSize;
+		UnsignedInt commonSize;
+		InfantryMapVariant easy;
+		InfantryMapVariant hard;
+		InfantryMapVariant hardAirForce;
+		char marker[sizeof(infantryVariantMarker)];
+	};
+
+	//-------------------------------------------------------------------------------------------------
+	/** Reborn: Choose the authored Infantry Challenge layout for the active difficulty and player. */
+	//-------------------------------------------------------------------------------------------------
+	const InfantryMapVariant* selectInfantryMapVariant(const InfantryMapVariantTable& table)
+	{
+		if (!TheGameLogic || TheGameLogic->getGameMode() != GAME_SINGLE_PLAYER ||
+			!TheCampaignManager || !TheCampaignManager->getCurrentCampaign() ||
+			!TheCampaignManager->getCurrentCampaign()->isChallengeCampaign())
+			return nullptr;
+
+		const GameDifficulty difficulty = TheGameLogic->isLoadingSave()
+			? TheCampaignManager->getGameDifficulty()
+			: TheScriptEngine->getGlobalDifficulty();
+		if (difficulty == DIFFICULTY_EASY)
+			return &table.easy;
+		if (difficulty != DIFFICULTY_HARD)
+			return nullptr;
+
+		const GameSlot* slot = TheChallengeGameInfo ? TheChallengeGameInfo->getConstSlot(0) : nullptr;
+		const PlayerTemplate* player = slot && slot->isHuman()
+			? ThePlayerTemplateStore->getNthPlayerTemplate(slot->getPlayerTemplate())
+			: nullptr;
+		return player && player->getSide().compareNoCase("AmericaAirForceGeneral") == 0
+			? &table.hardAirForce
+			: &table.hard;
+	}
+
+	//-------------------------------------------------------------------------------------------------
+	/** Reborn: Materialize one layout from the unified map while sharing its terrain and world data. */
+	//-------------------------------------------------------------------------------------------------
+	void applyInfantryMapVariant(AsciiString path, char*& buffer, Int& size)
+	{
+		const char* name = path.str();
+		for (const char* cursor = name; *cursor; ++cursor)
+		{
+			if (*cursor == '\\' || *cursor == '/')
+				name = cursor + 1;
+		}
+		if (stricmp(name, "GC_InfantryGeneral.map") != 0 || !buffer ||
+			size < static_cast<Int>(sizeof(InfantryMapVariantTable) + 8) ||
+			memcmp(buffer, "CkMp", 4) != 0)
+			return;
+
+		const UnsignedInt end = size - sizeof(InfantryMapVariantTable);
+		InfantryMapVariantTable table;
+		memcpy(&table, buffer + end, sizeof(table));
+		if (memcmp(table.marker, infantryVariantMarker, sizeof(table.marker)) != 0)
+			return;
+
+		const InfantryMapVariant* variant = selectInfantryMapVariant(table);
+		if (!variant)
+			return;
+		if (table.baseHeaderSize < 8 || table.baseHeaderSize > end ||
+			table.commonSize > end - table.baseHeaderSize ||
+			variant->offset < table.baseHeaderSize + table.commonSize ||
+			variant->offset > end || variant->headerSize < 8 ||
+			variant->headerSize > end - variant->offset ||
+			variant->tailSize > end - variant->offset - variant->headerSize ||
+			memcmp(buffer + variant->offset, "CkMp", 4) != 0)
+			return;
+
+		const UnsignedInt sizeWithCommon = variant->headerSize + table.commonSize;
+		const UnsignedInt variantSize = sizeWithCommon + variant->tailSize;
+		char* selected = NEW char[variantSize];
+		memcpy(selected, buffer + variant->offset, variant->headerSize);
+		memcpy(selected + variant->headerSize, buffer + table.baseHeaderSize, table.commonSize);
+		memcpy(selected + sizeWithCommon, buffer + variant->offset + variant->headerSize, variant->tailSize);
+		delete[] buffer;
+		buffer = selected;
+		size = variantSize;
+	}
+}
 
 CachedFileInputStream::CachedFileInputStream():m_buffer(nullptr),m_size(0)
 {
@@ -96,6 +196,7 @@ Bool CachedFileInputStream::open(AsciiString path)
 	{
 		file->close();
 	}
+	applyInfantryMapVariant(path, m_buffer, m_size); // Reborn: Resolve the unified map before parsing.
 	return m_size != 0;
 }
 

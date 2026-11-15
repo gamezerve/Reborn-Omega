@@ -190,6 +190,7 @@ $MapFolders = @(
     "GC_ChemGeneral",
     "GC_ChinaBoss",
     "GC_DemolitionGeneral",
+    "GC_InfantryGeneral",
     "GC_LaserGeneral",
     "GC_NukeGeneral",
     "GC_Stealth",
