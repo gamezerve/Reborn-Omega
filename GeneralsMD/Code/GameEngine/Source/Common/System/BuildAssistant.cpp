@@ -705,7 +705,8 @@ LegalBuildCode BuildAssistant::isLocationClearOfObjects( const Coord3D *worldPos
 		}
 
 		// ignore any kind of class of objects that we will "remove" for building
-		if( isRemovableForConstruction( them ) == TRUE )
+		// Reborn: Inert objects are never removable and isRemovableForConstruction() asserts on them, so test them first.
+		if( !them->isKindOf( KINDOF_INERT ) && isRemovableForConstruction( them ) == TRUE )
 			continue;
 
 		// ignore land mines, cluster mines and demo traps, since you can build on them
@@ -850,7 +851,8 @@ LegalBuildCode BuildAssistant::isLocationClearOfObjects( const Coord3D *worldPos
 #endif
 
 		// ignore any kind of class of objects that we will "remove" for building
-		if( isRemovableForConstruction( them ) == TRUE )
+		// Reborn: Inert objects are never removable and isRemovableForConstruction() asserts on them, so test them first.
+		if( !them->isKindOf( KINDOF_INERT ) && isRemovableForConstruction( them ) == TRUE )
 			continue;
 
 		Real themFactoryExitWidth = them->getTemplate()->getFactoryExitWidth();
@@ -1133,7 +1135,8 @@ void BuildAssistant::addBibs(const Coord3D *worldPos,
 	{
 
 		// ignore any kind of class of objects that we will "remove" for building
-		if( isRemovableForConstruction( them ) == TRUE )
+		// Reborn: Inert objects are never removable and isRemovableForConstruction() asserts on them, so test them first.
+		if( !them->isKindOf( KINDOF_INERT ) && isRemovableForConstruction( them ) == TRUE )
 			continue;
 
 		if( them->isKindOf( KINDOF_IMMOBILE ) )	{
@@ -1495,7 +1498,8 @@ void BuildAssistant::clearRemovableForConstruction( const ThingTemplate *whatToB
 
 		// UI feedback objects (always selectable) never get destroyed by construction, but also should never
 		// trip any of the other side effects of placing them in isRemovableForConstruction()
-		if( isRemovableForConstruction( them ) == TRUE && !them->isKindOf( KINDOF_ALWAYS_SELECTABLE ) )
+		// Reborn: Inert objects are never removable and isRemovableForConstruction() asserts on them, so test them first.
+		if( !them->isKindOf( KINDOF_INERT ) && isRemovableForConstruction( them ) == TRUE && !them->isKindOf( KINDOF_ALWAYS_SELECTABLE ) )
 			TheGameLogic->destroyObject( them );
 
 	}

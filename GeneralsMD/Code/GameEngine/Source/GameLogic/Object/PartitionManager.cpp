@@ -5136,6 +5136,11 @@ Bool PartitionManager::estimateTerrainExtremesAlongLine(const Coord3D& pos, cons
 }
 #endif
 
+#ifdef RTS_DEBUG
+// Reborn: Debug-only description of the current caller, reported by the "off the map" assert below.
+AsciiString TheCellsAlongLineDebugContext;
+#endif
+
 //-----------------------------------------------------------------------------
 // Uses Bresenham line algorithm from www.gamedev.net.
 Int PartitionManager::iterateCellsAlongLine(const Coord3D& pos, const Coord3D& posOther, CellAlongLineProc proc, void* userData)
@@ -5200,7 +5205,16 @@ Int PartitionManager::iterateCellsAlongLine(const Coord3D& pos, const Coord3D& p
 	for (Int curpixel = 0; curpixel <= numpixels; curpixel++)
 	{
 		PartitionCell* cell = getCellAt(x, y);	// might be null if off the edge
+#ifdef RTS_DEBUG
+		// Reborn: Report the line and its caller so the off-map source can be found.
+		DEBUG_ASSERTCRASH(cell != nullptr, ("off the map\n\nline start: (%.1f, %.1f, %.1f) cell (%d, %d)\nline end: (%.1f, %.1f, %.1f) cell (%d, %d)\noff-map cell: (%d, %d), grid size: %d x %d\ncaller: %s",
+			pos.x, pos.y, pos.z, start.x, start.y,
+			posOther.x, posOther.y, posOther.z, end.x, end.y,
+			x, y, m_cellCountX, m_cellCountY,
+			TheCellsAlongLineDebugContext.isEmpty() ? "unknown" : TheCellsAlongLineDebugContext.str()));
+#else
 		DEBUG_ASSERTCRASH(cell != nullptr, ("off the map"));
+#endif
 		if (cell)
 		{
 			Int ret = (*proc)(cell, userData);

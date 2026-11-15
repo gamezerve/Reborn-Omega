@@ -409,7 +409,23 @@ Bool DumbProjectileBehavior::calcFlightPath(Bool recalcNumSegments)
 	controlPoints[3] = m_flightPathEnd;
 
 	Real highestInterveningTerrain;
+#ifdef RTS_DEBUG
+	// Reborn: Describe this projectile for the "off the map" assert in PartitionManager::iterateCellsAlongLine.
+	extern AsciiString TheCellsAlongLineDebugContext;
+	{
+		const Object* launcher = TheGameLogic->findObjectByID( m_launcherID );
+		const Object* victim = TheGameLogic->findObjectByID( m_victimID );
+		TheCellsAlongLineDebugContext.format( "DumbProjectileBehavior::calcFlightPath\nprojectile: %s (%u)\nlauncher: %s (%u)\nvictim: %s (%u)\nweapon: %s",
+			getObject()->getTemplate()->getName().str(), getObject()->getID(),
+			launcher ? launcher->getTemplate()->getName().str() : "none", m_launcherID,
+			victim ? victim->getTemplate()->getName().str() : "none", m_victimID,
+			m_detonationWeaponTmpl ? m_detonationWeaponTmpl->getName().str() : "none" );
+	}
+#endif
 	Bool onMap = ThePartitionManager->estimateTerrainExtremesAlongLine( controlPoints[0], controlPoints[3], nullptr, &highestInterveningTerrain, nullptr, nullptr );
+#ifdef RTS_DEBUG
+	TheCellsAlongLineDebugContext.clear();
+#endif
 	if( !onMap )
 	{
 		return false;
