@@ -4002,7 +4002,40 @@ Object *PartitionManager::getClosestObjects(
 
 #ifdef RTS_DEBUG
 	static Int theEntrancyCount = 0;
-	DEBUG_ASSERTCRASH(theEntrancyCount == 0, ("sorry, this routine is not reentrant"));
+	// Reborn: Remember the filter names of the active query, so a reentrant call can report which
+	// outer and inner queries collided. debugGetName() returns string literals, so the pointers stay
+	// valid even if the outer query's filter objects are gone (e.g. when the count got stuck).
+	enum { MAX_DEBUG_FILTER_NAMES = 16 };
+	static const char* theOuterFilterNames[MAX_DEBUG_FILTER_NAMES];
+	static Int theOuterFilterCount = 0;
+	static UnsignedInt theOuterFrame = 0;
+	if (theEntrancyCount != 0)
+	{
+		AsciiString outerNames, innerNames;
+		for (Int i = 0; i < theOuterFilterCount; ++i)
+		{
+			if (i > 0)
+				outerNames.concat(", ");
+			outerNames.concat(theOuterFilterNames[i]);
+		}
+		for (PartitionFilter **fp = filters; fp && *fp; ++fp)
+		{
+			if (fp != filters)
+				innerNames.concat(", ");
+			innerNames.concat((*fp)->debugGetName());
+		}
+		DEBUG_CRASH(("sorry, this routine is not reentrant\n\nentrancy count: %d\nouter query frame: %u (current frame: %u)\nouter query filters: %s\ninner query filters: %s",
+			theEntrancyCount, theOuterFrame, TheGameLogic->getFrame(),
+			outerNames.isEmpty() ? "(none)" : outerNames.str(),
+			innerNames.isEmpty() ? "(none)" : innerNames.str()));
+	}
+	else
+	{
+		theOuterFilterCount = 0;
+		for (PartitionFilter **fp = filters; fp && *fp && theOuterFilterCount < MAX_DEBUG_FILTER_NAMES; ++fp)
+			theOuterFilterNames[theOuterFilterCount++] = (*fp)->debugGetName();
+		theOuterFrame = TheGameLogic->getFrame();
+	}
 	++theEntrancyCount;
 #endif
 
