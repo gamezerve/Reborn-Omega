@@ -99,11 +99,7 @@ SpecialPowerModule::SpecialPowerModule( Thing *thing, const ModuleData *moduleDa
 									: BehaviorModule( thing, moduleData )
 {
 
-#if RETAIL_COMPATIBLE_CRC
 	m_availableOnFrame = 0;
-#else
-	m_availableOnFrame = 0xFFFFFFFF;
-#endif
 	m_pausedCount = 0;
 	m_pausedOnFrame = 0;
 	m_pausedPercent = 0.0f;
@@ -303,8 +299,13 @@ Bool SpecialPowerModule::isModuleForPower( const SpecialPowerTemplate *specialPo
 //-------------------------------------------------------------------------------------------------
 Bool SpecialPowerModule::isReady() const
 {
+#if RETAIL_COMPATIBLE_CRC
 	if (isDisabledByNoSuperweaponRestriction())
 		return FALSE;
+#else
+	if (!canDoSpecialPower())
+		return FALSE;
+#endif
 
 #if defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 	// this is a cheat ... remove this for release!
@@ -350,6 +351,7 @@ Real SpecialPowerModule::getPercentReady() const
 
 	const Bool isSharedNSync = modData->m_specialPowerTemplate->isSharedNSync();
 
+#if RETAIL_COMPATIBLE_CRC
 	if (!isSharedNSync && m_pausedCount > 0 && m_pausedPercent == 1.0f)
 	{
 		//Don't consider it ready if paused.
@@ -391,6 +393,23 @@ Real SpecialPowerModule::getPercentReady() const
 		(Real)modData->m_specialPowerTemplate->getReloadTime());
 
 	return percent;
+#else
+	if( getObject()->testStatus( OBJECT_STATUS_UNDER_CONSTRUCTION ) )
+		return 0.0f;
+
+	if( isReady() )
+		return 1.0f;
+
+	Real percent = m_pausedPercent;
+	if( m_pausedCount == 0 || isSharedNSync )
+	{
+		const UnsignedInt readyFrame = getReadyFrame();
+		const UnsignedInt now = TheGameLogic->getFrame();
+		percent = (readyFrame > now) ? 1.0f - (readyFrame - now) / (Real)getSpecialPowerTemplate()->getReloadTime() : 1.0f;
+	}
+
+	return clamp(0.0f, percent, 0.99999f);
+#endif
 }
 
 Bool SpecialPowerModule::startsReady() const
@@ -505,7 +524,8 @@ Bool SpecialPowerModule::initiateIntentToDoSpecialPower( const Object *targetObj
 	}
 
 #if RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @info we need to leave early if we are in the MissileLauncherBuildingUpdate crash fix codepath
+	// TheSuperHackers @info Leave early when an update module refused the launch
+	// and marked this power with an invalid ready frame.
 	if (m_availableOnFrame == 0xFFFFFFFF)
 	{
 		DEBUG_ASSERTCRASH(!valid, ("Using MissileLauncherBuildingUpdate escape path when valid is set to true"));
@@ -721,6 +741,23 @@ void SpecialPowerModule::aboutToDoSpecialPower( const Coord3D *location )
 }
 
 //-------------------------------------------------------------------------------------------------
+Bool SpecialPowerModule::canDoSpecialPower() const
+{
+	if (isDisabledByNoSuperweaponRestriction() || getObject()->isDisabled())
+		return false;
+
+#if !RETAIL_COMPATIBLE_CRC
+	if (m_pausedCount > 0)
+		return false;
+
+	if (getObject()->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION))
+		return false;
+#endif
+
+	return true;
+}
+
+//-------------------------------------------------------------------------------------------------
 //By default, special powers are not triggered by it's update module -- in which case
 //it triggers it and resets its timer immediately. When the update module triggers it,
 //then all we do is initiate the special power, and trust that the update module will
@@ -728,7 +765,13 @@ void SpecialPowerModule::aboutToDoSpecialPower( const Coord3D *location )
 //-------------------------------------------------------------------------------------------------
 void SpecialPowerModule::doSpecialPower( UnsignedInt commandOptions )
 {
-	if (isDisabledByNoSuperweaponRestriction() || m_pausedCount > 0 || getObject()->isDisabled()) {
+#if RETAIL_COMPATIBLE_CRC
+	if (m_pausedCount > 0) {
+		return;
+	}
+#endif
+
+	if (!canDoSpecialPower()) {
 		return;
 	}
 
@@ -750,7 +793,13 @@ void SpecialPowerModule::doSpecialPower( UnsignedInt commandOptions )
 //-------------------------------------------------------------------------------------------------
 void SpecialPowerModule::doSpecialPowerAtObject( Object *obj, UnsignedInt commandOptions )
 {
-	if (isDisabledByNoSuperweaponRestriction() || m_pausedCount > 0 || getObject()->isDisabled()) {
+#if RETAIL_COMPATIBLE_CRC
+	if (m_pausedCount > 0) {
+		return;
+	}
+#endif
+
+	if (!canDoSpecialPower()) {
 		return;
 	}
 
@@ -772,7 +821,13 @@ void SpecialPowerModule::doSpecialPowerAtObject( Object *obj, UnsignedInt comman
 //-------------------------------------------------------------------------------------------------
 void SpecialPowerModule::doSpecialPowerAtLocation( const Coord3D *loc, Real angle, UnsignedInt commandOptions )
 {
-	if (isDisabledByNoSuperweaponRestriction() || m_pausedCount > 0 || getObject()->isDisabled()) {
+#if RETAIL_COMPATIBLE_CRC
+	if (m_pausedCount > 0) {
+		return;
+	}
+#endif
+
+	if (!canDoSpecialPower()) {
 		return;
 	}
 
@@ -781,7 +836,8 @@ void SpecialPowerModule::doSpecialPowerAtLocation( const Coord3D *loc, Real angl
 	initiateIntentToDoSpecialPower( nullptr, loc, nullptr, commandOptions );
 
 #if RETAIL_COMPATIBLE_CRC
-	// TheSuperHackers @info we need to leave early if we are in the MissileLauncherBuildingUpdate crash fix codepath
+	// TheSuperHackers @info Leave early when an update module refused the launch
+	// and marked this power with an invalid ready frame.
 	if (m_availableOnFrame == 0xFFFFFFFF)
 		return;
 #endif
@@ -800,7 +856,13 @@ void SpecialPowerModule::doSpecialPowerAtLocation( const Coord3D *loc, Real angl
 //-------------------------------------------------------------------------------------------------
 void SpecialPowerModule::doSpecialPowerUsingWaypoints( const Waypoint *way, UnsignedInt commandOptions )
 {
-	if (isDisabledByNoSuperweaponRestriction() || m_pausedCount > 0 || getObject()->isDisabled()) {
+#if RETAIL_COMPATIBLE_CRC
+	if (m_pausedCount > 0) {
+		return;
+	}
+#endif
+
+	if (!canDoSpecialPower()) {
 		return;
 	}
 
