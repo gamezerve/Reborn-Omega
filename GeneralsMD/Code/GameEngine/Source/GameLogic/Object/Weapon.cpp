@@ -908,7 +908,13 @@ UnsignedInt WeaponTemplate::fireWeaponTemplate
 		if (distSqr < minAttackRangeSqr-0.5f && !isProjectileDetonation)
 #endif
 		{
-			DEBUG_ASSERTCRASH(distSqr > minAttackRangeSqr*0.8f, ("*** victim is closer than min attack range (%f vs %f) of this weapon -- why did we attempt to fire?",WWMath::Sqrtf(distSqr),WWMath::Sqrtf(minAttackRangeSqr)));
+			// Reborn: Name the weapon and both sides so the source of this failed shot can be identified.
+			DEBUG_ASSERTCRASH(distSqr > minAttackRangeSqr*0.8f, ("*** victim is closer than min attack range (%f vs %f) of this weapon -- why did we attempt to fire?\n\nweapon: %s\nsource: %s (%u) at (%.1f, %.1f, %.1f)\nvictim: %s (%u) at (%.1f, %.1f, %.1f)\nframe: %u",
+				WWMath::Sqrtf(distSqr), WWMath::Sqrtf(minAttackRangeSqr),
+				m_name.str(),
+				sourceObj->getTemplate()->getName().str(), sourceID, sourcePos->x, sourcePos->y, sourcePos->z,
+				victimObj ? victimObj->getTemplate()->getName().str() : "ground position", victimID, victimPos->x, victimPos->y, victimPos->z,
+				TheGameLogic->getFrame()));
 
 			//-extraLogging
 			#if defined(RTS_DEBUG)
