@@ -102,7 +102,6 @@
 #include "GameClient/GUICallbacks.h"
 
 #include "GameNetwork/NetworkInterface.h"
-#include "GameNetwork/WOLBrowser/WebBrowser.h"
 #include "GameNetwork/LANAPI.h"
 #include "GameNetwork/GameSpy/GameResultsThread.h"
 
@@ -232,10 +231,6 @@ void initSubsystem(
 }
 
 //-------------------------------------------------------------------------------------------------
-extern HINSTANCE ApplicationHInstance;  ///< our application instance
-extern CComModule _Module;
-
-//-------------------------------------------------------------------------------------------------
 static void updateTGAtoDDS();
 
 //-------------------------------------------------------------------------------------------------
@@ -314,8 +309,6 @@ GameEngine::GameEngine()
 	m_quitting = FALSE;
 	m_isActive = FALSE;
 	m_discordRichPresence = nullptr;
-
-	_Module.Init(nullptr, ApplicationHInstance, nullptr);
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -366,8 +359,6 @@ GameEngine::~GameEngine()
 	// GENERALS ONLINE
 	NGMP_OnlineServicesManager::DestroyInstance();
 	Drawable::killStaticImages();
-
-	_Module.Term();
 
 #ifdef PERF_TIMERS
 	PerfGather::termPerfDump();
@@ -755,7 +746,6 @@ void GameEngine::init()
 
 		startupStage = "Subsystem creation and initialization"; // Reborn: Resume per-subsystem progress tracking after command-map validation.
 		initSubsystem(TheActionManager,"TheActionManager", MSGNEW("GameEngineSubsystem") ActionManager(), nullptr);
-		//initSubsystem((CComObject<WebBrowser> *)TheWebBrowser,"(CComObject<WebBrowser> *)TheWebBrowser", (CComObject<WebBrowser> *)createWebBrowser(), nullptr);
 		initSubsystem(TheGameStateMap,"TheGameStateMap", MSGNEW("GameEngineSubsystem") GameStateMap, nullptr );
 		initSubsystem(TheGameState,"TheGameState", MSGNEW("GameEngineSubsystem") GameState, nullptr );
 
