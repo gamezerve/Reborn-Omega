@@ -315,7 +315,34 @@ void SlowDeathBehavior::beginSlowDeath(const DamageInfo *damageInfo)
 				physics->setAllowBouncing(true);
 				Real orientation = WWMath::Atan2(force.y, force.x);
 				physics->setAngles(orientation, 0, 0);
-				obj->getDrawable()->setModelConditionState(MODELCONDITION_EXPLODED_FLAILING);
+
+				// Reborn: AIDeadState only sets DYING (and clears the weapon and movement flags) on the next AI update.
+				// Until then a flung unit would match EXPLODED_FLAILING together with its stale firing flags, which ties
+				// with the firing states. Apply the same dying flags here, at the moment the unit is flung.
+				// Found with a Ranger that was firing when an EXPLODED death (such as a Tomahawk missile) flung it, which
+				// raised an ambiguous model match. Tested in game with Tomahawk missiles against Rangers.
+				// This affects every unit whose SlowDeathBehavior uses FlingForce, not only Rangers. If it causes problems,
+				// remove this block and restore the original line:
+				//   obj->getDrawable()->setModelConditionState(MODELCONDITION_EXPLODED_FLAILING);
+				ModelConditionFlags nonDyingStuff;
+				nonDyingStuff.set(MODELCONDITION_USING_WEAPON_A);
+				nonDyingStuff.set(MODELCONDITION_USING_WEAPON_B);
+				nonDyingStuff.set(MODELCONDITION_USING_WEAPON_C);
+				nonDyingStuff.set(MODELCONDITION_FIRING_A);
+				nonDyingStuff.set(MODELCONDITION_FIRING_B);
+				nonDyingStuff.set(MODELCONDITION_FIRING_C);
+				nonDyingStuff.set(MODELCONDITION_BETWEEN_FIRING_SHOTS_A);
+				nonDyingStuff.set(MODELCONDITION_BETWEEN_FIRING_SHOTS_B);
+				nonDyingStuff.set(MODELCONDITION_BETWEEN_FIRING_SHOTS_C);
+				nonDyingStuff.set(MODELCONDITION_RELOADING_A);
+				nonDyingStuff.set(MODELCONDITION_RELOADING_B);
+				nonDyingStuff.set(MODELCONDITION_RELOADING_C);
+				nonDyingStuff.set(MODELCONDITION_PREATTACK_A);
+				nonDyingStuff.set(MODELCONDITION_PREATTACK_B);
+				nonDyingStuff.set(MODELCONDITION_PREATTACK_C);
+				nonDyingStuff.set(MODELCONDITION_MOVING);
+				obj->clearAndSetModelConditionFlags(nonDyingStuff, MAKE_MODELCONDITION_MASK2(MODELCONDITION_DYING, MODELCONDITION_EXPLODED_FLAILING));
+
 				m_flags |= (1<<FLUNG_INTO_AIR);
 			}
 			setWakeFrame(obj, UPDATE_SLEEP_NONE);
