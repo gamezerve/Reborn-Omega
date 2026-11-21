@@ -945,6 +945,12 @@ static Object *findMine( Object *dozer )
 	{
 		return nullptr;
 	}
+
+	// Reborn: A dozer that cannot attack at all (a Combat Cycle rider, a weaponless drone, a subdued dozer)
+	// would be rejected for every candidate by PartitionFilterPossibleToAttack, which asserts on it.
+	if( !dozer->isAbleToAttack() )
+		return nullptr;
+
 	const DozerAIInterface *dozerAI = dozer->getAIUpdateInterface()->getDozerAIInterface();
 
 	// srj sez: only clear enemy or neutal mines. clearing allied mines (ie, OURS) is really dumb.
