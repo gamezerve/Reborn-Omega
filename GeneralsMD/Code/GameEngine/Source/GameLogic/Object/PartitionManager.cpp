@@ -6220,7 +6220,15 @@ Bool PartitionFilterPossibleToAttack::allow(Object *objOther)
 			return false;
 		}
 
-		DEBUG_ASSERTCRASH(false, ("if the object is unable to attack at all, you should filter that out ahead of time!"));
+		// Reborn: Name the unit, the target and the usual reasons it cannot attack, so the caller can be found.
+		DEBUG_ASSERTCRASH(false, ("if the object is unable to attack at all, you should filter that out ahead of time!\n\nunit: %s (%u)\ntarget: %s (%u)\ncommand source: %d (0 player, 1 script, 2 AI, 3 dozer)\nhas any weapon: %d\ncontained by: %s\nNO_ATTACK: %d, under construction: %d, sold: %d\nsubdued: %d, hacked: %d, EMP: %d",
+			m_obj->getTemplate()->getName().str(), m_obj->getID(),
+			objOther->getTemplate()->getName().str(), objOther->getID(),
+			(Int)m_commandSource,
+			m_obj->hasAnyWeapon(),
+			m_obj->getContainedBy() ? m_obj->getContainedBy()->getTemplate()->getName().str() : "none",
+			m_obj->testStatus(OBJECT_STATUS_NO_ATTACK), m_obj->testStatus(OBJECT_STATUS_UNDER_CONSTRUCTION), m_obj->testStatus(OBJECT_STATUS_SOLD),
+			m_obj->isDisabledByType(DISABLED_SUBDUED), m_obj->isDisabledByType(DISABLED_HACKED), m_obj->isDisabledByType(DISABLED_EMP)));
 		return false;
 	}
 
