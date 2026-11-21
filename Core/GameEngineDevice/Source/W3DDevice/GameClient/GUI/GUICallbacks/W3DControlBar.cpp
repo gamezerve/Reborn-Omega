@@ -64,15 +64,6 @@ void W3DCameoMovieDraw( GameWindow *window, WinInstanceData *instData )
 //-------------------------------------------------------------------------------------------------
 void W3DLeftHUDDraw( GameWindow *window, WinInstanceData *instData )
 {
-	// Reborn: The observer package's radar frame is drawn here so live switches require no extra window objects.
-	if (UseCustomControlBar() && TheControlBar && TheControlBar->isObserverControlBarOn())
-	{
-		ICoord2D pos, size;
-		window->winGetScreenPosition(&pos.x, &pos.y);
-		window->winGetSize(&size.x, &size.y);
-		TheDisplay->drawFillRect(pos.x - 1, pos.y - 1, size.x + 2, size.y + 2, GameMakeColor(0, 0, 0, 255));
-		TheDisplay->drawOpenRect(pos.x - 1, pos.y - 1, size.x + 2, size.y + 2, 1, GameMakeColor(255, 255, 255, 255));
-	}
 	// draw the default stuff
 	// draw video buffer
 	VideoBuffer *video = TheInGameUI->videoBuffer();
@@ -103,7 +94,7 @@ void W3DLeftHUDDraw( GameWindow *window, WinInstanceData *instData )
 void W3DRightHUDDraw( GameWindow *window, WinInstanceData *instData )
 {
 
-	// Reborn: Production queues retain the original white 3x3 texture; selected-unit grids remain code-drawn 4x4.
+	// Reborn: Production queues retain their original Pro grid texture.
 	if (UseCustomControlBar() && window->winGetWindowId() ==
 		TheNameKeyGenerator->nameToKey("ControlBar.wnd:ProductionQueueWindow"))
 	{
@@ -477,13 +468,13 @@ void W3DCommandBarGridDraw( GameWindow *window, WinInstanceData *instData )
 	window->winGetScreenPosition( &pos.x, &pos.y );
 	window->winGetSize( &size.x, &size.y );
 
-	// Reborn: This panel is code-drawn in both layouts; never retain the textured 3x3 grid path.
+	// Reborn: Use the existing code-drawn grid for player layouts and missing observer art.
 	window->winClearStatus(WIN_STATUS_IMAGE);
 	const Bool custom = UseCustomControlBar();
 	const Color color = custom ? GameMakeColor(255, 255, 255, 151) : TheControlBar->getBorderColor();
 	if (custom)
 	{
-		// Reborn: Replace the baked grid texture with its translucent background and white border.
+		// Reborn: Player grids retain their translucent background and white border.
 		TheDisplay->drawFillRect(pos.x, pos.y, size.x, size.y, GameMakeColor(0, 0, 0, 105));
 		TheDisplay->drawOpenRect(pos.x, pos.y, size.x, size.y, 1, color);
 	}
@@ -678,6 +669,17 @@ void W3DCommandBarBackgroundDraw( GameWindow *window, WinInstanceData *instData 
 	offset.y = pos.y - basePos.y;
 
 	man->drawBackground(offset);
+	// Reborn: Draw the original Pro observer shell behind the radar, player strip and portrait panel.
+	if (UseCustomControlBar() && TheControlBar->isObserverControlBarOn())
+	{
+		const Image* frame = TheMappedImageCollection->findImageByName(
+			GetCustomControlBarImageName("ObserverProCommandBar"));
+		if (frame)
+			TheWindowManager->winDrawImage(frame, offset.x,
+				offset.y + TheDisplay->getHeight() * 568 / 1080,
+				offset.x + TheDisplay->getWidth(), offset.y + TheDisplay->getHeight());
+
+	}
 	// Reborn: Draw the package's stats-panel backing before the flag and observer text, without adding runtime windows.
 	if (UseCustomControlBar() && TheControlBar->isObserverControlBarOn())
 	{

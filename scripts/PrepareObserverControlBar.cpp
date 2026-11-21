@@ -66,11 +66,11 @@ int main(int argc,char**argv) {
  place("CenterBackground","UPPERLEFT: 368 716, BOTTOMRIGHT: 1920 1080");
  place("InputBlockLeft","UPPERLEFT: 4 716, BOTTOMRIGHT: 364 1078");
  place("InputBlockMain","UPPERLEFT: 368 870, BOTTOMRIGHT: 690 1076");
- place("InputBlockRight","UPPERLEFT: 1642 887, BOTTOMRIGHT: 1871 1071");
+ place("InputBlockRight","UPPERLEFT: 1634 879, BOTTOMRIGHT: 1879 1079");
  // Reborn: Keep selected-unit information at the right edge instead of retail observer's center slot.
  place("WinUnitSelected","UPPERLEFT: 1642 887, BOTTOMRIGHT: 1871 1071");
- // Reborn: Hover searches enter the HUD parent first, so its bounds must contain the relocated portrait and upgrades.
- place("RightHUD","UPPERLEFT: 1642 887, BOTTOMRIGHT: 1871 1071");
+ // Reborn: Expand the clickable parent around the eight-pixel observer metal frame.
+ place("RightHUD","UPPERLEFT: 1634 879, BOTTOMRIGHT: 1879 1079");
  // Reborn: Compact observer rows need scaled small fonts rather than the normal bar's two-line headings.
  for(const char* name:{"StaticTextObsBuildings","StaticTextObsUnits","StaticTextObsUnitsLost","StaticTextObsUnitsKilled","StaticTextNumberOfUnitsLost","StaticTextNumberOfUnitsKilled","StaticTextNumberOfBuildings","StaticTextNumberOfUnits"}) {
   auto n=findNode(observer,name);if(n){n->fields["FONT"]="FONT = NAME: \"Arial\", SIZE: 8, BOLD: 0";n->fields["HEADERTEMPLATE"]="HEADERTEMPLATE = \"LabelSmall\"";}
@@ -84,6 +84,53 @@ int main(int argc,char**argv) {
  flags(observer);layoutUpgradeCameos(observer);
  // Reborn: Retail hides these labels and uses tooltips on player buttons; retain useful visible names beside them.
  for(int i=0;i<8;++i){auto n=findNode(observer,"StaticTextPlayer"+std::to_string(i));if(n){n->fields["SCREENRECT"]="SCREENRECT = UPPERLEFT: 408 "+std::to_string(718+i*39)+", BOTTOMRIGHT: 684 "+std::to_string(754+i*39)+", CREATIONRESOLUTION: 1920 1080";auto& s=n->fields["STATUS"];auto p=s.find("+SEE_THRU");if(p!=std::string::npos)s.erase(p,9);}}
+ // Reborn: Fit the existing controls into the original Pro observer shell.
+ place("LeftHUD","UPPERLEFT: 5 753, BOTTOMRIGHT: 327 1075");
+ place("InputBlockLeft","UPPERLEFT: 0 740, BOTTOMRIGHT: 394 1080");
+ place("RightHUD","UPPERLEFT: 1642 887, BOTTOMRIGHT: 1871 1071");
+ place("InputBlockRight","UPPERLEFT: 1625 870, BOTTOMRIGHT: 1920 1080");
+ place("BackgroundMarker","UPPERLEFT: 0 0, BOTTOMRIGHT: 1920 1080");
+ place("ObserverPlayerListWindow","UPPERLEFT: 332 740, BOTTOMRIGHT: 684 1010");
+ place("ButtonPlayer0","UPPERLEFT: 334 755, BOTTOMRIGHT: 379 785");
+ place("StaticTextPlayer0","UPPERLEFT: 400 755, BOTTOMRIGHT: 684 785");
+ place("ButtonPlayer1","UPPERLEFT: 334 787, BOTTOMRIGHT: 379 817");
+ place("StaticTextPlayer1","UPPERLEFT: 400 787, BOTTOMRIGHT: 684 817");
+ place("ButtonPlayer2","UPPERLEFT: 334 819, BOTTOMRIGHT: 379 849");
+ place("StaticTextPlayer2","UPPERLEFT: 400 819, BOTTOMRIGHT: 684 849");
+ place("ButtonPlayer3","UPPERLEFT: 334 851, BOTTOMRIGHT: 379 881");
+ place("StaticTextPlayer3","UPPERLEFT: 400 851, BOTTOMRIGHT: 684 881");
+ place("ButtonPlayer4","UPPERLEFT: 334 883, BOTTOMRIGHT: 379 913");
+ place("StaticTextPlayer4","UPPERLEFT: 400 883, BOTTOMRIGHT: 684 913");
+ place("ButtonPlayer5","UPPERLEFT: 334 915, BOTTOMRIGHT: 379 945");
+ place("StaticTextPlayer5","UPPERLEFT: 400 915, BOTTOMRIGHT: 684 945");
+ place("ButtonPlayer6","UPPERLEFT: 334 947, BOTTOMRIGHT: 379 977");
+ place("StaticTextPlayer6","UPPERLEFT: 400 947, BOTTOMRIGHT: 684 977");
+ place("ButtonPlayer7","UPPERLEFT: 334 979, BOTTOMRIGHT: 379 1009");
+ place("StaticTextPlayer7","UPPERLEFT: 400 979, BOTTOMRIGHT: 684 1009");
+ // Reborn: Parent bounds contain every player button; stats and experience align with the Pro artwork.
+ place("CenterBackground","UPPERLEFT: 332 716, BOTTOMRIGHT: 1920 1080");
+ place("GeneralsExp","UPPERLEFT: 1880 923, BOTTOMRIGHT: 1906 1063");
+ place("ExpBarForeground","UPPERLEFT: 1875 887, BOTTOMRIGHT: 1911 1071");
+ // Reborn: The experience foreground is part of the original Pro observer panel.
+ // Reborn: SEE_THRU suppresses drawing; match the normal Pro foreground over the progress fill.
+ if(auto exp=findNode(observer,"ExpBarForeground")) {
+  auto& status=exp->fields["STATUS"];
+  status=std::regex_replace(status,std::regex("\\+SEE_THRU"),"");
+  status+="+IMAGE";
+ }
+ // Reborn: Move the entire player card 32 reference pixels beyond the observer sidebar.
+ for(const char* name:{"WinFlag","ButtonCancel","PowerWindow","StaticTextPlayerName","StaticTextObsBuildings",
+     "StaticTextObsUnits","StaticTextObsUnitsLost","StaticTextObsUnitsKilled",
+     "StaticTextNumberOfBuildings","StaticTextNumberOfUnits","StaticTextNumberOfUnitsLost",
+     "StaticTextNumberOfUnitsKilled"}) {
+  auto node=findNode(observer,name);
+  if(!node)throw std::runtime_error(std::string("Missing observer card control ")+name);
+  const auto bounds=rect(*node);
+  place(name,("UPPERLEFT: "+std::to_string(bounds[0]+32)+" "+std::to_string(bounds[1])+
+      ", BOTTOMRIGHT: "+std::to_string(bounds[2]+32)+" "+std::to_string(bounds[3])).c_str());
+ }
+ // Reborn: Align Back with the black backing drawn two pixels outside the player card.
+ place("ButtonCancel","UPPERLEFT: 398 1030, BOTTOMRIGHT: 488 1076");
  std::ostringstream obs;manifestNode(obs,observer);
  output(dest+"/Window/CustomControlBar/Observer/ControlBarObserverCustom.wnd","FILE_VERSION = 2;\nSTARTLAYOUTBLOCK\nLAYOUTINIT = [None];\nLAYOUTUPDATE = [None];\nLAYOUTSHUTDOWN = [None];\nENDLAYOUTBLOCK\n"+writeNode(observer));
  output(dest+"/Data/INI/CustomControlBar/ObserverAppearance.txt",obs.str());
@@ -95,6 +142,19 @@ int main(int argc,char**argv) {
  // Reborn: Keep the mod's observer idle-worker action beside, rather than on top of, the return button.
  scheme=std::regex_replace(scheme,std::regex("WorkerUL X:[0-9]+ Y:[0-9]+"),"WorkerUL X:502 Y:1030");
  scheme=std::regex_replace(scheme,std::regex("WorkerLR X:[0-9]+ Y:[0-9]+"),"WorkerLR X:538 Y:1066");
+ // Reborn: Keep the original Pro observer button strip aligned with its command-bar atlas.
+ scheme=std::regex_replace(scheme,std::regex("OptionsUL X:[0-9]+ Y:[0-9]+"),"OptionsUL X:334 Y:1011");
+ scheme=std::regex_replace(scheme,std::regex("OptionsLR X:[0-9]+ Y:[0-9]+"),"OptionsLR X:379 Y:1041");
+ scheme=std::regex_replace(scheme,std::regex("ChatUL X:[0-9]+ Y:[0-9]+"),"ChatUL X:334 Y:1043");
+ scheme=std::regex_replace(scheme,std::regex("ChatLR X:[0-9]+ Y:[0-9]+"),"ChatLR X:379 Y:1073");
+ for(const auto& button:std::vector<std::pair<std::string,std::string>>{{"Options","Options"},{"Buddy","Chat"}})
+  for(const auto& state:std::vector<std::pair<std::string,std::string>>{{"Enable",""},{"Hightlited","H"},{"Pushed","P"},{"Disabled","I"}})
+   scheme=std::regex_replace(scheme,std::regex("("+button.first+"Button"+state.first+"[ \t]+)RebornCBO_[A-Za-z0-9_]+"),"$1RebornCBP_1080_ObserverPro"+button.second+state.second);
+ // Reborn: Restore the visible Pro experience-bar foreground.
+ scheme=std::regex_replace(scheme,std::regex("ExpBarForegroundImage [A-Za-z0-9_]+"),"ExpBarForegroundImage RebornCBP_1080_AmericaProExpBar");
+ // Reborn: Shift the observer power meter with the player card.
+ scheme=std::regex_replace(scheme,std::regex("PowerBarUL X:[0-9]+ Y:[0-9]+"),"PowerBarUL X:400 Y:854");
+ scheme=std::regex_replace(scheme,std::regex("PowerBarLR X:[0-9]+ Y:[0-9]+"),"PowerBarLR X:720 Y:866");
  output(dest+"/Data/INI/CustomControlBar/ObserverScheme.ini",scheme);
  // Reborn: Derive flag snapshots from current files, preserving all player layout edits.
  auto addFlags=[&](const std::string& text,const CustomWndNode& n){std::istringstream in(text);std::ostringstream out;std::string line;while(std::getline(in,line)){if(line.compare(0,2,"S ")!=0)out<<line<<"\n";}drawingFlags(out,n);return out.str();};

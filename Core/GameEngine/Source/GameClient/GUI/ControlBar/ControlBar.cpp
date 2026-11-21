@@ -5833,7 +5833,7 @@ void ControlBar::refreshCustomAppearance()
 	}
 	{
 		// Reborn: Hide absent custom-observer widgets, and restore them when switching back to the original bar.
-		for (const char* name : {"ControlBar.wnd:ButtonGeneral", "ControlBar.wnd:ExpBarForeground", "ControlBar.wnd:ButtonLarge", "ControlBar.wnd:WinUAttack"})
+		for (const char* name : {"ControlBar.wnd:ButtonGeneral", "ControlBar.wnd:ButtonLarge", "ControlBar.wnd:WinUAttack"})
 		{
 			GameWindow* control = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(name));
 			if (control) control->winHide(UseCustomControlBar() && m_isObserverCommandBar);

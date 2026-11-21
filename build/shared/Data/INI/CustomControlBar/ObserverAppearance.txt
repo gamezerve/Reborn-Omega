@@ -1,3 +1,4 @@
+S ControlBar.wnd:ControlBarParent 0 1
 R ControlBar.wnd:ControlBarParent 0 716 1920 1080 1920 1080
 F ControlBar.wnd:ControlBarParent "Times New Roman" 14 0
 H ControlBar.wnd:ControlBarParent [None]
@@ -29,6 +30,7 @@ D ControlBar.wnd:ControlBarParent 2 5 NoImage 254 254 254 255 0 0 0 255
 D ControlBar.wnd:ControlBarParent 2 6 NoImage 254 254 254 255 0 0 0 255
 D ControlBar.wnd:ControlBarParent 2 7 NoImage 254 254 254 255 0 0 0 255
 D ControlBar.wnd:ControlBarParent 2 8 NoImage 254 254 254 255 0 0 0 255
+S ControlBar.wnd:Munkee 1 0
 R ControlBar.wnd:Munkee 0 0 1920 1080 1920 1080
 F ControlBar.wnd:Munkee "Times New Roman" 14 0
 H ControlBar.wnd:Munkee [NONE]
@@ -60,7 +62,8 @@ D ControlBar.wnd:Munkee 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:Munkee 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:Munkee 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:Munkee 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:BackgroundMarker 0 0 0 0 1920 1080
+S ControlBar.wnd:BackgroundMarker 0 0
+R ControlBar.wnd:BackgroundMarker 0 0 1920 1080 1920 1080
 F ControlBar.wnd:BackgroundMarker "Times New Roman" 14 0
 H ControlBar.wnd:BackgroundMarker [NONE]
 T ControlBar.wnd:BackgroundMarker 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -91,6 +94,7 @@ D ControlBar.wnd:BackgroundMarker 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:BackgroundMarker 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:BackgroundMarker 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:BackgroundMarker 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:InputBlockMain 0 0
 R ControlBar.wnd:InputBlockMain 368 870 690 1076 1920 1080
 F ControlBar.wnd:InputBlockMain "Times New Roman" 14 0
 H ControlBar.wnd:InputBlockMain [NONE]
@@ -122,7 +126,8 @@ D ControlBar.wnd:InputBlockMain 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:InputBlockMain 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:InputBlockMain 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:InputBlockMain 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:InputBlockLeft 4 716 364 1078 1920 1080
+S ControlBar.wnd:InputBlockLeft 0 0
+R ControlBar.wnd:InputBlockLeft 0 740 394 1080 1920 1080
 F ControlBar.wnd:InputBlockLeft "Times New Roman" 14 0
 H ControlBar.wnd:InputBlockLeft [NONE]
 T ControlBar.wnd:InputBlockLeft 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -153,7 +158,8 @@ D ControlBar.wnd:InputBlockLeft 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:InputBlockLeft 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:InputBlockLeft 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:InputBlockLeft 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:InputBlockRight 1642 887 1871 1071 1920 1080
+S ControlBar.wnd:InputBlockRight 0 0
+R ControlBar.wnd:InputBlockRight 1625 870 1920 1080 1920 1080
 F ControlBar.wnd:InputBlockRight "Times New Roman" 14 0
 H ControlBar.wnd:InputBlockRight [NONE]
 T ControlBar.wnd:InputBlockRight 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -184,7 +190,8 @@ D ControlBar.wnd:InputBlockRight 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:InputBlockRight 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:InputBlockRight 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:InputBlockRight 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:CenterBackground 368 716 1920 1080 1920 1080
+S ControlBar.wnd:CenterBackground 0 0
+R ControlBar.wnd:CenterBackground 332 716 1920 1080 1920 1080
 F ControlBar.wnd:CenterBackground "Times New Roman" 14 0
 H ControlBar.wnd:CenterBackground [NONE]
 T ControlBar.wnd:CenterBackground 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255
@@ -215,6 +222,7 @@ D ControlBar.wnd:CenterBackground 2 5 NoImage 254 254 254 255 0 0 0 255
 D ControlBar.wnd:CenterBackground 2 6 NoImage 254 254 254 255 0 0 0 255
 D ControlBar.wnd:CenterBackground 2 7 NoImage 254 254 254 255 0 0 0 255
 D ControlBar.wnd:CenterBackground 2 8 NoImage 254 254 254 255 0 0 0 255
+S ControlBar.wnd:BeaconWindow 0 1
 R ControlBar.wnd:BeaconWindow 198 492 606 592 1920 1080
 F ControlBar.wnd:BeaconWindow "Times New Roman" 14 0
 H ControlBar.wnd:BeaconWindow [NONE]
@@ -246,6 +254,7 @@ D ControlBar.wnd:BeaconWindow 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:BeaconWindow 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:BeaconWindow 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:BeaconWindow 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:ButtonDeleteBeacon 1 1
 R ControlBar.wnd:ButtonDeleteBeacon 252 520 308 568 1920 1080
 F ControlBar.wnd:ButtonDeleteBeacon "Arial" 10 0
 H ControlBar.wnd:ButtonDeleteBeacon ButtonSmall
@@ -277,6 +286,7 @@ D ControlBar.wnd:ButtonDeleteBeacon 2 5 Buttons-HiLite-Middle 255 255 255 0 255 
 D ControlBar.wnd:ButtonDeleteBeacon 2 6 Buttons-HiLite-Right 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonDeleteBeacon 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonDeleteBeacon 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:EditBeaconText 1 0
 R ControlBar.wnd:EditBeaconText 312 544 544 569 1920 1080
 F ControlBar.wnd:EditBeaconText "Arial" 10 0
 H ControlBar.wnd:EditBeaconText TextEntry
@@ -308,6 +318,7 @@ D ControlBar.wnd:EditBeaconText 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:EditBeaconText 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:EditBeaconText 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:EditBeaconText 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:StaticTextBeaconLabel 0 1
 R ControlBar.wnd:StaticTextBeaconLabel 312 520 597 544 1920 1080
 F ControlBar.wnd:StaticTextBeaconLabel "Arial" 14 0
 H ControlBar.wnd:StaticTextBeaconLabel MinorTitle
@@ -339,6 +350,7 @@ D ControlBar.wnd:StaticTextBeaconLabel 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextBeaconLabel 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextBeaconLabel 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextBeaconLabel 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:ButtonClearBeaconText 1 1
 R ControlBar.wnd:ButtonClearBeaconText 544 544 600 568 1920 1080
 F ControlBar.wnd:ButtonClearBeaconText "Arial" 10 0
 H ControlBar.wnd:ButtonClearBeaconText ButtonSmall
@@ -370,6 +382,7 @@ D ControlBar.wnd:ButtonClearBeaconText 2 5 Buttons-HiLite-Middle 255 255 255 0 2
 D ControlBar.wnd:ButtonClearBeaconText 2 6 Buttons-HiLite-Right 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonClearBeaconText 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonClearBeaconText 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:CommandWindow 0 1
 R ControlBar.wnd:CommandWindow 189 492 606 592 1920 1080
 F ControlBar.wnd:CommandWindow "Times New Roman" 14 0
 H ControlBar.wnd:CommandWindow [NONE]
@@ -401,6 +414,7 @@ D ControlBar.wnd:CommandWindow 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:CommandWindow 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:CommandWindow 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:CommandWindow 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:ButtonCommand14 1 1
 R ControlBar.wnd:ButtonCommand14 553 545 603 589 1920 1080
 F ControlBar.wnd:ButtonCommand14 "Arial" 8 0
 H ControlBar.wnd:ButtonCommand14 [NONE]
@@ -432,6 +446,7 @@ D ControlBar.wnd:ButtonCommand14 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand14 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand14 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand14 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonCommand13 1 1
 R ControlBar.wnd:ButtonCommand13 553 494 603 538 1920 1080
 F ControlBar.wnd:ButtonCommand13 "Arial" 8 0
 H ControlBar.wnd:ButtonCommand13 [NONE]
@@ -463,6 +478,7 @@ D ControlBar.wnd:ButtonCommand13 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand13 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand13 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand13 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonCommand12 1 1
 R ControlBar.wnd:ButtonCommand12 498 545 548 589 1920 1080
 F ControlBar.wnd:ButtonCommand12 "Arial" 8 0
 H ControlBar.wnd:ButtonCommand12 [NONE]
@@ -494,6 +510,7 @@ D ControlBar.wnd:ButtonCommand12 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand12 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand12 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand12 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonCommand11 1 1
 R ControlBar.wnd:ButtonCommand11 498 494 548 538 1920 1080
 F ControlBar.wnd:ButtonCommand11 "Arial" 8 0
 H ControlBar.wnd:ButtonCommand11 [NONE]
@@ -525,6 +542,7 @@ D ControlBar.wnd:ButtonCommand11 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand11 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand11 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand11 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonCommand10 1 1
 R ControlBar.wnd:ButtonCommand10 443 545 493 589 1920 1080
 F ControlBar.wnd:ButtonCommand10 "Arial" 8 0
 H ControlBar.wnd:ButtonCommand10 [NONE]
@@ -556,6 +574,7 @@ D ControlBar.wnd:ButtonCommand10 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand10 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand10 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand10 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonCommand09 1 1
 R ControlBar.wnd:ButtonCommand09 443 494 493 538 1920 1080
 F ControlBar.wnd:ButtonCommand09 "Arial" 8 0
 H ControlBar.wnd:ButtonCommand09 [NONE]
@@ -587,6 +606,7 @@ D ControlBar.wnd:ButtonCommand09 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand09 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand09 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand09 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonCommand08 1 1
 R ControlBar.wnd:ButtonCommand08 388 545 438 589 1920 1080
 F ControlBar.wnd:ButtonCommand08 "Arial" 8 0
 H ControlBar.wnd:ButtonCommand08 [NONE]
@@ -618,6 +638,7 @@ D ControlBar.wnd:ButtonCommand08 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand08 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand08 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand08 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonCommand07 1 1
 R ControlBar.wnd:ButtonCommand07 388 494 438 538 1920 1080
 F ControlBar.wnd:ButtonCommand07 "Arial" 8 0
 H ControlBar.wnd:ButtonCommand07 [NONE]
@@ -649,6 +670,7 @@ D ControlBar.wnd:ButtonCommand07 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand07 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand07 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand07 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonCommand06 1 1
 R ControlBar.wnd:ButtonCommand06 333 545 383 589 1920 1080
 F ControlBar.wnd:ButtonCommand06 "Arial" 8 0
 H ControlBar.wnd:ButtonCommand06 [NONE]
@@ -680,6 +702,7 @@ D ControlBar.wnd:ButtonCommand06 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand06 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand06 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand06 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonCommand05 1 1
 R ControlBar.wnd:ButtonCommand05 333 494 383 538 1920 1080
 F ControlBar.wnd:ButtonCommand05 "Arial" 8 0
 H ControlBar.wnd:ButtonCommand05 [NONE]
@@ -711,6 +734,7 @@ D ControlBar.wnd:ButtonCommand05 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand05 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand05 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand05 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonCommand04 1 1
 R ControlBar.wnd:ButtonCommand04 278 545 328 589 1920 1080
 F ControlBar.wnd:ButtonCommand04 "Arial" 8 0
 H ControlBar.wnd:ButtonCommand04 [NONE]
@@ -742,6 +766,7 @@ D ControlBar.wnd:ButtonCommand04 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand04 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand04 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand04 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonCommand03 1 1
 R ControlBar.wnd:ButtonCommand03 278 494 328 538 1920 1080
 F ControlBar.wnd:ButtonCommand03 "Arial" 8 0
 H ControlBar.wnd:ButtonCommand03 [NONE]
@@ -773,6 +798,7 @@ D ControlBar.wnd:ButtonCommand03 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand03 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand03 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand03 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonCommand02 1 1
 R ControlBar.wnd:ButtonCommand02 223 545 273 589 1920 1080
 F ControlBar.wnd:ButtonCommand02 "Arial" 8 0
 H ControlBar.wnd:ButtonCommand02 [NONE]
@@ -804,6 +830,7 @@ D ControlBar.wnd:ButtonCommand02 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand02 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand02 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand02 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonCommand01 1 1
 R ControlBar.wnd:ButtonCommand01 223 494 273 538 1920 1080
 F ControlBar.wnd:ButtonCommand01 "Arial" 8 0
 H ControlBar.wnd:ButtonCommand01 [NONE]
@@ -835,6 +862,7 @@ D ControlBar.wnd:ButtonCommand01 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand01 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand01 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonCommand01 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:UnderConstructionWindow 0 1
 R ControlBar.wnd:UnderConstructionWindow 198 492 606 592 1920 1080
 F ControlBar.wnd:UnderConstructionWindow "Times New Roman" 14 0
 H ControlBar.wnd:UnderConstructionWindow [NONE]
@@ -866,6 +894,7 @@ D ControlBar.wnd:UnderConstructionWindow 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnderConstructionWindow 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnderConstructionWindow 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnderConstructionWindow 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:ButtonCancelConstruction 1 1
 R ControlBar.wnd:ButtonCancelConstruction 259 519 315 567 1920 1080
 F ControlBar.wnd:ButtonCancelConstruction "Generals" 15 0
 H ControlBar.wnd:ButtonCancelConstruction MainButton
@@ -897,6 +926,7 @@ D ControlBar.wnd:ButtonCancelConstruction 2 5 Buttons-HiLite-Middle 255 255 255 
 D ControlBar.wnd:ButtonCancelConstruction 2 6 Buttons-HiLite-Right 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonCancelConstruction 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonCancelConstruction 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:UnderConstructionDesc 0 1
 R ControlBar.wnd:UnderConstructionDesc 323 519 599 567 1920 1080
 F ControlBar.wnd:UnderConstructionDesc "Arial" 14 0
 H ControlBar.wnd:UnderConstructionDesc MinorTitle
@@ -928,6 +958,7 @@ D ControlBar.wnd:UnderConstructionDesc 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnderConstructionDesc 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnderConstructionDesc 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnderConstructionDesc 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:ObserverPlayerInfoWindow 0 1
 R ControlBar.wnd:ObserverPlayerInfoWindow 0 0 1920 1080 1920 1080
 F ControlBar.wnd:ObserverPlayerInfoWindow "Times New Roman" 14 0
 H ControlBar.wnd:ObserverPlayerInfoWindow [NONE]
@@ -959,6 +990,7 @@ D ControlBar.wnd:ObserverPlayerInfoWindow 2 5 NoImage 255 255 255 0 255 255 255 
 D ControlBar.wnd:ObserverPlayerInfoWindow 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ObserverPlayerInfoWindow 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ObserverPlayerInfoWindow 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:WinGeneralPortrait 1 0
 R ControlBar.wnd:WinGeneralPortrait 0 0 0 0 1920 1080
 F ControlBar.wnd:WinGeneralPortrait "Times New Roman" 14 0
 H ControlBar.wnd:WinGeneralPortrait [NONE]
@@ -990,7 +1022,8 @@ D ControlBar.wnd:WinGeneralPortrait 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:WinGeneralPortrait 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:WinGeneralPortrait 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:WinGeneralPortrait 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:WinFlag 368 870 688 1026 1920 1080
+S ControlBar.wnd:WinFlag 1 0
+R ControlBar.wnd:WinFlag 400 870 720 1026 1920 1080
 F ControlBar.wnd:WinFlag "Times New Roman" 14 0
 H ControlBar.wnd:WinFlag [NONE]
 T ControlBar.wnd:WinFlag 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -1021,7 +1054,8 @@ D ControlBar.wnd:WinFlag 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:WinFlag 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:WinFlag 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:WinFlag 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:ButtonCancel 408 1030 498 1076 1920 1080
+S ControlBar.wnd:ButtonCancel 1 0
+R ControlBar.wnd:ButtonCancel 398 1030 488 1076 1920 1080
 F ControlBar.wnd:ButtonCancel "Arial" 10 0
 H ControlBar.wnd:ButtonCancel LabelRegular
 T ControlBar.wnd:ButtonCancel 255 255 255 255 0 0 0 255 62 64 92 255 31 32 47 255 186 255 12 255 0 2 0 255
@@ -1052,7 +1086,8 @@ D ControlBar.wnd:ButtonCancel 2 5 Buttons-HiLite-Middle 255 255 255 0 255 255 25
 D ControlBar.wnd:ButtonCancel 2 6 Buttons-HiLite-Right 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonCancel 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonCancel 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextObsBuildings 444 948 684 970 1920 1080
+S ControlBar.wnd:StaticTextObsBuildings 0 0
+R ControlBar.wnd:StaticTextObsBuildings 476 948 716 970 1920 1080
 F ControlBar.wnd:StaticTextObsBuildings "Arial" 8 0
 H ControlBar.wnd:StaticTextObsBuildings LabelSmall
 T ControlBar.wnd:StaticTextObsBuildings 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 3 196 0 255 0 66 4 255
@@ -1083,7 +1118,8 @@ D ControlBar.wnd:StaticTextObsBuildings 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextObsBuildings 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextObsBuildings 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextObsBuildings 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextObsUnits 444 922 684 944 1920 1080
+S ControlBar.wnd:StaticTextObsUnits 0 0
+R ControlBar.wnd:StaticTextObsUnits 476 922 716 944 1920 1080
 F ControlBar.wnd:StaticTextObsUnits "Arial" 8 0
 H ControlBar.wnd:StaticTextObsUnits LabelSmall
 T ControlBar.wnd:StaticTextObsUnits 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 3 196 0 255 0 66 4 255
@@ -1114,7 +1150,8 @@ D ControlBar.wnd:StaticTextObsUnits 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextObsUnits 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextObsUnits 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextObsUnits 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextObsUnitsLost 444 1000 684 1022 1920 1080
+S ControlBar.wnd:StaticTextObsUnitsLost 0 0
+R ControlBar.wnd:StaticTextObsUnitsLost 476 1000 716 1022 1920 1080
 F ControlBar.wnd:StaticTextObsUnitsLost "Arial" 8 0
 H ControlBar.wnd:StaticTextObsUnitsLost LabelSmall
 T ControlBar.wnd:StaticTextObsUnitsLost 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 3 196 0 255 0 66 4 255
@@ -1145,7 +1182,8 @@ D ControlBar.wnd:StaticTextObsUnitsLost 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextObsUnitsLost 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextObsUnitsLost 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextObsUnitsLost 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextObsUnitsKilled 444 974 684 996 1920 1080
+S ControlBar.wnd:StaticTextObsUnitsKilled 0 0
+R ControlBar.wnd:StaticTextObsUnitsKilled 476 974 716 996 1920 1080
 F ControlBar.wnd:StaticTextObsUnitsKilled "Arial" 8 0
 H ControlBar.wnd:StaticTextObsUnitsKilled LabelSmall
 T ControlBar.wnd:StaticTextObsUnitsKilled 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 3 196 0 255 0 66 4 255
@@ -1176,7 +1214,8 @@ D ControlBar.wnd:StaticTextObsUnitsKilled 2 5 NoImage 255 255 255 0 255 255 255 
 D ControlBar.wnd:StaticTextObsUnitsKilled 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextObsUnitsKilled 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextObsUnitsKilled 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextPlayerName 372 874 684 918 1920 1080
+S ControlBar.wnd:StaticTextPlayerName 0 0
+R ControlBar.wnd:StaticTextPlayerName 404 874 716 918 1920 1080
 F ControlBar.wnd:StaticTextPlayerName "Arial" 10 0
 H ControlBar.wnd:StaticTextPlayerName LabelRegular
 T ControlBar.wnd:StaticTextPlayerName 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 3 196 0 255 0 66 4 255
@@ -1207,7 +1246,8 @@ D ControlBar.wnd:StaticTextPlayerName 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayerName 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayerName 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayerName 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextNumberOfUnitsLost 372 1000 440 1022 1920 1080
+S ControlBar.wnd:StaticTextNumberOfUnitsLost 0 0
+R ControlBar.wnd:StaticTextNumberOfUnitsLost 404 1000 472 1022 1920 1080
 F ControlBar.wnd:StaticTextNumberOfUnitsLost "Arial" 8 0
 H ControlBar.wnd:StaticTextNumberOfUnitsLost LabelSmall
 T ControlBar.wnd:StaticTextNumberOfUnitsLost 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 3 196 0 255 0 66 4 255
@@ -1238,7 +1278,8 @@ D ControlBar.wnd:StaticTextNumberOfUnitsLost 2 5 NoImage 255 255 255 0 255 255 2
 D ControlBar.wnd:StaticTextNumberOfUnitsLost 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextNumberOfUnitsLost 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextNumberOfUnitsLost 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextNumberOfUnitsKilled 372 974 440 996 1920 1080
+S ControlBar.wnd:StaticTextNumberOfUnitsKilled 0 0
+R ControlBar.wnd:StaticTextNumberOfUnitsKilled 404 974 472 996 1920 1080
 F ControlBar.wnd:StaticTextNumberOfUnitsKilled "Arial" 8 0
 H ControlBar.wnd:StaticTextNumberOfUnitsKilled LabelSmall
 T ControlBar.wnd:StaticTextNumberOfUnitsKilled 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 3 196 0 255 0 66 4 255
@@ -1269,7 +1310,8 @@ D ControlBar.wnd:StaticTextNumberOfUnitsKilled 2 5 NoImage 255 255 255 0 255 255
 D ControlBar.wnd:StaticTextNumberOfUnitsKilled 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextNumberOfUnitsKilled 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextNumberOfUnitsKilled 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextNumberOfBuildings 372 948 440 970 1920 1080
+S ControlBar.wnd:StaticTextNumberOfBuildings 0 0
+R ControlBar.wnd:StaticTextNumberOfBuildings 404 948 472 970 1920 1080
 F ControlBar.wnd:StaticTextNumberOfBuildings "Arial" 8 0
 H ControlBar.wnd:StaticTextNumberOfBuildings LabelSmall
 T ControlBar.wnd:StaticTextNumberOfBuildings 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 3 196 0 255 0 66 4 255
@@ -1300,7 +1342,8 @@ D ControlBar.wnd:StaticTextNumberOfBuildings 2 5 NoImage 255 255 255 0 255 255 2
 D ControlBar.wnd:StaticTextNumberOfBuildings 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextNumberOfBuildings 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextNumberOfBuildings 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextNumberOfUnits 372 922 440 944 1920 1080
+S ControlBar.wnd:StaticTextNumberOfUnits 0 0
+R ControlBar.wnd:StaticTextNumberOfUnits 404 922 472 944 1920 1080
 F ControlBar.wnd:StaticTextNumberOfUnits "Arial" 8 0
 H ControlBar.wnd:StaticTextNumberOfUnits LabelSmall
 T ControlBar.wnd:StaticTextNumberOfUnits 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 3 196 0 255 0 66 4 255
@@ -1331,7 +1374,8 @@ D ControlBar.wnd:StaticTextNumberOfUnits 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextNumberOfUnits 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextNumberOfUnits 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextNumberOfUnits 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:ObserverPlayerListWindow 368 716 476 1076 1920 1080
+S ControlBar.wnd:ObserverPlayerListWindow 0 1
+R ControlBar.wnd:ObserverPlayerListWindow 332 740 684 1010 1920 1080
 F ControlBar.wnd:ObserverPlayerListWindow "Times New Roman" 14 0
 H ControlBar.wnd:ObserverPlayerListWindow [NONE]
 T ControlBar.wnd:ObserverPlayerListWindow 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -1362,7 +1406,8 @@ D ControlBar.wnd:ObserverPlayerListWindow 2 5 NoImage 255 255 255 0 255 255 255 
 D ControlBar.wnd:ObserverPlayerListWindow 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ObserverPlayerListWindow 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ObserverPlayerListWindow 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:ButtonPlayer7 368 991 404 1027 1920 1080
+S ControlBar.wnd:ButtonPlayer7 1 0
+R ControlBar.wnd:ButtonPlayer7 334 979 379 1009 1920 1080
 F ControlBar.wnd:ButtonPlayer7 "Arial" 8 0
 H ControlBar.wnd:ButtonPlayer7 [NONE]
 T ControlBar.wnd:ButtonPlayer7 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -1393,7 +1438,8 @@ D ControlBar.wnd:ButtonPlayer7 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer7 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer7 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer7 2 8 NoImage 255 255 255 255 255 255 255 255
-R ControlBar.wnd:ButtonPlayer6 368 952 404 988 1920 1080
+S ControlBar.wnd:ButtonPlayer6 1 0
+R ControlBar.wnd:ButtonPlayer6 334 947 379 977 1920 1080
 F ControlBar.wnd:ButtonPlayer6 "Arial" 8 0
 H ControlBar.wnd:ButtonPlayer6 [NONE]
 T ControlBar.wnd:ButtonPlayer6 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -1424,7 +1470,8 @@ D ControlBar.wnd:ButtonPlayer6 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer6 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer6 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer6 2 8 NoImage 255 255 255 255 255 255 255 255
-R ControlBar.wnd:ButtonPlayer5 368 913 404 949 1920 1080
+S ControlBar.wnd:ButtonPlayer5 1 0
+R ControlBar.wnd:ButtonPlayer5 334 915 379 945 1920 1080
 F ControlBar.wnd:ButtonPlayer5 "Arial" 8 0
 H ControlBar.wnd:ButtonPlayer5 [NONE]
 T ControlBar.wnd:ButtonPlayer5 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -1455,7 +1502,8 @@ D ControlBar.wnd:ButtonPlayer5 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer5 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer5 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer5 2 8 NoImage 255 255 255 255 255 255 255 255
-R ControlBar.wnd:ButtonPlayer4 368 874 404 910 1920 1080
+S ControlBar.wnd:ButtonPlayer4 1 0
+R ControlBar.wnd:ButtonPlayer4 334 883 379 913 1920 1080
 F ControlBar.wnd:ButtonPlayer4 "Arial" 8 0
 H ControlBar.wnd:ButtonPlayer4 [NONE]
 T ControlBar.wnd:ButtonPlayer4 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -1486,7 +1534,8 @@ D ControlBar.wnd:ButtonPlayer4 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer4 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer4 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer4 2 8 NoImage 255 255 255 255 255 255 255 255
-R ControlBar.wnd:ButtonPlayer3 368 835 404 871 1920 1080
+S ControlBar.wnd:ButtonPlayer3 1 0
+R ControlBar.wnd:ButtonPlayer3 334 851 379 881 1920 1080
 F ControlBar.wnd:ButtonPlayer3 "Arial" 8 0
 H ControlBar.wnd:ButtonPlayer3 [NONE]
 T ControlBar.wnd:ButtonPlayer3 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -1517,7 +1566,8 @@ D ControlBar.wnd:ButtonPlayer3 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer3 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer3 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer3 2 8 NoImage 255 255 255 255 255 255 255 255
-R ControlBar.wnd:ButtonPlayer2 368 796 404 832 1920 1080
+S ControlBar.wnd:ButtonPlayer2 1 0
+R ControlBar.wnd:ButtonPlayer2 334 819 379 849 1920 1080
 F ControlBar.wnd:ButtonPlayer2 "Arial" 8 0
 H ControlBar.wnd:ButtonPlayer2 [NONE]
 T ControlBar.wnd:ButtonPlayer2 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -1548,7 +1598,8 @@ D ControlBar.wnd:ButtonPlayer2 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer2 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer2 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer2 2 8 NoImage 255 255 255 255 255 255 255 255
-R ControlBar.wnd:ButtonPlayer1 368 757 404 793 1920 1080
+S ControlBar.wnd:ButtonPlayer1 1 0
+R ControlBar.wnd:ButtonPlayer1 334 787 379 817 1920 1080
 F ControlBar.wnd:ButtonPlayer1 "Arial" 8 0
 H ControlBar.wnd:ButtonPlayer1 [NONE]
 T ControlBar.wnd:ButtonPlayer1 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -1579,7 +1630,8 @@ D ControlBar.wnd:ButtonPlayer1 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer1 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer1 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer1 2 8 NoImage 255 255 255 255 255 255 255 255
-R ControlBar.wnd:ButtonPlayer0 368 718 404 754 1920 1080
+S ControlBar.wnd:ButtonPlayer0 1 0
+R ControlBar.wnd:ButtonPlayer0 334 755 379 785 1920 1080
 F ControlBar.wnd:ButtonPlayer0 "Arial" 8 0
 H ControlBar.wnd:ButtonPlayer0 [NONE]
 T ControlBar.wnd:ButtonPlayer0 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255
@@ -1610,7 +1662,8 @@ D ControlBar.wnd:ButtonPlayer0 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer0 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer0 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlayer0 2 8 NoImage 255 255 255 255 255 255 255 255
-R ControlBar.wnd:StaticTextPlayer7 408 991 684 1027 1920 1080
+S ControlBar.wnd:StaticTextPlayer7 0 0
+R ControlBar.wnd:StaticTextPlayer7 400 979 684 1009 1920 1080
 F ControlBar.wnd:StaticTextPlayer7 "Arial" 8 0
 H ControlBar.wnd:StaticTextPlayer7 LabelSmall
 T ControlBar.wnd:StaticTextPlayer7 255 255 252 255 0 0 0 255 0 0 192 255 0 0 64 255 0 0 0 255 0 0 4 255
@@ -1641,7 +1694,8 @@ D ControlBar.wnd:StaticTextPlayer7 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer7 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer7 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer7 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextPlayer6 408 952 684 988 1920 1080
+S ControlBar.wnd:StaticTextPlayer6 0 0
+R ControlBar.wnd:StaticTextPlayer6 400 947 684 977 1920 1080
 F ControlBar.wnd:StaticTextPlayer6 "Arial" 8 0
 H ControlBar.wnd:StaticTextPlayer6 LabelSmall
 T ControlBar.wnd:StaticTextPlayer6 255 255 252 255 0 0 0 255 0 0 192 255 0 0 64 255 0 0 0 255 0 0 4 255
@@ -1672,7 +1726,8 @@ D ControlBar.wnd:StaticTextPlayer6 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer6 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer6 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer6 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextPlayer5 408 913 684 949 1920 1080
+S ControlBar.wnd:StaticTextPlayer5 0 0
+R ControlBar.wnd:StaticTextPlayer5 400 915 684 945 1920 1080
 F ControlBar.wnd:StaticTextPlayer5 "Arial" 8 0
 H ControlBar.wnd:StaticTextPlayer5 LabelSmall
 T ControlBar.wnd:StaticTextPlayer5 255 255 252 255 0 0 0 255 0 0 192 255 0 0 64 255 0 0 0 255 0 0 4 255
@@ -1703,7 +1758,8 @@ D ControlBar.wnd:StaticTextPlayer5 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer5 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer5 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer5 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextPlayer4 408 874 684 910 1920 1080
+S ControlBar.wnd:StaticTextPlayer4 0 0
+R ControlBar.wnd:StaticTextPlayer4 400 883 684 913 1920 1080
 F ControlBar.wnd:StaticTextPlayer4 "Arial" 8 0
 H ControlBar.wnd:StaticTextPlayer4 LabelSmall
 T ControlBar.wnd:StaticTextPlayer4 255 255 252 255 0 0 0 255 0 0 192 255 0 0 64 255 0 0 0 255 0 0 4 255
@@ -1734,7 +1790,8 @@ D ControlBar.wnd:StaticTextPlayer4 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer4 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer4 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer4 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextPlayer3 408 835 684 871 1920 1080
+S ControlBar.wnd:StaticTextPlayer3 0 0
+R ControlBar.wnd:StaticTextPlayer3 400 851 684 881 1920 1080
 F ControlBar.wnd:StaticTextPlayer3 "Arial" 8 0
 H ControlBar.wnd:StaticTextPlayer3 LabelSmall
 T ControlBar.wnd:StaticTextPlayer3 255 255 252 255 0 0 0 255 0 0 192 255 0 0 64 255 0 0 0 255 0 0 4 255
@@ -1765,7 +1822,8 @@ D ControlBar.wnd:StaticTextPlayer3 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer3 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer3 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer3 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextPlayer2 408 796 684 832 1920 1080
+S ControlBar.wnd:StaticTextPlayer2 0 0
+R ControlBar.wnd:StaticTextPlayer2 400 819 684 849 1920 1080
 F ControlBar.wnd:StaticTextPlayer2 "Arial" 8 0
 H ControlBar.wnd:StaticTextPlayer2 LabelSmall
 T ControlBar.wnd:StaticTextPlayer2 255 255 252 255 0 0 0 255 0 0 192 255 0 0 64 255 0 0 0 255 0 0 4 255
@@ -1796,7 +1854,8 @@ D ControlBar.wnd:StaticTextPlayer2 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer2 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer2 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer2 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextPlayer1 408 757 684 793 1920 1080
+S ControlBar.wnd:StaticTextPlayer1 0 0
+R ControlBar.wnd:StaticTextPlayer1 400 787 684 817 1920 1080
 F ControlBar.wnd:StaticTextPlayer1 "Arial" 8 0
 H ControlBar.wnd:StaticTextPlayer1 LabelSmall
 T ControlBar.wnd:StaticTextPlayer1 255 255 252 255 0 0 0 255 0 0 192 255 0 0 64 255 0 0 0 255 0 0 4 255
@@ -1827,7 +1886,8 @@ D ControlBar.wnd:StaticTextPlayer1 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer1 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer1 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer1 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:StaticTextPlayer0 408 718 684 754 1920 1080
+S ControlBar.wnd:StaticTextPlayer0 0 0
+R ControlBar.wnd:StaticTextPlayer0 400 755 684 785 1920 1080
 F ControlBar.wnd:StaticTextPlayer0 "Arial" 8 0
 H ControlBar.wnd:StaticTextPlayer0 LabelSmall
 T ControlBar.wnd:StaticTextPlayer0 255 255 252 255 0 0 0 255 0 0 192 255 0 0 64 255 0 0 0 255 0 0 4 255
@@ -1858,6 +1918,7 @@ D ControlBar.wnd:StaticTextPlayer0 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer0 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer0 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:StaticTextPlayer0 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:OCLTimerWindow 0 1
 R ControlBar.wnd:OCLTimerWindow 200 491 608 591 1920 1080
 F ControlBar.wnd:OCLTimerWindow "Times New Roman" 14 0
 H ControlBar.wnd:OCLTimerWindow [NONE]
@@ -1889,6 +1950,7 @@ D ControlBar.wnd:OCLTimerWindow 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:OCLTimerWindow 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:OCLTimerWindow 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:OCLTimerWindow 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:OCLTimerSellButton 1 1
 R ControlBar.wnd:OCLTimerSellButton 546 539 602 587 1920 1080
 F ControlBar.wnd:OCLTimerSellButton "Arial" 10 0
 H ControlBar.wnd:OCLTimerSellButton [NONE]
@@ -1920,6 +1982,7 @@ D ControlBar.wnd:OCLTimerSellButton 2 5 Buttons-HiLite-Middle 255 255 255 0 255 
 D ControlBar.wnd:OCLTimerSellButton 2 6 Buttons-HiLite-Right 255 255 255 0 255 255 255 0
 D ControlBar.wnd:OCLTimerSellButton 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:OCLTimerSellButton 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:OCLTimerProgressBar 0 1
 R ControlBar.wnd:OCLTimerProgressBar 248 516 540 572 1920 1080
 F ControlBar.wnd:OCLTimerProgressBar "Times New Roman" 14 0
 H ControlBar.wnd:OCLTimerProgressBar [NONE]
@@ -1951,6 +2014,7 @@ D ControlBar.wnd:OCLTimerProgressBar 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:OCLTimerProgressBar 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:OCLTimerProgressBar 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:OCLTimerProgressBar 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:OCLTimerStaticText 0 1
 R ControlBar.wnd:OCLTimerStaticText 256 524 532 564 1920 1080
 F ControlBar.wnd:OCLTimerStaticText "Arial" 14 0
 H ControlBar.wnd:OCLTimerStaticText MinorTitle
@@ -1982,7 +2046,8 @@ D ControlBar.wnd:OCLTimerStaticText 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:OCLTimerStaticText 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:OCLTimerStaticText 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:OCLTimerStaticText 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:LeftHUD 4 717 364 1077 1920 1080
+S ControlBar.wnd:LeftHUD 0 0
+R ControlBar.wnd:LeftHUD 5 753 327 1075 1920 1080
 F ControlBar.wnd:LeftHUD "Times New Roman" 14 0
 H ControlBar.wnd:LeftHUD [None]
 T ControlBar.wnd:LeftHUD 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255
@@ -2013,7 +2078,8 @@ D ControlBar.wnd:LeftHUD 2 5 NoImage 254 254 254 255 0 0 0 255
 D ControlBar.wnd:LeftHUD 2 6 NoImage 254 254 254 255 0 0 0 255
 D ControlBar.wnd:LeftHUD 2 7 NoImage 254 254 254 255 0 0 0 255
 D ControlBar.wnd:LeftHUD 2 8 NoImage 254 254 254 255 0 0 0 255
-R ControlBar.wnd:GeneralsExp 692 870 712 1026 1920 1080
+S ControlBar.wnd:GeneralsExp 0 0
+R ControlBar.wnd:GeneralsExp 1880 923 1906 1063 1920 1080
 F ControlBar.wnd:GeneralsExp "Times New Roman" 14 0
 H ControlBar.wnd:GeneralsExp [NONE]
 T ControlBar.wnd:GeneralsExp 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -2044,7 +2110,8 @@ D ControlBar.wnd:GeneralsExp 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:GeneralsExp 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:GeneralsExp 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:GeneralsExp 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:ExpBarForeground 692 876 712 1032 1920 1080
+S ControlBar.wnd:ExpBarForeground 1 0
+R ControlBar.wnd:ExpBarForeground 1875 887 1911 1071 1920 1080
 F ControlBar.wnd:ExpBarForeground "Times New Roman" 14 0
 H ControlBar.wnd:ExpBarForeground [NONE]
 T ControlBar.wnd:ExpBarForeground 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0 255 255 255 0
@@ -2075,6 +2142,7 @@ D ControlBar.wnd:ExpBarForeground 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ExpBarForeground 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ExpBarForeground 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ExpBarForeground 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:RightHUD 0 1
 R ControlBar.wnd:RightHUD 1642 887 1871 1071 1920 1080
 F ControlBar.wnd:RightHUD "Times New Roman" 14 0
 H ControlBar.wnd:RightHUD [NONE]
@@ -2106,6 +2174,7 @@ D ControlBar.wnd:RightHUD 2 5 NoImage 254 254 254 255 0 0 0 255
 D ControlBar.wnd:RightHUD 2 6 NoImage 254 254 254 255 0 0 0 255
 D ControlBar.wnd:RightHUD 2 7 NoImage 254 254 254 255 0 0 0 255
 D ControlBar.wnd:RightHUD 2 8 NoImage 254 254 254 255 0 0 0 255
+S ControlBar.wnd:ProductionQueueWindow 0 1
 R ControlBar.wnd:ProductionQueueWindow 621 483 762 592 1920 1080
 F ControlBar.wnd:ProductionQueueWindow "Times New Roman" 14 0
 H ControlBar.wnd:ProductionQueueWindow [NONE]
@@ -2137,6 +2206,7 @@ D ControlBar.wnd:ProductionQueueWindow 2 5 NoImage 254 254 254 255 0 0 0 255
 D ControlBar.wnd:ProductionQueueWindow 2 6 NoImage 254 254 254 255 0 0 0 255
 D ControlBar.wnd:ProductionQueueWindow 2 7 NoImage 254 254 254 255 0 0 0 255
 D ControlBar.wnd:ProductionQueueWindow 2 8 NoImage 254 254 254 255 0 0 0 255
+S ControlBar.wnd:ButtonQueue09 1 1
 R ControlBar.wnd:ButtonQueue09 715 555 761 591 1920 1080
 F ControlBar.wnd:ButtonQueue09 "Times New Roman" 14 0
 H ControlBar.wnd:ButtonQueue09 [None]
@@ -2168,6 +2238,7 @@ D ControlBar.wnd:ButtonQueue09 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue09 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue09 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue09 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:ButtonQueue08 1 1
 R ControlBar.wnd:ButtonQueue08 668 555 713 591 1920 1080
 F ControlBar.wnd:ButtonQueue08 "Times New Roman" 14 0
 H ControlBar.wnd:ButtonQueue08 [None]
@@ -2199,6 +2270,7 @@ D ControlBar.wnd:ButtonQueue08 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue08 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue08 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue08 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:ButtonQueue07 1 1
 R ControlBar.wnd:ButtonQueue07 622 555 666 591 1920 1080
 F ControlBar.wnd:ButtonQueue07 "Times New Roman" 14 0
 H ControlBar.wnd:ButtonQueue07 [None]
@@ -2230,6 +2302,7 @@ D ControlBar.wnd:ButtonQueue07 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue07 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue07 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue07 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:ButtonQueue06 1 1
 R ControlBar.wnd:ButtonQueue06 715 519 761 553 1920 1080
 F ControlBar.wnd:ButtonQueue06 "Times New Roman" 14 0
 H ControlBar.wnd:ButtonQueue06 [None]
@@ -2261,6 +2334,7 @@ D ControlBar.wnd:ButtonQueue06 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue06 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue06 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue06 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:ButtonQueue05 1 1
 R ControlBar.wnd:ButtonQueue05 668 519 713 553 1920 1080
 F ControlBar.wnd:ButtonQueue05 "Times New Roman" 14 0
 H ControlBar.wnd:ButtonQueue05 [None]
@@ -2292,6 +2366,7 @@ D ControlBar.wnd:ButtonQueue05 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue05 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue05 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue05 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:ButtonQueue04 1 1
 R ControlBar.wnd:ButtonQueue04 622 519 666 553 1920 1080
 F ControlBar.wnd:ButtonQueue04 "Times New Roman" 14 0
 H ControlBar.wnd:ButtonQueue04 [NONE]
@@ -2323,6 +2398,7 @@ D ControlBar.wnd:ButtonQueue04 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue04 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue04 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue04 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:ButtonQueue03 1 1
 R ControlBar.wnd:ButtonQueue03 715 484 761 517 1920 1080
 F ControlBar.wnd:ButtonQueue03 "Times New Roman" 14 0
 H ControlBar.wnd:ButtonQueue03 [NONE]
@@ -2354,6 +2430,7 @@ D ControlBar.wnd:ButtonQueue03 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue03 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue03 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue03 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:ButtonQueue02 1 1
 R ControlBar.wnd:ButtonQueue02 668 484 713 517 1920 1080
 F ControlBar.wnd:ButtonQueue02 "Times New Roman" 14 0
 H ControlBar.wnd:ButtonQueue02 [NONE]
@@ -2385,6 +2462,7 @@ D ControlBar.wnd:ButtonQueue02 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue02 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue02 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue02 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:ButtonQueue01 1 1
 R ControlBar.wnd:ButtonQueue01 622 484 666 517 1920 1080
 F ControlBar.wnd:ButtonQueue01 "Times New Roman" 14 0
 H ControlBar.wnd:ButtonQueue01 [NONE]
@@ -2416,6 +2494,7 @@ D ControlBar.wnd:ButtonQueue01 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue01 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue01 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ButtonQueue01 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:WinUnitSelected 0 0
 R ControlBar.wnd:WinUnitSelected 1642 887 1871 1071 1920 1080
 F ControlBar.wnd:WinUnitSelected "Times New Roman" 14 0
 H ControlBar.wnd:WinUnitSelected [NONE]
@@ -2447,6 +2526,7 @@ D ControlBar.wnd:WinUnitSelected 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:WinUnitSelected 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:WinUnitSelected 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:WinUnitSelected 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:CameoWindow 1 0
 R ControlBar.wnd:CameoWindow 1643 888 1812 1024 1920 1080
 F ControlBar.wnd:CameoWindow "Times New Roman" 14 0
 H ControlBar.wnd:CameoWindow [NONE]
@@ -2478,6 +2558,7 @@ D ControlBar.wnd:CameoWindow 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:CameoWindow 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:CameoWindow 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:CameoWindow 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:UnitUpgrade1 1 0
 R ControlBar.wnd:UnitUpgrade1 1814 888 1870 932 1920 1080
 F ControlBar.wnd:UnitUpgrade1 "Times New Roman" 14 0
 H ControlBar.wnd:UnitUpgrade1 [NONE]
@@ -2509,6 +2590,7 @@ D ControlBar.wnd:UnitUpgrade1 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade1 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade1 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade1 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:UnitUpgrade2 1 0
 R ControlBar.wnd:UnitUpgrade2 1814 934 1870 978 1920 1080
 F ControlBar.wnd:UnitUpgrade2 "Times New Roman" 14 0
 H ControlBar.wnd:UnitUpgrade2 [NONE]
@@ -2540,6 +2622,7 @@ D ControlBar.wnd:UnitUpgrade2 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade2 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade2 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade2 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:UnitUpgrade3 1 0
 R ControlBar.wnd:UnitUpgrade3 1814 980 1870 1024 1920 1080
 F ControlBar.wnd:UnitUpgrade3 "Times New Roman" 14 0
 H ControlBar.wnd:UnitUpgrade3 [NONE]
@@ -2571,6 +2654,7 @@ D ControlBar.wnd:UnitUpgrade3 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade3 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade3 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade3 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:UnitUpgrade4 1 0
 R ControlBar.wnd:UnitUpgrade4 1814 1026 1870 1070 1920 1080
 F ControlBar.wnd:UnitUpgrade4 "Times New Roman" 14 0
 H ControlBar.wnd:UnitUpgrade4 [NONE]
@@ -2602,6 +2686,7 @@ D ControlBar.wnd:UnitUpgrade4 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade4 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade4 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade4 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:UnitUpgrade5 1 0
 R ControlBar.wnd:UnitUpgrade5 1757 1026 1812 1070 1920 1080
 F ControlBar.wnd:UnitUpgrade5 "Times New Roman" 14 0
 H ControlBar.wnd:UnitUpgrade5 [NONE]
@@ -2633,6 +2718,7 @@ D ControlBar.wnd:UnitUpgrade5 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade5 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade5 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade5 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:UnitUpgrade6 1 0
 R ControlBar.wnd:UnitUpgrade6 1700 1026 1755 1070 1920 1080
 F ControlBar.wnd:UnitUpgrade6 "Times New Roman" 14 0
 H ControlBar.wnd:UnitUpgrade6 [NONE]
@@ -2664,6 +2750,7 @@ D ControlBar.wnd:UnitUpgrade6 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade6 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade6 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade6 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:UnitUpgrade7 1 0
 R ControlBar.wnd:UnitUpgrade7 1643 1026 1698 1070 1920 1080
 F ControlBar.wnd:UnitUpgrade7 "Times New Roman" 14 0
 H ControlBar.wnd:UnitUpgrade7 [NONE]
@@ -2695,6 +2782,7 @@ D ControlBar.wnd:UnitUpgrade7 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade7 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade7 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:UnitUpgrade7 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:ButtonIdleWorker 1 1
 R ControlBar.wnd:ButtonIdleWorker 192 874 222 541 1920 1080
 F ControlBar.wnd:ButtonIdleWorker "Times New Roman" 10 0
 H ControlBar.wnd:ButtonIdleWorker [NONE]
@@ -2726,6 +2814,7 @@ D ControlBar.wnd:ButtonIdleWorker 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonIdleWorker 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonIdleWorker 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonIdleWorker 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonPlaceBeacon 1 1
 R ControlBar.wnd:ButtonPlaceBeacon 192 543 222 565 1920 1080
 F ControlBar.wnd:ButtonPlaceBeacon "Times New Roman" 10 0
 H ControlBar.wnd:ButtonPlaceBeacon [NONE]
@@ -2757,6 +2846,7 @@ D ControlBar.wnd:ButtonPlaceBeacon 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlaceBeacon 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlaceBeacon 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonPlaceBeacon 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:PopupCommunicator 1 0
 R ControlBar.wnd:PopupCommunicator 0 0 0 0 1920 1080
 F ControlBar.wnd:PopupCommunicator "Times New Roman" 10 0
 H ControlBar.wnd:PopupCommunicator [NONE]
@@ -2788,6 +2878,7 @@ D ControlBar.wnd:PopupCommunicator 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:PopupCommunicator 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:PopupCommunicator 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:PopupCommunicator 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonOptions 1 0
 R ControlBar.wnd:ButtonOptions 0 0 0 0 1920 1080
 F ControlBar.wnd:ButtonOptions "Times New Roman" 10 0
 H ControlBar.wnd:ButtonOptions [NONE]
@@ -2819,6 +2910,7 @@ D ControlBar.wnd:ButtonOptions 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonOptions 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonOptions 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonOptions 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ForegroundMarker 0 1
 R ControlBar.wnd:ForegroundMarker 0 595 5 600 1920 1080
 F ControlBar.wnd:ForegroundMarker "Times New Roman" 14 0
 H ControlBar.wnd:ForegroundMarker [None]
@@ -2850,6 +2942,7 @@ D ControlBar.wnd:ForegroundMarker 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ForegroundMarker 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ForegroundMarker 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ForegroundMarker 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:ButtonGeneral 1 1
 R ControlBar.wnd:ButtonGeneral 736 433 792 474 1920 1080
 F ControlBar.wnd:ButtonGeneral "Times New Roman" 10 0
 H ControlBar.wnd:ButtonGeneral [NONE]
@@ -2881,6 +2974,7 @@ D ControlBar.wnd:ButtonGeneral 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonGeneral 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonGeneral 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonGeneral 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:MoneyDisplay 0 1
 R ControlBar.wnd:MoneyDisplay 360 437 439 456 1920 1080
 F ControlBar.wnd:MoneyDisplay "Arial" 8 0
 H ControlBar.wnd:MoneyDisplay LabelSmall
@@ -2912,6 +3006,7 @@ D ControlBar.wnd:MoneyDisplay 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:MoneyDisplay 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:MoneyDisplay 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:MoneyDisplay 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:MoneyDisplayInput 0 0
 R ControlBar.wnd:MoneyDisplayInput 217 757 283 795 1920 1080
 F ControlBar.wnd:MoneyDisplayInput "Arial" 8 0
 H ControlBar.wnd:MoneyDisplayInput [NONE]
@@ -2943,7 +3038,8 @@ D ControlBar.wnd:MoneyDisplayInput 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:MoneyDisplayInput 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:MoneyDisplayInput 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:MoneyDisplayInput 2 8 NoImage 255 255 255 0 255 255 255 0
-R ControlBar.wnd:PowerWindow 368 854 688 866 1920 1080
+S ControlBar.wnd:PowerWindow 0 0
+R ControlBar.wnd:PowerWindow 400 854 720 866 1920 1080
 F ControlBar.wnd:PowerWindow "Times New Roman" 14 0
 H ControlBar.wnd:PowerWindow [NONE]
 T ControlBar.wnd:PowerWindow 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255 255
@@ -2974,6 +3070,7 @@ D ControlBar.wnd:PowerWindow 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:PowerWindow 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:PowerWindow 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:PowerWindow 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonSmall 1 1
 R ControlBar.wnd:ButtonSmall 592 436 623 457 1920 1080
 F ControlBar.wnd:ButtonSmall "Times New Roman" 10 0
 H ControlBar.wnd:ButtonSmall [NONE]
@@ -3005,6 +3102,7 @@ D ControlBar.wnd:ButtonSmall 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonSmall 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonSmall 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonSmall 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonLarge 1 1
 R ControlBar.wnd:ButtonLarge 666 445 714 473 1920 1080
 F ControlBar.wnd:ButtonLarge "Times New Roman" 10 0
 H ControlBar.wnd:ButtonLarge [NONE]
@@ -3036,6 +3134,7 @@ D ControlBar.wnd:ButtonLarge 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonLarge 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonLarge 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonLarge 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:ButtonMedium 1 1
 R ControlBar.wnd:ButtonMedium 625 439 656 460 1920 1080
 F ControlBar.wnd:ButtonMedium "Times New Roman" 10 0
 H ControlBar.wnd:ButtonMedium [NONE]
@@ -3067,6 +3166,7 @@ D ControlBar.wnd:ButtonMedium 2 5 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonMedium 2 6 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonMedium 2 7 NoImage 255 255 255 255 255 255 255 255
 D ControlBar.wnd:ButtonMedium 2 8 NoImage 255 255 255 255 255 255 255 255
+S ControlBar.wnd:WinUAttack 1 1
 R ControlBar.wnd:WinUAttack 77 416 122 461 1920 1080
 F ControlBar.wnd:WinUAttack "Times New Roman" 14 0
 H ControlBar.wnd:WinUAttack [NONE]
@@ -3098,6 +3198,7 @@ D ControlBar.wnd:WinUAttack 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:WinUAttack 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:WinUAttack 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:WinUAttack 2 8 NoImage 255 255 255 0 255 255 255 0
+S ControlBar.wnd:OnTopDraw 0 1
 R ControlBar.wnd:OnTopDraw 3 593 34 600 1920 1080
 F ControlBar.wnd:OnTopDraw "Times New Roman" 14 0
 H ControlBar.wnd:OnTopDraw [NONE]
@@ -3129,104 +3230,3 @@ D ControlBar.wnd:OnTopDraw 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:OnTopDraw 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:OnTopDraw 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:OnTopDraw 2 8 NoImage 255 255 255 0 255 255 255 0
-S ControlBar.wnd:ControlBarParent 0 1
-S ControlBar.wnd:Munkee 1 0
-S ControlBar.wnd:BackgroundMarker 0 0
-S ControlBar.wnd:InputBlockMain 0 0
-S ControlBar.wnd:InputBlockLeft 0 0
-S ControlBar.wnd:InputBlockRight 0 0
-S ControlBar.wnd:CenterBackground 0 0
-S ControlBar.wnd:BeaconWindow 0 1
-S ControlBar.wnd:ButtonDeleteBeacon 1 1
-S ControlBar.wnd:EditBeaconText 1 0
-S ControlBar.wnd:StaticTextBeaconLabel 0 1
-S ControlBar.wnd:ButtonClearBeaconText 1 1
-S ControlBar.wnd:CommandWindow 0 1
-S ControlBar.wnd:ButtonCommand14 1 1
-S ControlBar.wnd:ButtonCommand13 1 1
-S ControlBar.wnd:ButtonCommand12 1 1
-S ControlBar.wnd:ButtonCommand11 1 1
-S ControlBar.wnd:ButtonCommand10 1 1
-S ControlBar.wnd:ButtonCommand09 1 1
-S ControlBar.wnd:ButtonCommand08 1 1
-S ControlBar.wnd:ButtonCommand07 1 1
-S ControlBar.wnd:ButtonCommand06 1 1
-S ControlBar.wnd:ButtonCommand05 1 1
-S ControlBar.wnd:ButtonCommand04 1 1
-S ControlBar.wnd:ButtonCommand03 1 1
-S ControlBar.wnd:ButtonCommand02 1 1
-S ControlBar.wnd:ButtonCommand01 1 1
-S ControlBar.wnd:UnderConstructionWindow 0 1
-S ControlBar.wnd:ButtonCancelConstruction 1 1
-S ControlBar.wnd:UnderConstructionDesc 0 1
-S ControlBar.wnd:ObserverPlayerInfoWindow 0 1
-S ControlBar.wnd:WinGeneralPortrait 1 0
-S ControlBar.wnd:WinFlag 1 0
-S ControlBar.wnd:ButtonCancel 1 0
-S ControlBar.wnd:StaticTextObsBuildings 0 0
-S ControlBar.wnd:StaticTextObsUnits 0 0
-S ControlBar.wnd:StaticTextObsUnitsLost 0 0
-S ControlBar.wnd:StaticTextObsUnitsKilled 0 0
-S ControlBar.wnd:StaticTextPlayerName 0 0
-S ControlBar.wnd:StaticTextNumberOfUnitsLost 0 0
-S ControlBar.wnd:StaticTextNumberOfUnitsKilled 0 0
-S ControlBar.wnd:StaticTextNumberOfBuildings 0 0
-S ControlBar.wnd:StaticTextNumberOfUnits 0 0
-S ControlBar.wnd:ObserverPlayerListWindow 0 1
-S ControlBar.wnd:ButtonPlayer7 1 0
-S ControlBar.wnd:ButtonPlayer6 1 0
-S ControlBar.wnd:ButtonPlayer5 1 0
-S ControlBar.wnd:ButtonPlayer4 1 0
-S ControlBar.wnd:ButtonPlayer3 1 0
-S ControlBar.wnd:ButtonPlayer2 1 0
-S ControlBar.wnd:ButtonPlayer1 1 0
-S ControlBar.wnd:ButtonPlayer0 1 0
-S ControlBar.wnd:StaticTextPlayer7 0 0
-S ControlBar.wnd:StaticTextPlayer6 0 0
-S ControlBar.wnd:StaticTextPlayer5 0 0
-S ControlBar.wnd:StaticTextPlayer4 0 0
-S ControlBar.wnd:StaticTextPlayer3 0 0
-S ControlBar.wnd:StaticTextPlayer2 0 0
-S ControlBar.wnd:StaticTextPlayer1 0 0
-S ControlBar.wnd:StaticTextPlayer0 0 0
-S ControlBar.wnd:OCLTimerWindow 0 1
-S ControlBar.wnd:OCLTimerSellButton 1 1
-S ControlBar.wnd:OCLTimerProgressBar 0 1
-S ControlBar.wnd:OCLTimerStaticText 0 1
-S ControlBar.wnd:LeftHUD 0 0
-S ControlBar.wnd:GeneralsExp 0 0
-S ControlBar.wnd:ExpBarForeground 1 1
-S ControlBar.wnd:RightHUD 0 1
-S ControlBar.wnd:ProductionQueueWindow 0 1
-S ControlBar.wnd:ButtonQueue09 1 1
-S ControlBar.wnd:ButtonQueue08 1 1
-S ControlBar.wnd:ButtonQueue07 1 1
-S ControlBar.wnd:ButtonQueue06 1 1
-S ControlBar.wnd:ButtonQueue05 1 1
-S ControlBar.wnd:ButtonQueue04 1 1
-S ControlBar.wnd:ButtonQueue03 1 1
-S ControlBar.wnd:ButtonQueue02 1 1
-S ControlBar.wnd:ButtonQueue01 1 1
-S ControlBar.wnd:WinUnitSelected 0 0
-S ControlBar.wnd:CameoWindow 1 0
-S ControlBar.wnd:UnitUpgrade1 1 0
-S ControlBar.wnd:UnitUpgrade2 1 0
-S ControlBar.wnd:UnitUpgrade3 1 0
-S ControlBar.wnd:UnitUpgrade4 1 0
-S ControlBar.wnd:UnitUpgrade5 1 0
-S ControlBar.wnd:UnitUpgrade6 1 0
-S ControlBar.wnd:UnitUpgrade7 1 0
-S ControlBar.wnd:ButtonIdleWorker 1 1
-S ControlBar.wnd:ButtonPlaceBeacon 1 1
-S ControlBar.wnd:PopupCommunicator 1 0
-S ControlBar.wnd:ButtonOptions 1 0
-S ControlBar.wnd:ForegroundMarker 0 1
-S ControlBar.wnd:ButtonGeneral 1 1
-S ControlBar.wnd:MoneyDisplay 0 1
-S ControlBar.wnd:MoneyDisplayInput 0 0
-S ControlBar.wnd:PowerWindow 0 0
-S ControlBar.wnd:ButtonSmall 1 1
-S ControlBar.wnd:ButtonLarge 1 1
-S ControlBar.wnd:ButtonMedium 1 1
-S ControlBar.wnd:WinUAttack 1 1
-S ControlBar.wnd:OnTopDraw 0 1
