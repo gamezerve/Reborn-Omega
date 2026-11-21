@@ -40,6 +40,7 @@ class STLSpecialAlloc;
 // PLEASE DO NOT ABUSE WINDOWS OR IT WILL BE REMOVED ENTIRELY. :-)
 //--------------------------------------------------------------------------------- System Includes
 
+#include <winsock2.h>
 #include <windows.h>
 
 #include <assert.h>
