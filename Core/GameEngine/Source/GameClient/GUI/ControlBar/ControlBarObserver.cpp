@@ -145,6 +145,13 @@ void ControlBar::setObserverLookAtPlayer(Player *player)
 	{
 		m_observerLookAtPlayer = player;
 	}
+	// Reborn: Refresh the read-only science viewer immediately when selecting another player or returning to the list.
+	GameWindow* scienceButton = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("ControlBar.wnd:ButtonGeneral"));
+	if (scienceButton)
+		scienceButton->winEnable(m_observerLookAtPlayer != nullptr);
+	if (m_isObserverCommandBar && m_contextParent[CP_PURCHASE_SCIENCE] &&
+		!m_contextParent[CP_PURCHASE_SCIENCE]->winIsHidden())
+		showPurchaseScience();
 }
 
 //-------------------------------------------------------------------------------------------------

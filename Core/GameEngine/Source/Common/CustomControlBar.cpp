@@ -157,16 +157,8 @@ static Color readAppearanceColor(std::istringstream& input)
 //-------------------------------------------------------------------------------------------------
 /** Reborn: Apply fixed visual records to existing windows; never destroy command bindings or input owners. */
 //-------------------------------------------------------------------------------------------------
-void ApplyCustomControlBarAppearance()
+static void applyCustomControlBarAppearanceFile(const AsciiString& path)
 {
-    if (!TheWindowManager || !TheDisplay || !TheFileSystem) return;
-    AsciiString path;
-    if (UseCustomControlBar() && TheControlBar && TheControlBar->isObserverControlBarOn())
-        path.set("Data\\INI\\CustomControlBar\\ObserverAppearance.txt");
-    else if (UseCustomControlBar())
-        path.format("Data\\INI\\CustomControlBar\\%s\\Appearance.txt", s_resolutions[GetCustomControlBarIndex()]);
-    else
-        path.set("Data\\INI\\CustomControlBar\\NormalAppearance.txt");
     File* file = TheFileSystem->openFile(path.str(), File::READ);
     if (!file) return;
     const Int length = file->size();
@@ -278,6 +270,23 @@ void ApplyCustomControlBarAppearance()
             if (state == 2) { window->winSetHiliteImage(slot, image); window->winSetHiliteColor(slot, color); window->winSetHiliteBorderColor(slot, border); }
         }
     }
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Restore the complete selected layout before applying observer-only HUD overrides. */
+//-------------------------------------------------------------------------------------------------
+void ApplyCustomControlBarAppearance()
+{
+    if (!TheWindowManager || !TheDisplay || !TheFileSystem) return;
+    AsciiString path;
+    if (UseCustomControlBar())
+        path.format("Data\\INI\\CustomControlBar\\%s\\Appearance.txt", s_resolutions[GetCustomControlBarIndex()]);
+    else
+        path.set("Data\\INI\\CustomControlBar\\NormalAppearance.txt");
+    // Reborn: Observer manifests cover only ControlBar.wnd; sciences and shortcuts still need the full layout.
+    applyCustomControlBarAppearanceFile(path);
+    if (UseCustomControlBar() && TheControlBar && TheControlBar->isObserverControlBarOn())
+        applyCustomControlBarAppearanceFile("Data\\INI\\CustomControlBar\\ObserverAppearance.txt");
     // Reborn: Flatten localized two-line captions only for compact observer rows; restore originals on normal bars.
     if (TheGameText)
     {

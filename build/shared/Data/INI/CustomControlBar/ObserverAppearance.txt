@@ -2942,8 +2942,8 @@ D ControlBar.wnd:ForegroundMarker 2 5 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ForegroundMarker 2 6 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ForegroundMarker 2 7 NoImage 255 255 255 0 255 255 255 0
 D ControlBar.wnd:ForegroundMarker 2 8 NoImage 255 255 255 0 255 255 255 0
-S ControlBar.wnd:ButtonGeneral 1 1
-R ControlBar.wnd:ButtonGeneral 736 433 792 474 1920 1080
+S ControlBar.wnd:ButtonGeneral 1 0
+R ControlBar.wnd:ButtonGeneral 1829 840 1920 871 1920 1080
 F ControlBar.wnd:ButtonGeneral "Times New Roman" 10 0
 H ControlBar.wnd:ButtonGeneral [NONE]
 T ControlBar.wnd:ButtonGeneral 254 254 254 255 0 0 0 255 192 192 192 255 64 64 64 255 128 128 255 255 0 0 128 255

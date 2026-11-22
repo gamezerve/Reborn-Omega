@@ -679,6 +679,15 @@ void W3DCommandBarBackgroundDraw( GameWindow *window, WinInstanceData *instData 
 				offset.y + TheDisplay->getHeight() * 568 / 1080,
 				offset.x + TheDisplay->getWidth(), offset.y + TheDisplay->getHeight());
 
+		// Reborn: The observer atlas has no science tab; reuse the original Pro tab frame behind its stars.
+		const Image* scienceFrame = TheMappedImageCollection->findImageByName(
+			GetCustomControlBarImageName("ObserverScienceFrame"));
+		if (scienceFrame)
+			TheWindowManager->winDrawImage(scienceFrame,
+				offset.x + TheDisplay->getWidth() * 1822 / 1920,
+				offset.y + TheDisplay->getHeight() * 833 / 1080,
+				offset.x + TheDisplay->getWidth(), offset.y + TheDisplay->getHeight() * 878 / 1080);
+
 	}
 	// Reborn: Draw the package's stats-panel backing before the flag and observer text, without adding runtime windows.
 	if (UseCustomControlBar() && TheControlBar->isObserverControlBarOn())

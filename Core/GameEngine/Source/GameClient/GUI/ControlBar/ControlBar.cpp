@@ -1267,7 +1267,7 @@ void ControlBar::populatePurchaseScience( Player* player )
 				else
 				{
 					//Handle normal game logic cases!
-					if(!player->hasScience(st) && TheScienceStore->playerHasPrereqsForScience(player, st) && TheScienceStore->getSciencePurchaseCost(st) <= player->getSciencePurchasePoints())
+					if(!m_isObserverCommandBar && !player->hasScience(st) && TheScienceStore->playerHasPrereqsForScience(player, st) && TheScienceStore->getSciencePurchaseCost(st) <= player->getSciencePurchasePoints())
 					{
 						m_sciencePurchaseWindowsRank1[ i ]->winEnable( TRUE );
 					}
@@ -1332,7 +1332,7 @@ void ControlBar::populatePurchaseScience( Player* player )
 			else
 			{
 				//Handle normal game logic cases!
-				if(!player->hasScience(st) && TheScienceStore->playerHasPrereqsForScience(player, st) && TheScienceStore->getSciencePurchaseCost(st) <= player->getSciencePurchasePoints())
+				if(!m_isObserverCommandBar && !player->hasScience(st) && TheScienceStore->playerHasPrereqsForScience(player, st) && TheScienceStore->getSciencePurchaseCost(st) <= player->getSciencePurchasePoints())
 				{
 					m_sciencePurchaseWindowsRank3[ i ]->winEnable( TRUE );
 				}
@@ -1392,7 +1392,7 @@ void ControlBar::populatePurchaseScience( Player* player )
 			else
 			{
 				//Handle normal game logic cases!
-				if(!player->hasScience(st) && TheScienceStore->playerHasPrereqsForScience(player, st) && TheScienceStore->getSciencePurchaseCost(st) <= player->getSciencePurchasePoints())
+				if(!m_isObserverCommandBar && !player->hasScience(st) && TheScienceStore->playerHasPrereqsForScience(player, st) && TheScienceStore->getSciencePurchaseCost(st) <= player->getSciencePurchasePoints())
 				{
 					m_sciencePurchaseWindowsRank8[ i ]->winEnable( TRUE );
 				}
@@ -1438,8 +1438,10 @@ void ControlBar::populatePurchaseScience( Player* player )
 	{
 		// Reborn: ControlBarPro omits the science experience bar; restore it for the original control bar.
 		win->winHide(UseCustomControlBar());
-		Int progress;
-		progress = ((player->getSkillPoints() - player->getSkillPointsLevelDown()) * 100) /(player->getSkillPointsLevelUp() - player->getSkillPointsLevelDown());
+		// Reborn: Observer panels can inspect a player at the maximum rank.
+		const Int interval = player->getSkillPointsLevelUp() - player->getSkillPointsLevelDown();
+		const Int progress = interval > 0 ?
+			((player->getSkillPoints() - player->getSkillPointsLevelDown()) * 100) / interval : 0;
 		GadgetProgressBarSetProgress(win, progress);
 	}
 
@@ -1493,14 +1495,19 @@ void ControlBar::populatePurchaseScience( Player* player )
 void ControlBar::updateContextPurchaseScience()
 {
 	GameWindow *win =nullptr;
-	Player *player = ThePlayerList->getLocalPlayer();
+	// Reborn: Show the observed player's rank and points without changing the local player.
+	Player *player = m_isObserverCommandBar ? getObserverLookAtPlayer() : ThePlayerList->getLocalPlayer();
+	if (!player)
+		return;
 	win = TheWindowManager->winGetWindowFromId( m_contextParent[ CP_PURCHASE_SCIENCE ], TheNameKeyGenerator->nameToKey( "GeneralsExpPoints.wnd:ProgressBarExperience" ) );
 	if(win)
 	{
 		// Reborn: ControlBarPro omits the science experience bar; restore it for the original control bar.
 		win->winHide(UseCustomControlBar());
-		Int progress;
-		progress = ((player->getSkillPoints() - player->getSkillPointsLevelDown()) * 100) /(player->getSkillPointsLevelUp() - player->getSkillPointsLevelDown());
+		// Reborn: Observer panels can inspect a player at the maximum rank.
+		const Int interval = player->getSkillPointsLevelUp() - player->getSkillPointsLevelDown();
+		const Int progress = interval > 0 ?
+			((player->getSkillPoints() - player->getSkillPointsLevelDown()) * 100) / interval : 0;
 		GadgetProgressBarSetProgress(win, progress);
 	}
 
@@ -2693,7 +2700,12 @@ void ControlBar::update()
 	if( m_isObserverCommandBar)
 	{
 		if((TheGameLogic->getFrame() % (LOGICFRAMES_PER_SECOND/2)) == 0)
+		{
 			populateObserverInfoWindow();
+			// Reborn: Refresh acquired powers and unspent points while observing live games and replays.
+			if (!m_contextParent[CP_PURCHASE_SCIENCE]->winIsHidden())
+				showPurchaseScience();
+		}
 
 		Drawable *drawToEvaluateFor = nullptr;
 		if( TheInGameUI->getSelectCount() > 1 )
@@ -4856,12 +4868,41 @@ void ControlBar::updatePurchaseScience()
 //	}
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Theme only the original observer science window for the watched player's base faction. */
+//-------------------------------------------------------------------------------------------------
+static void applyObserverScienceTheme(GameWindow* window, Player* player)
+{
+	if (UseCustomControlBar() || !window || !player || !TheMappedImageCollection) return;
+	const AsciiString side = player->getBaseSide();
+	const char* name = side.compareNoCase("USA") == 0 ? "GeneralsPowerWindow_American" :
+		side.compareNoCase("GLA") == 0 ? "GeneralsPowerWindow_GLA" : "GeneralsPowerMenu_China";
+	const Image* image = TheMappedImageCollection->findImageByName(name);
+	if (!image) return;
+	window->winSetEnabledImage(0, image);
+	// Reborn: Original faction schemes all use the same 800x600 science layout reference.
+	window->winSetSize(image->getImageWidth() * TheDisplay->getWidth() / 800,
+		image->getImageHeight() * TheDisplay->getHeight() / 600);
+}
+
 void ControlBar::showPurchaseScience()
 {
 
 	if(TheScriptEngine->isGameEnding())
 		return;
-	populatePurchaseScience(ThePlayerList->getLocalPlayer());
+	// Reborn: Observer science panels are tied to the selected player and close when that selection is cleared.
+	Player* player = m_isObserverCommandBar ? getObserverLookAtPlayer() : ThePlayerList->getLocalPlayer();
+	if (!player || !player->getPlayerTemplate() ||
+		player->getPlayerTemplate()->getPurchaseScienceCommandSetRank1().isEmpty() ||
+		player->getPlayerTemplate()->getPurchaseScienceCommandSetRank3().isEmpty() ||
+		player->getPlayerTemplate()->getPurchaseScienceCommandSetRank8().isEmpty())
+	{
+		hidePurchaseScience();
+		return;
+	}
+	// Reborn: Player selection changes the original science skin without replacing the observer HUD.
+	if (m_isObserverCommandBar) applyObserverScienceTheme(m_contextParent[CP_PURCHASE_SCIENCE], player);
+	populatePurchaseScience(player);
 	m_genStarFlash = FALSE;
 	if(!m_contextParent[ CP_PURCHASE_SCIENCE ]->winIsHidden())
 		return;
@@ -5803,6 +5844,8 @@ void ControlBar::refreshCustomAppearance()
 	if (m_animateWindowManagerForGenShortcuts) m_animateWindowManagerForGenShortcuts->reset();
 	resetSpecialPowerShortcutButtonAnimations(); // Reborn: Restore tray positions before changing HUD geometry.
 	if (m_generalsScreenAnimate) m_generalsScreenAnimate->reset();
+	// Reborn: Finish science fades before their cached positions can overwrite the new layout.
+	if (TheTransitionHandler) TheTransitionHandler->remove("GenExpFade", TRUE);
 	// Reborn: Restore fixed positions first, then let the selected scheme own dynamic HUD images.
 	ApplyCustomControlBarAppearance();
 	// Reborn: Scheme::init restores the default stage; cache the NEW origin before it can restore the old one.
@@ -5833,7 +5876,7 @@ void ControlBar::refreshCustomAppearance()
 	}
 	{
 		// Reborn: Hide absent custom-observer widgets, and restore them when switching back to the original bar.
-		for (const char* name : {"ControlBar.wnd:ButtonGeneral", "ControlBar.wnd:ButtonLarge", "ControlBar.wnd:WinUAttack"})
+		for (const char* name : {"ControlBar.wnd:ButtonLarge", "ControlBar.wnd:WinUAttack"})
 		{
 			GameWindow* control = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(name));
 			if (control) control->winHide(UseCustomControlBar() && m_isObserverCommandBar);
@@ -5841,9 +5884,23 @@ void ControlBar::refreshCustomAppearance()
 	}
 	if (m_isObserverCommandBar)
 	{
+		// Reborn: A selected observer player enables the read-only science viewer.
+		GameWindow* scienceButton = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("ControlBar.wnd:ButtonGeneral"));
+		if (scienceButton)
+		{
+			scienceButton->winHide(FALSE);
+			scienceButton->winEnable(getObserverLookAtPlayer() != nullptr);
+		}
 		// Reborn: Reinstall dynamic player names/cameos after static draw records, without resetting the watched player.
 		populateObserverList();
 		populateObserverInfoWindow();
+	}
+	// Reborn: Scheme initialization reinstalls the observer default; restore the watched faction and live contents.
+	if (m_isObserverCommandBar)
+	{
+		applyObserverScienceTheme(m_contextParent[CP_PURCHASE_SCIENCE], getObserverLookAtPlayer());
+		if (m_contextParent[CP_PURCHASE_SCIENCE] && !m_contextParent[CP_PURCHASE_SCIENCE]->winIsHidden())
+			showPurchaseScience();
 	}
 	GameWindow* marker = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("ControlBar.wnd:BackgroundMarker"));
 	if (marker)

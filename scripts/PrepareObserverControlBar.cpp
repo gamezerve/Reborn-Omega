@@ -131,6 +131,15 @@ int main(int argc,char**argv) {
  }
  // Reborn: Align Back with the black backing drawn two pixels outside the player card.
  place("ButtonCancel","UPPERLEFT: 398 1030, BOTTOMRIGHT: 488 1076");
+ // Reborn: Keep the original Pro science button above the observer portrait panel.
+ place("ButtonGeneral","UPPERLEFT: 1829 840, BOTTOMRIGHT: 1920 871");
+ // Reborn: The legacy observer hides the science art with SEE_THRU; expose the original Pro button.
+ if(auto science=findNode(observer,"ButtonGeneral")) {
+  auto& status=science->fields["STATUS"];
+  status=std::regex_replace(status,std::regex("\\+SEE_THRU"),"");
+  status+="+IMAGE";
+ }
+
  std::ostringstream obs;manifestNode(obs,observer);
  output(dest+"/Window/CustomControlBar/Observer/ControlBarObserverCustom.wnd","FILE_VERSION = 2;\nSTARTLAYOUTBLOCK\nLAYOUTINIT = [None];\nLAYOUTUPDATE = [None];\nLAYOUTSHUTDOWN = [None];\nENDLAYOUTBLOCK\n"+writeNode(observer));
  output(dest+"/Data/INI/CustomControlBar/ObserverAppearance.txt",obs.str());
@@ -155,6 +164,12 @@ int main(int argc,char**argv) {
  // Reborn: Shift the observer power meter with the player card.
  scheme=std::regex_replace(scheme,std::regex("PowerBarUL X:[0-9]+ Y:[0-9]+"),"PowerBarUL X:400 Y:854");
  scheme=std::regex_replace(scheme,std::regex("PowerBarLR X:[0-9]+ Y:[0-9]+"),"PowerBarLR X:720 Y:866");
+ // Reborn: Use original Pro button states and science-panel backing for observer inspection.
+ for(const auto& state:std::vector<std::pair<std::string,std::string>>{{"Enable",""},{"Hightlited","H"},{"Pushed","P"},{"Disabled","I"}})
+  scheme=std::regex_replace(scheme,std::regex("(GeneralButton"+state.first+"[ \t]+)RebornCBO_[A-Za-z0-9_]+"),"$1RebornCBP_1080_AmericaProGeneral"+state.second);
+ scheme=std::regex_replace(scheme,std::regex("GeneralUL X:[0-9]+ Y:[0-9]+"),"GeneralUL X:1829 Y:840");
+ scheme=std::regex_replace(scheme,std::regex("GeneralLR X:[0-9]+ Y:[0-9]+"),"GeneralLR X:1920 Y:871");
+ scheme=std::regex_replace(scheme,std::regex("PowerPurchaseImage [A-Za-z0-9_]+"),"PowerPurchaseImage RebornCBP_1080_AmericaProGeneralsPowerWindow");
  output(dest+"/Data/INI/CustomControlBar/ObserverScheme.ini",scheme);
  // Reborn: Derive flag snapshots from current files, preserving all player layout edits.
  auto addFlags=[&](const std::string& text,const CustomWndNode& n){std::istringstream in(text);std::ostringstream out;std::string line;while(std::getline(in,line)){if(line.compare(0,2,"S ")!=0)out<<line<<"\n";}drawingFlags(out,n);return out.str();};

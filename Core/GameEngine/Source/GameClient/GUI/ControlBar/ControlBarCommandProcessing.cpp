@@ -140,6 +140,10 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 	if (commandButton->getCommandType() == GUI_COMMAND_INFO)
 		return CBC_COMMAND_USED;
 
+	// Reborn: Observers may inspect sciences but must never emit a purchase message.
+	if (m_isObserverCommandBar && commandButton->getCommandType() == GUI_COMMAND_PURCHASE_SCIENCE)
+		return CBC_COMMAND_USED;
+
 	// sanity, we won't process messages if we have no source object,
 	// unless we're CB_CONTEXT_PURCHASE_SCIENCE or GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT
 	if( m_currContext != CB_CONTEXT_MULTI_SELECT &&
