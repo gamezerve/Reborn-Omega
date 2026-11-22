@@ -136,6 +136,10 @@ CBCommandStatus ControlBar::processCommandUI( GameWindow *control,
 		return CBC_COMMAND_NOT_USED;
 	}
 
+	// Reborn: Observer shortcut clicks cannot select units, start targeting or emit gameplay messages.
+	if (m_isObserverCommandBar && isSpecialPowerShortcutWindow(control))
+		return CBC_COMMAND_USED;
+
 	// Reborn: Consume informational clicks before selection changes or any gameplay message is produced.
 	if (commandButton->getCommandType() == GUI_COMMAND_INFO)
 		return CBC_COMMAND_USED;

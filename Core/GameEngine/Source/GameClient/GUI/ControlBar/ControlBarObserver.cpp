@@ -136,6 +136,8 @@ void ControlBar::initObserverControls()
 //-------------------------------------------------------------------------------------------------
 void ControlBar::setObserverLookAtPlayer(Player *player)
 {
+	// Reborn: Rebuild shortcut windows only when the watched player actually changes.
+	Player* previousPlayer = m_observerLookAtPlayer;
 	if (player != nullptr && player == ThePlayerList->findPlayerWithNameKey(s_replayObserverNameKey))
 	{
 		// Looking at the observer. Treat as not looking at player.
@@ -144,6 +146,12 @@ void ControlBar::setObserverLookAtPlayer(Player *player)
 	else
 	{
 		m_observerLookAtPlayer = player;
+	}
+	if (m_isObserverCommandBar && previousPlayer != m_observerLookAtPlayer)
+	{
+		// Reborn: Player switches replace the tray; returning to the list clears its windows and tooltip.
+		initSpecialPowershortcutBar(m_observerLookAtPlayer);
+		populateSpecialPowerShortcut(m_observerLookAtPlayer);
 	}
 	// Reborn: Refresh the read-only science viewer immediately when selecting another player or returning to the list.
 	GameWindow* scienceButton = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("ControlBar.wnd:ButtonGeneral"));

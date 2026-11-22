@@ -746,6 +746,7 @@ public:
 	void hidePurchaseScience();
 	void togglePurchaseScience();
 
+	Bool isSpecialPowerShortcutWindow(const GameWindow* window) const; // Reborn: Scope read-only input and tooltips to the observer shortcut tray.
 	Bool hasAnyShortcutSelection() const;
 	Bool canShowSpecialPowerShortcut() const;
 	void showSpecialPowerShortcut();
@@ -798,7 +799,7 @@ public:
 	Player *getObservedPlayer() const { return m_observedPlayer; } ///< Return the observed player. Can return null.
 
 	/// Returns the currently viewed player. May return nullptr if no player is selected while observing.
-	Player* getCurrentlyViewedPlayer();
+	Player* getCurrentlyViewedPlayer() const; // Reborn: Const availability checks also use the selected observer player.
 	/// Returns the relationship with the currently viewed player. May return NEUTRAL if no player is selected while observing.
 	Relationship getCurrentlyViewedPlayerRelationship(const Team* team);
 

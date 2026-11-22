@@ -596,12 +596,20 @@ StateReturnType AITNGuardReturnState::onEnter()
 	// Find tunnel network to enter.
 	// Scan my tunnels.
 	Object *bestTunnel = findBestTunnel(getMachineOwner()->getControllingPlayer(), getMachineOwner()->getPosition());
-	if (bestTunnel==nullptr) return STATE_FAILURE;
+	// Reborn: A failed return goes to the inner attack state. With no nemesis, inner, outer and
+	// the crate state all finish at once and come straight back here, so a unit that cannot
+	// reach a tunnel (no tunnel left, or the shared tunnel network is full) looped through these
+	// states until the transition limit, every frame. Go to idle instead: it keeps scanning
+	// for enemies and tries to return again on its next scan, by when there may be room.
+	if (bestTunnel==nullptr) return STATE_SUCCESS;
 
 	getMachine()->setGoalObject(bestTunnel);
 	getMachineOwner()->getAI()->friend_setGoalObject(bestTunnel);
 
-	return AIEnterState::onEnter();
+	StateReturnType ret = AIEnterState::onEnter();
+	if (ret == STATE_FAILURE)
+		return STATE_SUCCESS; // Reborn: Could not enter (network full); wait in idle, see above.
+	return ret;
 }
 
 //--------------------------------------------------------------------------------------

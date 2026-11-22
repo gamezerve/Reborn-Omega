@@ -1099,12 +1099,9 @@ CommandAvailability ControlBar::getCommandAvailability( const CommandButton *com
 	if(	command->getCommandType() == GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT
 			|| command->getCommandType() == GUI_COMMAND_SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT )
 	{
-		if (ThePlayerList && ThePlayerList->getLocalPlayer())
-			//obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( command->getSpecialPowerTemplate()->getSpecialPowerType() );
-			obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPower(
-				command->getSpecialPowerTemplate());
-		else
-			obj = nullptr;
+		// Reborn: Evaluate shortcut cooldowns on the watched player's source rather than the observer's empty army.
+		Player* player = getCurrentlyViewedPlayer();
+		obj = player ? player->findMostReadyShortcutSpecialPower(command->getSpecialPowerTemplate()) : nullptr;
 	}
 
 	//If we modify the button (like a gadget clock overlay), then sometimes we may wish to apply it to a specific different button.

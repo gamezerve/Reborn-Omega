@@ -1170,12 +1170,13 @@ void ControlBar::markUIDirty()
 #endif
 }
 
-Player* ControlBar::getCurrentlyViewedPlayer()
+// Reborn: Read-only trays can query the watched player before a local player has been initialized.
+Player* ControlBar::getCurrentlyViewedPlayer() const
 {
-	if (isObserverControlBarOn())
+	if (m_isObserverCommandBar)
 		return getObserverLookAtPlayer();
 
-	return ThePlayerList->getLocalPlayer();
+	return ThePlayerList ? ThePlayerList->getLocalPlayer() : nullptr;
 }
 
 Relationship ControlBar::getCurrentlyViewedPlayerRelationship(const Team* team)
@@ -2702,6 +2703,8 @@ void ControlBar::update()
 		if((TheGameLogic->getFrame() % (LOGICFRAMES_PER_SECOND/2)) == 0)
 		{
 			populateObserverInfoWindow();
+			// Reborn: Follow newly acquired or lost powers even though observers skip normal dirty-UI population.
+			populateSpecialPowerShortcut(getCurrentlyViewedPlayer());
 			// Reborn: Refresh acquired powers and unspent points while observing live games and replays.
 			if (!m_contextParent[CP_PURCHASE_SCIENCE]->winIsHidden())
 				showPurchaseScience();
@@ -4110,7 +4113,8 @@ void ControlBar::setControlCommand( GameWindow *button, const CommandButton *com
 
 	setCommandBarBorder(button, commandButton->getCommandButtonMappedBorderType());
 
-	if (TheHotKeyManager)
+	// Reborn: Read-only observer shortcuts must not register gameplay hotkeys.
+	if (TheHotKeyManager && !(m_isObserverCommandBar && isSpecialPowerShortcutWindow(button)))
 	{
 		AsciiString hotKey =	TheHotKeyManager->searchHotKey(commandButton->getTextLabel());
 		if(hotKey.isNotEmpty())
@@ -5187,6 +5191,8 @@ void ControlBar::initSpecialPowershortcutBar( Player *player)
 		m_specialPowerShortcutButtons[i] = nullptr;
 	}
 
+	// Reborn: Drop tooltip references before destroying the previous watched player's shortcut windows.
+	if (m_specialPowerLayout && m_buildToolTipLayout) deleteBuildTooltipLayout();
 	if(m_specialPowerLayout)
 	{
 		m_specialPowerLayout->destroyWindows();
@@ -5195,9 +5201,10 @@ void ControlBar::initSpecialPowershortcutBar( Player *player)
 	}
 	m_specialPowerShortcutParent = nullptr;
 	m_currentlyUsedSpecialPowersButtons = 0;
-	const PlayerTemplate *pt = player->getPlayerTemplate();
+	// Reborn: Clearing the watched player destroys the old layout without dereferencing a null player.
+	const PlayerTemplate *pt = player ? player->getPlayerTemplate() : nullptr;
 
-	if(!player || !pt|| !player->isLocalPlayer() ||
+	if(!player || !pt || (!m_isObserverCommandBar && !player->isLocalPlayer()) ||
 			pt->getSpecialPowerShortcutButtonCount() == 0 ||
 			pt->getSpecialPowerShortcutWinName().isEmpty() ||
 			!player->isPlayerActive())
@@ -5245,9 +5252,11 @@ void ControlBar::populateSpecialPowerShortcut( Player *player)
 	const CommandSet *commandSet;
 	Int i;
 	if(!player || !player->getPlayerTemplate() ||
-			!player->isLocalPlayer() || m_currentlyUsedSpecialPowersButtons == 0 ||
+			player != getCurrentlyViewedPlayer() || m_currentlyUsedSpecialPowersButtons == 0 ||
+			!m_specialPowerShortcutParent ||
 			m_specialPowerShortcutButtons == nullptr || m_specialPowerShortcutButtonParents == nullptr)
 		return;
+	// Reborn: Populate the watched player's sources and sciences through the same path as the playing user.
 	// Reborn: Compare commands, not compacted slot numbers, so existing shortcuts do not replay their entry on UI refresh.
 	const CommandButton *previousCommands[MAX_SPECIAL_POWER_SHORTCUTS] = {};
 	const Bool barWasVisible = m_specialPowerShortcutParent && !m_specialPowerShortcutParent->winIsHidden();
@@ -5292,7 +5301,7 @@ void ControlBar::populateSpecialPowerShortcut( Player *player)
 			if( BitIsSet( commandButton->getOptions(), NEED_UPGRADE ) )
 			{
 				const UpgradeTemplate *upgrade = commandButton->getUpgradeTemplate();
-				if( upgrade && !ThePlayerList->getLocalPlayer()->hasUpgradeComplete( upgrade->getUpgradeMask() ) )
+				if( upgrade && !player->hasUpgradeComplete( upgrade->getUpgradeMask() ) )
 				{
 					//Kris: 8/13/03 - Don't show shortcut buttons that require upgrades we don't have. As far as
 					//I know, only the radar van scan has this. The MOAB is handled differently (sciences).
@@ -5316,8 +5325,8 @@ void ControlBar::populateSpecialPowerShortcut( Player *player)
 				}
 
 				//We just need to find something that has the power.
-				//Object *obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( commandButton->getSpecialPowerTemplate()->getSpecialPowerType() );
-				Object* obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPower(commandButton->getSpecialPowerTemplate());
+				//Object *obj = player->findMostReadyShortcutSpecialPowerOfType( commandButton->getSpecialPowerTemplate()->getSpecialPowerType() );
+				Object* obj = player->findMostReadyShortcutSpecialPower(commandButton->getSpecialPowerTemplate());
 				if( !obj )
 				{
 					continue;
@@ -5445,7 +5454,7 @@ void ControlBar::populateSpecialPowerShortcut( Player *player)
 			else if( commandButton->getCommandType() == GUI_COMMAND_SELECT_ALL_UNITS_OF_TYPE )
 			{
 				//Make sure we actually have an object of type that we want to be able to select.
-				Object *obj = ThePlayerList->getLocalPlayer()->findAnyExistingObjectWithThingTemplate( commandButton->getThingTemplate() );
+				Object *obj = player->findAnyExistingObjectWithThingTemplate( commandButton->getThingTemplate() );
 				if( !obj )
 				{
 					continue;
@@ -5464,6 +5473,8 @@ void ControlBar::populateSpecialPowerShortcut( Player *player)
 
 			// populate the visible button with data from the command button
 			setControlCommand( m_specialPowerShortcutButtons[ currentButton ], commandButton );
+			// Reborn: Initial population is read-only too, before the first availability update.
+			if (m_isObserverCommandBar) m_specialPowerShortcutButtons[currentButton]->winEnable(FALSE);
 			GadgetButtonSetAltSound(m_specialPowerShortcutButtons[ currentButton ], "GUIGenShortcutClick");
 			currentButton++;
 
@@ -5500,6 +5511,17 @@ void ControlBar::populateSpecialPowerShortcut( Player *player)
 }
 
 //-------------------------------------------------------------------------------------------------
+/** Reborn: Identify shortcut controls without classifying ordinary unit commands as observer powers. */
+//-------------------------------------------------------------------------------------------------
+Bool ControlBar::isSpecialPowerShortcutWindow(const GameWindow* window) const
+{
+	if (!window) return FALSE;
+	for (Int i = 0; i < m_currentlyUsedSpecialPowersButtons; ++i)
+		if (m_specialPowerShortcutButtons[i] == window) return TRUE;
+	return FALSE;
+}
+
+//-------------------------------------------------------------------------------------------------
 Bool ControlBar::hasAnyShortcutSelection() const
 {
 	for( Int i = 0; i < m_currentlyUsedSpecialPowersButtons; i++ )
@@ -5528,17 +5550,20 @@ Bool ControlBar::hasAnyShortcutSelection() const
 //-------------------------------------------------------------------------------------------------
 Bool ControlBar::canShowSpecialPowerShortcut() const
 {
+	// Reborn: No watched player means no observer shortcut tray, including the all-player view.
+	Player* player = getCurrentlyViewedPlayer();
+	if (!player || !player->isPlayerActive()) return FALSE;
 #ifdef RTS_GENERALS
 	// Special Powers in Generals do not have the ShortcutPower flag set and therefore this function
 	// is satisfied with the presence of a Command Center, which is supposed to host Special Powers.
-	if (ThePlayerList->getLocalPlayer()->findNaturalCommandCenter() != nullptr)
+	if (player->findNaturalCommandCenter() != nullptr)
 		return true;
 #endif
 
 	if (hasAnyShortcutSelection())
 		return true;
 
-	if (ThePlayerList->getLocalPlayer()->hasAnyShortcutSpecialPower())
+	if (player->hasAnyShortcutSpecialPower())
 		return true;
 
 	return false;
@@ -5547,8 +5572,14 @@ Bool ControlBar::canShowSpecialPowerShortcut() const
 //-------------------------------------------------------------------------------------------------
 void ControlBar::updateSpecialPowerShortcut()
 {
-	if(!m_specialPowerShortcutParent || !m_specialPowerShortcutButtons ||
-	   !ThePlayerList || !ThePlayerList->getLocalPlayer())
+	// Reborn: Observer and replay trays read the selected player without changing the local player.
+	Player* player = getCurrentlyViewedPlayer();
+	if (!player)
+	{
+		hideSpecialPowerShortcut();
+		return;
+	}
+	if(!m_specialPowerShortcutParent || !m_specialPowerShortcutButtons)
 		return;
 
 	const Bool hasValidShortcutButton = canShowSpecialPowerShortcut();
@@ -5572,7 +5603,7 @@ void ControlBar::updateSpecialPowerShortcut()
 	if(m_specialPowerShortcutParent->winIsHidden())
 		return;
 
-	if(!ThePlayerList->getLocalPlayer()->isPlayerActive())
+	if(!player->isPlayerActive())
 	{
 		hideSpecialPowerShortcut();
 		return;
@@ -5608,21 +5639,21 @@ void ControlBar::updateSpecialPowerShortcut()
 		Object *obj = nullptr;
 		if( spTemplate )
 		{
-			//obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerOfType( command->getSpecialPowerTemplate()->getSpecialPowerType() );
-			obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPower(spTemplate);
+			//obj = player->findMostReadyShortcutSpecialPowerOfType( command->getSpecialPowerTemplate()->getSpecialPowerType() );
+			obj = player->findMostReadyShortcutSpecialPower(spTemplate);
 			availability = getCommandAvailability( command, obj, win );
 		}
 		else if( command->getCommandType() == GUI_COMMAND_SELECT_ALL_UNITS_OF_TYPE )
 		{
 			availability = COMMAND_HIDDEN;
-			Object *obj = ThePlayerList->getLocalPlayer()->findAnyExistingObjectWithThingTemplate( command->getThingTemplate() );
+			Object *obj = player->findAnyExistingObjectWithThingTemplate( command->getThingTemplate() );
 			if( obj )
 			{
 				//Make command available if it isn't a special power template shortcut power.
 				availability = COMMAND_AVAILABLE;
 
 				UnsignedInt mostReadyPercentage;
-				obj = ThePlayerList->getLocalPlayer()->findMostReadyShortcutSpecialPowerForThing( command->getThingTemplate(), mostReadyPercentage );
+				obj = player->findMostReadyShortcutSpecialPowerForThing( command->getThingTemplate(), mostReadyPercentage );
 				if( obj )
 				{
 					//Ugh... hacky.
@@ -5677,6 +5708,13 @@ void ControlBar::updateSpecialPowerShortcut()
 				win->winEnable( TRUE );
 				break;
 		}
+		// Reborn: Preserve ready colors and cooldown overlays while blocking all observer shortcut activation.
+		if (m_isObserverCommandBar)
+		{
+			win->winEnable(FALSE);
+			if (availability == COMMAND_AVAILABLE || availability == COMMAND_ACTIVE)
+				win->winSetStatus(WIN_STATUS_ALWAYS_COLOR);
+		}
 	}
 }
 
@@ -5698,6 +5736,9 @@ Int ControlBar::getVisibleSpecialPowerShortcutButtonCount() const
 //-------------------------------------------------------------------------------------------------
 void ControlBar::drawSpecialPowerShortcutMultiplierText()
 {
+	// Reborn: Observer and replay trays read the selected player without changing the local player.
+	Player* player = getCurrentlyViewedPlayer();
+	if (!player || !m_specialPowerShortcutParent || m_specialPowerShortcutParent->winIsHidden()) return;
 	for( Int i = 0; i < m_currentlyUsedSpecialPowersButtons; i++ )
 	{
 		GameWindow *win;
@@ -5726,8 +5767,8 @@ void ControlBar::drawSpecialPowerShortcutMultiplierText()
 			Int numReady = 0;
 			if( spTemplate )
 			{
-				//numReady = ThePlayerList->getLocalPlayer()->countReadyShortcutSpecialPowersOfType( spTemplate->getSpecialPowerType() );
-				numReady = ThePlayerList->getLocalPlayer()->countReadyShortcutSpecialPowers(spTemplate);
+				//numReady = player->countReadyShortcutSpecialPowersOfType( spTemplate->getSpecialPowerType() );
+				numReady = player->countReadyShortcutSpecialPowers(spTemplate);
 			}
 			if( numReady > 1 ) // Lorenzen changed... Displaying a "1" is superfluous
 			{
@@ -5780,8 +5821,10 @@ void ControlBar::animateSpecialPowerShortcut( Bool isOn )
 
 void ControlBar::showSpecialPowerShortcut()
 {
+	// Reborn: Observer and replay trays read the selected player without changing the local player.
+	Player* player = getCurrentlyViewedPlayer();
 	if(TheScriptEngine->isGameEnding() || !m_specialPowerShortcutParent ||
-		!m_specialPowerShortcutButtons || !ThePlayerList || !ThePlayerList->getLocalPlayer())
+		!m_specialPowerShortcutButtons || !player)
 		return;
 	Bool dontAnimate = TRUE;
 	for( Int i = 0; i < m_currentlyUsedSpecialPowersButtons; ++i )
@@ -5795,7 +5838,7 @@ void ControlBar::showSpecialPowerShortcut()
 	if( dontAnimate || !canShowSpecialPowerShortcut() )
 		return;
 	m_specialPowerShortcutParent->winHide(FALSE);
-	populateSpecialPowerShortcut(ThePlayerList->getLocalPlayer());
+	populateSpecialPowerShortcut(player);
 
 }
 
@@ -5891,6 +5934,9 @@ void ControlBar::refreshCustomAppearance()
 			scienceButton->winHide(FALSE);
 			scienceButton->winEnable(getObserverLookAtPlayer() != nullptr);
 		}
+		// Reborn: Recreate the watched faction's shortcut layout when switching HUD skins or entering observer mode.
+		initSpecialPowershortcutBar(getCurrentlyViewedPlayer());
+		populateSpecialPowerShortcut(getCurrentlyViewedPlayer());
 		// Reborn: Reinstall dynamic player names/cameos after static draw records, without resetting the watched player.
 		populateObserverList();
 		populateObserverInfoWindow();

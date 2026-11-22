@@ -1023,6 +1023,10 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 	resetBuildTooltipLayoutToDefaults(m_buildToolTipLayout);
 
 	Player* player = ThePlayerList->getLocalPlayer();
+	// Reborn: Observer shortcut descriptions, requirements and cooldowns belong to the watched player.
+	const Bool observerShortcut = m_isObserverCommandBar && isSpecialPowerShortcutWindow(prevWindow);
+	if (observerShortcut) player = getCurrentlyViewedPlayer();
+	if (!player) return;
 	UnicodeString name, cost, buildtime, powertext, limittext, reloadtext, descrip, healthText, shroudText, locomotorText, stealthDetectText, autoDepositText, hackInternetText, supplyDropText, rankText;
 	buildtime = UnicodeString::TheEmptyString;
 	powertext = UnicodeString::TheEmptyString;
@@ -1426,7 +1430,8 @@ void ControlBar::populateBuildTooltipLayout( const CommandButton *commandButton,
 			//		spm = cooldownObject->findSpecialPowerModuleInterface(spType);
 			//	}
 			//}
-			Object* cooldownObject = selectedObject;
+			// Reborn: A selected enemy unit must not supply the cooldown for a watched player's shortcut.
+			Object* cooldownObject = observerShortcut ? player->findMostReadyShortcutSpecialPower(specialPowerTemplate) : selectedObject;
 			SpecialPowerModuleInterface* spm = nullptr;
 
 			if (cooldownObject)
