@@ -733,6 +733,7 @@ public:
 
 	/// find existing command button if present
 	const CommandButton *findCommandButton( const AsciiString& name );
+	AsciiString getSpecialPowerTextLabel(const SpecialPowerTemplate* power) const; // Reborn: Resolve observer power names from public command captions.
 
 	/// find existing command set
 	//const CommandSet *findCommandSet( const AsciiString& name );

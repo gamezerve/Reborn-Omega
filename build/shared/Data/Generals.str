@@ -28395,3 +28395,77 @@ END
 GUI:ConfirmShowIP
 "Are you sure you want to make your Online and LAN IP addresses visible?"
 END
+
+// Reborn: Localizable spectator comparison table, event notices and font controls.
+
+GUI:ObserverPlayer
+"(T) Player"
+END
+
+GUI:ObserverArmy
+"Army"
+END
+
+GUI:ObserverCash
+"Cash"
+END
+
+GUI:ObserverCashPerMinute
+"Cash/m"
+END
+
+GUI:ObserverXP
+"(R) XP"
+END
+
+GUI:ObserverSP
+"SP"
+END
+
+GUI:ObserverKD
+"K/D"
+END
+
+GUI:ObserverEnergy
+"Power"
+END
+
+GUI:ObserverRank
+"%ls reached Rank %d"
+END
+
+GUI:ObserverIncome
+"%ls reached 10k/min income"
+END
+
+GUI:ObserverPower
+"%ls now has power"
+END
+
+GUI:ObserverHunted
+"%ls has no dozer or completed Command Center left"
+END
+
+GUI:ObserverPurchased
+"%ls purchased %ls"
+END
+
+GUI:ObserverUsed
+"%ls used %ls"
+END
+
+GUI:ObserverStatsLarger
+"Increase Observer Statistics Font"
+END
+
+GUI:ObserverStatsSmaller
+"Decrease Observer Statistics Font"
+END
+
+GUI:ObserverNoticesLarger
+"Increase Observer Notification Font"
+END
+
+GUI:ObserverNoticesSmaller
+"Decrease Observer Notification Font"
+END

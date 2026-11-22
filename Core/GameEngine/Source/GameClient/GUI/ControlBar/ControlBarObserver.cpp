@@ -53,6 +53,7 @@
 #include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
 
 #include "Common/GameUtility.h"
+#include "Common/CustomControlBar.h" // Reborn: Legacy observer cards remain available on the original control bar.
 #include "Common/NameKeyGenerator.h"
 #include "Common/PlayerList.h"
 #include "Common/Player.h"
@@ -64,6 +65,7 @@
 #include "GameClient/GadgetPushButton.h"
 #include "GameClient/GadgetStaticText.h"
 #include "GameClient/GameText.h"
+#include "GameClient/Display.h" // Reborn: Size the original horizontal card to the current display.
 #include "GameNetwork/NetworkDefs.h"
 //-----------------------------------------------------------------------------
 // DEFINES ////////////////////////////////////////////////////////////////////
@@ -347,6 +349,52 @@ void ControlBar::populateObserverList()
 
 void ControlBar::populateObserverInfoWindow ()
 {
+	// Reborn: Both HUDs retain their player card; keep its power bar attached only to an open player selection.
+	const Bool pro = UseCustomControlBar();
+	for (const char* name : {"StaticTextPlayerName", "StaticTextObsBuildings", "StaticTextObsUnits",
+		"StaticTextObsUnitsLost", "StaticTextObsUnitsKilled", "StaticTextNumberOfUnitsLost",
+		"StaticTextNumberOfUnitsKilled", "StaticTextNumberOfBuildings", "StaticTextNumberOfUnits"})
+	{
+		AsciiString id; id.format("ControlBar.wnd:%s", name);
+		GameWindow* control = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(id));
+		if (control) control->winHide(FALSE);
+	}
+	// Reborn: The original watermark is aspect-fitted by the background callback; Pro keeps its existing card image.
+	winFlag->winHide(!pro);
+	GameWindow* power = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("ControlBar.wnd:PowerWindow"));
+	if (power) power->winHide(ObserverPlayerInfoWindow->winIsHidden() || !m_observerLookAtPlayer);
+	if (!pro)
+	{
+		// Reborn: One horizontal plate contains a fitted title, four aligned stat columns and a separate Back footer.
+		auto place = [](GameWindow* window, Int left, Int top, Int right, Int bottom)
+		{
+			if (!window) return;
+			Int px = 0, py = 0;
+			if (window->winGetParent()) window->winGetParent()->winGetScreenPosition(&px, &py);
+			window->winSetPosition(left * TheDisplay->getWidth() / 800 - px, top * TheDisplay->getHeight() / 600 - py);
+			window->winSetSize((right - left) * TheDisplay->getWidth() / 800, (bottom - top) * TheDisplay->getHeight() / 600);
+		};
+		place(ObserverPlayerInfoWindow, 228, 492, 606, 592);
+		place(staticTextPlayerName, 236, 496, 598, 520);
+		const char* labels[] = {"StaticTextObsUnits", "StaticTextObsBuildings", "StaticTextObsUnitsKilled", "StaticTextObsUnitsLost"};
+		GameWindow* values[] = {staticTextNumberOfUnits, staticTextNumberOfBuildings, staticTextNumberOfUnitsKilled, staticTextNumberOfUnitsLost};
+		GameFont* labelFont = TheWindowManager->winFindFont("Arial", MAX(8, 10 * TheDisplay->getHeight() / 600), FALSE);
+		GameFont* valueFont = TheWindowManager->winFindFont("Arial", MAX(9, 12 * TheDisplay->getHeight() / 600), TRUE);
+		staticTextPlayerName->winSetFont(TheWindowManager->winFindFont("Arial", MAX(10, 14 * TheDisplay->getHeight() / 600), TRUE));
+		for (Int i = 0; i < 4; ++i)
+		{
+			AsciiString id; id.format("ControlBar.wnd:%s", labels[i]);
+			GameWindow* label = TheWindowManager->winGetWindowFromId(nullptr, TheNameKeyGenerator->nameToKey(id));
+			place(label, 240 + i * 88, 521, 320 + i * 88, 551);
+			place(values[i], 240 + i * 88, 551, 320 + i * 88, 570);
+			if (label) label->winSetFont(labelFont);
+			if (values[i]) values[i]->winSetFont(valueFont);
+		}
+		GameWindow* back = TheWindowManager->winGetWindowFromId(nullptr, buttonCancelID);
+		place(back, 538, 574, 598, 590);
+		if (back) back->winSetFont(labelFont);
+		place(power, 228, 480, 606, 486);
+	}
 	if(ObserverPlayerInfoWindow->winIsHidden())
 		return;
 
@@ -391,6 +439,6 @@ void ControlBar::populateObserverInfoWindow ()
 	Color color = m_observerLookAtPlayer->getPlayerColor();
 	staticTextPlayerName->winSetEnabledTextColors(color, GameMakeColor(0,0,0,255));
 	winFlag->winSetEnabledImage(0, m_observerLookAtPlayer->getPlayerTemplate()->getFlagWaterMarkImage());
-	winGeneralPortrait->winHide(FALSE);
+	winGeneralPortrait->winHide(!pro); // Reborn: The original card uses its fitted watermark; Pro retains its previous card layout.
 	buttonIdleWorker->winHide(FALSE);
 }

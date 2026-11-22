@@ -2797,6 +2797,9 @@ Bool Player::attemptToPurchaseScience(ScienceType science)
 		TheControlBar->markUIDirty();
 	}
 
+	// Reborn: Notify spectators only after a real purchase, excluding scripted initial science grants.
+	if (TheInGameUI) TheInGameUI->notifyGeneralPromotion(this, science);
+
 	return true;
 }
 

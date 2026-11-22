@@ -719,6 +719,10 @@ void SpecialPowerModule::aboutToDoSpecialPower( const Coord3D *location )
     }
 	}
 
+	// Reborn: Report the initiating source once; spawned aircraft must not repeat the command-center notification.
+	if (TheInGameUI && getObject() && !getObject()->isKindOf(KINDOF_AIRCRAFT))
+		TheInGameUI->notifySpecialPowerUsed(getObject()->getControllingPlayer(), getSpecialPowerTemplate());
+
 	// get module data
 	const SpecialPowerModuleData *modData = getSpecialPowerModuleData();
 

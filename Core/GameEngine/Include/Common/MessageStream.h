@@ -448,6 +448,12 @@ public:
 		MSG_META_DEBUG_GIVE_SALVAGE,
 #endif
 
+		// Reborn: Append UI-only observer controls without changing existing meta-command IDs.
+		MSG_META_INCREASE_OBSERVER_STATS_FONT,
+		MSG_META_DECREASE_OBSERVER_STATS_FONT,
+		MSG_META_INCREASE_OBSERVER_NOTIFICATION_FONT,
+		MSG_META_DECREASE_OBSERVER_NOTIFICATION_FONT,
+
 		MSG_END_META_MESSAGES,											///< Marker to delineate "meta" messages
 
 		MSG_MOUSEOVER_DRAWABLE_HINT,								///< (drawableid) the given drawable is under the mouse, regardless of button states

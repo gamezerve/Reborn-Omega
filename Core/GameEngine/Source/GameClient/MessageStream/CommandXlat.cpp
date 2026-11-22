@@ -33,6 +33,9 @@
 #include "Common/AudioAffect.h"
 #include "Common/ActionManager.h"
 #include "Common/FramePacer.h"
+#include "Common/CustomControlBar.h" // Reborn: Observer table/notification controls apply only to Pro.
+#include "Common/UserPreferences.h" // Reborn: Persist fonts without reapplying startup-only camera or UI preferences.
+#include "GameClient/ClientInstance.h" // Reborn: Keep font settings in the current instance's options file.
 #include "Common/GameAudio.h"
 #include "Common/GameEngine.h"
 #include "Common/GameType.h"
@@ -182,6 +185,27 @@ Bool hasThingsInProduction(PlayerType playerType)
 
 #endif // defined(RTS_DEBUG) || defined(_ALLOW_DEBUG_CHEATS_IN_RELEASE)
 
+
+#if defined(RTS_ZEROHOUR)
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Change only spectator font settings, applying them immediately and preserving existing preferences. */
+//-------------------------------------------------------------------------------------------------
+static void changeObserverFont(Bool statistics, Int delta)
+{
+	if (!UseCustomControlBar() || !TheControlBar || !TheControlBar->isObserverControlBarOn()) return;
+	Int& size = statistics ? TheWritableGlobalData->m_observerStatsFontSize : TheWritableGlobalData->m_observerNotificationFontSize;
+	const Int next = size + delta;
+	if (next < 0 || next > 15) return;
+	size = next;
+	UserPreferences preferences;
+	AsciiString filename("Options.ini");
+	if (rts::ClientInstance::getInstanceId() > 1u) filename.format("Options_Instance%.2u.ini", rts::ClientInstance::getInstanceId());
+	preferences.load(filename);
+	AsciiString value; value.format("%d", size);
+	preferences[statistics ? "ObserverStatsFontSize" : "ObserverNotificationFontSize"] = value;
+	preferences.write();
+}
+#endif
 
 bool changeMaxRenderFps(FpsValueChange change)
 {
@@ -3475,12 +3499,45 @@ GameMessageDisposition CommandTranslator::translateGameMessage(const GameMessage
 				}
 
 				ToggleControlBar();
+#if defined(RTS_ZEROHOUR)
+				// Reborn: GO's HUD toggle hides/restores the observer table and notices alongside both control-bar skins.
+				if (TheControlBar && TheControlBar->isObserverControlBarOn()) TheInGameUI->toggleObserverStats();
+#endif
 			}
 			disp = DESTROY_MESSAGE;
 			break;
 		}
 
 		//-----------------------------------------------------------------------------------------
+		// Reborn: Spectator font controls stay local and never become gameplay/network commands.
+		case GameMessage::MSG_META_INCREASE_OBSERVER_STATS_FONT:
+#if defined(RTS_ZEROHOUR)
+			changeObserverFont(TRUE, 1);
+#endif
+			disp = DESTROY_MESSAGE;
+			break;
+
+		case GameMessage::MSG_META_DECREASE_OBSERVER_STATS_FONT:
+#if defined(RTS_ZEROHOUR)
+			changeObserverFont(TRUE, -1);
+#endif
+			disp = DESTROY_MESSAGE;
+			break;
+
+		case GameMessage::MSG_META_INCREASE_OBSERVER_NOTIFICATION_FONT:
+#if defined(RTS_ZEROHOUR)
+			changeObserverFont(FALSE, 1);
+#endif
+			disp = DESTROY_MESSAGE;
+			break;
+
+		case GameMessage::MSG_META_DECREASE_OBSERVER_NOTIFICATION_FONT:
+#if defined(RTS_ZEROHOUR)
+			changeObserverFont(FALSE, -1);
+#endif
+			disp = DESTROY_MESSAGE;
+			break;
+
 		case GameMessage::MSG_META_TOGGLE_PLAYER_OBSERVER:
 		{
 			if (Player *lookAtPlayer = TheControlBar->getObserverLookAtPlayer())

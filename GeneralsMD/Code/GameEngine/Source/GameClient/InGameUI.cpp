@@ -66,6 +66,7 @@
 #include "GameClient/GameWindowID.h"
 #include "GameClient/GUICallbacks.h"
 #include "GameClient/InGameUI.h"
+#include "GameClient/ObserverOverlay.h" // Reborn: GO-style observer information remains separate from gameplay state.
 #include "GameClient/VideoPlayer.h"
 #include "GameClient/Mouse.h"
 #include "GameClient/GadgetStaticText.h"
@@ -1202,6 +1203,8 @@ InGameUI::PlayerInfoList::LastValues::LastValues()
 //-------------------------------------------------------------------------------------------------
 InGameUI::InGameUI()
 {
+	// Reborn: Allocate observer state without creating display resources during engine bootstrap.
+	m_observerOverlay = NEW RebornObserverOverlay;
 	Int i;
 
 
@@ -1439,6 +1442,9 @@ InGameUI::InGameUI()
 //-------------------------------------------------------------------------------------------------
 InGameUI::~InGameUI()
 {
+	// Reborn: Release observer strings before the control bar and display systems disappear.
+	delete m_observerOverlay;
+	m_observerOverlay = nullptr;
 	delete TheControlBar;
 	TheControlBar = nullptr;
 
@@ -2336,6 +2342,8 @@ void InGameUI::unregisterWindowLayout( WindowLayout *layout )
 //-------------------------------------------------------------------------------------------------
 void InGameUI::reset()
 {
+	// Reborn: Reset per-match event history, including when loading a save or replay.
+	m_observerOverlay->reset();
 	m_isQuitMenuVisible = FALSE;
 	m_inputEnabled = true;
 	// reset the command bar
@@ -4016,10 +4024,13 @@ void InGameUI::postWindowDraw()
 		drawGameTime();
 	}
 
-	if (m_playerInfoListPointSize > 0 && TheGameLogic->isInGame() && TheControlBar->isObserverControlBarOn())
+	// Reborn: Pro uses the new comparison table; keep the older cash/XP list only on the original control bar.
+	if (!UseCustomControlBar() && m_playerInfoListPointSize > 0 && TheGameLogic->isInGame() && TheControlBar->isObserverControlBarOn())
 	{
 		drawPlayerInfoList();
 	}
+	// Reborn: The spectator overlay handles its Pro-only visibility and resets history when returning to the original HUD.
+	m_observerOverlay->draw();
 }
 
 //-------------------------------------------------------------------------------------------------
@@ -6799,3 +6810,18 @@ void InGameUI::drawPlayerInfoList()
 		drawY += lineH;
 	}
 }
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Toggle spectator table and notifications together with the existing HUD visibility command. */
+//-------------------------------------------------------------------------------------------------
+void InGameUI::toggleObserverStats() { m_observerOverlay->toggle(); }
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Forward successful general-science purchases to the read-only spectator notification layer. */
+//-------------------------------------------------------------------------------------------------
+void InGameUI::notifyGeneralPromotion(Player* player, ScienceType science) { m_observerOverlay->notifyScience(player, science); }
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Forward actual public power activations, including powers introduced by the mod. */
+//-------------------------------------------------------------------------------------------------
+void InGameUI::notifySpecialPowerUsed(Player* player, const SpecialPowerTemplate* power) { m_observerOverlay->notifyPower(player, power); }

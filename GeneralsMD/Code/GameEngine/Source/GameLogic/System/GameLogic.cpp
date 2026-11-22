@@ -27,7 +27,10 @@
 // Author: Michael S. Booth, October 2000
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 
-#include "PreRTS.h"	// This must go first in EVERY cpp file in the GameEngine
+#include "PreRTS.h"
+#if defined(GENERALS_ONLINE)
+#include "GameNetwork/GeneralsOnline/NGMPGame.h" // Reborn: Apply the host's observer rule only in builds with Generals Online enabled.
+#endif
 
 #include "Common/AudioAffect.h"
 #include "Common/AudioHandleSpecialValues.h"
@@ -4130,6 +4133,15 @@ void GameLogic::update()
 			draw->snapshotLogicPositionForInterpolation();
 		}
 	}
+
+#if defined(GENERALS_ONLINE)
+	// Reborn: Match GO's defeated-player exit rule only for its active lobby, including the host/alive-ally exception.
+	if (TheNGMPGame && TheGameInfo == TheNGMPGame && TheNGMPGame->canKickOnObserversDisabled())
+	{
+		exitGame();
+		return;
+	}
+#endif
 
 	// increment world time
 	if (!m_startNewGame)

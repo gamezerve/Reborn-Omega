@@ -35,6 +35,7 @@
 #include "Common/PlayerList.h"
 #include "Common/PlayerTemplate.h" // Reborn
 #include "GameClient/GameWindow.h"
+#include "GameClient/Image.h" // Reborn: Preserve the original card watermark's aspect ratio.
 #include "W3DDevice/GameClient/W3DGameWindow.h"
 #include "GameClient/InGameUI.h"
 #include "GameClient/Display.h"
@@ -689,19 +690,40 @@ void W3DCommandBarBackgroundDraw( GameWindow *window, WinInstanceData *instData 
 				offset.x + TheDisplay->getWidth(), offset.y + TheDisplay->getHeight() * 878 / 1080);
 
 	}
-	// Reborn: Draw the package's stats-panel backing before the flag and observer text, without adding runtime windows.
-	if (UseCustomControlBar() && TheControlBar->isObserverControlBarOn())
+	// Reborn: Restore Pro's original compact card and give the original HUD one coherent horizontal plate.
+	if (TheControlBar->isObserverControlBarOn())
 	{
 		GameWindow* info = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("ControlBar.wnd:ObserverPlayerInfoWindow"));
 		GameWindow* flag = TheWindowManager->winGetWindowFromId(nullptr, NAMEKEY("ControlBar.wnd:WinFlag"));
 		if (info && flag && !info->winIsHidden())
 		{
-			ICoord2D panelPos, panelSize;
-			flag->winGetScreenPosition(&panelPos.x, &panelPos.y);
-			flag->winGetSize(&panelSize.x, &panelSize.y);
-			TheDisplay->drawFillRect(panelPos.x - 2, panelPos.y - 2, panelSize.x + 4, panelSize.y + 4, GameMakeColor(0, 0, 0, 255));
+			ICoord2D pos, size;
+			if (UseCustomControlBar())
+			{
+				flag->winGetScreenPosition(&pos.x, &pos.y); flag->winGetSize(&size.x, &size.y);
+				TheDisplay->drawFillRect(pos.x - 2, pos.y - 2, size.x + 4, size.y + 4, GameMakeColor(0, 0, 0, 255));
+			}
+			else
+			{
+				info->winGetScreenPosition(&pos.x, &pos.y); info->winGetSize(&size.x, &size.y);
+				TheDisplay->drawFillRect(pos.x, pos.y, size.x, size.y, GameMakeColor(24, 31, 34, 220));
+				TheWindowManager->winOpenRect(GameMakeColor(108, 130, 138, 220), 1, pos.x, pos.y, pos.x + size.x, pos.y + size.y);
+				// Reborn: Keep the emblem proportional even in wide windows, and fade it behind all four statistic columns.
+				const Image* watermark = flag->winGetEnabledImage(0);
+				if (watermark && watermark->getImageWidth() > 0 && watermark->getImageHeight() > 0)
+				{
+					Int h = size.y - 4;
+					Int w = h * watermark->getImageWidth() / watermark->getImageHeight();
+					if (w > size.x - 8) { w = size.x - 8; h = w * watermark->getImageHeight() / watermark->getImageWidth(); }
+					// Reborn: Widen only the original observer watermark by 25%, keeping its height, center and opacity.
+					w = MIN(size.x - 8, w * 5 / 4);
+					const Int x = pos.x + (size.x - w) / 2, y = pos.y + (size.y - h) / 2;
+					TheWindowManager->winDrawImage(watermark, x, y, x + w, y + h, GameMakeColor(255, 255, 255, 90));
+				}
+			}
 		}
 	}
+
 }
 
 

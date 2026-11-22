@@ -45,6 +45,9 @@
 #include "GameClient/View.h"
 
 // FORWARD DECLARATIONS ///////////////////////////////////////////////////////////////////////////
+class RebornObserverOverlay; // Reborn: UI-only spectator statistics and notification resources.
+class Player;
+enum ScienceType CPP_11(: Int);
 class Drawable;
 class Object;
 class ThingTemplate;
@@ -363,6 +366,11 @@ public:  // ********************************************************************
 
 	InGameUI();
 	virtual ~InGameUI() override;
+	// Reborn: Spectator events and HUD toggles never alter the selected player's simulation state.
+	void toggleObserverStats();
+	void notifyGeneralPromotion(Player* player, ScienceType science);
+	void notifySpecialPowerUsed(Player* player, const SpecialPowerTemplate* power);
+
 
 	// Inherited from subsystem interface -----------------------------------------------------------
 	virtual	void init() override;															///< Initialize the in-game user interface
@@ -932,6 +940,7 @@ protected:
 	Int													m_mouseModeCursor;
 	DrawableID									m_mousedOverDrawableID;
 	Coord2D											m_scrollAmt;
+	RebornObserverOverlay* m_observerOverlay; // Reborn: Cleared on match reset and destroyed with the UI.
 	Bool												m_isQuitMenuVisible;
 	Bool												m_messagesOn;
 

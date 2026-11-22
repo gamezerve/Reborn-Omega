@@ -5961,3 +5961,21 @@ void ControlBar::refreshCustomAppearance()
 	if (wasHidden) TheTacticalView->setHeight(previousViewportHeight);
 	markUIDirty();
 }
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Find the visible label of a public power without maintaining a retail-only list of template names. */
+//-------------------------------------------------------------------------------------------------
+AsciiString ControlBar::getSpecialPowerTextLabel(const SpecialPowerTemplate* power) const
+{
+	if (!power) return AsciiString();
+	for (const CommandButton* command = m_commandButtons; command; command = command->getNext())
+	{
+		const SpecialPowerTemplate* candidate = command->getSpecialPowerTemplate();
+		const GUICommandType type = command->getCommandType();
+		if (candidate && candidate->getName() == power->getName() && command->getTextLabel().isNotEmpty() &&
+			(type == GUI_COMMAND_SPECIAL_POWER || type == GUI_COMMAND_SPECIAL_POWER_FROM_SHORTCUT ||
+			 type == GUI_COMMAND_SPECIAL_POWER_CONSTRUCT || type == GUI_COMMAND_SPECIAL_POWER_CONSTRUCT_FROM_SHORTCUT))
+			return command->getTextLabel();
+	}
+	return AsciiString();
+}

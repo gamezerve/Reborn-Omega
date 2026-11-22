@@ -800,6 +800,9 @@ set(GAMEENGINE_SRC
 #    Source/GameClient/GUI/WindowVideoManager.cpp
 #    Source/GameClient/GUI/WinInstanceData.cpp
     Source/GameClient/InGameUI.cpp
+    # Reborn: Compile the spectator-only comparison table and notification layer.
+    Source/GameClient/ObserverOverlay.cpp
+    Include/GameClient/ObserverOverlay.h
 #    Source/GameClient/Input/Keyboard.cpp
 #    Source/GameClient/Input/Mouse.cpp
 #    Source/GameClient/LanguageFilter.cpp
