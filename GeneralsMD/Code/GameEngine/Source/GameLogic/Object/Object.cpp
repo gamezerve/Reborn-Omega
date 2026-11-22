@@ -5813,15 +5813,19 @@ void Object::doCommandButton( const CommandButton *commandButton, CommandSourceT
 							radarProduction->canQueueUpgrade(upgradeT) != CANMAKE_OK)
 							return;
 					}
+					// Reborn: Skirmish AI scripts give upgrade buttons to a whole team (e.g. Command_UpgradeGLACamoNetting,
+					// Command_UpgradeEMPMines). For members that already have the upgrade, are not affected by it, or
+					// cannot queue anything, there is simply nothing to do; this is not an unsupported command, so return
+					// quietly instead of falling through to the "not implemented" warning.
 					if( upgradeT->getUpgradeType() == UPGRADE_TYPE_OBJECT )
 					{
 						if( hasUpgrade( upgradeT )  || !affectedByUpgrade( upgradeT ) )
-							break;
+							return;
 					}
 					// producer must have a production update
 					ProductionUpdateInterface *pu = getProductionUpdateInterface();
 					if( pu == nullptr )
-						break;
+						return;
 					// queue the upgrade "research"
 					pu->queueUpgrade( upgradeT );
 				}
