@@ -39,7 +39,6 @@ target_link_libraries(z_objectdeparser PRIVATE
     imm32
     vfw32
     winmm
-    core_browserdispatch
     z_gameengine
     z_gameenginedevice
     zi_always

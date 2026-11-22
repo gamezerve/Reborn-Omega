@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////////////
-// FILE: ObjectDeparser.cpp
+// FILE: ObjectDeparser.cpp 
 // Author: Gamezerve, September 2026
 // Description: 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@
 #include "W3DDevice/Common/W3DModuleFactory.h"
 #include "W3DDevice/GameClient/W3DParticleSys.h"
 
-#include "Win32Device/Common/Win32BIGFileSystem.h"
+#include "Common/BIGFileSystem.h"
 #include "Win32Device/Common/Win32LocalFileSystem.h"
 #include "Win32Device/GameClient/Win32Mouse.h"
 
@@ -143,7 +143,7 @@ BOOL CObjectDeparserApp::InitInstance()
 
 	initSubsystem(
 		TheArchiveFileSystem,
-		static_cast<ArchiveFileSystem*>(new Win32BIGFileSystem));
+		static_cast<ArchiveFileSystem*>(new BIGFileSystem));
 
 	loadingDialog.setProgress(
 		12,
