@@ -210,6 +210,9 @@ static GameWindow* checkShowShortcutsOnButtons = nullptr;
 // Reborn: Persist and restore the legacy infantry toggle without changing textures until Accept.
 static NameKeyType checkLegacyInfantryTexturesID = NAMEKEY_INVALID;
 static GameWindow* checkLegacyInfantryTextures = nullptr;
+// Reborn: The two HUD checkboxes share the active options layout and commit together on Accept.
+static GameWindow* checkShowHudClocks = nullptr;
+static GameWindow* checkShowHudPerformance = nullptr;
 static Bool advancedSettingsOriginalLegacyInfantryTextures = FALSE;
 static Bool advancedSettingsOriginalZoomFactor = FALSE;
 static Bool advancedSettingsOriginalAutomaticUpdates = FALSE;
@@ -628,6 +631,17 @@ static void populateLayoutThemeComboBox(const AsciiString& savedTheme)
 	GadgetComboBoxCenterSelectedEntry(comboBoxLayoutTheme);
 }
 
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Show the accepted HUD options and discard any pending edits on Back. */
+//-------------------------------------------------------------------------------------------------
+static void syncHudCounterCheckboxes()
+{
+	if (checkShowHudClocks)
+		GadgetCheckBoxSetChecked(checkShowHudClocks, GetShowHudClocks());
+	if (checkShowHudPerformance)
+		GadgetCheckBoxSetChecked(checkShowHudPerformance, GetShowHudPerformance());
+}
+
 static void saveAdvancedSettings()
 {
 	UserPreferences rebornPreferences;
@@ -735,7 +749,15 @@ static void saveAdvancedSettings()
 	rebornPreferences.erase("CustomControlBarResolution");
 	// Reborn: Compare with applied state to avoid repeated rebuild loops.
 	s_customControlBarRefreshPending = s_pendingCustomControlBarEnabled != UseCustomControlBar();
+	// Reborn: Save visibility without overwriting existing font sizes, FPS limits or observer settings.
+	const Bool showHudClocks = checkShowHudClocks ? GadgetCheckBoxIsChecked(checkShowHudClocks) : GetShowHudClocks();
+	const Bool showHudPerformance = checkShowHudPerformance ? GadgetCheckBoxIsChecked(checkShowHudPerformance) : GetShowHudPerformance();
+	if (checkShowHudClocks)
+		rebornPreferences.setBool("ShowHudClocks", showHudClocks);
+	if (checkShowHudPerformance)
+		rebornPreferences.setBool("ShowHudPerformance", showHudPerformance);
 	WriteRebornOmegaPreferences(rebornPreferences);
+	SetHudCounterVisibility(showHudClocks, showHudPerformance);
 
 	if (canChangeGameFps && TheGameLogic->getGameMode() == GAME_SHELL)
 	{
@@ -1497,6 +1519,11 @@ static void acceptAdvancedSettings()
 
 static void setAdvancedSettingsDefaults()
 {
+	// Reborn: Defaults restores both HUD groups when accepted.
+	if (checkShowHudClocks)
+		GadgetCheckBoxSetChecked(checkShowHudClocks, TRUE);
+	if (checkShowHudPerformance)
+		GadgetCheckBoxSetChecked(checkShowHudPerformance, TRUE);
 	// Reborn: The current mod textures remain the default.
 	if (checkLegacyInfantryTextures)
 		GadgetCheckBoxSetChecked(checkLegacyInfantryTextures, FALSE);
@@ -1536,6 +1563,7 @@ static void setAdvancedSettingsDefaults()
 
 static void cancelAdvancedSettings()
 {
+	syncHudCounterCheckboxes(); // Reborn: Back leaves the currently visible HUD unchanged.
 	// Reborn: Discard the pending texture selection without touching the renderer.
 	if (checkLegacyInfantryTextures)
 		GadgetCheckBoxSetChecked(checkLegacyInfantryTextures, advancedSettingsOriginalLegacyInfantryTextures);
@@ -1712,6 +1740,9 @@ void OptionsMenuInit( WindowLayout *layout, void *userData )
 	checkShowShortcutsOnButtons =
 		TheWindowManager->winGetWindowFromId(nullptr, checkShowShortcutsOnButtonsID);
 	checkLegacyInfantryTextures = TheWindowManager->winGetWindowFromId(nullptr, checkLegacyInfantryTexturesID); // Reborn: Locate the texture toggle in the active layout.
+	// Reborn: Bind the display toggles in both Generals and Zero Hour themes.
+	checkShowHudClocks = TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("CheckShowHudClocks"));
+	checkShowHudPerformance = TheWindowManager->winGetWindowFromId(nullptr, GetOptionsMenuChildKey("CheckShowHudPerformance"));
 
 	//checkDoubleClickAttackMoveID = TheNameKeyGenerator->nameToKey( "OptionsMenu.wnd:CheckDoubleClickAttackMove" );
 	checkDoubleClickAttackMove   = TheWindowManager->winGetWindowFromId( nullptr, checkDoubleClickAttackMoveID );
@@ -2005,6 +2036,7 @@ GameWindow* textEntryHTTPProxy = TheWindowManager->winGetWindowFromId(nullptr, G
 	// Reborn: Display the actual renderer state, including startup fallback when original assets are unavailable.
 	if (checkLegacyInfantryTextures)
 		GadgetCheckBoxSetChecked(checkLegacyInfantryTextures, GetLegacyInfantryTextures());
+	syncHudCounterCheckboxes(); // Reborn: Initialize from the accepted values after binding the active layout.
 	if (checkShowShortcutsOnButtons)
 		GadgetCheckBoxSetChecked(checkShowShortcutsOnButtons, showShortcutsOnButtons);
 

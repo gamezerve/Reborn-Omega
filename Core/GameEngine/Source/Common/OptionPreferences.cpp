@@ -56,6 +56,9 @@ OptionPreferences::OptionPreferences()
 
 	UserPreferences rebornPreferences;
 	LoadRebornOmegaPreferences(rebornPreferences);
+	// Reborn: Keep the previous HUD visibility for installations without either new preference.
+	SetHudCounterVisibility(rebornPreferences.getBool("ShowHudClocks", TRUE),
+		rebornPreferences.getBool("ShowHudPerformance", TRUE));
 	// Reborn: Initialize once; saving Options later must not reapply old startup preferences.
 	static Bool customBarInitialized = FALSE;
 	if (!customBarInitialized)

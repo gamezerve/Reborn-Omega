@@ -33,6 +33,7 @@
 
 #include "Common/ActionManager.h"
 #include "Common/CustomControlBar.h" // Reborn: Select the timer bottom limit for the active control bar.
+#include "Common/RebornOmegaPreferences.h" // Reborn: Apply the accepted HUD visibility on the next draw.
 #include "Common/FramePacer.h"
 #include "Common/GameAudio.h"
 #include "Common/GameType.h"
@@ -4004,22 +4005,26 @@ void InGameUI::postWindowDraw()
 	Int hudOffsetX = 0;
 	Int hudOffsetY = 0;
 
-	if (m_networkLatencyPointSize > 0 && TheGameLogic->isInMultiplayerGame())
+	// Reborn: Group the four counters without affecting their configured sizes or observer overlays.
+	const Bool showPerformance = GetShowHudPerformance();
+	const Bool showClocks = GetShowHudClocks();
+
+	if (showPerformance && m_networkLatencyPointSize > 0 && TheGameLogic->isInMultiplayerGame())
 	{
 		drawNetworkLatency(hudOffsetX, hudOffsetY);
 	}
 
-	if (m_renderFpsPointSize > 0)
+	if (showPerformance && m_renderFpsPointSize > 0)
 	{
 		drawRenderFps(hudOffsetX, hudOffsetY);
 	}
 
-	if (m_systemTimePointSize > 0)
+	if (showClocks && m_systemTimePointSize > 0)
 	{
 		drawSystemTime(hudOffsetX, hudOffsetY);
 	}
 
-	if ( (m_gameTimePointSize > 0) && !TheGameLogic->isInShellGame() && TheGameLogic->isInGame() )
+	if (showClocks && m_gameTimePointSize > 0 && !TheGameLogic->isInShellGame() && TheGameLogic->isInGame())
 	{
 		drawGameTime();
 	}

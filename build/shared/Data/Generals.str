@@ -215,6 +215,23 @@ GUI:UseCustomControlBar
 "Use Control Bar Pro"
 END
 
+// Reborn: Advanced Settings controls for the system/game clocks and performance counters.
+GUI:ShowHudClocks
+"Show Clock and Game Time"
+END
+
+TOOLTIP:ShowHudClocks
+"Show your system clock and the time elapsed in the current match or replay."
+END
+
+GUI:ShowHudPerformance
+"Show FPS and Latency"
+END
+
+TOOLTIP:ShowHudPerformance
+"Show render FPS, the FPS limit, and network latency in multiplayer matches."
+END
+
 GUI:UseLegacyInfantryTextures
 "Use Legacy Infantry Textures"
 END

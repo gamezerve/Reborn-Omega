@@ -66,3 +66,26 @@ Bool WriteRebornOmegaPreferences(UserPreferences& preferences)
 
 	return preferences.write();
 }
+
+// Reborn: Existing installations continue showing the counters until the player turns them off.
+static Bool s_showHudClocks = TRUE;
+static Bool s_showHudPerformance = TRUE;
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return the accepted visibility for the system clock and elapsed game time. */
+//-------------------------------------------------------------------------------------------------
+Bool GetShowHudClocks() { return s_showHudClocks; }
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Return the accepted visibility for FPS and network run-ahead. */
+//-------------------------------------------------------------------------------------------------
+Bool GetShowHudPerformance() { return s_showHudPerformance; }
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Apply HUD visibility immediately without recreating display strings or changing their fonts. */
+//-------------------------------------------------------------------------------------------------
+void SetHudCounterVisibility(Bool clocks, Bool performance)
+{
+	s_showHudClocks = clocks;
+	s_showHudPerformance = performance;
+}

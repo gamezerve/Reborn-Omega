@@ -53,3 +53,8 @@ Bool WriteRebornOmegaPreferences(UserPreferences& preferences);
 // Reborn: Expose the accepted infantry appearance setting without coupling the options menu to W3D device headers.
 Bool GetLegacyInfantryTextures();
 Bool ApplyLegacyInfantryTextures(Bool enabled);
+
+// Reborn: Keep HUD visibility separate from font sizes and map-specific GameData overrides.
+Bool GetShowHudClocks();
+Bool GetShowHudPerformance();
+void SetHudCounterVisibility(Bool clocks, Bool performance);
