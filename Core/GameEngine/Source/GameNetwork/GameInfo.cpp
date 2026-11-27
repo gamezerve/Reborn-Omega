@@ -48,7 +48,7 @@
 #include "GameNetwork/LANAPI.h"						// for testing packet size
 #include "GameNetwork/LANAPICallbacks.h"	// for testing packet size
 #include "WWLib/strtok_r.h"
-#include "WWLib/utf8.h"
+#include "ICU/utf8.h"
 
 extern Int g_resourceMultiplierPercent; // Reborn
 
