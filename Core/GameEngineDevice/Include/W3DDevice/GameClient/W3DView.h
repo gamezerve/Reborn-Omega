@@ -201,6 +201,7 @@ public:
 	virtual void cameraModFinalLookToward(Coord3D *pLoc) override;						///< Sets a look at point during camera movement.
 	// Reborn: Use scripted pitch/zoom semantics, not player camera settings, for an instant cut.
 	virtual void setupScriptedCameraImmediate(const Coord3D* pos, const Coord3D* target, Real zoom, Real pitch) override;
+	virtual void setRebornGeneralsScriptedPitch(Bool enabled) override;  ///< Reborn: Select the Generals pitch transform for the current scripted shot.
 	virtual void cameraLookTowardImmediate(const Coord3D* pLoc) override;  ///< Reborn: Fix for GLA01 Ending Dam Sequence. Sets a look at point immediately.
 	virtual void cameraModFinalMoveTo(Coord3D *pLoc) override;			///< Sets a final move to.
 	// (gth) C&C3 animation controlled camera feature
@@ -382,6 +383,7 @@ public:
 
 private:
 	Bool m_rebornCutsceneWidescreenFix;
+	Bool m_rebornGeneralsScriptedPitch;  ///< Reborn: SC2 and SC4 of the GLA06 intro use the Generals pitch transform.
 
 
 };

@@ -864,11 +864,17 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 			waypoint.compareNoCase("InitialCameraPosition") == 0
 			);
 
-	// Reborn: Preserve the original zero-duration camera movement path for
-  // the affected GLA06 cinematic shots.
-	const Bool preserveGLA06CameraMovement =
-		mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
-		waypoint.compareNoCase("INTRO_Camera_SC2_03") == 0;
+	// Reborn: SC2 and SC4 were authored for the Generals pitch transform. Use the map's unshifted points and
+	// keep the zero-duration waypoint path alive so the following look-toward command can set its angle.
+	const AsciiString pristineMapName = TheGameState->getPristineMapName();
+	const AsciiString mapLeaf = TheGameState->getMapLeafName(pristineMapName.isEmpty() ? mapName : pristineMapName);
+	const Bool useGLA06GeneralsPitch =
+		mapLeaf.compareNoCase("GLA06.map") == 0 &&
+		(
+			waypoint.compareNoCase("INTRO_Camera_SC2_01") == 0 ||
+			waypoint.compareNoCase("INTRO_Camera_SC2_03") == 0 ||
+			waypoint.compareNoCase("INTRO_Camera_SC4_01") == 0
+		);
 
 	const Bool preserveGLA08CameraMovement =
 		mapName.compareNoCase("Maps\\GLA08\\GLA08.map") == 0 &&
@@ -890,30 +896,8 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 		if (way->getName() == waypoint)
 		{
 			Coord3D destination = *way->getLocation();
-
-			if (mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
-				(
-					waypoint.compareNoCase("INTRO_Camera_SC2_01") == 0 ||
-					waypoint.compareNoCase("INTRO_Camera_SC2_03") == 0 ||
-					waypoint.compareNoCase("INTRO_Camera_SC4_01") == 0
-					))
-			{
-				destination.x += 125.0f;
-				destination.y -= 155.0f;
-			}
-
-			if (mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
-				waypoint.compareNoCase("INTRO_Camera_SC2_01") == 0)
-			{
-				TheTacticalView->setAngle(0.7337f);
-			}
-
-			if (mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
-				waypoint.compareNoCase("INTRO_Camera_SC2_03") == 0 &&
-				sec <= 0.0f)
-			{
-				TheTacticalView->setAngle(0.6825f);
-			}
+			// Reborn: Every new camera move starts with its own pitch transform.
+			TheTacticalView->setRebornGeneralsScriptedPitch(useGLA06GeneralsPitch);
 
 			if (mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
 				waypoint.compareNoCase("INTRO_Camera_SC3_03") == 0)
@@ -1057,7 +1041,7 @@ void ScriptActions::doMoveCameraTo(const AsciiString& waypoint, Real sec, Real c
 				!preserveCHI05CameraMovement &&
 				!preserveCHI06CameraMovement &&
 				!preserveGLA05CameraMovement &&
-				!preserveGLA06CameraMovement &&
+				!useGLA06GeneralsPitch &&
 				!preserveGLA08CameraMovement)
 			{
 				TheTacticalView->setUserControlled(false);
@@ -1169,6 +1153,8 @@ void ScriptActions::doSetupCamera(const AsciiString& waypoint, Real zoom, Real p
 	Waypoint* lookat = TheTerrainLogic->getWaypointByName(lookAtWaypoint);
 	if (lookat == nullptr) return;
 	Coord3D destination = *lookat->getLocation();
+	// Reborn: A full camera setup starts a new shot with the normal pitch transform.
+	TheTacticalView->setRebornGeneralsScriptedPitch(false);
 
 
 	AsciiString mapName = TheGameState->getMapLeafName(TheGameState->getPristineMapName());

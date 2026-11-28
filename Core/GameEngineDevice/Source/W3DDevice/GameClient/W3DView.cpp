@@ -182,6 +182,7 @@ W3DView::W3DView()
 	m_CameraArrivedAtWaypointOnPathFlag = false;	// Scripts for polling camera reached targets
 	m_isCameraSlaved = false;						// This is for 3DSMax camera playback
 	m_useRealZoomCam = false;						// true;	//WST 10/18/2002
+	m_rebornGeneralsScriptedPitch = false; // Reborn: Keep Zero Hour camera behavior unless a shot opts in.
 	m_shakerAngles.X =0.0f;							// Proper camera shake generator & sources
 	m_shakerAngles.Y =0.0f;
 	m_shakerAngles.Z =0.0f;
@@ -404,7 +405,8 @@ void W3DView::buildCameraPosition( Vector3& sourcePos, Vector3& targetPos )
 		height *= m_FXPitch;
 		targetPos.Z = sourcePos.Z - height;
 #else
-		if (m_FXPitch <= 1.0f)
+		// Reborn: Selected Generals shots must adjust the vertical target rather than move the camera horizontally.
+		if (m_rebornGeneralsScriptedPitch || m_FXPitch <= 1.0f)
 		{
 			targetPos.Z = sourcePos.Z - ((sourcePos.Z - targetPos.Z) * m_FXPitch);
 		}
@@ -3328,33 +3330,10 @@ void W3DView::cameraModLookToward(Coord3D *pLoc)
 				angle,
 				m_angle));
 
-			const Bool fixGLA06SC2 =
-				TheGlobalData->m_mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
-				pLoc->x > 63.0f && pLoc->x < 63.2f &&
-				pLoc->y > 2010.5f && pLoc->y < 2010.8f;
-
-			const Bool fixGLA06SC4 =
-				TheGlobalData->m_mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0 &&
-				pLoc->x > 45.0f && pLoc->x < 45.3f &&
-				pLoc->y > 2030.7f && pLoc->y < 2031.1f;
-
-			if (fixGLA06SC2 || fixGLA06SC4)
-			{
-				const Real fixedAngle = m_angle;
-
-				for (Int j = 0; j <= m_mcwpInfo.numWaypoints + 1; ++j)
-				{
-					m_mcwpInfo.cameraAngle[j] = fixedAngle;
-				}
-			}
-			else
-			{
-				m_mcwpInfo.cameraAngle[i] = angle;
-			}
-
+			m_mcwpInfo.cameraAngle[i] = angle;
 		}
 
-		if (TheGlobalData->m_mapName.compareNoCase("Maps\\GLA06\\GLA06.map") == 0)
+		if (m_rebornGeneralsScriptedPitch)
 		{
 			DEBUG_LOG((
 				"GLA06 LOOK PATH: angle0=%.4f angle1=%.4f angle2=%.4f angle3=%.4f",
@@ -3395,6 +3374,20 @@ void W3DView::cameraModFinalMoveTo(Coord3D *pLoc)
 			result.y += delta.y;
 			m_mcwpInfo.waypoints[i] = result;
 		}
+	}
+}
+
+//-------------------------------------------------------------------------------------------------
+/** Reborn: Switch pitch transforms at a shot boundary and invalidate the previous camera pose. */
+//-------------------------------------------------------------------------------------------------
+void W3DView::setRebornGeneralsScriptedPitch(Bool enabled)
+{
+	if (m_rebornGeneralsScriptedPitch != enabled)
+	{
+		m_rebornGeneralsScriptedPitch = enabled;
+		m_scriptedCameraInterpolationInitialized = false;
+		m_cameraAreaConstraintsValid = false;
+		m_recalcCamera = true;
 	}
 }
 
@@ -3580,6 +3573,9 @@ void W3DView::cameraModFinalPitch(Real finalPitch, Real easeIn, Real easeOut)
 // ------------------------------------------------------------------------------------------------
 void W3DView::resetCamera(const Coord3D *location, Int milliseconds, Real easeIn, Real easeOut)
 {
+	// Reborn: A camera reset ends any shot-specific Generals pitch override.
+	setRebornGeneralsScriptedPitch(false);
+
 	// Reborn: Training01 resets 0.1 seconds after starting the return blur; hold that reset until both phases finish.
 	if (m_viewFilter == FT_VIEW_MOTION_BLUR_FILTER &&
 		(m_viewFilterMode == FM_VIEW_MB_IN_AND_OUT_ALPHA || m_viewFilterMode == FM_VIEW_MB_IN_AND_OUT_SATURATE))
@@ -3636,6 +3632,9 @@ Bool W3DView::isCameraMovementAtWaypointAlongPath()
  // ------------------------------------------------------------------------------------------------
 void W3DView::moveCameraAlongWaypointPath(Waypoint *pWay, Int milliseconds, Int shutter, Bool orient, Real easeIn, Real easeOut)
 {
+	// Reborn: A new waypoint path does not inherit the preceding shot's pitch transform.
+	setRebornGeneralsScriptedPitch(false);
+
 	const Real MIN_DELTA = MAP_XY_FACTOR;
 
 	m_mcwpInfo.waypoints[0] = getPosition();
@@ -4028,6 +4027,12 @@ void W3DView::pitchCameraOneFrame()
 //-------------------------------------------------------------------------------------------------
 void W3DView::setUserControlled(Bool value)
 {
+	// Reborn: Never carry the cinematic Generals pitch transform into player-controlled views.
+	if (value)
+	{
+		setRebornGeneralsScriptedPitch(false);
+	}
+
 	if (m_isUserControlled != value)
 	{
 		DEBUG_LOG((
